@@ -27,6 +27,20 @@ loom {
 			sourceSet sourceSets.client
 		}
 	}
+	
+	runs
+	{
+		datagenClient
+		{
+			inherit client
+			name "Data Generation"
+            vmArg "-Dfabric-api.datagen"
+            vmArg "-Dfabric-api.datagen.output-dir=${file("src/main/generated")}"
+            vmArg "-Dfabric-api.datagen.modid=tricksy"
+ 
+            runDir "build/datagen"
+		}
+	}
 
 }
 
@@ -41,7 +55,7 @@ dependencies {
 	
 	// Uncomment the following line to enable the deprecated Fabric API modules. 
 	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
-
+	
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 }
 
@@ -71,6 +85,16 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.base.archivesName.get()}"}
 	}
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs += [
+                    'src/main/generated'
+            ]
+        }
+    }
 }
 
 // configure the maven publication

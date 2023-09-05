@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "tricksy",
-	"version": "${version}",
+	"version": "0.1a",
 	"name": "Tricksy Foxes",
 	"description": "Player-configurable behaviour trees for mob-based automation",
 	"authors": [
@@ -9,14 +9,20 @@
 	],
 	"contact": {
 		"homepage": "https://lyinginbedmon.carrd.co/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/Lyinginbedmon/TricksyFoxes"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/tricksy/icon.png",
 	"environment": "*",
 	"entrypoints": {
+		"fabric-datagen": [
+			"com.lying.tricksy.data.TFDataGenerators"
+		],
 		"main": [
-			"com.lying.ExampleMod"
+			"com.lying.tricksy.TricksyFoxes"
+		],
+		"client": [
+			"com.lying.tricksy.TricksyFoxesClient"
 		]
 	},
 	"mixins": [
