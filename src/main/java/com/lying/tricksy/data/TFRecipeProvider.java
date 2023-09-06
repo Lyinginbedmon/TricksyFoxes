@@ -18,7 +18,7 @@ public class TFRecipeProvider extends FabricRecipeProvider
 		super(output);
 	}
 	
-	// FIXME Recipe does not load or unlock ingame?
+	// FIXME Recipe does not load or unlock ingame? Unreliable
 	public void generate(Consumer<RecipeJsonProvider> exporter)
 	{
 		ShapelessRecipeJsonBuilder.create(RecipeCategory.COMBAT, TFItems.SAGE_HAT).input(Items.LEATHER).input(Items.AMETHYST_SHARD)

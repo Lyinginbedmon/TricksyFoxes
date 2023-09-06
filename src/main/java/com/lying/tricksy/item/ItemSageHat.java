@@ -5,13 +5,13 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ArmorMaterials;
+import net.minecraft.item.DyeableArmorItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Rarity;
 
-public class ItemSageHat extends ArmorItem
+public class ItemSageHat extends DyeableArmorItem
 {
 	public ItemSageHat(Settings settings)
 	{
