@@ -5,13 +5,13 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.lying.tricksy.entity.ai.BehaviourTree;
+import com.lying.tricksy.entity.ai.Whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemSageHat;
 
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -26,11 +26,14 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 
-public class EntityTricksyFox extends AnimalEntity
+public class EntityTricksyFox extends AnimalEntity implements ITricksyMob
 {
 	public static final TrackedData<Optional<UUID>> OWNER_UUID = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	public static final TrackedData<NbtCompound> WHITEBOARD_NBT = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
+	
+	protected BehaviourTree behaviourTree = new BehaviourTree();
+	protected LocalWhiteboard whiteboardLocal = new LocalWhiteboard();
 	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
@@ -64,7 +67,7 @@ public class EntityTricksyFox extends AnimalEntity
 		ItemStack heldStack = player.getStackInHand(hand);
 		if(heldStack.getItem() == TFItems.SAGE_HAT && !hasMaster())
 		{
-			setMaster(ItemSageHat.getMasterID(heldStack, player, true));
+			setMaster(ItemSageHat.getMasterID(heldStack, player));
 			return ActionResult.success(isClient);
 		}
 		
@@ -80,29 +83,17 @@ public class EntityTricksyFox extends AnimalEntity
 		return null;
 	}
 	
-	public boolean hasMaster() { return getMaster().isPresent(); }
-	
 	public Optional<UUID> getMaster() { return this.getDataTracker().get(OWNER_UUID); }
 	
-	/**
-	 * Returns true if the given entity should be recognised as this fox's master due to a matching Sage Hat
-	 * @param living
-	 */
-	public boolean isMaster(LivingEntity living)
-	{
-		if(!hasMaster())
-			return false;
-		
-		for(EquipmentSlot slot : new EquipmentSlot[] { EquipmentSlot.HEAD, EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND })
-		{
-			ItemStack hatStack = living.getEquippedStack(slot);
-			if(!hatStack.isEmpty() && hatStack.getItem() == TFItems.SAGE_HAT)
-				if(getMaster().get().equals(ItemSageHat.getMasterID(hatStack)))
-					return true;
-		}
-		
-		return false;
-	}
+	public void setMaster(@Nullable UUID uuidIn) { this.getDataTracker().set(OWNER_UUID, Optional.of(uuidIn)); }
 	
-	public void setMaster(UUID uuidIn) { this.getDataTracker().set(OWNER_UUID, Optional.of(uuidIn)); }
+	public BehaviourTree getBehaviourTree() { return this.behaviourTree; }
+	
+	public LocalWhiteboard getLocalWhiteboard() { return this.whiteboardLocal; }
+	
+	public void setBehaviourTree(NbtCompound data)
+	{
+		// TODO Implement behaviour tree generation from NBT data
+		getDataTracker().set(TREE_NBT, data);
+	}
 }

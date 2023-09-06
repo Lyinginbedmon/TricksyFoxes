@@ -17,7 +17,7 @@ public class TFEntityTypes
 	public static final EntityType<EntityTricksyFox> TRICKSY_FOX = Registry.register(
 			Registries.ENTITY_TYPE, 
 			new Identifier(Reference.ModInfo.MOD_ID, "tricksy_fox"), 
-			FabricEntityTypeBuilder.create(SpawnGroup.CREATURE, EntityTricksyFox::new).dimensions(EntityDimensions.fixed(0.75F, 1.7F)).build());
+			FabricEntityTypeBuilder.create(SpawnGroup.CREATURE, EntityTricksyFox::new).dimensions(EntityDimensions.fixed(0.75F, 1.5F)).build());
 	
 	public static void init()
 	{

@@ -1,4 +1,6 @@
 {
+	"itemGroup.tricksy.item_group": "Tricksy Foxes",
 	"item.tricksy.sage_hat": "Sage Hat",
-	"itemGroup.tricksy.item_group": "Tricksy Foxes"
+	"item.tricksy.fox_spawn_egg": "Tricksy Fox Spawn Egg",
+	"entity.tricksy.tricksy_fox": "Tricksy Fox"
 }
