@@ -1,0 +1,61 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_bottle_prescience": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "tricksy:bottle_prescience"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_lead": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:lead"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_periapt_prescience": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "tricksy:periapt_prescience"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "tricksy:periapt_prescience"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_bottle_prescience",
+      "has_lead",
+      "has_periapt_prescience",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "tricksy:periapt_prescience"
+    ]
+  },
+  "sends_telemetry_event": false
+}

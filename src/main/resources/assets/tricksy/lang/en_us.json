@@ -2,5 +2,9 @@
 	"itemGroup.tricksy.item_group": "Tricksy Foxes",
 	"item.tricksy.sage_hat": "Sage Hat",
 	"item.tricksy.fox_spawn_egg": "Tricksy Fox Spawn Egg",
-	"entity.tricksy.tricksy_fox": "Tricksy Fox"
+	"item.tricksy.periapt_prescience": "Periapt O' Prescience",
+	"block.tricksy.bottle_prescience": "Bottle O' Prescience",
+	"entity.tricksy.tricksy_fox": "Tricksy Fox",
+	"entity.tricksy.tricksy_fox.master_set": "%s will now obey the wielder of this hat",
+	"entity.tricksy.tricksy_fox.master_set.fail": "%s already has a master!"
 }

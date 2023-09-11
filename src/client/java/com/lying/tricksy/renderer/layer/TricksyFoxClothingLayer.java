@@ -1,10 +1,12 @@
-package com.lying.tricksy.client.renderer.layer;
+package com.lying.tricksy.renderer.layer;
 
-import com.lying.tricksy.client.TFModelParts;
-import com.lying.tricksy.client.model.entity.ModelTricksyFox;
+import com.lying.tricksy.TFModelParts;
 import com.lying.tricksy.entity.EntityTricksyFox;
+import com.lying.tricksy.model.entity.ModelTricksyFox;
 import com.lying.tricksy.reference.Reference;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
@@ -16,6 +18,7 @@ import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 
+@Environment(EnvType.CLIENT)
 public class TricksyFoxClothingLayer extends FeatureRenderer<EntityTricksyFox, ModelTricksyFox<EntityTricksyFox>>
 {
 	public static final Identifier TEXTURE_CLOTHING = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_fox.png");

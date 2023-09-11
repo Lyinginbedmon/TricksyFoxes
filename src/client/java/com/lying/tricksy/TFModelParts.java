@@ -1,13 +1,16 @@
-package com.lying.tricksy.client;
+package com.lying.tricksy;
 
-import com.lying.tricksy.client.model.armor.ModelSageHat;
-import com.lying.tricksy.client.model.entity.ModelTricksyFox;
+import com.lying.tricksy.model.armor.ModelSageHat;
+import com.lying.tricksy.model.entity.ModelTricksyFox;
 import com.lying.tricksy.reference.Reference;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.util.Identifier;
 
+@Environment(EnvType.CLIENT)
 public class TFModelParts
 {
 	public static EntityModelLayer TRICKSY_FOX	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_fox"), "main");

@@ -6,12 +6,15 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.BehaviourTree;
-import com.lying.tricksy.entity.ai.Whiteboard.*;
+import com.lying.tricksy.entity.ai.Whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.Whiteboard.WorldWhiteboard;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemSageHat;
 
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 
@@ -35,6 +38,9 @@ public interface ITricksyMob
 	 */
 	public default boolean isMaster(LivingEntity living)
 	{
+		if(living.getType() == EntityType.PLAYER && ((PlayerEntity)living).isCreative())
+			return true;
+		
 		if(!hasMaster())
 			return false;
 		

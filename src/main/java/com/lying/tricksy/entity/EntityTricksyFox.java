@@ -11,6 +11,7 @@ import com.lying.tricksy.entity.ai.Whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemSageHat;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.VariantHolder;
@@ -25,12 +26,15 @@ import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.entity.passive.FoxEntity.Type;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.DyeItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
@@ -86,12 +90,53 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, Varia
 	@SuppressWarnings("resource")
 	public ActionResult interactMob(PlayerEntity player, Hand hand)
 	{
-		boolean isClient = getEntityWorld().isClient;
+		boolean isClient = player.getWorld().isClient;
 		ItemStack heldStack = player.getStackInHand(hand);
-		if(heldStack.getItem() == TFItems.SAGE_HAT && !hasMaster())
+		if(heldStack.getItem() == TFItems.SAGE_HAT)
 		{
-			setMaster(ItemSageHat.getMasterID(heldStack, player));
-			return ActionResult.success(isClient);
+			if(!hasMaster() || isMaster(player))
+			{
+				setMaster(ItemSageHat.getMasterID(heldStack, player));
+				player.sendMessage(Text.translatable("entity."+Reference.ModInfo.MOD_ID+".tricksy_fox.master_set", getDisplayName()), true);
+				return ActionResult.success(isClient);
+			}
+			else
+				player.sendMessage(Text.translatable("entity."+Reference.ModInfo.MOD_ID+".tricksy_fox.master_set.fail", getDisplayName()), true);
+		}
+		else if(isMaster(player))
+		{
+			if(heldStack.getItem() instanceof DyeItem)
+			{
+				if(!isClient)
+				{
+					float[] comp = ((DyeItem)heldStack.getItem()).getColor().getColorComponents();
+					int r = (int)(comp[0] * 255);
+					int g = (int)(comp[1] * 255);
+					int b = (int)(comp[2] * 255);
+					
+					// Recompose original decimal value of the dye colour from derived RGB values
+					int col = r;
+					col = (col << 8) + g;
+					col = (col << 8) + b;
+					
+					getDataTracker().set(COLOR, OptionalInt.of(col));
+					
+					if(!player.isCreative())
+						heldStack.decrement(1);
+				}
+				return ActionResult.success(isClient);
+			}
+			else if(heldStack.getItem() == Items.WET_SPONGE)
+			{
+				if(!isClient)
+					getDataTracker().set(COLOR, OptionalInt.empty());
+				return ActionResult.success(isClient);
+			}
+			else
+			{
+				// TODO Open fox UI
+				return ActionResult.success(isClient);
+			}
 		}
 		
 		return super.interactMob(player, hand);

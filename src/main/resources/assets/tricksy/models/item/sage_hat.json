@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+      "layer0": "tricksy:items/sage_hat",
+      "layer1": "tricksy:items/sage_hat_overlay"
+  }
+}

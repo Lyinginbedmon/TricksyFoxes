@@ -1,9 +1,11 @@
-package com.lying.tricksy.client.renderer.layer;
+package com.lying.tricksy.renderer.layer;
 
-import com.lying.tricksy.client.TFModelParts;
-import com.lying.tricksy.client.model.armor.ModelSageHat;
+import com.lying.tricksy.TFModelParts;
+import com.lying.tricksy.model.armor.ModelSageHat;
 import com.lying.tricksy.reference.Reference;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
@@ -19,6 +21,7 @@ import net.minecraft.item.DyeableItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 
+@Environment(EnvType.CLIENT)
 public class SageHatRenderer implements ArmorRenderer
 {
 	private static final Identifier TEXTURE_0 = new Identifier(Reference.ModInfo.MOD_ID, "textures/armor/sage_hat_0.png");

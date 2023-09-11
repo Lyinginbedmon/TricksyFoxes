@@ -1,0 +1,61 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_amethyst_shard": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:amethyst_shard"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_bottle_prescience": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "tricksy:bottle_prescience"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_experience_bottle": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:experience_bottle"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "tricksy:bottle_prescience"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_experience_bottle",
+      "has_amethyst_shard",
+      "has_bottle_prescience",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "tricksy:bottle_prescience"
+    ]
+  },
+  "sends_telemetry_event": false
+}
