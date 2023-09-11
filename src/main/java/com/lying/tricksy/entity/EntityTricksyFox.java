@@ -1,6 +1,7 @@
 package com.lying.tricksy.entity;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
@@ -26,6 +27,7 @@ import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -36,6 +38,7 @@ import net.minecraft.world.World;
 public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, VariantHolder<Type>
 {
 	private static final TrackedData<Integer> TYPE = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
+	private static final TrackedData<OptionalInt> COLOR = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.OPTIONAL_INT);
 	public static final TrackedData<Optional<UUID>> OWNER_UUID = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	public static final TrackedData<NbtCompound> WHITEBOARD_NBT = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
@@ -53,6 +56,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, Varia
 		super.initDataTracker();
 		this.getDataTracker().startTracking(TYPE, 0);
 		this.getDataTracker().startTracking(OWNER_UUID, Optional.empty());
+		this.getDataTracker().startTracking(COLOR, OptionalInt.empty());
 	}
 	
 	protected void initGoals()
@@ -64,7 +68,9 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, Varia
 	public void readCustomDataFromNbt(NbtCompound data)
 	{
 		super.readCustomDataFromNbt(data);
-		if(data.contains("MasterID"))
+		if(data.contains("Color", NbtElement.INT_TYPE))
+			getDataTracker().set(COLOR, OptionalInt.of(data.getInt("Color")));
+		if(data.contains("MasterID", NbtElement.INT_ARRAY_TYPE))
 			setMaster(data.getUuid("MasterID"));
 		setVariant(Type.byName(data.getString("Type")));
 	}
@@ -72,8 +78,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, Varia
 	public void writeCustomDataToNbt(NbtCompound data)
 	{
 		super.writeCustomDataToNbt(data);
-		if(hasMaster())
-			data.putUuid("MasterID", getMaster().get());
+		getDataTracker().get(COLOR).ifPresent((val) -> data.putInt("Color", val));
+		getDataTracker().get(OWNER_UUID).ifPresent((uuid) -> data.putUuid("MasterID", uuid));
 		data.putString("Type", this.getVariant().asString());
 	}
 	
@@ -125,6 +131,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, Varia
 	public void setVariant(Type type) { this.dataTracker.set(TYPE, type.getId()); }
 	
 	public Type getVariant() { return Type.fromId(this.dataTracker.get(TYPE)); }
+	
+	public int getColor() { return getDataTracker().get(COLOR).isPresent() ? getDataTracker().get(COLOR).getAsInt() : 12779520; }
 	
 	@Nullable
 	protected SoundEvent getAmbientSound()

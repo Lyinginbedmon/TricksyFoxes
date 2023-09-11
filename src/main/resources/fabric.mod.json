@@ -23,11 +23,19 @@
 		],
 		"client": [
 			"com.lying.tricksy.TricksyFoxesClient"
+		],
+		"cardinal-components": [
+			"com.lying.tricksy.init.TFComponents"
 		]
 	},
 	"mixins": [
 		"tricksy.mixins.json"
 	],
+	"custom": {
+		"cardinal-components": [
+			"tricksy:tricksy_tracking"
+		]
+	},
 	"depends": {
 		"fabricloader": ">=0.14.21",
 		"minecraft": "~1.20.1",

@@ -22,39 +22,38 @@ public class ModelTricksyFox<T extends LivingEntity> extends BipedEntityModel<T>
 		this.tail = this.body.getChild(EntityModelPartNames.TAIL);
 	}
 	
-    public static TexturedModelData getTexturedModelData()
+	public static TexturedModelData getMainModel() { return getTexturedModelData(0F); }
+	
+	public static TexturedModelData getOuterModel() { return getTexturedModelData(0.5F); }
+	
+    public static TexturedModelData getTexturedModelData(float inflation)
     {
-    	Dilation outerwear = new Dilation(0.5F);
+		Dilation dilation = new Dilation(inflation);
 		ModelData meshdefinition = new ModelData();
 		ModelPartData root = meshdefinition.getRoot();
 		
-		root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create().uv(0, 0).cuboid(-4.0F, -6.0F, -3.0F, 8.0F, 6.0F, 6.0F, Dilation.NONE)
-			.uv(29, 0).cuboid(2.0F, -8.0F, -2.0F, 2.0F, 2.0F, 1.0F, Dilation.NONE)
-			.uv(22, 0).cuboid(-4.0F, -8.0F, -2.0F, 2.0F, 2.0F, 1.0F, Dilation.NONE)
-			.uv(0, 12).cuboid(-2.0F, -2.01F, -6.0F, 4.0F, 2.0F, 3.0F, Dilation.NONE), ModelTransform.pivot(0.0F, 7.0F, -2.0F));
+		root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create().uv(1, 5).cuboid(-4.0F, -6.0F, -3.0F, 8.0F, 6.0F, 6.0F, dilation)
+			.uv(15, 1).cuboid(2.0F, -8.0F, -2.0F, 2.0F, 2.0F, 1.0F, dilation)
+			.uv(8, 1).cuboid(-4.0F, -8.0F, -2.0F, 2.0F, 2.0F, 1.0F, dilation)
+			.uv(6, 18).cuboid(-2.0F, -2.01F, -6.0F, 4.0F, 2.0F, 3.0F, dilation), ModelTransform.pivot(0.0F, 7.0F, -2.0F));
 		
 		root.addChild(EntityModelPartNames.HAT, ModelPartBuilder.create(), ModelTransform.NONE);
 		
-		ModelPartData body = root.addChild(EntityModelPartNames.BODY, ModelPartBuilder.create().uv(8, 12).cuboid(-3.0F, -8.999F, -3.5F, 6.0F, 11.0F, 6.0F, Dilation.NONE)
-			.uv(8, 29).cuboid(-3.0F, -8.999F, -3.5F, 6.0F, 11.0F, 6.0F, outerwear), ModelTransform.pivot(0.0F, 16.0F, 0.0F));
+		ModelPartData body = root.addChild(EntityModelPartNames.BODY, ModelPartBuilder.create().uv(24, 15).cuboid(-3.0F, -8.999F, -3.5F, 6.0F, 11.0F, 6.0F, dilation), ModelTransform.pivot(0.0F, 16.0F, 0.0F));
 		
 		ModelPartData tail = body.addChild("tail", ModelPartBuilder.create(), ModelTransform.of(0.0F, -1.0F, 2.5F, 0.1745F, 0.0F, 0.0F));
-			tail.addChild("tail1", ModelPartBuilder.create().uv(30, 0).mirrored().cuboid(-3.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, Dilation.NONE), ModelTransform.of(0.0F, 0.0F, 0.0F, 1.5708F, -0.6109F, 0.0F));
-			tail.addChild("tail0", ModelPartBuilder.create().uv(30, 0).cuboid(-1.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, Dilation.NONE), ModelTransform.of(0.0F, 0.0F, 0.0F, 1.5708F, 0.6109F, 0.0F));
+			tail.addChild("tail1", ModelPartBuilder.create().uv(30, 0).mirrored().cuboid(-3.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.0F, 0.0F, 1.5708F, -0.6109F, 0.0F));
+			tail.addChild("tail0", ModelPartBuilder.create().uv(30, 0).cuboid(-1.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.0F, 0.0F, 1.5708F, 0.6109F, 0.0F));
 		
-		root.addChild(EntityModelPartNames.LEFT_LEG, ModelPartBuilder.create().uv(0, 26).cuboid(-2.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F, Dilation.NONE)
-			.uv(40, 14).cuboid(-2.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F, outerwear), ModelTransform.pivot(-1.0F, 18.0F, 0.0F));
+		root.addChild(EntityModelPartNames.LEFT_LEG, ModelPartBuilder.create().uv(13, 24).cuboid(-2.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(-1.0F, 18.0F, 0.0F));
 		
-		root.addChild(EntityModelPartNames.RIGHT_LEG, ModelPartBuilder.create().uv(32, 26).cuboid(0.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F, Dilation.NONE)
-			.uv(40, 22).cuboid(0.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F, outerwear), ModelTransform.pivot(1.0F, 18.0F, 0.0F));
+		root.addChild(EntityModelPartNames.RIGHT_LEG, ModelPartBuilder.create().uv(13, 24).mirrored().cuboid(0.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(1.0F, 18.0F, 0.0F));
 		
-		root.addChild(EntityModelPartNames.LEFT_ARM, ModelPartBuilder.create().uv(0, 18).cuboid(-2.0F, -1.0F, -1.0F, 2.0F, 6.0F, 2.0F, Dilation.NONE)
-			.uv(40, 30).cuboid(-2.0F, -1.0F, -1.0F, 2.0F, 6.0F, 2.0F, outerwear), ModelTransform.pivot(-3.0F, 10.0F, 0.0F));
+		root.addChild(EntityModelPartNames.LEFT_ARM, ModelPartBuilder.create().uv(4, 24).mirrored().cuboid(-2.0F, -1.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(-3.0F, 10.0F, 0.0F));
 		
-		root.addChild(EntityModelPartNames.RIGHT_ARM, ModelPartBuilder.create().uv(32, 18).cuboid(0.0F, -1.0F, -1.0F, 2.0F, 6.0F, 2.0F, Dilation.NONE)
-			.uv(40, 38).cuboid(0.0F, -1.0F, -1.0F, 2.0F, 6.0F, 2.0F, outerwear), ModelTransform.pivot(3.0F, 10.0F, 0.0F));
+		root.addChild(EntityModelPartNames.RIGHT_ARM, ModelPartBuilder.create().uv(4, 24).cuboid(0.0F, -1.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(3.0F, 10.0F, 0.0F));
 		
-		return TexturedModelData.of(meshdefinition, 48, 48);
+		return TexturedModelData.of(meshdefinition, 48, 32);
 	}
     
     public void setAngles(T livingEntity, float limbSwing, float limbSwingAmount, float ageInTicks, float headYaw, float headPitch)

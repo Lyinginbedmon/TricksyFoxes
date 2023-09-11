@@ -19,9 +19,32 @@ public abstract class TreeNode
 	@NotNull
 	private final UUID nodeID;
 	
+	/**
+	 * TODO NODE TYPES
+	 * Nodes are divided by a NodeType which contains a subset of variants to select from
+	 * Variants may have additional options to choose, as well as different input requirements
+	 * 
+	 * Root	- The initial node, always present, and has no parent (Necessary? Why not just allow a control flow node?)
+	 * Control Flow	- Executes child nodes in particular ways
+	 * 		Selector	- Executes the first node that does not return failure
+	 * 		Sequential	- Executes each node one after the other until end or one returns failure
+	 * 		Reactive	- Executes all nodes until any return failure or all return success
+	 * Condition	- Monitors values and returns success or failure based on them, may accept object references
+	 * Decorator	- Alters the result or modifies the operation of a singular child node
+	 * 		Force failure	- Always returns failure
+	 * 		Force success	- Always returns success
+	 * 		Inverter		- Returns the opposite of the child node (failure = success, success = failure, running unchanged)
+	 * 		Repeat			- Runs the child N times or until it fails
+	 * 		Retry			- Runs the child N times or until it succeeds
+	 * 		Delay			- Runs the child after N ticks
+	 * Leaf	- Performs an action and has no child nodes
+	 * 		Action	- Performs a base singular action from a predefined set
+	 * 		SubTree	- Performs a predefined complex action that would otherwise necessitate multiple nodes, such as melee combat
+	 */
+	
 	/** The result returned when this node was last ticked */
 	@NotNull
-	protected Result lastResult = Result.READY;
+	protected Result lastResult = Result.FAILURE;
 	
 	@Nullable
 	private TreeNode parent = null;
@@ -73,7 +96,6 @@ public abstract class TreeNode
 	
 	public static enum Result
 	{
-		READY,
 		RUNNING,
 		SUCCESS,
 		FAILURE;

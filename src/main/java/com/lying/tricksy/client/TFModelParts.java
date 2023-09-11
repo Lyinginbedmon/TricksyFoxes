@@ -11,12 +11,14 @@ import net.minecraft.util.Identifier;
 public class TFModelParts
 {
 	public static EntityModelLayer TRICKSY_FOX	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_fox"), "main");
+	public static EntityModelLayer TRICKSY_FOX_CLOTHING	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_fox"), "clothing");
 	
 	public static EntityModelLayer SAGE_HAT	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "sage_hat"), "main");
 	
 	public static void init()
 	{
-		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_FOX, ModelTricksyFox::getTexturedModelData);
+		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_FOX, ModelTricksyFox::getMainModel);
+		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_FOX_CLOTHING, ModelTricksyFox::getOuterModel);
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.SAGE_HAT, ModelSageHat::getTexturedModelData);
 	}
 }
