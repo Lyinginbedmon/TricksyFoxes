@@ -5,11 +5,14 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.Whiteboard.Global;
+import com.lying.tricksy.entity.ai.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.node.ConditionNode;
 import com.lying.tricksy.entity.ai.node.ControlFlowNode;
 import com.lying.tricksy.entity.ai.node.DecoratorNode;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
+import com.lying.tricksy.init.TFNodeTypes;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -20,26 +23,22 @@ import net.minecraft.nbt.NbtCompound;
  */
 public class BehaviourTree
 {
+	/** Default behaviour tree applied on tricksy mob startup before being overridden by NBT */
+	private static final TreeNode<?> INITIAL_TREE = TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), new NbtCompound()).setSubType(ControlFlowNode.VARIANT_SEQUENCE)
+			.addChild(DecoratorNode.inverter(UUID.randomUUID()).addChild(ConditionNode.masterNearby(UUID.randomUUID())))
+			.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), new NbtCompound()).setSubType(LeafNode.VARIANT_GOTO));
+	
 	@Nullable
 	private final TreeNode<?> root;
+	
+	public BehaviourTree() { this(INITIAL_TREE); }
 	
 	public BehaviourTree(@Nullable TreeNode<?> rootIn)
 	{
 		root = rootIn;
 	}
 	
-	public BehaviourTree()
-	{
-		TreeNode<?> test = new ControlFlowNode(UUID.randomUUID());
-		test.addChild(DecoratorNode.inverter(UUID.randomUUID()).addChild(ConditionNode.isPlayerNearby(UUID.randomUUID(), 10D)));
-		test.addChild(ConditionNode.isPlayerNearby(UUID.randomUUID(), 32D));
-		test.addChild(new LeafNode(UUID.randomUUID()));
-		
-		NbtCompound storage = test.write(new NbtCompound());
-		root = TreeNode.create(storage);
-	}
-	
-	public <T extends PathAwareEntity & ITricksyMob> void update(T tricksy, Whiteboard local, Whiteboard global)
+	public <T extends PathAwareEntity & ITricksyMob<?>> void update(T tricksy, Local<T> local, Global global)
 	{
 		if(root != null)
 			root.tick(tricksy, local, global);

@@ -13,7 +13,8 @@ import org.jetbrains.annotations.NotNull;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.Whiteboard;
+import com.lying.tricksy.entity.ai.Whiteboard.Global;
+import com.lying.tricksy.entity.ai.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.reference.Reference;
 
@@ -28,7 +29,7 @@ public class NodeType<M extends TreeNode<?>>
 	public static final Identifier DUMMY_ID = new Identifier(Reference.ModInfo.MOD_ID, "dummy");
 	private final NodeSubType<M> dummy = new NodeSubType<M>(DUMMY_ID, new NodeTickHandler<M>()
 	{
-		public <T extends PathAwareEntity & ITricksyMob> @NotNull Result doTick(T tricksy, Whiteboard local, Whiteboard global, M parent)
+		public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, M parent)
 		{
 			return Result.FAILURE;
 		}

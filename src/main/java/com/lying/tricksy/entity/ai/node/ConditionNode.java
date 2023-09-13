@@ -7,27 +7,27 @@ import org.jetbrains.annotations.NotNull;
 
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.Whiteboard;
+import com.lying.tricksy.entity.ai.Whiteboard.Global;
+import com.lying.tricksy.entity.ai.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.WhiteboardObj;
 import com.lying.tricksy.init.TFNodeTypes;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.world.World;
+import net.minecraft.util.Identifier;
 
 public class ConditionNode extends TreeNode<ConditionNode>
 {
+	public static final Identifier VARIANT_HAS_MASTER = new Identifier(Reference.ModInfo.MOD_ID, "has_master");
+	public static final Identifier VARIANT_MASTER_NEARBY = new Identifier(Reference.ModInfo.MOD_ID, "master_nearby");
+	public static final Identifier VARIANT_MASTER_PRESENT = new Identifier(Reference.ModInfo.MOD_ID, "master_present");
+	
 	private double searchRange = 8D;
 	
 	public ConditionNode(UUID uuidIn)
 	{
 		super(TFNodeTypes.CONDITION, uuidIn);
-	}
-	
-	protected <T extends PathAwareEntity & ITricksyMob> @NotNull Result doTick(T tricksy, Whiteboard local, Whiteboard global)
-	{
-		World world = tricksy.getWorld();
-		PlayerEntity player = world.getClosestPlayer(tricksy, searchRange);
-		return player == null ? Result.FAILURE : Result.SUCCESS;
 	}
 	
 	protected NbtCompound writeToNbt(NbtCompound data)
@@ -43,15 +43,40 @@ public class ConditionNode extends TreeNode<ConditionNode>
 		return node;
 	}
 	
-	public static ConditionNode isPlayerNearby(UUID uuidIn, double range)
-	{
-		ConditionNode node = new ConditionNode(UUID.randomUUID());
-		node.searchRange = range;
-		return node;
-	}
+	public static ConditionNode hasMaster(UUID uuid) { return (ConditionNode)TFNodeTypes.CONDITION.create(uuid, new NbtCompound()).setSubType(VARIANT_HAS_MASTER); }
+	public static ConditionNode masterPresent(UUID uuid) { return (ConditionNode)TFNodeTypes.CONDITION.create(uuid, new NbtCompound()).setSubType(VARIANT_MASTER_PRESENT); }
+	public static ConditionNode masterNearby(UUID uuid) { return (ConditionNode)TFNodeTypes.CONDITION.create(uuid, new NbtCompound()).setSubType(VARIANT_MASTER_NEARBY); }
 	
 	public static void populateSubTypes(Collection<NodeSubType<ConditionNode>> set)
 	{
-		
+		set.add(new NodeSubType<ConditionNode>(VARIANT_HAS_MASTER, new NodeTickHandler<ConditionNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			{
+				return tricksy.hasMaster() ? Result.SUCCESS : Result.FAILURE;
+			}
+		}));
+		set.add(new NodeSubType<ConditionNode>(VARIANT_MASTER_NEARBY, new NodeTickHandler<ConditionNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			{
+				if(!tricksy.hasMaster())
+					return Result.FAILURE;
+				WhiteboardObj master = Whiteboard.get(Whiteboard.Local.NEAREST_MASTER, local, global);
+				if(master.isEmpty())
+					return Result.FAILURE;
+				return master.asEntity().distanceTo(tricksy) < 16D ? Result.SUCCESS : Result.FAILURE;
+			}
+		}));
+		set.add(new NodeSubType<ConditionNode>(VARIANT_MASTER_PRESENT, new NodeTickHandler<ConditionNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			{
+				if(!tricksy.hasMaster())
+					return Result.FAILURE;
+				WhiteboardObj master = Whiteboard.get(Whiteboard.Local.NEAREST_MASTER, local, global);
+				return master.isEmpty() ? Result.FAILURE : Result.SUCCESS;
+			}
+		}));
 	}
 }

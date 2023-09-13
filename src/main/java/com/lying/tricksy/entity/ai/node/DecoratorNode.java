@@ -6,7 +6,8 @@ import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.Whiteboard;
+import com.lying.tricksy.entity.ai.Whiteboard.Global;
+import com.lying.tricksy.entity.ai.Whiteboard.Local;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.reference.Reference;
 
@@ -63,7 +64,7 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 	{
 		return new NodeTickHandler<DecoratorNode>()
 		{
-			public <T extends PathAwareEntity & ITricksyMob> @NotNull Result doTick(T tricksy, Whiteboard local, Whiteboard global, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
 			{
 				DecoratorNode decorator = (DecoratorNode)parent;
 				if(decorator.ticks-- <= 0)
@@ -80,9 +81,9 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 	{
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_INVERTER, new NodeTickHandler<DecoratorNode>()
 		{
-			public <T extends PathAwareEntity & ITricksyMob> @NotNull Result doTick(T tricksy, Whiteboard local, Whiteboard global, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
 			{
-				switch(((DecoratorNode)parent).child().tick(tricksy, local, global))
+				switch(parent.child().tick(tricksy, local, global))
 				{
 					case FAILURE:
 						return Result.SUCCESS;

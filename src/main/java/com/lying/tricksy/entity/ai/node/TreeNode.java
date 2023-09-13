@@ -9,7 +9,8 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.Whiteboard;
+import com.lying.tricksy.entity.ai.Whiteboard.Global;
+import com.lying.tricksy.entity.ai.Whiteboard.Local;
 import com.lying.tricksy.init.TFNodeTypes;
 
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -37,6 +38,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** The result returned when this node was last ticked */
 	@NotNull
 	protected Result lastResult = Result.FAILURE;
+	protected int ticksRunning = 0;
 	
 	@Nullable
 	private TreeNode<?> parent = null;
@@ -57,10 +59,15 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	public final TreeNode<N> setSubType(Identifier typeIn) { this.subType = typeIn; return this; };
 	
 	@SuppressWarnings("unchecked")
-	public final <T extends PathAwareEntity & ITricksyMob> Result tick(T tricksy, Whiteboard local, Whiteboard global)
+	public final <T extends PathAwareEntity & ITricksyMob<?>> Result tick(T tricksy, Local<T> local, Global global)
 	{
 		if(!isRunnable())
 			return this.lastResult = Result.FAILURE;
+		
+		if(this.lastResult.isEnd())
+			this.ticksRunning = 0;
+		else
+			this.ticksRunning++;
 		
 		@Nullable
 		Result result = null;

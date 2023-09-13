@@ -7,7 +7,8 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.BehaviourTree;
-import com.lying.tricksy.entity.ai.Whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.Whiteboard;
+import com.lying.tricksy.entity.ai.Whiteboard.Local;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemSageHat;
@@ -39,16 +40,15 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 
-public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, VariantHolder<Type>
+public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<EntityTricksyFox>, VariantHolder<Type>
 {
 	private static final TrackedData<Integer> TYPE = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<OptionalInt> COLOR = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.OPTIONAL_INT);
 	public static final TrackedData<Optional<UUID>> OWNER_UUID = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
-	public static final TrackedData<NbtCompound> WHITEBOARD_NBT = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	
 	protected BehaviourTree behaviourTree = new BehaviourTree();
-	protected LocalWhiteboard whiteboardLocal = new LocalWhiteboard();
+	protected Whiteboard.Local<EntityTricksyFox> boardLocal = new Local<EntityTricksyFox>(this);
 	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
@@ -77,6 +77,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, Varia
 		if(data.contains("MasterID", NbtElement.INT_ARRAY_TYPE))
 			setMaster(data.getUuid("MasterID"));
 		setVariant(Type.byName(data.getString("Type")));
+		
+		boardLocal.readFromNbt(data.getCompound("Whiteboard"));
 //		setBehaviourTree(data.getCompound("BehaviourTree"));
 	}
 	
@@ -86,6 +88,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, Varia
 		getDataTracker().get(COLOR).ifPresent((val) -> data.putInt("Color", val));
 		getDataTracker().get(OWNER_UUID).ifPresent((uuid) -> data.putUuid("MasterID", uuid));
 		data.putString("Type", this.getVariant().asString());
+		
+		data.put("Whiteboard", boardLocal.writeToNbt(new NbtCompound()));
 		data.put("BehaviourTree", this.behaviourTree.storeInNbt());
 	}
 	
@@ -175,7 +179,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, Varia
 	
 	public BehaviourTree getBehaviourTree() { return this.behaviourTree; }
 	
-	public LocalWhiteboard getLocalWhiteboard() { return this.whiteboardLocal; }
+	public Local<EntityTricksyFox> getLocalWhiteboard() { return this.boardLocal; }
 	
 	public void setBehaviourTree(NbtCompound data)
 	{

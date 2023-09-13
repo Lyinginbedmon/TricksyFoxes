@@ -52,10 +52,15 @@ public class TFNodeTypes
 	public static void init()
 	{
 		TricksyFoxes.LOGGER.info("Registered "+TYPES.size()+" behaviour tree node types");
+		int tally = 0;
+		for(NodeType<?> type : TYPES.values())
+			tally += Math.max(1, type.subTypes().size());
+		TricksyFoxes.LOGGER.info(" "+tally+" available node behaviours");
+		
 		TYPES.forEach((name,type) -> 
 		{
-			TricksyFoxes.LOGGER.info("# "+name.toString());
-			type.subTypes().forEach((sub) -> TricksyFoxes.LOGGER.info("# - "+sub.getRegistryName().toString()));
+			TricksyFoxes.LOGGER.info(" # "+name.toString());
+			type.subTypes().forEach((sub) -> TricksyFoxes.LOGGER.info(" # - "+sub.getRegistryName().toString()));
 		});
 	}
 }

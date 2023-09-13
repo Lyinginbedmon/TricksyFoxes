@@ -4,7 +4,8 @@ import java.util.Collection;
 import java.util.UUID;
 
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.Whiteboard;
+import com.lying.tricksy.entity.ai.Whiteboard.Global;
+import com.lying.tricksy.entity.ai.Whiteboard.Local;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.reference.Reference;
 
@@ -38,7 +39,7 @@ public class ControlFlowNode extends TreeNode<ControlFlowNode>
 	{
 		set.add(new NodeSubType<ControlFlowNode>(VARIANT_SEQUENCE, new NodeTickHandler<ControlFlowNode>() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob> Result doTick(T tricksy, Whiteboard local, Whiteboard global, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, Local<T> local, Global global, ControlFlowNode parent)
 			{
 				if(!parent.children().isEmpty())
 				{
@@ -57,6 +58,38 @@ public class ControlFlowNode extends TreeNode<ControlFlowNode>
 						case RUNNING:
 						default:
 							return Result.RUNNING;
+					}
+				}
+				
+				return Result.SUCCESS;
+			}
+		}));
+		set.add(new NodeSubType<ControlFlowNode>(VARIANT_SELECTOR, new NodeTickHandler<ControlFlowNode>() 
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, Local<T> local, Global global, ControlFlowNode parent)
+			{
+				if(!parent.children().isEmpty())
+				{
+					if(parent.isRunning())
+					{
+						// Find first viable child node
+						for(int i=0; i<parent.children().size(); i++)
+						{
+							TreeNode<?> child = parent.children().get(i);
+							Result result = child.tick(tricksy, local, global);
+							if(result != Result.FAILURE)
+							{
+								parent.index = i;
+								return result;
+							}
+						}
+						return Result.FAILURE;
+					}
+					else
+					{
+						// Tick indexed node
+						TreeNode<?> child = parent.children().get(parent.index);
+						return child.tick(tricksy, local, global);
 					}
 				}
 				
