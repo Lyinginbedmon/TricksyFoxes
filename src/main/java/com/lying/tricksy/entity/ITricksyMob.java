@@ -14,6 +14,7 @@ import com.lying.tricksy.item.ItemSageHat;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -61,8 +62,11 @@ public interface ITricksyMob
 	/** Returns the local whiteboard of this mob. */
 	public LocalWhiteboard getLocalWhiteboard();
 	
-	public static <T extends LivingEntity & ITricksyMob> void updateBehaviourTree(T tricksy)
+	public static <T extends PathAwareEntity & ITricksyMob> void updateBehaviourTree(T tricksy)
 	{
+		if(tricksy.getWorld().isClient())
+			return;
+		
 		// Update whiteboards
 		LocalWhiteboard local = tricksy.getLocalWhiteboard();
 		WorldWhiteboard global = null;

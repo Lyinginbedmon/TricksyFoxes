@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.lying.tricksy.item.ItemPresciencePeriapt;
 import com.lying.tricksy.item.ItemSageHat;
 import com.lying.tricksy.reference.Reference;
 
@@ -20,6 +21,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Rarity;
 
 public class TFItems
 {
@@ -28,10 +30,8 @@ public class TFItems
     public static final Item SAGE_HAT = register("sage_hat", new ItemSageHat(new FabricItemSettings()));
     public static final Item FOX_EGG = register("fox_spawn_egg", new SpawnEggItem(TFEntityTypes.TRICKSY_FOX, 13396256, 14005919, new FabricItemSettings()));
     
-    // Bottle O' Prescience
-    public static final Item PRESCIENCE_ITEM = register("bottle_prescience", new BlockItem(TFBlocks.PRESCIENCE, new FabricItemSettings()));
-    // Periapt O' Prescience
-    public static final Item PERIAPT = register("periapt_prescience", new Item(new FabricItemSettings()));
+    public static final Item PRESCIENCE_ITEM = register("bottle_prescience", new BlockItem(TFBlocks.PRESCIENCE, new FabricItemSettings().rarity(Rarity.RARE)));
+    public static final Item PERIAPT = register("periapt_prescience", new ItemPresciencePeriapt(new FabricItemSettings().rarity(Rarity.RARE)));
     
     public static final ItemGroup TRICKSY_GROUP = FabricItemGroup.builder().icon(() -> new ItemStack(SAGE_HAT)).displayName(Text.translatable("itemGroup."+Reference.ModInfo.MOD_ID+".item_group")).entries((ctx,entries) -> 
 	    {

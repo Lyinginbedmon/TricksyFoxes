@@ -1,6 +1,3 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-      "layer0": "tricksy:items/bottle_prescience"
-  }
+  "parent": "tricksy:block/bottle_prescience"
 }

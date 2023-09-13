@@ -77,6 +77,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, Varia
 		if(data.contains("MasterID", NbtElement.INT_ARRAY_TYPE))
 			setMaster(data.getUuid("MasterID"));
 		setVariant(Type.byName(data.getString("Type")));
+//		setBehaviourTree(data.getCompound("BehaviourTree"));
 	}
 	
 	public void writeCustomDataToNbt(NbtCompound data)
@@ -85,7 +86,10 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, Varia
 		getDataTracker().get(COLOR).ifPresent((val) -> data.putInt("Color", val));
 		getDataTracker().get(OWNER_UUID).ifPresent((uuid) -> data.putUuid("MasterID", uuid));
 		data.putString("Type", this.getVariant().asString());
+		data.put("BehaviourTree", this.behaviourTree.storeInNbt());
 	}
+	
+	public boolean isPersistent() { return true; }
 	
 	@SuppressWarnings("resource")
 	public ActionResult interactMob(PlayerEntity player, Hand hand)
@@ -142,6 +146,12 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, Varia
 		return super.interactMob(player, hand);
 	}
 	
+	public void tick()
+	{
+		super.tick();
+		ITricksyMob.updateBehaviourTree(this);
+	}
+	
 	@Nullable
 	public PassiveEntity createChild(ServerWorld arg0, PassiveEntity arg1)
 	{
@@ -169,8 +179,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob, Varia
 	
 	public void setBehaviourTree(NbtCompound data)
 	{
-		// TODO Implement behaviour tree generation from NBT data
 		getDataTracker().set(TREE_NBT, data);
+		behaviourTree = BehaviourTree.create(data);
 	}
 	
 	public void setVariant(Type type) { this.dataTracker.set(TYPE, type.getId()); }

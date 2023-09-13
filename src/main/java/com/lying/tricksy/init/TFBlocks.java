@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.lying.tricksy.block.BlockPrescience;
 import com.lying.tricksy.reference.Reference;
 
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
@@ -21,7 +22,7 @@ public class TFBlocks
 {
 	private static final Map<Identifier, Block> BLOCKS = new HashMap<>();
 	
-	public static final Block PRESCIENCE = register("bottle_prescience", new Block(FabricBlockSettings.create().luminance((state) -> 4).strength(0.3f).sounds(BlockSoundGroup.GLASS).nonOpaque().allowsSpawning(TFBlocks::never).solidBlock(TFBlocks::never).suffocates(TFBlocks::never).blockVision(TFBlocks::never)));
+	public static final Block PRESCIENCE = register("bottle_prescience", new BlockPrescience(FabricBlockSettings.create().luminance((state) -> 8).strength(0.3f).sounds(BlockSoundGroup.GLASS).nonOpaque().allowsSpawning(TFBlocks::never).solidBlock(TFBlocks::never).suffocates(TFBlocks::never).blockVision(TFBlocks::never)));
 	
 	private static Block register(String nameIn, Block blockIn)
 	{
