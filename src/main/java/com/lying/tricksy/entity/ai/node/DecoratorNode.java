@@ -6,8 +6,8 @@ import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.reference.Reference;
 

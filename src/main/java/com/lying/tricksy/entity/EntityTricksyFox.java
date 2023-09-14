@@ -7,8 +7,8 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.BehaviourTree;
-import com.lying.tricksy.entity.ai.Whiteboard;
-import com.lying.tricksy.entity.ai.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemSageHat;
@@ -48,7 +48,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	
 	protected BehaviourTree behaviourTree = new BehaviourTree();
-	protected Whiteboard.Local<EntityTricksyFox> boardLocal = new Local<EntityTricksyFox>(this);
+	@SuppressWarnings("unchecked")
+	protected Whiteboard.Local<EntityTricksyFox> boardLocal = (Local<EntityTricksyFox>)(new Local<EntityTricksyFox>(this)).build();
 	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{

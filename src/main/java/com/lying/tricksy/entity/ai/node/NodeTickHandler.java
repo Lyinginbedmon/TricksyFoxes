@@ -3,9 +3,9 @@ package com.lying.tricksy.entity.ai.node;
 import org.jetbrains.annotations.NotNull;
 
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 

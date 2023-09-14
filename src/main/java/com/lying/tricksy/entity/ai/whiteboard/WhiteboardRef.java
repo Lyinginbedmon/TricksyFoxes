@@ -1,23 +1,24 @@
-package com.lying.tricksy.entity.ai;
+package com.lying.tricksy.entity.ai.whiteboard;
 
-import com.lying.tricksy.entity.ai.Whiteboard.BoardType;
-import com.lying.tricksy.entity.ai.WhiteboardObj.ObjectType;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
+import com.lying.tricksy.init.TFObjType;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 public class WhiteboardRef
 {
 	private final String name;
 	private final BoardType onBoard;
-	private final ObjectType varType;
+	private final TFObjType<?> varType;
 	
 	/** True if this reference should never be cached */
 	private boolean recalcNotCache = false;
 	
 	private Text displayName;
 	
-	public WhiteboardRef(String nameIn, ObjectType typeIn, BoardType global)
+	public WhiteboardRef(String nameIn, TFObjType<?> typeIn, BoardType global)
 	{
 		this.name = nameIn;
 		this.displayName = Text.literal(nameIn);
@@ -35,7 +36,7 @@ public class WhiteboardRef
 	
 	public BoardType boardType() { return this.onBoard; }
 	
-	public ObjectType type() { return this.varType; }
+	public TFObjType<?> type() { return this.varType; }
 	
 	public boolean shouldRecalc() { return this.recalcNotCache; }
 	
@@ -49,7 +50,7 @@ public class WhiteboardRef
 	{
 		data.putString("Name", name);
 		data.putString("Board", onBoard.asString());
-		data.putString("Type", varType.asString());
+		data.putString("Type", varType.registryName().toString());
 		if(recalcNotCache)
 			data.putBoolean("Live", recalcNotCache);
 		return data;
@@ -59,7 +60,7 @@ public class WhiteboardRef
 	{
 		String name = data.getString("Name");
 		BoardType board = BoardType.fromString(data.getString("Board"));
-		ObjectType type = ObjectType.fromString(data.getString("Type"));
+		TFObjType<?> type = TFObjType.getType(new Identifier(data.getString("Type")));
 		WhiteboardRef ref = new WhiteboardRef(name, type, board);
 		if(data.contains("Live") && data.getBoolean("Live"))
 			ref.setRecalc();

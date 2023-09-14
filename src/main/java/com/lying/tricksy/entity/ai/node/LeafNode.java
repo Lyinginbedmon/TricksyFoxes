@@ -6,11 +6,12 @@ import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.Whiteboard;
-import com.lying.tricksy.entity.ai.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.Whiteboard.Local;
-import com.lying.tricksy.entity.ai.WhiteboardObj;
+import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFNodeTypes;
+import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.ai.pathing.EntityNavigation;
@@ -52,11 +53,11 @@ public class LeafNode extends TreeNode<LeafNode>
 				EntityNavigation navigator = tricksy.getNavigation();
 				if(!parent.isRunning())
 				{
-					WhiteboardObj master = Whiteboard.get(Whiteboard.Local.NEAREST_MASTER, local, global);
+					IWhiteboardObject<?> master = Whiteboard.get(Whiteboard.Local.NEAREST_MASTER, local, global);
 					if(master.isEmpty())
 						return Result.FAILURE;
 					
-					BlockPos dest = master.asBlockPos();
+					BlockPos dest = master.as(TFObjType.BLOCK).get();
 					if(navigator.findPathTo(dest, 20) == null)
 						return Result.FAILURE;
 					

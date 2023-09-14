@@ -6,11 +6,12 @@ import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.Whiteboard;
-import com.lying.tricksy.entity.ai.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.Whiteboard.Local;
-import com.lying.tricksy.entity.ai.WhiteboardObj;
+import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFNodeTypes;
+import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -23,24 +24,14 @@ public class ConditionNode extends TreeNode<ConditionNode>
 	public static final Identifier VARIANT_MASTER_NEARBY = new Identifier(Reference.ModInfo.MOD_ID, "master_nearby");
 	public static final Identifier VARIANT_MASTER_PRESENT = new Identifier(Reference.ModInfo.MOD_ID, "master_present");
 	
-	private double searchRange = 8D;
-	
 	public ConditionNode(UUID uuidIn)
 	{
 		super(TFNodeTypes.CONDITION, uuidIn);
 	}
 	
-	protected NbtCompound writeToNbt(NbtCompound data)
-	{
-		data.putDouble("Search", searchRange);
-		return data;
-	}
-	
 	public static ConditionNode fromData(UUID uuid, NbtCompound data)
 	{
-		ConditionNode node = new ConditionNode(uuid);
-		node.searchRange = data.getDouble("Search");
-		return node;
+		return new ConditionNode(uuid);
 	}
 	
 	public static ConditionNode hasMaster(UUID uuid) { return (ConditionNode)TFNodeTypes.CONDITION.create(uuid, new NbtCompound()).setSubType(VARIANT_HAS_MASTER); }
@@ -62,10 +53,10 @@ public class ConditionNode extends TreeNode<ConditionNode>
 			{
 				if(!tricksy.hasMaster())
 					return Result.FAILURE;
-				WhiteboardObj master = Whiteboard.get(Whiteboard.Local.NEAREST_MASTER, local, global);
+				IWhiteboardObject<?> master = Whiteboard.get(Whiteboard.Local.NEAREST_MASTER, local, global);
 				if(master.isEmpty())
 					return Result.FAILURE;
-				return master.asEntity().distanceTo(tricksy) < 16D ? Result.SUCCESS : Result.FAILURE;
+				return master.as(TFObjType.ENT).get().distanceTo(tricksy) < 16D ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 		set.add(new NodeSubType<ConditionNode>(VARIANT_MASTER_PRESENT, new NodeTickHandler<ConditionNode>()
@@ -74,7 +65,7 @@ public class ConditionNode extends TreeNode<ConditionNode>
 			{
 				if(!tricksy.hasMaster())
 					return Result.FAILURE;
-				WhiteboardObj master = Whiteboard.get(Whiteboard.Local.NEAREST_MASTER, local, global);
+				IWhiteboardObject<?> master = Whiteboard.get(Whiteboard.Local.NEAREST_MASTER, local, global);
 				return master.isEmpty() ? Result.FAILURE : Result.SUCCESS;
 			}
 		}));

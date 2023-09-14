@@ -5,13 +5,13 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.node.ConditionNode;
 import com.lying.tricksy.entity.ai.node.ControlFlowNode;
 import com.lying.tricksy.entity.ai.node.DecoratorNode;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFNodeTypes;
 
 import net.minecraft.entity.mob.PathAwareEntity;

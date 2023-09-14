@@ -9,8 +9,8 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFNodeTypes;
 
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -123,7 +123,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			}
 			
 			UUID uuid = data.contains("UUID", NbtElement.INT_ARRAY_TYPE) ? data.getUuid("UUID") : UUID.randomUUID();
-			TreeNode<?> parent = nodeType.create(uuid, data.getCompound("Data"));
+			TreeNode<?> parent = nodeType.create(uuid, data.contains("Data", NbtElement.COMPOUND_TYPE) ? data.getCompound("Data") : new NbtCompound());
 			if(parent == null)
 			{
 				TricksyFoxes.LOGGER.warn("Behaviour tree node failed to initialise! Type: "+nodeType.getRegistryName().toString());
@@ -156,7 +156,10 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			children().forEach((child) -> children.add(child.write(new NbtCompound())));
 			data.put("Children", children);
 		}
-		data.put("Data", writeToNbt(new NbtCompound()));
+		
+		NbtCompound storage = writeToNbt(new NbtCompound());
+		if(!storage.isEmpty())
+			data.put("Data", storage);
 		return data;
 	}
 	

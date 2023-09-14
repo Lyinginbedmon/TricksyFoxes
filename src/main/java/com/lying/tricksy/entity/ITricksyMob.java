@@ -6,8 +6,8 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.BehaviourTree;
-import com.lying.tricksy.entity.ai.Whiteboard;
-import com.lying.tricksy.entity.ai.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemSageHat;
 

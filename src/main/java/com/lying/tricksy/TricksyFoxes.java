@@ -8,6 +8,7 @@ import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFNodeTypes;
+import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.ServerBus;
 
@@ -24,6 +25,7 @@ public class TricksyFoxes implements ModInitializer
 		// Proceed with mild caution.
 		ServerBus.registerEventCallbacks();
 		
+		TFObjType.init();
 		TFNodeTypes.init();
 		TFBlocks.init();
 		TFItems.init();
