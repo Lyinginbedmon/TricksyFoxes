@@ -14,7 +14,7 @@ public class WhiteboardRef
 	private final TFObjType<?> varType;
 	
 	/** True if this reference should never be cached */
-	private boolean recalcNotCache = false;
+	private boolean noCache = false;
 	
 	private Text displayName;
 	
@@ -38,21 +38,22 @@ public class WhiteboardRef
 	
 	public TFObjType<?> type() { return this.varType; }
 	
-	public boolean shouldRecalc() { return this.recalcNotCache; }
+	/** True if this value should not be stored in cache memory */
+	public boolean uncached() { return this.noCache; }
 	
 	/**
 	 * Sets this reference to ignore the whiteboard cache and recalculate each time it is needed.<br>
 	 * This is most useful for values that change, like mob health or enemy position
 	 */
-	public WhiteboardRef setRecalc() { this.recalcNotCache = true; return this; }
+	public WhiteboardRef noCache() { this.noCache = true; return this; }
 	
 	public NbtCompound writeToNbt(NbtCompound data)
 	{
 		data.putString("Name", name);
 		data.putString("Board", onBoard.asString());
 		data.putString("Type", varType.registryName().toString());
-		if(recalcNotCache)
-			data.putBoolean("Live", recalcNotCache);
+		if(noCache)
+			data.putBoolean("Live", noCache);
 		return data;
 	}
 	
@@ -63,7 +64,7 @@ public class WhiteboardRef
 		TFObjType<?> type = TFObjType.getType(new Identifier(data.getString("Type")));
 		WhiteboardRef ref = new WhiteboardRef(name, type, board);
 		if(data.contains("Live") && data.getBoolean("Live"))
-			ref.setRecalc();
+			ref.noCache();
 		return ref;
 	}
 }

@@ -15,6 +15,8 @@ public class NodeSubType<M extends TreeNode<?>>
 	private final Identifier registryName;
 	private final NodeTickHandler<M> tickFunc;
 	
+	// TODO Implement necessary whiteboard references
+	
 	public NodeSubType(Identifier nameIn, NodeTickHandler<M> func)
 	{
 		this.registryName = nameIn;
@@ -29,7 +31,7 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, Local<T> local, Global global, M parent)
 	{
-		// TODO Implement necessary whiteboard references, return FAILURE if they aren't met
+		// TODO Check required whiteboard values and return FAILURE if they aren't met
 		return tickFunc.doTick(tricksy, local, global, parent);
 	}
 }

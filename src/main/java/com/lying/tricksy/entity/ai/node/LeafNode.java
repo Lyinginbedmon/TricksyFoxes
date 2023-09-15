@@ -30,6 +30,8 @@ import net.minecraft.util.math.BlockPos;
  */
 public class LeafNode extends TreeNode<LeafNode>
 {
+	public static final Identifier VARIANT_CYCLE = new Identifier(Reference.ModInfo.MOD_ID, "cycle_value");
+	
 	public static final Identifier VARIANT_GOTO = new Identifier(Reference.ModInfo.MOD_ID, "goto");
 	public static final Identifier VARIANT_DROP = new Identifier(Reference.ModInfo.MOD_ID, "drop_item");
 	public static final Identifier VARIANT_SLEEP = new Identifier(Reference.ModInfo.MOD_ID, "sleep");
@@ -92,6 +94,18 @@ public class LeafNode extends TreeNode<LeafNode>
 					tricksy.heal(1F);
 				
 				return tricksy.getHealth() >= tricksy.getMaxHealth() ? Result.SUCCESS : Result.RUNNING;
+			}
+		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_CYCLE, new NodeTickHandler<LeafNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
+			{
+				IWhiteboardObject<?> value = Whiteboard.get(Whiteboard.Local.NEAREST_MASTER, local, global);
+				if(!value.isList())
+					return Result.FAILURE;
+				
+				value.cycle();
+				return Result.SUCCESS;
 			}
 		}));
 	}

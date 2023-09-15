@@ -19,6 +19,7 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -219,6 +220,57 @@ public abstract class WhiteboardObjBase<T, N> implements IWhiteboardObject<T>
 			EntData data = new EntData(uuid, player);
 			if(compound.contains("LastKnownPos"))
 				data.lastKnownPos = NbtHelper.toBlockPos(compound.getCompound("LastKnownPos"));
+			return data;
+		}
+	}
+	
+	public static class Block extends WhiteboardObjBase<BlockPos, com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBase.Block.BlockData>
+	{
+		public Block(@NotNull BlockPos pos)
+		{
+			super(TFObjType.BLOCK, NbtElement.COMPOUND_TYPE, pos);
+		}
+		
+		private static class BlockData
+		{
+			private BlockPos pos;
+			private Direction face;
+			
+			public BlockData(@NotNull BlockPos pos)
+			{
+				this(pos, Direction.UP);
+			}
+			
+			public BlockData(BlockPos posIn, Direction faceIn)
+			{
+				this.pos = posIn;
+				this.face = faceIn;
+			}
+			
+			protected NbtCompound storeToNbt(NbtCompound data)
+			{
+				data.putString("Face", face.asString());
+				data.put("Pos", NbtHelper.fromBlockPos(pos));
+				return data;
+			}
+			
+			public Direction blockFace() { return this.face; }
+		}
+		
+		public Direction direction() { return value.isEmpty() ? Direction.UP : value.get(0).blockFace(); }
+		
+		protected BlockData storeValue(BlockPos val) { return new BlockData(val); }
+		
+		protected BlockPos getValue(BlockData entry) { return entry.pos; }
+		
+		protected NbtElement valueToNbt(BlockData val) { return val.storeToNbt(new NbtCompound()); }
+		
+		protected BlockData valueFromNbt(NbtElement nbt)
+		{
+			NbtCompound compound = (NbtCompound)nbt;
+			BlockPos pos = NbtHelper.toBlockPos(compound.getCompound("Pos"));
+			Direction face = Direction.byName(compound.getString("Face"));
+			BlockData data = new BlockData(pos, face);
 			return data;
 		}
 	}

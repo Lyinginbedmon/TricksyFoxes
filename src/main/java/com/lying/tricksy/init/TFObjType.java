@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
@@ -11,7 +12,6 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj.Bool;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj.Int;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj.Item;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj.Pos;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBase;
 import com.lying.tricksy.reference.Reference;
 
@@ -27,28 +27,28 @@ public class TFObjType<T>
 	
 	/** Empty value, usually obtained when the whiteboard grabs a value it doesn't have */
 	public static final TFObjType<Object> EMPTY = register(new TFObjType<>("empty", () -> WhiteboardObj.EMPTY)
-			.emptyLogic((obj) -> true));
+			.emptyIf((obj) -> true));
 	/** Boolean true/false value */
 	public static final TFObjType<Boolean> BOOL = register(new TFObjType<>("boolean", () -> new Bool(false)));
 	/** Numerical value, always between zero and {@link Integer.MAX_VALUE} */
 	public static final TFObjType<Integer> INT = register(new TFObjType<>("integer", () -> new Int(0))
-			.emptyLogic((obj) -> obj.get() <= 0));
-	/** Block position */
-	public static final TFObjType<BlockPos> BLOCK = register(new TFObjType<>("block", () -> new Pos(BlockPos.ORIGIN)));
+			.emptyIf((obj) -> obj.get() <= 0));
+	/** Block position with optional direction for addressing specific sides of containers */
+	public static final TFObjType<BlockPos> BLOCK = register(new TFObjType<>("block", () -> new WhiteboardObjBase.Block(BlockPos.ORIGIN)));
 	/** Entity value, the only object type that must be recached after loading to restore its value */
 	public static final TFObjType<Entity> ENT = register(new TFObjType<>("entity", () -> new WhiteboardObjBase.Ent((Entity)null))
-			.addCast(TFObjType.BLOCK, (obj) -> new WhiteboardObj.Pos(obj.get().getBlockPos()))
-			.emptyLogic((obj) -> obj.get() == null || !obj.get().isAlive() || obj.get().isSpectator()));
+			.castTo(TFObjType.BLOCK, (obj) -> new WhiteboardObjBase.Block(obj.get().getBlockPos()))
+			.emptyIf((obj) -> obj.get() == null || !obj.get().isAlive() || obj.get().isSpectator()));
 	/** ItemStack value */
 	public static final TFObjType<ItemStack> ITEM = register(new TFObjType<>("item", () -> new Item(ItemStack.EMPTY))
-			.addCast(TFObjType.INT, (obj) -> new WhiteboardObj.Int(obj.get().getCount()))
-			.emptyLogic((obj) -> obj.get() == null || obj.get().isEmpty()));
+			.castTo(TFObjType.INT, (obj) -> new WhiteboardObj.Int(obj.get().getCount()))
+			.emptyIf((obj) -> obj.get() == null || obj.get().isEmpty()));
 	
-	private final Supplier<IWhiteboardObject<T>> supplier;
 	private final Identifier name;
+	private final Supplier<IWhiteboardObject<T>> supplier;
 	
 	private Map<TFObjType<?>, Function<IWhiteboardObject<T>, ?>> castingMap = new HashMap<>();
-	private Function<IWhiteboardObject<T>, Boolean> emptyCheck = (obj) -> obj.get() == null;
+	private Predicate<IWhiteboardObject<T>> isEmpty = (obj) -> obj.get() == null;
 	
 	public TFObjType(String nameIn, Supplier<IWhiteboardObject<T>> supplierIn)
 	{
@@ -72,11 +72,15 @@ public class TFObjType<T>
 		return obj;
 	}
 	
-	private TFObjType<T> addCast(TFObjType<?> type, Function<IWhiteboardObject<T>, ?> logic) { castingMap.put(type, logic); return this; }
-	
-	public TFObjType<T> emptyLogic(Function<IWhiteboardObject<T>, Boolean> logicIn)
+	private TFObjType<T> castTo(TFObjType<?> type, Function<IWhiteboardObject<T>, ?> logic)
 	{
-		this.emptyCheck = logicIn;
+		castingMap.put(type, logic);
+		return this;
+	}
+	
+	public TFObjType<T> emptyIf(Predicate<IWhiteboardObject<T>> logicIn)
+	{
+		this.isEmpty = logicIn;
 		return this;
 	}
 	
@@ -97,7 +101,7 @@ public class TFObjType<T>
 	
 	public IWhiteboardObject<T> blank() { return create(new NbtCompound()); }
 	
-	public boolean isEmpty(IWhiteboardObject<T> obj) { return emptyCheck.apply(obj); }
+	public boolean isEmpty(IWhiteboardObject<T> obj) { return isEmpty.test(obj); }
 	
 	private static <N> TFObjType<N> register(TFObjType<N> typeIn)
 	{

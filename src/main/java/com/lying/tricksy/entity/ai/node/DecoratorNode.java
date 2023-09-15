@@ -28,6 +28,8 @@ import net.minecraft.util.Identifier;
 public class DecoratorNode extends TreeNode<DecoratorNode>
 {
 	public static final Identifier VARIANT_INVERTER = new Identifier(Reference.ModInfo.MOD_ID, "inverter");
+	public static final Identifier VARIANT_FORCE_FAILURE = new Identifier(Reference.ModInfo.MOD_ID, "force_failure");
+	public static final Identifier VARIANT_FORCE_SUCCESS = new Identifier(Reference.ModInfo.MOD_ID, "force_success");
 	public static final Identifier VARIANT_DELAY_1S = new Identifier(Reference.ModInfo.MOD_ID, "delay_1s");
 	public static final Identifier VARIANT_DELAY_5S = new Identifier(Reference.ModInfo.MOD_ID, "delay_5s");
 	public static final Identifier VARIANT_DELAY_10S = new Identifier(Reference.ModInfo.MOD_ID, "delay_10s");
@@ -45,11 +47,6 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 	
 	public final TreeNode<?> child() { return children().isEmpty() ? null : children().get(0); }
 	
-	public static DecoratorNode delay(UUID uuidIn)
-	{
-		return (DecoratorNode)TFNodeTypes.DECORATOR.create(uuidIn, new NbtCompound()).setSubType(VARIANT_DELAY_1S);
-	}
-	
 	public static DecoratorNode inverter(UUID uuidIn)
 	{
 		return (DecoratorNode)TFNodeTypes.DECORATOR.create(uuidIn, new NbtCompound()).setSubType(VARIANT_INVERTER);
@@ -60,18 +57,54 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 		return new DecoratorNode(uuidIn);
 	}
 	
-	private static NodeTickHandler<DecoratorNode> makeDelay(int duration)
+	public static NodeTickHandler<DecoratorNode> makeDelay(int duration)
 	{
 		return new NodeTickHandler<DecoratorNode>()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
 			{
-				DecoratorNode decorator = (DecoratorNode)parent;
-				if(decorator.ticks-- <= 0)
-				{
-					decorator.ticks = duration * Reference.Values.TICKS_PER_SECOND;
-					return decorator.child().tick(tricksy, local, global);
-				}
+				if(!parent.isRunning())
+					parent.ticks = duration * Reference.Values.TICKS_PER_SECOND;
+				else if(parent.ticks-- <= 0)
+					return parent.child().tick(tricksy, local, global);
+				return Result.RUNNING;
+			}
+		};
+	}
+	
+	public static NodeTickHandler<DecoratorNode> makeRepeater(int tally)
+	{
+		return new NodeTickHandler<DecoratorNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			{
+				if(!parent.isRunning())
+					parent.ticks = tally;
+				
+				Result result = parent.child().tick(tricksy, local, global);
+				if(result == Result.FAILURE)
+					return Result.FAILURE;
+				else if(--parent.ticks == 0)
+					return Result.SUCCESS;
+				return Result.RUNNING;
+			}
+		};
+	}
+	
+	public static NodeTickHandler<DecoratorNode> makeRetry(int tally)
+	{
+		return new NodeTickHandler<DecoratorNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			{
+				if(!parent.isRunning())
+					parent.ticks = tally;
+				
+				Result result = parent.child().tick(tricksy, local, global);
+				if(result == Result.SUCCESS)
+					return Result.SUCCESS;
+				else if(--parent.ticks == 0)
+					return Result.FAILURE;
 				return Result.RUNNING;
 			}
 		};
@@ -93,6 +126,20 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 						return Result.FAILURE;
 				}
 				return Result.FAILURE;
+			}
+		}));
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_FORCE_FAILURE, new NodeTickHandler<DecoratorNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			{
+				return parent.child().tick(tricksy, local, global).isEnd() ? Result.FAILURE : Result.RUNNING;
+			}
+		}));
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_FORCE_SUCCESS, new NodeTickHandler<DecoratorNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			{
+				return parent.child().tick(tricksy, local, global).isEnd() ? Result.SUCCESS : Result.RUNNING;
 			}
 		}));
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_DELAY_1S, makeDelay(1)));

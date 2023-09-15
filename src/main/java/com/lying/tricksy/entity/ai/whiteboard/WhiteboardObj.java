@@ -6,9 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtByte;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtInt;
-import net.minecraft.util.math.BlockPos;
 
 /** A whiteboard object which stores its values in the same form they are retreived */
 public abstract class WhiteboardObj<T> extends WhiteboardObjBase<T, T>
@@ -37,22 +35,11 @@ public abstract class WhiteboardObj<T> extends WhiteboardObjBase<T, T>
 	{
 		public Int(int intIn)
 		{
-			super(TFObjType.INT, NbtElement.INT_TYPE, intIn);
+			super(TFObjType.INT, NbtElement.INT_TYPE, Math.max(0, intIn));
 		}
 		
 		protected NbtElement valueToNbt(Integer val) { return NbtInt.of(val); }
 		protected Integer valueFromNbt(NbtElement nbt) { return ((NbtInt)nbt).intValue(); }
-	}
-	
-	public static class Pos extends WhiteboardObj<BlockPos>
-	{
-		public Pos(BlockPos posIn)
-		{
-			super(TFObjType.BLOCK, NbtElement.COMPOUND_TYPE, posIn);
-		}
-		
-		protected NbtElement valueToNbt(BlockPos val) { return NbtHelper.fromBlockPos(val); }
-		protected BlockPos valueFromNbt(NbtElement nbt) { return NbtHelper.toBlockPos((NbtCompound)nbt); }
 	}
 	
 	public static class Item extends WhiteboardObj<ItemStack>

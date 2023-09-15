@@ -72,7 +72,7 @@ public abstract class Whiteboard
 	{
 		for(Entry<WhiteboardRef, Supplier<IWhiteboardObject<?>>> entry : values.entrySet())
 		{
-			if(entry.getKey().shouldRecalc())
+			if(entry.getKey().uncached())
 				continue;
 			
 			NbtCompound data = new NbtCompound();
@@ -87,7 +87,7 @@ public abstract class Whiteboard
 		if(nameIn.boardType() != this.type || !allReferences().contains(nameIn))
 			return WhiteboardObj.EMPTY;
 		
-		if(!nameIn.shouldRecalc() && cache.containsKey(nameIn))
+		if(!nameIn.uncached() && cache.containsKey(nameIn))
 		{
 			IWhiteboardObject<?> val = cache.get(nameIn);
 			val.recacheIfNecessary(world);
@@ -123,6 +123,7 @@ public abstract class Whiteboard
 		return nameIn.boardType() == BoardType.LOCAL ? local.getValue(nameIn) : global.getValue(nameIn);
 	}
 	
+	/** Returns a collection of all references stored in this whiteboard, without their values */
 	protected Collection<WhiteboardRef> allReferences() { return values.keySet(); }
 	
 	/** Returns a list of all references in this whiteboard of the given type. */
@@ -140,9 +141,13 @@ public abstract class Whiteboard
 	/** A whiteboard containing locally-accessible values set by a tricksy mob itself */
 	public static class Local<T extends PathAwareEntity & ITricksyMob<?>> extends Whiteboard
 	{
-		public static final WhiteboardRef HP = new WhiteboardRef("health", TFObjType.INT, BoardType.LOCAL).setRecalc();
-		public static final WhiteboardRef HANDS_FULL = new WhiteboardRef("hands_full", TFObjType.BOOL, BoardType.LOCAL).setRecalc();
-		public static final WhiteboardRef NEAREST_MASTER = new WhiteboardRef("master", TFObjType.ENT, BoardType.LOCAL).setRecalc();
+		public static final WhiteboardRef HP = new WhiteboardRef("health", TFObjType.INT, BoardType.LOCAL).noCache();
+		public static final WhiteboardRef ARMOUR = new WhiteboardRef("armor", TFObjType.INT, BoardType.LOCAL).noCache();
+		public static final WhiteboardRef HANDS_FULL = new WhiteboardRef("hands_full", TFObjType.BOOL, BoardType.LOCAL).noCache();
+		public static final WhiteboardRef HOME = new WhiteboardRef("home_pos", TFObjType.BLOCK, BoardType.LOCAL).noCache();
+		public static final WhiteboardRef NEAREST_MASTER = new WhiteboardRef("master", TFObjType.ENT, BoardType.LOCAL).noCache();
+		public static final WhiteboardRef ATTACK_TARGET = new WhiteboardRef("attack_target", TFObjType.ENT, BoardType.LOCAL).noCache();
+		public static final WhiteboardRef ON_GROUND = new WhiteboardRef("on_ground", TFObjType.BOOL, BoardType.LOCAL).noCache();
 		
 		private final Map<WhiteboardRef, Function<T, IWhiteboardObject<?>>> mobValues = new HashMap<>();
 		private final T tricksy;
@@ -156,12 +161,16 @@ public abstract class Whiteboard
 		public Whiteboard build()
 		{
 			addValue(HP, (tricksy) -> new WhiteboardObj.Int((int)tricksy.getHealth()));
+			addValue(ARMOUR, (tricksy) -> new WhiteboardObj.Int(tricksy.getArmor()));
 			addValue(HANDS_FULL, (tricksy) -> new WhiteboardObj.Bool(!tricksy.getMainHandStack().isEmpty() && !tricksy.getOffHandStack().isEmpty()));
+			addValue(HOME, (tricksy) -> new WhiteboardObj.Block(tricksy.getPositionTarget()));
 			addValue(NEAREST_MASTER, (tricksy) -> 
 			{
 				PlayerEntity nearestMaster = tricksy.getWorld().getClosestPlayer(tricksy.getX(), tricksy.getY(), tricksy.getZ(), 32D, (player) -> tricksy.isMaster((PlayerEntity)player));
-				return new WhiteboardObj.Ent(nearestMaster);
+				return nearestMaster == null ? WhiteboardObj.EMPTY : new WhiteboardObj.Ent(nearestMaster);
 			});
+			addValue(ATTACK_TARGET, (tricksy) -> new WhiteboardObj.Ent(tricksy.getAttacking()));
+			addValue(ON_GROUND, (tricksy) -> new WhiteboardObj.Bool(tricksy.isOnGround()));
 			return this;
 		}
 		
@@ -170,7 +179,6 @@ public abstract class Whiteboard
 			for(int i=0; i<list.size(); i++)
 			{
 				NbtCompound data = list.getCompound(i);
-				
 				WhiteboardRef ref = WhiteboardRef.fromNbt(data.getCompound("Ref"));
 				IWhiteboardObject <?>obj = WhiteboardObj.createFromNbt(data.getCompound("Value"));
 				addValue(ref, (tricksy) -> obj);
