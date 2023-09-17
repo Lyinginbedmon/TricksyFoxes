@@ -18,6 +18,8 @@ public class WhiteboardRef
 	
 	private Text displayName;
 	
+	public WhiteboardRef(String nameIn, TFObjType<?> typeIn) { this(nameIn, typeIn, BoardType.CONSTANT); }
+	
 	public WhiteboardRef(String nameIn, TFObjType<?> typeIn, BoardType global)
 	{
 		this.name = nameIn;

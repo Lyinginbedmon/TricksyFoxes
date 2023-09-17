@@ -6,9 +6,14 @@ import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.whiteboard.Constants;
+import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
+import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -30,9 +35,7 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 	public static final Identifier VARIANT_INVERTER = new Identifier(Reference.ModInfo.MOD_ID, "inverter");
 	public static final Identifier VARIANT_FORCE_FAILURE = new Identifier(Reference.ModInfo.MOD_ID, "force_failure");
 	public static final Identifier VARIANT_FORCE_SUCCESS = new Identifier(Reference.ModInfo.MOD_ID, "force_success");
-	public static final Identifier VARIANT_DELAY_1S = new Identifier(Reference.ModInfo.MOD_ID, "delay_1s");
-	public static final Identifier VARIANT_DELAY_5S = new Identifier(Reference.ModInfo.MOD_ID, "delay_5s");
-	public static final Identifier VARIANT_DELAY_10S = new Identifier(Reference.ModInfo.MOD_ID, "delay_10s");
+	public static final Identifier VARIANT_DELAY = new Identifier(Reference.ModInfo.MOD_ID, "delay");
 	
 	protected int ticks = 20;
 	
@@ -142,8 +145,19 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 				return parent.child().tick(tricksy, local, global).isEnd() ? Result.SUCCESS : Result.RUNNING;
 			}
 		}));
-		set.add(new NodeSubType<DecoratorNode>(VARIANT_DELAY_1S, makeDelay(1)));
-		set.add(new NodeSubType<DecoratorNode>(VARIANT_DELAY_5S, makeDelay(5)));
-		set.add(new NodeSubType<DecoratorNode>(VARIANT_DELAY_10S, makeDelay(10)));
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_DELAY, new NodeTickHandler<DecoratorNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			{
+				WhiteboardRef reference = Constants.NUM_1;
+				IWhiteboardObject<Integer> duration = Whiteboard.get(reference, local, global).as(TFObjType.INT);
+				
+				if(!parent.isRunning())
+					parent.ticks = duration.get() * Reference.Values.TICKS_PER_SECOND;
+				else if(parent.ticks-- <= 0)
+					return parent.child().tick(tricksy, local, global);
+				return Result.RUNNING;
+			}
+		}));
 	}
 }

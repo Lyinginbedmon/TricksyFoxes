@@ -29,9 +29,13 @@ public class TFObjType<T>
 	public static final TFObjType<Object> EMPTY = register(new TFObjType<>("empty", () -> WhiteboardObj.EMPTY)
 			.emptyIf((obj) -> true));
 	/** Boolean true/false value */
-	public static final TFObjType<Boolean> BOOL = register(new TFObjType<>("boolean", () -> new Bool(false)));
+	public static final TFObjType<Boolean> BOOL = register(new TFObjType<>("boolean", () -> new Bool(false)))
+			.castTo(TFObjType.EMPTY, (obj) -> TFObjType.BOOL.blank())
+			.castTo(TFObjType.INT, (obj) -> new WhiteboardObj.Int(obj.get() ? 1 : 0));
 	/** Numerical value, always between zero and {@link Integer.MAX_VALUE} */
 	public static final TFObjType<Integer> INT = register(new TFObjType<>("integer", () -> new Int(0))
+			.castTo(TFObjType.EMPTY, (obj) -> TFObjType.INT.blank())
+			.castTo(TFObjType.BOOL, (obj) -> new WhiteboardObj.Bool(obj.get() > 0))
 			.emptyIf((obj) -> obj.get() <= 0));
 	/** Block position with optional direction for addressing specific sides of containers */
 	public static final TFObjType<BlockPos> BLOCK = register(new TFObjType<>("block", () -> new WhiteboardObjBase.Block(BlockPos.ORIGIN)));

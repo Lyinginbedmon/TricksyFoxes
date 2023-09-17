@@ -1,6 +1,9 @@
 package com.lying.tricksy.entity.ai.node;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.jetbrains.annotations.NotNull;
@@ -11,6 +14,7 @@ import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -44,11 +48,16 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	private TreeNode<?> parent = null;
 	private List<TreeNode<?>> children = Lists.newArrayList();
 	
+	/** Map of input variable references to corresponding whiteboard references */
+	private Map<WhiteboardRef, Optional<WhiteboardRef>> variableSet = new HashMap<>();
+	
 	protected TreeNode(NodeType<N> typeIn, UUID uuidIn)
 	{
 		this.nodeType = typeIn;
 		this.nodeID = uuidIn;
 		this.subType = typeIn.baseSubType();
+		
+		nodeType.getSubType(subType).variableSet().keySet().forEach((key) -> this.variableSet.put(key, Optional.empty()));
 	}
 	
 	/** Returns the unique ID of this node */
@@ -56,7 +65,29 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	public final NodeType<?> getType() { return this.nodeType; }
 	
-	public final TreeNode<N> setSubType(Identifier typeIn) { this.subType = typeIn; return this; };
+	public final TreeNode<N> setSubType(Identifier typeIn)
+	{
+		this.subType = typeIn;
+		this.variableSet.clear();
+		nodeType.getSubType(typeIn).variableSet().keySet().forEach((key) -> this.variableSet.put(key, Optional.empty()));
+		return this;
+	};
+	
+	public final boolean variableAssigned(WhiteboardRef reference) { return variableSet.containsKey(reference) && variableSet.get(reference).isPresent(); }
+	
+	public final TreeNode<N> assign(WhiteboardRef variable, WhiteboardRef value)
+	{
+		if(variableSet.containsKey(variable))
+			variableSet.put(variable, Optional.of(value));
+		return this;
+	}
+	
+	/** Returns the whiteboard reference assigned to the specified input variable, or null if it is unassigned */
+	@Nullable
+	public final WhiteboardRef variable(WhiteboardRef reference)
+	{
+		return variableAssigned(reference) ? variableSet.get(reference).get() : null;
+	}
 	
 	@SuppressWarnings("unchecked")
 	public final <T extends PathAwareEntity & ITricksyMob<?>> Result tick(T tricksy, Local<T> local, Global global)
@@ -131,6 +162,20 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			}
 			
 			parent.setSubType(data.contains("Variant", NbtElement.STRING_TYPE) ? new Identifier(data.getString("Variant")) : NodeType.DUMMY_ID);
+			if(data.contains("Variables", NbtElement.LIST_TYPE))
+			{
+				NbtList variables = data.getList("Variables", NbtElement.COMPOUND_TYPE);
+				for(int i=0; i<variables.size(); i++)
+				{
+					NbtCompound nbt = variables.getCompound(i);
+					WhiteboardRef variable = WhiteboardRef.fromNbt(nbt.getCompound("Variable"));
+					if(!parent.variableSet.containsKey(variable))
+						continue;
+					
+					if(nbt.contains("Value", NbtElement.COMPOUND_TYPE))
+						parent.assign(variable, WhiteboardRef.fromNbt(nbt.getCompound("Value")));
+				}
+			}
 			
 			NbtList children = data.contains("Children", NbtElement.LIST_TYPE) ? data.getList("Children", NbtElement.COMPOUND_TYPE) : new NbtList();
 			for(int i=0; i<children.size(); i++)
@@ -150,6 +195,22 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		data.putString("Type", this.nodeType.getRegistryName().toString());
 		data.putUuid("UUID", this.nodeID);
 		data.putString("Variant", this.subType.toString());
+		
+		if(!variableSet.isEmpty())
+		{
+			NbtList variables = new NbtList();
+			variableSet.entrySet().forEach((entry) -> 
+			{
+				NbtCompound nbt = new NbtCompound();
+				nbt.put("Variable", entry.getKey().writeToNbt(new NbtCompound()));
+				
+				if(entry.getValue().isPresent())
+					nbt.put("Value", entry.getValue().get().writeToNbt(new NbtCompound()));
+				
+				variables.add(nbt);
+			});
+			data.put("Variables", variables);
+		}
 		if(!children().isEmpty())
 		{
 			NbtList children = new NbtList();

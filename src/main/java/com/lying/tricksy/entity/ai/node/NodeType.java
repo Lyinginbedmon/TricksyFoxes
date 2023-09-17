@@ -64,6 +64,8 @@ public class NodeType<M extends TreeNode<?>>
 	
 	public Text translatedName() { return Text.translatable("node."+registryName.getNamespace()+"."+registryName.getPath()); }
 	
+	public final M create(UUID uuidIn) { return create(uuidIn, new NbtCompound()); }
+	
 	public final M create(UUID uuidIn, NbtCompound data) { return factory.apply(uuidIn, data); }
 	
 	public final Identifier baseSubType() { return baseSubType; }

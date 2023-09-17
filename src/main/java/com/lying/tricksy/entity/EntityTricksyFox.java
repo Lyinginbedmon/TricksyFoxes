@@ -103,7 +103,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		ItemStack heldStack = player.getStackInHand(hand);
 		if(heldStack.getItem() == TFItems.SAGE_HAT)
 		{
-			if(!hasMaster() || isMaster(player))
+			if(!hasSage() || isSage(player))
 			{
 				setMaster(ItemSageHat.getMasterID(heldStack, player));
 				player.sendMessage(Text.translatable("entity."+Reference.ModInfo.MOD_ID+".tricksy_fox.master_set", getDisplayName()), true);
@@ -112,7 +112,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 			else
 				player.sendMessage(Text.translatable("entity."+Reference.ModInfo.MOD_ID+".tricksy_fox.master_set.fail", getDisplayName()), true);
 		}
-		else if(isMaster(player))
+		else if(isSage(player))
 		{
 			if(heldStack.getItem() instanceof DyeItem)
 			{

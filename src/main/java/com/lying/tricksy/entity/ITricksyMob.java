@@ -26,7 +26,7 @@ import net.minecraft.nbt.NbtCompound;
 public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 {
 	/** Returns true if this mob has a master */
-	public default boolean hasMaster() { return getMaster().isPresent(); }
+	public default boolean hasSage() { return getMaster().isPresent(); }
 	
 	public Optional<UUID> getMaster();
 	
@@ -37,12 +37,12 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 	 * Returns true if the given entity should be recognised as this mob's master due to a matching Sage Hat
 	 * @param living
 	 */
-	public default boolean isMaster(LivingEntity living)
+	public default boolean isSage(LivingEntity living)
 	{
 		if(living.getType() == EntityType.PLAYER && ((PlayerEntity)living).isCreative())
 			return true;
 		
-		if(!hasMaster())
+		if(!hasSage())
 			return false;
 		
 		for(EquipmentSlot slot : new EquipmentSlot[] { EquipmentSlot.HEAD, EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND })

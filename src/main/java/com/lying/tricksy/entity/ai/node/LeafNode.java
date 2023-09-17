@@ -1,15 +1,20 @@
 package com.lying.tricksy.entity.ai.node;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
@@ -31,9 +36,11 @@ import net.minecraft.util.math.BlockPos;
 public class LeafNode extends TreeNode<LeafNode>
 {
 	public static final Identifier VARIANT_CYCLE = new Identifier(Reference.ModInfo.MOD_ID, "cycle_value");
+	public static final Identifier VARIANT_SET = new Identifier(Reference.ModInfo.MOD_ID, "set_value");
 	
 	public static final Identifier VARIANT_GOTO = new Identifier(Reference.ModInfo.MOD_ID, "goto");
 	public static final Identifier VARIANT_DROP = new Identifier(Reference.ModInfo.MOD_ID, "drop_item");
+	public static final Identifier VARIANT_SWAP = new Identifier(Reference.ModInfo.MOD_ID, "swap_items");
 	public static final Identifier VARIANT_SLEEP = new Identifier(Reference.ModInfo.MOD_ID, "sleep");
 	
 	public LeafNode(UUID uuidIn)
@@ -50,16 +57,23 @@ public class LeafNode extends TreeNode<LeafNode>
 	{
 		set.add(new NodeSubType<LeafNode>(VARIANT_GOTO, new NodeTickHandler<LeafNode>()
 		{
+			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			{
+				return Map.of(CommonVariables.VAR_POS, NodeTickHandler.ofType(TFObjType.BLOCK));
+			}
+			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
+				WhiteboardRef reference = parent.variable(CommonVariables.VAR_POS);
+				
 				EntityNavigation navigator = tricksy.getNavigation();
 				if(!parent.isRunning())
 				{
-					IWhiteboardObject<?> master = Whiteboard.get(Whiteboard.Local.NEAREST_MASTER, local, global);
-					if(master.isEmpty())
+					IWhiteboardObject<?> targetObj = Whiteboard.get(reference, local, global);
+					if(targetObj.isEmpty())
 						return Result.FAILURE;
 					
-					BlockPos dest = master.as(TFObjType.BLOCK).get();
+					BlockPos dest = targetObj.as(TFObjType.BLOCK).get();
 					if(navigator.findPathTo(dest, 20) == null)
 						return Result.FAILURE;
 					
@@ -83,6 +97,18 @@ public class LeafNode extends TreeNode<LeafNode>
 				return Result.SUCCESS;
 			}
 		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_SWAP, new NodeTickHandler<LeafNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
+			{
+				ItemStack mainStack = tricksy.getMainHandStack().copy();
+				ItemStack offStack = tricksy.getOffHandStack().copy();
+				
+				tricksy.setStackInHand(Hand.MAIN_HAND, offStack);
+				tricksy.setStackInHand(Hand.OFF_HAND, mainStack);
+				return Result.SUCCESS;
+			}
+		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_SLEEP, new NodeTickHandler<LeafNode>()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
@@ -98,13 +124,45 @@ public class LeafNode extends TreeNode<LeafNode>
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_CYCLE, new NodeTickHandler<LeafNode>()
 		{
+			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BOOL, BoardType.CONSTANT);
+			
+			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			{
+				return Map.of(VAR_A, NodeTickHandler.anyLocal());
+			}
+			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
-				IWhiteboardObject<?> value = Whiteboard.get(Whiteboard.Local.NEAREST_MASTER, local, global);
+				IWhiteboardObject<?> value = Whiteboard.get(parent.variable(VAR_A), local, global);
 				if(!value.isList())
 					return Result.FAILURE;
 				
 				value.cycle();
+				return Result.SUCCESS;
+			}
+		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_SET, new NodeTickHandler<LeafNode>()
+		{
+			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_copy", TFObjType.BOOL, BoardType.CONSTANT);
+			public static final WhiteboardRef VAR_B = new WhiteboardRef("target_reference", TFObjType.BOOL, BoardType.CONSTANT);
+			
+			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			{
+				return Map.of(
+						VAR_A, NodeTickHandler.any(),
+						VAR_B, NodeTickHandler.anyLocal());
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
+			{
+				WhiteboardRef from = parent.variable(VAR_A);
+				WhiteboardRef to = parent.variable(VAR_B);
+				
+				/** Destination must be a cachable value in a local whiteboard of the same or castable data type */
+				if(to.uncached() || to.boardType() != BoardType.LOCAL || !from.type().castableTo(to.type()))
+					return Result.FAILURE;
+				
+				local.setValue(to, Whiteboard.get(from, local, global).as(to.type()));
 				return Result.SUCCESS;
 			}
 		}));

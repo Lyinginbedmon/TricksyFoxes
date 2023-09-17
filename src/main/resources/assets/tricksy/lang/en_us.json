@@ -23,6 +23,6 @@
 	"variant.tricksy.delay_10s": "10 Second Delay",
 	"variant.tricksy.delay_10s.desc": "Calls the child node after a 10-second delay",
 	"entity.tricksy.tricksy_fox": "Tricksy Fox",
-	"entity.tricksy.tricksy_fox.master_set": "%s will now obey the wielder of this hat",
-	"entity.tricksy.tricksy_fox.master_set.fail": "%s already has a master!"
+	"entity.tricksy.tricksy_fox.master_set": "%s will now follow the ways of this sage",
+	"entity.tricksy.tricksy_fox.master_set.fail": "%s already follows a sage!"
 }

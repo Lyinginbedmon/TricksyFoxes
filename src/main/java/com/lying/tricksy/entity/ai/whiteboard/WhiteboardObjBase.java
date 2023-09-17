@@ -134,15 +134,27 @@ public abstract class WhiteboardObjBase<T, N> implements IWhiteboardObject<T>
 			super(TFObjType.ENT, NbtElement.COMPOUND_TYPE, entIn);
 		}
 		
-		public Ent(UUID uuid)
-		{
-			this((Entity)null);
-			
-		}
-		
 		public void recache(EntData val, World world)
 		{
 			val.recache(world);
+		}
+		
+		protected EntData storeValue(Entity val) { return new EntData(val); }
+		
+		protected Entity getValue(EntData entry) { return entry.value; }
+		
+		protected NbtElement valueToNbt(EntData val) { return val.storeToNbt(new NbtCompound()); }
+		
+		protected EntData valueFromNbt(NbtElement nbt)
+		{
+			NbtCompound compound = (NbtCompound)nbt;
+			
+			UUID uuid = compound.getUuid("UUID");
+			boolean player = compound.getBoolean("IsPlayer");
+			EntData data = new EntData(uuid, player);
+			if(compound.contains("LastKnownPos"))
+				data.lastKnownPos = NbtHelper.toBlockPos(compound.getCompound("LastKnownPos"));
+			return data;
 		}
 		
 		private static class EntData
@@ -156,11 +168,13 @@ public abstract class WhiteboardObjBase<T, N> implements IWhiteboardObject<T>
 			public EntData(@NotNull Entity entIn)
 			{
 				this(entIn.getUuid(), entIn.getType() == EntityType.PLAYER);
+				this.value = entIn;
 				this.lastKnownPos = entIn.getBlockPos();
 			}
 			
 			public EntData(UUID uuidIn, boolean isPlayerIn)
 			{
+				this.value = null;
 				this.uuid = uuidIn;
 				this.isPlayer = isPlayerIn;
 			}
@@ -203,24 +217,6 @@ public abstract class WhiteboardObjBase<T, N> implements IWhiteboardObject<T>
 						break;
 					}
 			}
-		}
-		
-		protected EntData storeValue(Entity val) { return new EntData(val); }
-		
-		protected Entity getValue(EntData entry) { return entry.value; }
-		
-		protected NbtElement valueToNbt(EntData val) { return val.storeToNbt(new NbtCompound()); }
-		
-		protected EntData valueFromNbt(NbtElement nbt)
-		{
-			NbtCompound compound = (NbtCompound)nbt;
-			
-			UUID uuid = compound.getUuid("UUID");
-			boolean player = compound.getBoolean("IsPlayer");
-			EntData data = new EntData(uuid, player);
-			if(compound.contains("LastKnownPos"))
-				data.lastKnownPos = NbtHelper.toBlockPos(compound.getCompound("LastKnownPos"));
-			return data;
 		}
 	}
 	
