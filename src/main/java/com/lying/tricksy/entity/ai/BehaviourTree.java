@@ -30,15 +30,15 @@ public class BehaviourTree
 	private static final TreeNode<?> INITIAL_TREE = 
 			TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID())
 			.setSubType(ControlFlowNode.VARIANT_SEQUENCE)
-				.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID())
-					.setSubType(DecoratorNode.VARIANT_INVERTER)
-					.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID())
-						.setSubType(ConditionNode.VARIANT_CLOSER_THAN)
-						.assign(CommonVariables.VAR_POS, Whiteboard.Local.NEAREST_SAGE)
-						.assign(CommonVariables.VAR_DIS, Constants.NUM_4)))
-				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID())
-					.setSubType(LeafNode.VARIANT_GOTO)
-					.assign(CommonVariables.VAR_POS, Whiteboard.Local.NEAREST_SAGE));
+			.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID())
+				.setSubType(DecoratorNode.VARIANT_INVERTER)
+				.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID())
+					.setSubType(ConditionNode.VARIANT_CLOSER_THAN)
+					.assign(CommonVariables.VAR_POS, Whiteboard.Local.NEAREST_SAGE)
+					.assign(CommonVariables.VAR_DIS, Constants.NUM_4)))
+			.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID())
+				.setSubType(LeafNode.VARIANT_GOTO)
+				.assign(CommonVariables.VAR_POS, Whiteboard.Local.NEAREST_SAGE));
 	
 	@Nullable
 	private final TreeNode<?> root;

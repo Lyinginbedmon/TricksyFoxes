@@ -10,12 +10,21 @@ import com.lying.tricksy.reference.Reference;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.DispenserBlock;
+import net.minecraft.block.dispenser.BlockPlacementDispenserBehavior;
+import net.minecraft.block.dispenser.ItemDispenserBehavior;
 import net.minecraft.entity.EntityType;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPointer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Position;
 import net.minecraft.world.BlockView;
 
 public class TFBlocks
@@ -34,6 +43,27 @@ public class TFBlocks
 	{
 		for(Entry<Identifier, Block> entry : BLOCKS.entrySet())
 			Registry.register(Registries.BLOCK, entry.getKey(), entry.getValue());
+		
+		DispenserBlock.registerBehavior(TFItems.PRESCIENCE_ITEM, new BlockPlacementDispenserBehavior());
+		DispenserBlock.registerBehavior(Items.PAPER, new ItemDispenserBehavior()
+				{
+					public ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack)
+					{
+						ServerWorld serverWorld = pointer.getWorld();
+						if (!serverWorld.isClient())
+						{
+							Direction direction = pointer.getBlockState().get(DispenserBlock.FACING);
+							Position position = DispenserBlock.getOutputLocation(pointer);
+							BlockPos blockPos = pointer.getPos().offset(direction);
+							if(serverWorld.getBlockState(blockPos).getBlock() == TFBlocks.PRESCIENCE)
+							{
+								stack.decrement(1);
+								ItemDispenserBehavior.spawnItem(pointer.getWorld(), new ItemStack(TFItems.NOTE), 6, direction, position);
+							}
+						}
+						return stack;
+					}
+				});
 	}
 	
 	private static boolean never(BlockState state, BlockView world, BlockPos pos) { return false; }

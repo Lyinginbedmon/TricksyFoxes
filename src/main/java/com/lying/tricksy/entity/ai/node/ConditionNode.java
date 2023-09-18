@@ -40,10 +40,6 @@ public class ConditionNode extends TreeNode<ConditionNode>
 		return new ConditionNode(uuid);
 	}
 	
-	public static ConditionNode hasMaster(UUID uuid) { return (ConditionNode)TFNodeTypes.CONDITION.create(uuid, new NbtCompound()).setSubType(VARIANT_VALUE_TRUE); }
-	public static ConditionNode masterPresent(UUID uuid) { return (ConditionNode)TFNodeTypes.CONDITION.create(uuid, new NbtCompound()).setSubType(VARIANT_VALUE_EXISTS); }
-	public static ConditionNode masterNearby(UUID uuid) { return (ConditionNode)TFNodeTypes.CONDITION.create(uuid, new NbtCompound()).setSubType(VARIANT_CLOSER_THAN); }
-	
 	public static void populateSubTypes(Collection<NodeSubType<ConditionNode>> set)
 	{
 		/** Returns SUCCESS if the boolean value of the given object is TRUE */

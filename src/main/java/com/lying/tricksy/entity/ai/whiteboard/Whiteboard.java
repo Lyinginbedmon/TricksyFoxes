@@ -197,7 +197,7 @@ public abstract class Whiteboard
 	/** A whiteboard containing globally-accessible values set by a tricksy mob's master */
 	public static class Global extends Whiteboard
 	{
-		public static final WhiteboardRef SPAWN = new WhiteboardRef("spawn_pos", TFObjType.BLOCK, BoardType.LOCAL).noCache();
+		public static final WhiteboardRef SPAWN = new WhiteboardRef("spawn_pos", TFObjType.BLOCK, BoardType.GLOBAL).noCache();
 		
 		public Global(World worldIn)
 		{

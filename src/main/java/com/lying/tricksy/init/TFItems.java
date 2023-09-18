@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.lying.tricksy.item.ItemPresciencePeriapt;
+import com.lying.tricksy.item.ItemPrescientNote;
 import com.lying.tricksy.item.ItemSageHat;
 import com.lying.tricksy.reference.Reference;
 
@@ -32,12 +33,14 @@ public class TFItems
     
     public static final Item PRESCIENCE_ITEM = register("bottle_prescience", new BlockItem(TFBlocks.PRESCIENCE, new FabricItemSettings().rarity(Rarity.RARE)));
     public static final Item PERIAPT = register("periapt_prescience", new ItemPresciencePeriapt(new FabricItemSettings().rarity(Rarity.RARE)));
+    public static final Item NOTE = register("prescient_note", new ItemPrescientNote(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
     
     public static final ItemGroup TRICKSY_GROUP = FabricItemGroup.builder().icon(() -> new ItemStack(SAGE_HAT)).displayName(Text.translatable("itemGroup."+Reference.ModInfo.MOD_ID+".item_group")).entries((ctx,entries) -> 
 	    {
 			entries.add(SAGE_HAT);
 			entries.add(PRESCIENCE_ITEM);
 			entries.add(PERIAPT);
+			entries.add(NOTE);
 	    }).build();
     
     private static Item register(String nameIn, Item itemIn)

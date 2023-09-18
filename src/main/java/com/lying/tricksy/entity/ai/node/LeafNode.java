@@ -124,7 +124,7 @@ public class LeafNode extends TreeNode<LeafNode>
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_CYCLE, new NodeTickHandler<LeafNode>()
 		{
-			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BOOL, BoardType.CONSTANT);
+			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BOOL).displayName(CommonVariables.translate("to_cycle"));
 			
 			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
 			{
@@ -143,8 +143,8 @@ public class LeafNode extends TreeNode<LeafNode>
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_SET, new NodeTickHandler<LeafNode>()
 		{
-			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_copy", TFObjType.BOOL, BoardType.CONSTANT);
-			public static final WhiteboardRef VAR_B = new WhiteboardRef("target_reference", TFObjType.BOOL, BoardType.CONSTANT);
+			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_copy", TFObjType.BOOL).displayName(CommonVariables.translate("to_copy"));
+			public static final WhiteboardRef VAR_B = new WhiteboardRef("target_reference", TFObjType.BOOL).displayName(CommonVariables.translate("ref_target"));
 			
 			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
 			{
