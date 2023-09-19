@@ -28,7 +28,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 /**
- * TODO NODE TYPES
+ * TODO Add more actions
+ * NODE TYPES
  * Leaf	- Performs an action and has no child nodes
  * 		Action	- Performs a base singular action from a predefined set
  * 		SubTree	- Performs a predefined complex action that would otherwise necessitate multiple nodes, such as melee combat

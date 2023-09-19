@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-      "layer0": "tricksy:items/prescient_note"
+      "layer0": "tricksy:item/prescient_note"
   }
 }

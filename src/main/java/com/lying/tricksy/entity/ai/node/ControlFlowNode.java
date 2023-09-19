@@ -14,7 +14,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 
 /**
- * TODO NODE TYPES
+ * NODE TYPES
  * Control Flow	- Executes child nodes in particular ways
  * 		Selector	- Executes the first node that does not return failure
  * 		Sequential	- Executes each node one after the other until end or one returns failure
@@ -94,6 +94,40 @@ public class ControlFlowNode extends TreeNode<ControlFlowNode>
 				}
 				
 				return Result.SUCCESS;
+			}
+		}));
+		set.add(new NodeSubType<ControlFlowNode>(VARIANT_REACTIVE, new NodeTickHandler<ControlFlowNode>() 
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, Local<T> local, Global global, ControlFlowNode parent)
+			{
+				Result result = Result.SUCCESS;
+				for(TreeNode<?> child : parent.children())
+				{
+					// Skip completed nodes in successive ticks
+					if(parent.isRunning () && !child.isRunning())
+						continue;
+					
+					/**
+					 * Parent result is equal to:
+					 * 	FAILURE = Any child node failed
+					 * 	RUNNING = No nodes have failed but some are still in progress
+					 * 	SUCCESS = All nodes succeeded
+					 */
+					Result childResult = child.tick(tricksy, local, global);
+					switch(childResult)
+					{
+						case FAILURE:
+							result = Result.FAILURE;
+							break;
+						case RUNNING:
+							if(result != Result.FAILURE)
+								result = Result.RUNNING;
+							break;
+						case SUCCESS:
+							break;
+					}
+				}
+				return result;
 			}
 		}));
 	}

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -46,9 +47,8 @@ public abstract class WhiteboardObjBase<T, N> implements IWhiteboardObject<T>
 	public List<Text> describe()
 	{
 		List<Text> description = Lists.newArrayList();
-		description.add(Text.literal("Values: "+size()));
 		if(isList())
-			description.add(Text.literal("Contained values:")); // FIXME Should use translated text
+			description.add(Text.translatable("value."+Reference.ModInfo.MOD_ID+".is_list", value.size()));
 		
 		value.forEach((val) -> {
 			Text entry = describeValue(val);

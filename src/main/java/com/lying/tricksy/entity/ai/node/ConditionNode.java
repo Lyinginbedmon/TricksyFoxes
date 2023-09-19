@@ -23,6 +23,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
+/**
+ * TODO Add more conditions
+ */
 public class ConditionNode extends TreeNode<ConditionNode>
 {
 	public static final Identifier VARIANT_VALUE_TRUE = new Identifier(Reference.ModInfo.MOD_ID, "value_true");
