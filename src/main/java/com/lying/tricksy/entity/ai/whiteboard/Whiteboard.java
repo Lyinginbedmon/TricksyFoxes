@@ -21,6 +21,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
 /**
@@ -206,7 +207,7 @@ public abstract class Whiteboard
 		
 		public Whiteboard build()
 		{
-			values.put(SPAWN, () -> new WhiteboardObj.Block(world.getSpawnPos()));
+			values.put(SPAWN, () -> new WhiteboardObjBlock(world.getSpawnPos(), Direction.UP));
 			return this;
 		}
 	}
@@ -235,18 +236,18 @@ public abstract class Whiteboard
 		
 		public Whiteboard build()
 		{
-			mobValues.put(SELF, (tricksy) -> new WhiteboardObjBase.Ent(tricksy));
+			mobValues.put(SELF, (tricksy) -> new WhiteboardObjEntity(tricksy));
 			mobValues.put(HP, (tricksy) -> new WhiteboardObj.Int((int)tricksy.getHealth()));
 			mobValues.put(ARMOUR, (tricksy) -> new WhiteboardObj.Int(tricksy.getArmor()));
 			mobValues.put(HANDS_FULL, (tricksy) -> new WhiteboardObj.Bool(!tricksy.getMainHandStack().isEmpty() && !tricksy.getOffHandStack().isEmpty()));
-			mobValues.put(HOME, (tricksy) -> new WhiteboardObj.Block(tricksy.getPositionTarget()));
+			mobValues.put(HOME, (tricksy) -> new WhiteboardObjBlock(tricksy.getPositionTarget(), Direction.UP));
 			mobValues.put(HAS_SAGE, (tricksy) -> new WhiteboardObj.Bool(tricksy.hasSage()));
 			mobValues.put(NEAREST_SAGE, (tricksy) -> 
 			{
 				PlayerEntity nearestSage = tricksy.getEntityWorld().getClosestPlayer(tricksy.getX(), tricksy.getY(), tricksy.getZ(), 32D, (player) -> tricksy.isSage((PlayerEntity)player));
-				return nearestSage == null ? WhiteboardObj.EMPTY : new WhiteboardObj.Ent(nearestSage);
+				return nearestSage == null ? WhiteboardObj.EMPTY : new WhiteboardObjEntity(nearestSage);
 			});
-			mobValues.put(ATTACK_TARGET, (tricksy) -> new WhiteboardObj.Ent(tricksy.getAttacking()));
+			mobValues.put(ATTACK_TARGET, (tricksy) -> new WhiteboardObjEntity(tricksy.getAttacking()));
 			mobValues.put(ON_GROUND, (tricksy) -> new WhiteboardObj.Bool(tricksy.isOnGround()));
 			return this;
 		}

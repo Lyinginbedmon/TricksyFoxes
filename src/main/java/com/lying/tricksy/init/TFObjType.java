@@ -12,14 +12,17 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj.Bool;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj.Int;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj.Item;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBase;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 
 public class TFObjType<T>
 {
@@ -29,22 +32,22 @@ public class TFObjType<T>
 	public static final TFObjType<Object> EMPTY = register(new TFObjType<>("empty", () -> WhiteboardObj.EMPTY)
 			.emptyIf((obj) -> true));
 	/** Boolean true/false value */
-	public static final TFObjType<Boolean> BOOL = register(new TFObjType<>("boolean", () -> new Bool(false)))
+	public static final TFObjType<Boolean> BOOL = register(new TFObjType<>("boolean", () -> new Bool()))
 			.castTo(TFObjType.EMPTY, (obj) -> TFObjType.BOOL.blank())
 			.castTo(TFObjType.INT, (obj) -> new WhiteboardObj.Int(obj.get() ? 1 : 0));
 	/** Numerical value, always between zero and {@link Integer.MAX_VALUE} */
-	public static final TFObjType<Integer> INT = register(new TFObjType<>("integer", () -> new Int(0))
+	public static final TFObjType<Integer> INT = register(new TFObjType<>("integer", () -> new Int())
 			.castTo(TFObjType.EMPTY, (obj) -> TFObjType.INT.blank())
 			.castTo(TFObjType.BOOL, (obj) -> new WhiteboardObj.Bool(obj.get() > 0))
 			.emptyIf((obj) -> obj.get() <= 0));
 	/** Block position with optional direction for addressing specific sides of containers */
-	public static final TFObjType<BlockPos> BLOCK = register(new TFObjType<>("block", () -> new WhiteboardObjBase.Block(BlockPos.ORIGIN)));
+	public static final TFObjType<BlockPos> BLOCK = register(new TFObjType<>("block", () -> new WhiteboardObjBlock()));
 	/** Entity value, the only object type that must be recached after loading to restore its value */
-	public static final TFObjType<Entity> ENT = register(new TFObjType<>("entity", () -> new WhiteboardObjBase.Ent((Entity)null))
-			.castTo(TFObjType.BLOCK, (obj) -> new WhiteboardObjBase.Block(obj.get().getBlockPos()))
+	public static final TFObjType<Entity> ENT = register(new TFObjType<>("entity", () -> new WhiteboardObjEntity())
+			.castTo(TFObjType.BLOCK, (obj) -> new WhiteboardObjBlock(obj.get().getBlockPos(), Direction.UP))
 			.emptyIf((obj) -> obj.get() == null || !obj.get().isAlive() || obj.get().isSpectator()));
 	/** ItemStack value */
-	public static final TFObjType<ItemStack> ITEM = register(new TFObjType<>("item", () -> new Item(ItemStack.EMPTY))
+	public static final TFObjType<ItemStack> ITEM = register(new TFObjType<>("item", () -> new Item())
 			.castTo(TFObjType.INT, (obj) -> new WhiteboardObj.Int(obj.get().getCount()))
 			.emptyIf((obj) -> obj.get() == null || obj.get().isEmpty()));
 	
@@ -66,6 +69,8 @@ public class TFObjType<T>
 	}
 	
 	public Identifier registryName() { return this.name; }
+	
+	public Text translated() { return Text.translatable("type."+registryName().getNamespace()+"."+registryName().getPath().toString()); }
 	
 	public static void init() { }
 	

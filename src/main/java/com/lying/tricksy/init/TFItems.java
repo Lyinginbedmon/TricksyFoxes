@@ -33,7 +33,13 @@ public class TFItems
     
     public static final Item PRESCIENCE_ITEM = register("bottle_prescience", new BlockItem(TFBlocks.PRESCIENCE, new FabricItemSettings().rarity(Rarity.RARE)));
     public static final Item PERIAPT = register("periapt_prescience", new ItemPresciencePeriapt(new FabricItemSettings().rarity(Rarity.RARE)));
+    
     public static final Item NOTE = register("prescient_note", new ItemPrescientNote(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
+    public static final Item NOTE_POS = register("prescient_note_block", new ItemPrescientNote.Block(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
+    public static final Item NOTE_ENT = register("prescient_note_entity", new ItemPrescientNote.Ent(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
+    public static final Item NOTE_INT = register("prescient_note_number", new ItemPrescientNote.Int(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
+    public static final Item NOTE_BOOL = register("prescient_note_boolean", new ItemPrescientNote.Bool(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
+    public static final Item NOTE_ITEM = register("prescient_note_item", new ItemPrescientNote.Items(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
     
     public static final ItemGroup TRICKSY_GROUP = FabricItemGroup.builder().icon(() -> new ItemStack(SAGE_HAT)).displayName(Text.translatable("itemGroup."+Reference.ModInfo.MOD_ID+".item_group")).entries((ctx,entries) -> 
 	    {

@@ -141,7 +141,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 					getDataTracker().set(COLOR, OptionalInt.empty());
 				return ActionResult.success(isClient);
 			}
-			else
+			else if(!player.isSneaking())
 			{
 				// TODO Open fox UI
 				return ActionResult.success(isClient);
