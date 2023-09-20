@@ -27,6 +27,8 @@ import net.minecraft.world.World;
 /**
  * Data storage object used by behaviour trees
  * @author Lying
+ * 
+ * FIXME Type argument to determine storage format and streamline
  */
 public abstract class Whiteboard
 {
@@ -122,28 +124,56 @@ public abstract class Whiteboard
 			TricksyFoxes.LOGGER.warn("Attempted to retrieve value "+nameIn.name()+" from "+type.asString()+" but reference is for "+nameIn.boardType().asString());
 			return WhiteboardObj.EMPTY;
 		}
-		else if(!allReferences().contains(nameIn))
+		else if(!hasReference(nameIn))
 		{
 			TricksyFoxes.LOGGER.warn("Attempted to retrieve value "+nameIn.name()+" from "+type.asString()+" but it does not exist there");
 			return WhiteboardObj.EMPTY;
 		}
-		else if(!nameIn.uncached() && cache.containsKey(nameIn))
+		else if(!nameIn.uncached() && cached(nameIn))
 		{
-			IWhiteboardObject<?> val = cache.get(nameIn);
+			IWhiteboardObject<?> val = fromCache(nameIn);
 			if(world != null)
-				val.recacheIfNecessary(world);
+				val.refreshIfNecessary(world);
 			return val;
 		}
 		
-		return getAndCache(nameIn);
+		return getAndCache(nameIn, world);
 	}
 	
-	protected IWhiteboardObject<?> getAndCache(WhiteboardRef nameIn)
+	protected IWhiteboardObject<?> getAndCache(WhiteboardRef nameIn, @Nullable World world)
 	{
-		IWhiteboardObject<?> value = values.getOrDefault(nameIn, () -> WhiteboardObj.EMPTY).get();
+		IWhiteboardObject<?> value = getSupplier(nameIn).get();
+		if(world != null)
+			value.refreshIfNecessary(world);
 		if(!nameIn.uncached())
 			cache.put(nameIn, value);
 		return value;
+	}
+	
+	private Supplier<IWhiteboardObject<?>> getSupplier(WhiteboardRef nameIn)
+	{
+		for(Entry<WhiteboardRef, Supplier<IWhiteboardObject<?>>> entry : values.entrySet())
+		{
+			if(entry.getKey().isSameRef(nameIn))
+				return entry.getValue();
+		}
+		return () -> WhiteboardObj.EMPTY;
+	}
+	
+	protected boolean cached(WhiteboardRef nameIn)
+	{
+		for(WhiteboardRef ref : cache.keySet())
+			if(ref.equals(nameIn))
+				return true;
+		return false;
+	}
+	
+	public IWhiteboardObject<?> fromCache(WhiteboardRef nameIn)
+	{
+		for(Entry<WhiteboardRef, IWhiteboardObject<?>> entry : cache.entrySet())
+			if(entry.getKey().equals(nameIn))
+				return entry.getValue();
+		return null;
 	}
 	
 	protected IWhiteboardObject<?> cache(WhiteboardRef reference, WhiteboardObj<?> obj) { cache.put(reference, obj); return obj; }
@@ -182,6 +212,14 @@ public abstract class Whiteboard
 	
 	/** Returns a collection of all references stored in this whiteboard, without their values */
 	protected Collection<WhiteboardRef> allReferences() { return values.keySet(); }
+	
+	protected boolean hasReference(WhiteboardRef reference)
+	{
+		for(WhiteboardRef ref : allReferences())
+			if(ref.equals(reference))
+				return true;
+		return false;
+	}
 	
 	/** Returns a list of all references in this whiteboard of the given type. */
 	public List<WhiteboardRef> availableOfType(TFObjType<?> typeIn)
@@ -290,13 +328,26 @@ public abstract class Whiteboard
 		
 		public Collection<WhiteboardRef> allReferences(){ return mobValues.keySet(); }
 		
-		protected IWhiteboardObject<?> getAndCache(WhiteboardRef nameIn)
+		@Override
+		protected IWhiteboardObject<?> getAndCache(WhiteboardRef nameIn, @Nullable World world)
 		{
-			IWhiteboardObject<?> value = mobValues.getOrDefault(nameIn, (mob) -> WhiteboardObj.EMPTY).apply(tricksy);
-			
+			IWhiteboardObject<?> value = getSupplier(nameIn).apply(tricksy);
+			if(world != null)
+				value.refreshIfNecessary(world);
 			if(!nameIn.uncached())
 				cache.put(nameIn, value);
 			return value;
+		}
+		
+		private Function<T, IWhiteboardObject<?>> getSupplier(WhiteboardRef nameIn)
+		{
+			for(Entry<WhiteboardRef, Function<T, IWhiteboardObject<?>>> entry : mobValues.entrySet())
+			{
+				
+				if(entry.getKey().isSameRef(nameIn))
+					return entry.getValue();
+			}
+			return (T) -> WhiteboardObj.EMPTY;
 		}
 	}
 }

@@ -32,7 +32,10 @@ public class WhiteboardRef
 	
 	public WhiteboardRef displayName(Text nameIn) { this.displayName = nameIn; return this; }
 	
-	public boolean equals(WhiteboardRef refB) { return refB.name.equals(this.name) && refB.varType == this.varType; }
+	@Override
+	public boolean equals(Object refB) { return refB instanceof WhiteboardRef ? isSameRef((WhiteboardRef)refB) : false; }
+	
+	public boolean isSameRef(WhiteboardRef refB) { return refB.name.equals(this.name) && refB.varType == this.varType && refB.onBoard == this.onBoard; }
 	
 	public String name() { return this.name; }
 	

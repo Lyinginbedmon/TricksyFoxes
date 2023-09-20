@@ -35,14 +35,16 @@ public class NodeType<M extends TreeNode<?>>
 		}
 	});
 	private Identifier registryName = null;
+	private final int displayColor;
 	
 	private Map<Identifier, NodeSubType<M>> subTypes = new HashMap<>();
 	private Identifier baseSubType;
 	
 	private final BiFunction<UUID,NbtCompound, M> factory;
 	
-	public NodeType(BiFunction<UUID,NbtCompound, M> factoryIn, Consumer<Collection<NodeSubType<M>>> subTypeBuilder)
+	public NodeType(int colorIn, BiFunction<UUID,NbtCompound, M> factoryIn, Consumer<Collection<NodeSubType<M>>> subTypeBuilder)
 	{
+		displayColor = colorIn;
 		factory = factoryIn;
 		
 		List<NodeSubType<M>> subTypeList = Lists.newArrayList();
@@ -61,6 +63,8 @@ public class NodeType<M extends TreeNode<?>>
 	}
 	
 	public final Identifier getRegistryName() { return this.registryName; }
+	
+	public int color() { return this.displayColor; }
 	
 	public Text translatedName() { return Text.translatable("node."+registryName.getNamespace()+"."+registryName.getPath()); }
 	
@@ -82,7 +86,12 @@ public class NodeType<M extends TreeNode<?>>
 		return subTypes.getOrDefault(typeIn, dummy);
 	}
 	
-	public final Collection<NodeSubType<M>> subTypes() { return subTypes.values(); }
+	public final List<Identifier> subTypes()
+	{
+		List<Identifier> subtypes = Lists.newArrayList();
+		subtypes.addAll(this.subTypes.keySet());
+		return subtypes;
+	}
 	
 	public final List<Identifier> getAvailableSubTypes()
 	{

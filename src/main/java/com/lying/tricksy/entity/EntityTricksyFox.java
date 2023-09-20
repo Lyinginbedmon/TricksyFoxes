@@ -12,7 +12,9 @@ import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemSageHat;
+import com.lying.tricksy.network.SyncTreeScreenPacket;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.screen.TreeScreenHandler;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.VariantHolder;
@@ -32,6 +34,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -144,6 +147,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 			else if(!player.isSneaking())
 			{
 				// TODO Open fox UI
+				player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new TreeScreenHandler(id, this), getDisplayName())).ifPresent(syncId -> SyncTreeScreenPacket.send(player, this, syncId));
 				return ActionResult.success(isClient);
 			}
 		}
@@ -178,7 +182,10 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	
 	public void setMaster(@Nullable UUID uuidIn) { this.getDataTracker().set(OWNER_UUID, Optional.of(uuidIn)); }
 	
-	public BehaviourTree getBehaviourTree() { return this.behaviourTree; }
+	public BehaviourTree getBehaviourTree()
+	{
+		return getWorld().isClient() ? BehaviourTree.create(getDataTracker().get(TREE_NBT)) : this.behaviourTree;
+	}
 	
 	public Local<EntityTricksyFox> getLocalWhiteboard() { return this.boardLocal; }
 	

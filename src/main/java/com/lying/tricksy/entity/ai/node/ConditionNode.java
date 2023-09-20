@@ -43,6 +43,8 @@ public class ConditionNode extends TreeNode<ConditionNode>
 		return new ConditionNode(uuid);
 	}
 	
+	public final boolean canAddChild(TreeNode<?> child) { return false; }
+	
 	public static void populateSubTypes(Collection<NodeSubType<ConditionNode>> set)
 	{
 		/** Returns SUCCESS if the boolean value of the given object is TRUE */

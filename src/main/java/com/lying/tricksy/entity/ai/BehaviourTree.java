@@ -41,14 +41,18 @@ public class BehaviourTree
 				.assign(CommonVariables.VAR_POS, Whiteboard.Local.NEAREST_SAGE));
 	
 	@Nullable
-	private final TreeNode<?> root;
+	private TreeNode<?> root;
 	
-	public BehaviourTree() { this(INITIAL_TREE); }
+	public BehaviourTree() { this(INITIAL_TREE.copy()); }
 	
 	public BehaviourTree(@Nullable TreeNode<?> rootIn)
 	{
 		root = rootIn;
 	}
+	
+	public BehaviourTree copy() { return create(storeInNbt()); }
+	
+	public TreeNode<?> root() { return this.root; }
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> void update(T tricksy, Local<T> local, Global global)
 	{

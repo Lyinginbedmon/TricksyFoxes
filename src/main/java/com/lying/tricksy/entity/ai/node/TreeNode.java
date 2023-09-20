@@ -3,6 +3,7 @@ package com.lying.tricksy.entity.ai.node;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,19 +52,82 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** Map of input variable references to corresponding whiteboard references */
 	private Map<WhiteboardRef, Optional<WhiteboardRef>> variableSet = new HashMap<>();
 	
+	// Client-side values used for visualisation
+	public int screenX, screenY;
+	public int width, height;
+	
 	protected TreeNode(NodeType<N> typeIn, UUID uuidIn)
 	{
 		this.nodeType = typeIn;
 		this.nodeID = uuidIn;
 		this.subType = typeIn.baseSubType();
 		
-		nodeType.getSubType(subType).variableSet().keySet().forEach((key) -> this.variableSet.put(key, Optional.empty()));
+		setSubType(typeIn.baseSubType());
+	}
+	
+	public final @Nullable TreeNode<?> copy()
+	{
+		return TreeNode.create(write(new NbtCompound()));
+	}
+	
+	public final void setPosition(int x, int y)
+	{
+		this.screenX = x;
+		this.screenY = y;
+	}
+	
+	public final void setPositionAndWidth(int x, int y, int widthIn, int heightIn)
+	{
+		setPosition(x, y);
+		this.width = widthIn;
+		this.height = heightIn;
+	}
+	
+	public final boolean containsPoint(int x, int y)
+	{
+		return x >= screenX && x <= (screenX + width) && y >= screenY && y <= (screenY + height);
+	}
+	
+	@Nullable
+	public TreeNode<?> findNodeAt(int x, int y)
+	{
+		if(containsPoint(x, y))
+			return this;
+		
+		for(TreeNode<?> child : children())
+		{
+			TreeNode<?> node = child.findNodeAt(x, y);
+			if(node != null)
+				return node;
+		}
+		return null;
 	}
 	
 	/** Returns the unique ID of this node */
 	public final UUID getID() { return this.nodeID; }
 	
 	public final NodeType<?> getType() { return this.nodeType; }
+	
+	public final void changeSubType(int dir)
+	{
+		List<Identifier> subTypes = getType().subTypes();
+		int options = subTypes.size();
+		int index = 0;
+		for(Identifier subType : subTypes)
+		{
+			if(subType == getSubType().getRegistryName())
+				break;
+			index++;
+		}
+		
+		index += dir;
+		if(index < 0)
+			index = options - 1;
+		index %= options;
+		
+		Identifier regName = subTypes.get(index);
+		setSubType(regName);
+	}
 	
 	public final TreeNode<N> setSubType(Identifier typeIn)
 	{
@@ -73,7 +137,15 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		return this;
 	};
 	
-	public final boolean variableAssigned(WhiteboardRef reference) { return variableSet.containsKey(reference) && variableSet.get(reference).isPresent(); }
+	public final NodeSubType<?> getSubType() { return this.getType().getSubType(this.subType); }
+	
+	public final boolean variableAssigned(WhiteboardRef reference)
+	{
+		for(Entry<WhiteboardRef, Optional<WhiteboardRef>> entry : variableSet.entrySet())
+			if(entry.getKey().equals(reference))
+				return entry.getValue().isPresent();
+		return false;
+	}
 	
 	public final TreeNode<N> assign(WhiteboardRef variable, WhiteboardRef value)
 	{
@@ -86,7 +158,11 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	@Nullable
 	public final WhiteboardRef variable(WhiteboardRef reference)
 	{
-		return variableAssigned(reference) ? variableSet.get(reference).get() : null;
+		if(variableAssigned(reference))
+			for(Entry<WhiteboardRef, Optional<WhiteboardRef>> entry : variableSet.entrySet())
+				if(entry.getKey().equals(reference))
+					return entry.getValue().get();
+		return null;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -125,7 +201,19 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	public final void removeChild(TreeNode<?> nodeIn) { removeChild(nodeIn.getID()); }
 	
-	public final void removeChild(UUID uuidIn) { children.removeIf((node) -> node.getID().equals(uuidIn)); }
+	public final boolean removeChild(UUID uuidIn)
+	{
+		if(children.removeIf((node) -> node.getID().equals(uuidIn)))
+			return true;
+		else
+		{
+			for(TreeNode<?> child : children)
+				if(child.removeChild(uuidIn))
+					return true;
+			
+			return false;
+		}
+	}
 	
 	public List<TreeNode<?>> children() { return children; }
 	
@@ -165,15 +253,13 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			if(data.contains("Variables", NbtElement.LIST_TYPE))
 			{
 				NbtList variables = data.getList("Variables", NbtElement.COMPOUND_TYPE);
+				parent.variableSet.clear();
 				for(int i=0; i<variables.size(); i++)
 				{
 					NbtCompound nbt = variables.getCompound(i);
 					WhiteboardRef variable = WhiteboardRef.fromNbt(nbt.getCompound("Variable"));
-					if(!parent.variableSet.containsKey(variable))
-						continue;
-					
-					if(nbt.contains("Value", NbtElement.COMPOUND_TYPE))
-						parent.assign(variable, WhiteboardRef.fromNbt(nbt.getCompound("Value")));
+					WhiteboardRef value = WhiteboardRef.fromNbt(nbt.getCompound("Value"));
+					parent.variableSet.put(variable, Optional.of(value));
 				}
 			}
 			
@@ -201,16 +287,18 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			NbtList variables = new NbtList();
 			variableSet.entrySet().forEach((entry) -> 
 			{
+				if(entry.getValue().isEmpty())
+					return;
+				
 				NbtCompound nbt = new NbtCompound();
 				nbt.put("Variable", entry.getKey().writeToNbt(new NbtCompound()));
-				
-				if(entry.getValue().isPresent())
-					nbt.put("Value", entry.getValue().get().writeToNbt(new NbtCompound()));
+				nbt.put("Value", entry.getValue().get().writeToNbt(new NbtCompound()));
 				
 				variables.add(nbt);
 			});
 			data.put("Variables", variables);
 		}
+		
 		if(!children().isEmpty())
 		{
 			NbtList children = new NbtList();

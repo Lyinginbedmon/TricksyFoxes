@@ -36,7 +36,7 @@ public interface IWhiteboardObject<T>
 	public List<Text> describe();
 	
 	/** Attempts to recache this object, usually to refresh an entity reference */
-	public default void recacheIfNecessary(World world) { }
+	public default void refreshIfNecessary(World world) { }
 	
 	/** Moves the top value of this list to the bottom */
 	public void cycle();

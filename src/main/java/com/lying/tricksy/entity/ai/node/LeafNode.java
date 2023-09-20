@@ -54,6 +54,8 @@ public class LeafNode extends TreeNode<LeafNode>
 		return new LeafNode(uuid);
 	}
 	
+	public final boolean canAddChild(TreeNode<?> child) { return false; }
+	
 	public static void populateSubTypes(Collection<NodeSubType<LeafNode>> set)
 	{
 		set.add(new NodeSubType<LeafNode>(VARIANT_GOTO, new NodeTickHandler<LeafNode>()

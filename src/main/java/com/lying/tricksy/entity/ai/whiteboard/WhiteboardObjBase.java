@@ -75,7 +75,7 @@ public abstract class WhiteboardObjBase<T, N> implements IWhiteboardObject<T>
 	/** Returns the top-most value of this object */
 	public T get() { return value.isEmpty() ? null : getValue(value.get(0)); }
 	
-	public final void recacheIfNecessary(World world)
+	public final void refreshIfNecessary(World world)
 	{
 		value.forEach((val) -> recache(val, world));
 	}
