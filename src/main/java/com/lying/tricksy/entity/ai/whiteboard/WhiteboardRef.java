@@ -1,9 +1,11 @@
 package com.lying.tricksy.entity.ai.whiteboard;
 
+import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.init.TFObjType;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -16,7 +18,7 @@ public class WhiteboardRef
 	/** True if this reference should never be cached */
 	private boolean noCache = false;
 	
-	private Text displayName;
+	private Text displayName = null;
 	
 	public WhiteboardRef(String nameIn, TFObjType<?> typeIn) { this(nameIn, typeIn, BoardType.CONSTANT); }
 	
@@ -28,7 +30,7 @@ public class WhiteboardRef
 		this.varType = typeIn;
 	}
 	
-	public Text displayName() { return displayName; }
+	public Text displayName() { return displayName == null ? Text.literal(name) : displayName; }
 	
 	public WhiteboardRef displayName(Text nameIn) { this.displayName = nameIn; return this; }
 	
@@ -59,6 +61,8 @@ public class WhiteboardRef
 		data.putString("Type", varType.registryName().toString());
 		if(noCache)
 			data.putBoolean("Live", noCache);
+		if(displayName != null)
+			data.putString("DisplayName", Text.Serializer.toJson(displayName));
 		return data;
 	}
 	
@@ -70,6 +74,18 @@ public class WhiteboardRef
 		WhiteboardRef ref = new WhiteboardRef(name, type, board);
 		if(data.contains("Live") && data.getBoolean("Live"))
 			ref.noCache();
+		if(data.contains("DisplayName", NbtElement.STRING_TYPE))
+		{
+			String string = data.getString("DisplayName");
+			try
+			{
+				ref.displayName = Text.Serializer.fromJson(string);
+			}
+			catch(Exception e)
+			{
+				TricksyFoxes.LOGGER.warn("Failed to parse whiteboard reference custom name {}", (Object)string, (Object)e);
+			}
+		}
 		return ref;
 	}
 }

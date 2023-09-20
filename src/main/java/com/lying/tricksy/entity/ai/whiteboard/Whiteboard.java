@@ -14,12 +14,14 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.text.Text;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -243,7 +245,7 @@ public abstract class Whiteboard<T>
 	/** A whiteboard containing globally-accessible values set by a tricksy mob's sage */
 	public static class Global extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 	{
-		public static final WhiteboardRef SPAWN = new WhiteboardRef("spawn_pos", TFObjType.BLOCK, BoardType.GLOBAL).noCache();
+		public static final WhiteboardRef SPAWN = new WhiteboardRef("spawn_pos", TFObjType.BLOCK, BoardType.GLOBAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".spawn_pos"));
 		
 		public Global(World worldIn)
 		{
@@ -264,15 +266,15 @@ public abstract class Whiteboard<T>
 	/** A whiteboard containing locally-accessible values set by a tricksy mob itself */
 	public static class Local<T extends PathAwareEntity & ITricksyMob<?>> extends Whiteboard<Function<T, IWhiteboardObject<?>>>
 	{
-		public static final WhiteboardRef SELF = new WhiteboardRef("self", TFObjType.ENT, BoardType.LOCAL).noCache();
-		public static final WhiteboardRef HP = new WhiteboardRef("health", TFObjType.INT, BoardType.LOCAL).noCache();
-		public static final WhiteboardRef ARMOUR = new WhiteboardRef("armor", TFObjType.INT, BoardType.LOCAL).noCache();
-		public static final WhiteboardRef HANDS_FULL = new WhiteboardRef("hands_full", TFObjType.BOOL, BoardType.LOCAL).noCache();
-		public static final WhiteboardRef HOME = new WhiteboardRef("home_pos", TFObjType.BLOCK, BoardType.LOCAL).noCache();
-		public static final WhiteboardRef HAS_SAGE = new WhiteboardRef("has_sage", TFObjType.BOOL, BoardType.LOCAL).noCache();
-		public static final WhiteboardRef NEAREST_SAGE = new WhiteboardRef("nearest_sage", TFObjType.ENT, BoardType.LOCAL).noCache();
-		public static final WhiteboardRef ATTACK_TARGET = new WhiteboardRef("attack_target", TFObjType.ENT, BoardType.LOCAL).noCache();
-		public static final WhiteboardRef ON_GROUND = new WhiteboardRef("on_ground", TFObjType.BOOL, BoardType.LOCAL).noCache();
+		public static final WhiteboardRef SELF = new WhiteboardRef("self", TFObjType.ENT, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".self"));
+		public static final WhiteboardRef HP = new WhiteboardRef("health", TFObjType.INT, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".health"));
+		public static final WhiteboardRef ARMOUR = new WhiteboardRef("armor", TFObjType.INT, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".armor"));
+		public static final WhiteboardRef HANDS_FULL = new WhiteboardRef("hands_full", TFObjType.BOOL, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".hands_full"));
+		public static final WhiteboardRef HOME = new WhiteboardRef("home_pos", TFObjType.BLOCK, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".home_pos"));
+		public static final WhiteboardRef HAS_SAGE = new WhiteboardRef("has_sage", TFObjType.BOOL, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".has_sage"));
+		public static final WhiteboardRef NEAREST_SAGE = new WhiteboardRef("nearest_sage", TFObjType.ENT, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".nearest_sage"));
+		public static final WhiteboardRef ATTACK_TARGET = new WhiteboardRef("attack_target", TFObjType.ENT, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".attack_target"));
+		public static final WhiteboardRef ON_GROUND = new WhiteboardRef("on_ground", TFObjType.BOOL, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".on_ground"));
 		
 		private final T tricksy;
 		

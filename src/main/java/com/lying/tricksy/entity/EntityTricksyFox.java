@@ -146,7 +146,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 			}
 			else if(!player.isSneaking())
 			{
-				// TODO Open fox UI
+				// FIXME Ensure sync of fox between client and server
 				player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new TreeScreenHandler(id, this), getDisplayName())).ifPresent(syncId -> SyncTreeScreenPacket.send(player, this, syncId));
 				return ActionResult.success(isClient);
 			}

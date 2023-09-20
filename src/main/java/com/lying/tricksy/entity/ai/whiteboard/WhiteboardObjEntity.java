@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
@@ -56,18 +57,18 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		NbtCompound compound = (NbtCompound)nbt;
 		WhiteboardObjEntity.EntityData data = new EntityData(compound.getUuid("UUID"), compound.getBoolean("IsPlayer"));
 		data.lastKnownPos = NbtHelper.toBlockPos(compound.getCompound("LastKnownPos"));
-//		if(compound.contains("EntityName", NbtElement.STRING_TYPE))
-//		{
-//			String string = compound.getString("EntityName");
-//			try
-//			{
-//				data.valueName = Text.Serializer.fromJson(string);
-//			}
-//			catch(Exception e)
-//			{
-//				TricksyFoxes.LOGGER.warn("Failed to parse entity custom name {}", (Object)string, (Object)e);
-//			}
-//		}
+		if(compound.contains("EntityName", NbtElement.STRING_TYPE))
+		{
+			String string = compound.getString("EntityName");
+			try
+			{
+				data.valueName = Text.Serializer.fromJson(string);
+			}
+			catch(Exception e)
+			{
+				TricksyFoxes.LOGGER.warn("Failed to parse entity custom name {}", (Object)string, (Object)e);
+			}
+		}
 		return data;
 	}
 	
@@ -99,8 +100,8 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 			data.putUuid("UUID", this.uuid);
 			data.putBoolean("IsPlayer", this.isPlayer);
 			data.put("LastKnownPos", NbtHelper.fromBlockPos(this.lastKnownPos));
-//			if(valueName != null)
-//				data.putString("EntityName", Text.Serializer.toJson(valueName));
+			if(valueName != null)
+				data.putString("EntityName", Text.Serializer.toJson(valueName));
 			
 			return data;
 		}

@@ -31,10 +31,10 @@ public class TFNodeTypes
 	 */
 	private static final Map<Identifier, NodeType<?>> TYPES = new HashMap<>();
 	
-	public static final NodeType<ControlFlowNode> CONTROL_FLOW = register("control_flow", new NodeType<ControlFlowNode>(9652010, ControlFlowNode::fromData, ControlFlowNode::populateSubTypes).setBaseSubType(ControlFlowNode.VARIANT_SEQUENCE));
-	public static final NodeType<DecoratorNode> DECORATOR = register("decorator", new NodeType<DecoratorNode>(4596374, DecoratorNode::fromData, DecoratorNode::populateSubTypes).setBaseSubType(DecoratorNode.VARIANT_INVERTER));
-	public static final NodeType<ConditionNode> CONDITION = register("condition", new NodeType<ConditionNode>(2261398, ConditionNode::fromData, ConditionNode::populateSubTypes).setBaseSubType(ConditionNode.VARIANT_VALUE_TRUE));
-	public static final NodeType<LeafNode> LEAF = register("leaf", new NodeType<LeafNode>(3130927, LeafNode::fromData, LeafNode::populateSubTypes).setBaseSubType(LeafNode.VARIANT_GOTO));
+	public static final NodeType<ControlFlowNode> CONTROL_FLOW = register("control_flow", new NodeType<ControlFlowNode>(12596790, ControlFlowNode::fromData, ControlFlowNode::populateSubTypes).setBaseSubType(ControlFlowNode.VARIANT_SEQUENCE));
+	public static final NodeType<DecoratorNode> DECORATOR = register("decorator", new NodeType<DecoratorNode>(3555008, DecoratorNode::fromData, DecoratorNode::populateSubTypes).setBaseSubType(DecoratorNode.VARIANT_INVERTER));
+	public static final NodeType<ConditionNode> CONDITION = register("condition", new NodeType<ConditionNode>(12630070, ConditionNode::fromData, ConditionNode::populateSubTypes).setBaseSubType(ConditionNode.VARIANT_VALUE_TRUE));
+	public static final NodeType<LeafNode> LEAF = register("leaf", new NodeType<LeafNode>(3588150, LeafNode::fromData, LeafNode::populateSubTypes).setBaseSubType(LeafNode.VARIANT_GOTO));
 	
 	public static final List<NodeType<?>> NODE_TYPES = List.of(LEAF, CONTROL_FLOW, DECORATOR, CONDITION);
 	
