@@ -125,26 +125,27 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 		TreeNode<?> root = handler.getTree().root();
 		hoveredNode = isDragging() ? null : root.findNodeAt(mouseX, mouseY);
 		
-		if(hoveredNode != null && hoveredElement(mouseX, mouseY).isEmpty())
+		if(hoveredNode != null)
 		{
 			addNode.visible = delNode.visible = true;
 			addNode.active = hoveredNode.canAddChild(null);
 			delNode.active = hoveredNode != root;
-			addNode.setPosition(hoveredNode.screenX + hoveredNode.width - 4 - addNode.getWidth(), hoveredNode.screenY);
+			addNode.setPosition(hoveredNode.screenX + hoveredNode.width - 2 - addNode.getWidth(), hoveredNode.screenY);
 			delNode.setPosition(hoveredNode.screenX, hoveredNode.screenY);
 			
-			switch(hoveredPart = hoveredNodePart(mouseX, mouseY))
-			{
-				case SUBTYPE:
-					context.drawTooltip(textRenderer, hoveredNode.getSubType().description(), mouseX, mouseY);
-					break;
-				case TYPE:
-					break;
-				case VARIABLES:
-					break;
-				default:
-					break;
-			}
+			if(hoveredElement(mouseX, mouseY) == null)
+				switch(hoveredPart = hoveredNodePart(mouseX, mouseY))
+				{
+					case SUBTYPE:
+						context.drawTooltip(textRenderer, hoveredNode.getSubType().description(), mouseX, mouseY);
+						break;
+					case TYPE:
+						break;
+					case VARIABLES:
+						break;
+					default:
+						break;
+				}
 		}
 		else
 		{

@@ -27,14 +27,12 @@ import net.minecraft.world.World;
 /**
  * Data storage object used by behaviour trees
  * @author Lying
- * 
- * FIXME Type argument to determine storage format and streamline
  */
-public abstract class Whiteboard
+public abstract class Whiteboard<T>
 {
-	public static final Whiteboard CONSTANTS = new Constants().build();
+	public static final Whiteboard<?> CONSTANTS = new Constants().build();
 	
-	protected final Map<WhiteboardRef, Supplier<IWhiteboardObject<?>>> values = new HashMap<>();
+	private final Map<WhiteboardRef, T> values = new HashMap<>();
 	protected final Map<WhiteboardRef, IWhiteboardObject<?>> cache = new HashMap<>();
 	
 	protected final BoardType type;
@@ -47,7 +45,9 @@ public abstract class Whiteboard
 	}
 	
 	/** Populates the whiteboard with its system values, post-construction */
-	public abstract Whiteboard build();
+	public abstract Whiteboard<?> build();
+	
+	protected void register(WhiteboardRef reference, T supplier) { values.put(reference, supplier); }
 	
 	public final NbtCompound writeToNbt(NbtCompound data)
 	{
@@ -80,7 +80,7 @@ public abstract class Whiteboard
 				continue;
 			}
 			IWhiteboardObject<?> obj = WhiteboardObj.createFromNbt(data.getCompound("Value"));
-			values.put(ref, () -> obj);
+			values.put(ref, objectToSupplier(obj));
 		}
 	}
 	
@@ -90,31 +90,35 @@ public abstract class Whiteboard
 	 */
 	protected void writeCachableValues(NbtList list)
 	{
-		for(Entry<WhiteboardRef, Supplier<IWhiteboardObject<?>>> entry : values.entrySet())
+		for(Entry<WhiteboardRef, T> entry : values.entrySet())
 		{
 			if(entry.getKey().uncached())
 				continue;
 			
 			NbtCompound data = new NbtCompound();
 			data.put("Ref", entry.getKey().writeToNbt(new NbtCompound()));
-			data.put("Value", entry.getValue().get().writeToNbt(new NbtCompound()));
+			data.put("Value", supplierToValue(entry.getValue()).writeToNbt(new NbtCompound()));
 			list.add(data);
 		}
 	}
 	
-	public void addValue(WhiteboardRef reference, WhiteboardObj<?> object)
+	protected void addSupplier(WhiteboardRef reference, T supplier) { values.put(reference, supplier); }
+	
+	protected abstract T objectToSupplier(IWhiteboardObject<?> object);
+	
+	public void addValue(WhiteboardRef reference, T object)
 	{
 		if(reference.boardType() != this.type)
 		{
 			TricksyFoxes.LOGGER.warn("Attempted to add reference value in wrong whiteboard: "+reference.name());
 			return;
 		}
-		else if(reference.type() != object.type())
+		else if(reference.type() != supplierToValue(object).type())
 		{
 			TricksyFoxes.LOGGER.warn("Attempted to add reference value with non-matching object: "+reference.name());
 			return;
 		}
-		values.put(reference, () -> object);
+		values.put(reference, object);
 	}
 	
 	public IWhiteboardObject<?> getValue(WhiteboardRef nameIn)
@@ -140,9 +144,13 @@ public abstract class Whiteboard
 		return getAndCache(nameIn, world);
 	}
 	
+	protected abstract IWhiteboardObject<?> supplierToValue(T supplier);
+	
+	public void setValue(WhiteboardRef reference, IWhiteboardObject<?> obj) { values.put(reference, objectToSupplier(obj)); }
+	
 	protected IWhiteboardObject<?> getAndCache(WhiteboardRef nameIn, @Nullable World world)
 	{
-		IWhiteboardObject<?> value = getSupplier(nameIn).get();
+		IWhiteboardObject<?> value = supplierToValue(getSupplier(nameIn));
 		if(world != null)
 			value.refreshIfNecessary(world);
 		if(!nameIn.uncached())
@@ -150,14 +158,13 @@ public abstract class Whiteboard
 		return value;
 	}
 	
-	private Supplier<IWhiteboardObject<?>> getSupplier(WhiteboardRef nameIn)
+	@Nullable
+	private T getSupplier(WhiteboardRef nameIn)
 	{
-		for(Entry<WhiteboardRef, Supplier<IWhiteboardObject<?>>> entry : values.entrySet())
-		{
+		for(Entry<WhiteboardRef, T> entry : values.entrySet())
 			if(entry.getKey().isSameRef(nameIn))
 				return entry.getValue();
-		}
-		return () -> WhiteboardObj.EMPTY;
+		return null;
 	}
 	
 	protected boolean cached(WhiteboardRef nameIn)
@@ -233,8 +240,8 @@ public abstract class Whiteboard
 		return references;
 	}
 	
-	/** A whiteboard containing globally-accessible values set by a tricksy mob's master */
-	public static class Global extends Whiteboard
+	/** A whiteboard containing globally-accessible values set by a tricksy mob's sage */
+	public static class Global extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 	{
 		public static final WhiteboardRef SPAWN = new WhiteboardRef("spawn_pos", TFObjType.BLOCK, BoardType.GLOBAL).noCache();
 		
@@ -243,15 +250,19 @@ public abstract class Whiteboard
 			super(BoardType.GLOBAL, worldIn);
 		}
 		
-		public Whiteboard build()
+		public Whiteboard<?> build()
 		{
-			values.put(SPAWN, () -> new WhiteboardObjBlock(world.getSpawnPos(), Direction.UP));
+			register(SPAWN, () -> new WhiteboardObjBlock(world.getSpawnPos(), Direction.UP));
 			return this;
 		}
+		
+		protected IWhiteboardObject<?> supplierToValue(Supplier<IWhiteboardObject<?>> supplier) { return supplier.get(); }
+		
+		protected Supplier<IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return () -> object; }
 	}
 	
 	/** A whiteboard containing locally-accessible values set by a tricksy mob itself */
-	public static class Local<T extends PathAwareEntity & ITricksyMob<?>> extends Whiteboard
+	public static class Local<T extends PathAwareEntity & ITricksyMob<?>> extends Whiteboard<Function<T, IWhiteboardObject<?>>>
 	{
 		public static final WhiteboardRef SELF = new WhiteboardRef("self", TFObjType.ENT, BoardType.LOCAL).noCache();
 		public static final WhiteboardRef HP = new WhiteboardRef("health", TFObjType.INT, BoardType.LOCAL).noCache();
@@ -263,7 +274,6 @@ public abstract class Whiteboard
 		public static final WhiteboardRef ATTACK_TARGET = new WhiteboardRef("attack_target", TFObjType.ENT, BoardType.LOCAL).noCache();
 		public static final WhiteboardRef ON_GROUND = new WhiteboardRef("on_ground", TFObjType.BOOL, BoardType.LOCAL).noCache();
 		
-		private final Map<WhiteboardRef, Function<T, IWhiteboardObject<?>>> mobValues = new HashMap<>();
 		private final T tricksy;
 		
 		public Local(T tricksyIn)
@@ -272,82 +282,26 @@ public abstract class Whiteboard
 			tricksy = tricksyIn;
 		}
 		
-		public Whiteboard build()
+		public Whiteboard<?> build()
 		{
-			mobValues.put(SELF, (tricksy) -> new WhiteboardObjEntity(tricksy));
-			mobValues.put(HP, (tricksy) -> new WhiteboardObj.Int((int)tricksy.getHealth()));
-			mobValues.put(ARMOUR, (tricksy) -> new WhiteboardObj.Int(tricksy.getArmor()));
-			mobValues.put(HANDS_FULL, (tricksy) -> new WhiteboardObj.Bool(!tricksy.getMainHandStack().isEmpty() && !tricksy.getOffHandStack().isEmpty()));
-			mobValues.put(HOME, (tricksy) -> new WhiteboardObjBlock(tricksy.getPositionTarget(), Direction.UP));
-			mobValues.put(HAS_SAGE, (tricksy) -> new WhiteboardObj.Bool(tricksy.hasSage()));
-			mobValues.put(NEAREST_SAGE, (tricksy) -> 
+			register(SELF, (tricksy) -> new WhiteboardObjEntity(tricksy));
+			register(HP, (tricksy) -> new WhiteboardObj.Int((int)tricksy.getHealth()));
+			register(ARMOUR, (tricksy) -> new WhiteboardObj.Int(tricksy.getArmor()));
+			register(HANDS_FULL, (tricksy) -> new WhiteboardObj.Bool(!tricksy.getMainHandStack().isEmpty() && !tricksy.getOffHandStack().isEmpty()));
+			register(HOME, (tricksy) -> new WhiteboardObjBlock(tricksy.getPositionTarget(), Direction.UP));
+			register(HAS_SAGE, (tricksy) -> new WhiteboardObj.Bool(tricksy.hasSage()));
+			register(NEAREST_SAGE, (tricksy) -> 
 			{
 				PlayerEntity nearestSage = tricksy.getEntityWorld().getClosestPlayer(tricksy.getX(), tricksy.getY(), tricksy.getZ(), 32D, (player) -> tricksy.isSage((PlayerEntity)player));
 				return nearestSage == null ? WhiteboardObj.EMPTY : new WhiteboardObjEntity(nearestSage);
 			});
-			mobValues.put(ATTACK_TARGET, (tricksy) -> new WhiteboardObjEntity(tricksy.getAttacking()));
-			mobValues.put(ON_GROUND, (tricksy) -> new WhiteboardObj.Bool(tricksy.isOnGround()));
+			register(ATTACK_TARGET, (tricksy) -> new WhiteboardObjEntity(tricksy.getAttacking()));
+			register(ON_GROUND, (tricksy) -> new WhiteboardObj.Bool(tricksy.isOnGround()));
 			return this;
 		}
 		
-		protected void loadValues(NbtList list)
-		{
-			for(int i=0; i<list.size(); i++)
-			{
-				NbtCompound data = list.getCompound(i);
-				WhiteboardRef ref = WhiteboardRef.fromNbt(data.getCompound("Ref"));
-				if(ref.boardType() != this.type)
-				{
-					TricksyFoxes.LOGGER.warn("Attempted to load reference value in wrong whiteboard: "+ref.name());
-					continue;
-				}
-				IWhiteboardObject <?>obj = WhiteboardObj.createFromNbt(data.getCompound("Value"));
-				mobValues.put(ref, (tricksy) -> obj);
-			}
-		}
+		protected IWhiteboardObject<?> supplierToValue(Function<T, IWhiteboardObject<?>> supplier) { return supplier.apply(tricksy); }
 		
-		protected void writeCachableValues(NbtList list)
-		{
-			for(Entry<WhiteboardRef, Function<T, IWhiteboardObject<?>>> entry : mobValues.entrySet())
-			{
-				if(entry.getKey().uncached())
-					continue;
-				
-				NbtCompound data = new NbtCompound();
-				data.put("Ref", entry.getKey().writeToNbt(new NbtCompound()));
-				data.put("Value", getValue(entry.getKey()).writeToNbt(new NbtCompound()));
-				list.add(data);
-			}
-		}
-		
-		public void setValue(WhiteboardRef reference, IWhiteboardObject<?> value)
-		{
-			if(mobValues.containsKey(reference) && !reference.uncached() && reference.boardType() == this.type)
-				mobValues.put(reference, (T) -> value);
-		}
-		
-		public Collection<WhiteboardRef> allReferences(){ return mobValues.keySet(); }
-		
-		@Override
-		protected IWhiteboardObject<?> getAndCache(WhiteboardRef nameIn, @Nullable World world)
-		{
-			IWhiteboardObject<?> value = getSupplier(nameIn).apply(tricksy);
-			if(world != null)
-				value.refreshIfNecessary(world);
-			if(!nameIn.uncached())
-				cache.put(nameIn, value);
-			return value;
-		}
-		
-		private Function<T, IWhiteboardObject<?>> getSupplier(WhiteboardRef nameIn)
-		{
-			for(Entry<WhiteboardRef, Function<T, IWhiteboardObject<?>>> entry : mobValues.entrySet())
-			{
-				
-				if(entry.getKey().isSameRef(nameIn))
-					return entry.getValue();
-			}
-			return (T) -> WhiteboardObj.EMPTY;
-		}
+		protected Function<T, IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return (tricksy) -> object; }
 	}
 }

@@ -1,8 +1,10 @@
 package com.lying.tricksy.entity.ai.whiteboard;
 
+import java.util.function.Supplier;
+
 import com.lying.tricksy.init.TFObjType;
 
-public class Constants extends Whiteboard
+public class Constants extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 {
 	public static final WhiteboardRef NUM_1 = new WhiteboardRef("number_1", TFObjType.INT, BoardType.CONSTANT);
 	public static final WhiteboardRef NUM_2 = new WhiteboardRef("number_2", TFObjType.INT, BoardType.CONSTANT);
@@ -16,17 +18,21 @@ public class Constants extends Whiteboard
 	
 	public Constants() { super(BoardType.CONSTANT, null); }
 	
-	public Whiteboard build()
+	public Whiteboard<?> build()
 	{
-		values.put(NUM_1, () -> new WhiteboardObj.Int(1));
-		values.put(NUM_2, () -> new WhiteboardObj.Int(2));
-		values.put(NUM_4, () -> new WhiteboardObj.Int(4));
-		values.put(NUM_8, () -> new WhiteboardObj.Int(8));
-		values.put(NUM_16, () -> new WhiteboardObj.Int(16));
-		values.put(NUM_32, () -> new WhiteboardObj.Int(32));
-		values.put(NUM_64, () -> new WhiteboardObj.Int(64));
-		values.put(BOOL_TRUE, () -> new WhiteboardObj.Bool(true));
-		values.put(BOOL_FALSE, () -> new WhiteboardObj.Bool(false));
+		register(NUM_1, () -> new WhiteboardObj.Int(1));
+		register(NUM_2, () -> new WhiteboardObj.Int(2));
+		register(NUM_4, () -> new WhiteboardObj.Int(4));
+		register(NUM_8, () -> new WhiteboardObj.Int(8));
+		register(NUM_16, () -> new WhiteboardObj.Int(16));
+		register(NUM_32, () -> new WhiteboardObj.Int(32));
+		register(NUM_64, () -> new WhiteboardObj.Int(64));
+		register(BOOL_TRUE, () -> new WhiteboardObj.Bool(true));
+		register(BOOL_FALSE, () -> new WhiteboardObj.Bool(false));
 		return this;
 	}
+	
+	protected Supplier<IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return () -> object; }
+	
+	protected IWhiteboardObject<?> supplierToValue(Supplier<IWhiteboardObject<?>> supplier) { return supplier.get(); }
 }
