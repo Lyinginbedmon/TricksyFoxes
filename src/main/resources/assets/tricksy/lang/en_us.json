@@ -64,7 +64,7 @@
 	"variable.tricksy.value_b": "Value B",
 	"variable.tricksy.position": "Position",
 	"variable.tricksy.range": "Range",
-	"variable.tricksy.count": "Number",
+	"variable.tricksy.number": "Number",
 	"variable.tricksy.to_cycle": "List",
 	"variable.tricksy.to_copy": "Value",
 	"variable.tricksy.ref_target": "Entry",

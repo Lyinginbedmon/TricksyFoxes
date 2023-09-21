@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import org.joml.Matrix4f;
 
@@ -110,15 +112,77 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 			{
 				case SUBTYPE:
 					hoveredNode.changeSubType((int)amount);
-					break;
+					return true;
 				case TYPE:
-					// Cycle node types
-					break;
+					if(hoveredNode.isRoot())	// Cannot replace the root node
+						return false;
+					
+					int typeCount = TFNodeTypes.NODE_TYPES.size();
+					int typeIndex = -1;
+					for(int i=0; i<typeCount; i++)
+						if(TFNodeTypes.NODE_TYPES.get(i) == hoveredNode.getType())
+						{
+							typeIndex = i;
+							break;
+						}
+					
+					if(typeIndex >= 0)
+					{
+						typeIndex += (int)amount;
+						if(typeIndex < 0)
+							typeIndex = typeCount - 1;
+						else
+							typeIndex %= typeCount;
+						
+						hoveredNode.parent().replaceChild(hoveredNode.getID(), TFNodeTypes.NODE_TYPES.get(typeIndex).create(hoveredNode.getID()));
+						
+						return true;
+					}
+					
+					return true;
 				case VARIABLES:
-					// Cycle available input values
-					break;
-				default:
-					break;
+					// The input variable we are cycling
+					WhiteboardRef inputRef = null;
+					
+					int index = Math.floorDiv((int)mouseY - hoveredNode.screenY - 24, 11);
+					List<Pair<Text, Optional<Text>>> sortedVariables = getSortedVariables(hoveredNode);
+					Text indexName = sortedVariables.get(index).getLeft();
+					
+					Map<WhiteboardRef, Predicate<WhiteboardRef>> variables = hoveredNode.getSubType().variableSet();
+					for(WhiteboardRef ref : variables.keySet())
+						if(ref.displayName().getString().equals(indexName.getString()))
+						{
+							inputRef = ref;
+							break;
+						}
+					if(inputRef == null)
+						return false;
+					
+					// The current whiteboard value in use (if any)
+					WhiteboardRef valueRef = hoveredNode.variable(inputRef);
+					
+					List<WhiteboardRef> options = this.handler.getMatches(variables.get(inputRef));
+					if(options.isEmpty())
+						valueRef = null;
+					else
+					{
+						options = WhiteboardRef.sortByDisplayName(options);
+						int optionIndex = 0;
+						if(valueRef != null)
+							optionIndex = options.indexOf(valueRef);
+						
+						optionIndex += amount;
+						if(optionIndex >= options.size())
+							optionIndex -= options.size();
+						
+						if(optionIndex < 0)
+							valueRef = null;
+						else
+							valueRef = options.get(optionIndex);
+					}
+					
+					hoveredNode.assign(inputRef, valueRef);
+					return true;
 			}
 		}
 		return super.mouseScrolled(mouseX, mouseY, amount);
@@ -152,7 +216,7 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 		if(hoveredNode != null)
 		{
 			addNode.visible = delNode.visible = true;
-			addNode.active = hoveredNode.canAddChild(null);
+			addNode.active = hoveredNode.canAddChild();
 			delNode.active = hoveredNode != root;
 			addNode.setPosition(hoveredNode.screenX + hoveredNode.width - 7 - addNode.getWidth(), hoveredNode.screenY + 6);
 			delNode.setPosition(hoveredNode.screenX + 7, hoveredNode.screenY + 6);
@@ -207,8 +271,22 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 		context.drawText(this.textRenderer, subName, node.screenX + (NODE_WIDTH - this.textRenderer.getWidth(subName)) / 2, drawY, -1, false);
 		drawY += 11;
 		
+		for(Pair<Text, Optional<Text>> line : getSortedVariables(node))
+		{
+			context.drawText(this.textRenderer, line.getLeft(), node.screenX + 4 + (46 - this.textRenderer.getWidth(line.getLeft())) / 2, drawY, 0x404040, false);
+			if(line.getRight().isPresent())
+				context.drawText(this.textRenderer, line.getRight().get(), node.screenX + 50 + (100 - this.textRenderer.getWidth(line.getRight().get())) / 2, drawY, 0x404040, false);
+			drawY += 11;
+		}
+		
+		for(TreeNode<?> child : node.children())
+			renderNode(child, context);
+	}
+	
+	public static List<Pair<Text, Optional<Text>>> getSortedVariables(TreeNode<?> node)
+	{
 		List<Pair<Text, Optional<Text>>> variablesToDisplay = Lists.newArrayList();
-		for(WhiteboardRef input : subType.variableSet().keySet())
+		for(WhiteboardRef input : node.getSubType().variableSet().keySet())
 		{
 			Text inputName = input.displayName();
 			
@@ -235,17 +313,7 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 				return indA > indB ? 1 : indA < indB ? -1 : 0;
 			}
 		});
-		
-		for(Pair<Text, Optional<Text>> line : variablesToDisplay)
-		{
-			context.drawText(this.textRenderer, line.getLeft(), node.screenX + 4 + (46 - this.textRenderer.getWidth(line.getLeft())) / 2, drawY, 0x404040, false);
-			if(line.getRight().isPresent())
-				context.drawText(this.textRenderer, line.getRight().get(), node.screenX + 50 + (100 - this.textRenderer.getWidth(line.getRight().get())) / 2, drawY, 0x404040, false);
-			drawY += 11;
-		}
-		
-		for(TreeNode<?> child : node.children())
-			renderNode(child, context);
+		return variablesToDisplay;
 	}
 	
 	private HoveredElement hoveredNodePart(int mouseX, int mouseY)
@@ -299,15 +367,21 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 			return;
 		
 		int lineWidth = 2;
-		
 		int startX = node.screenX + 6;
 		int endX = startX + lineWidth;
 		int startY = node.screenY + node.height;
+		
+		int col = decimalToARGB(colour);
+		
+		// Main line
+		TreeNode<?> lastChild = node.children().get(node.children().size() - 1);
+		context.fill(startX, startY, endX, lastChild.screenY + (lastChild.height / 2), col);
+		
+		// Offshoots
 		for(TreeNode<?> child : node.children())
 		{
 			int endY = child.screenY + (child.height / 2);
-			context.fill(startX, startY, endX, endY, decimalToARGB(colour));
-			context.fill(startX, endY - lineWidth, child.screenX - 2, endY, decimalToARGB(colour));
+			context.fill(startX, endY - lineWidth, child.screenX - 2, endY, col);
 			
 			drawNodeConnections(context, child, child.getType().color());
 		}
@@ -330,7 +404,7 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 	
 	protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY)
 	{
-		renderBackgroundTexture(context);
+		renderBackground(context);
 		if(handler.getTree() == null)
 			return;
 		

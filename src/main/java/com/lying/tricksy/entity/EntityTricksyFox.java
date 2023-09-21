@@ -65,6 +65,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		this.getDataTracker().startTracking(TYPE, 0);
 		this.getDataTracker().startTracking(OWNER_UUID, Optional.empty());
 		this.getDataTracker().startTracking(COLOR, OptionalInt.empty());
+		this.getDataTracker().startTracking(TREE_NBT, BehaviourTree.INITIAL_TREE.write(new NbtCompound()));
 	}
 	
 	protected void initGoals()
@@ -146,7 +147,6 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 			}
 			else if(!player.isSneaking())
 			{
-				// FIXME Ensure sync of fox between client and server
 				player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new TreeScreenHandler(id, this), getDisplayName())).ifPresent(syncId -> SyncTreeScreenPacket.send(player, this, syncId));
 				return ActionResult.success(isClient);
 			}

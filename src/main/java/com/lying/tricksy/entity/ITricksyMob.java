@@ -56,7 +56,7 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 		return false;
 	}
 	
-	/** Returns the behaviour tree of this mob.<br>Note: This may not exactly match the structure stored in NBT. */
+	/** Returns the behaviour tree of this mob.<br>Note: This may not exactly match the structure stored in NBT, due to runtime value changes. */
 	public BehaviourTree getBehaviourTree();
 	
 	/** Returns the local whiteboard of this mob. */

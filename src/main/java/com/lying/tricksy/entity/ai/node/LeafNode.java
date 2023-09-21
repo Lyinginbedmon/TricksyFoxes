@@ -54,7 +54,7 @@ public class LeafNode extends TreeNode<LeafNode>
 		return new LeafNode(uuid);
 	}
 	
-	public final boolean canAddChild(TreeNode<?> child) { return false; }
+	public final boolean canAddChild() { return false; }
 	
 	public static void populateSubTypes(Collection<NodeSubType<LeafNode>> set)
 	{

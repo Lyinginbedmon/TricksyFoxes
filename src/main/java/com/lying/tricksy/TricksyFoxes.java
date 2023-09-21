@@ -9,10 +9,12 @@ import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.network.SaveTreePacket;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.ServerBus;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 public class TricksyFoxes implements ModInitializer
 {
@@ -31,5 +33,7 @@ public class TricksyFoxes implements ModInitializer
 		TFItems.init();
 		TFEntityTypes.init();
 		TFRecipeProvider.addBrewingRecipes();
+		
+		ServerPlayNetworking.registerGlobalReceiver(SaveTreePacket.PACKET_ID, new SaveTreePacket.Receiver());
 	}
 }

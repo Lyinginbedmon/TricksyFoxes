@@ -48,7 +48,7 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 		super(TFNodeTypes.DECORATOR, uuidIn);
 	}
 	
-	public final boolean canAddChild(TreeNode<?> child) { return children().isEmpty(); }
+	public final boolean canAddChild() { return children().isEmpty(); }
 	
 	public final boolean isRunnable() { return children().size() == 1; }
 	

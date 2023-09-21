@@ -220,7 +220,7 @@ public abstract class Whiteboard<T>
 	}
 	
 	/** Returns a collection of all references stored in this whiteboard, without their values */
-	protected Collection<WhiteboardRef> allReferences() { return values.keySet(); }
+	public Collection<WhiteboardRef> allReferences() { return values.keySet(); }
 	
 	protected boolean hasReference(WhiteboardRef reference)
 	{

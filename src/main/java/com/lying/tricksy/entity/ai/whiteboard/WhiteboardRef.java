@@ -1,5 +1,11 @@
 package com.lying.tricksy.entity.ai.whiteboard;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.init.TFObjType;
@@ -36,6 +42,20 @@ public class WhiteboardRef
 	
 	@Override
 	public boolean equals(Object refB) { return refB instanceof WhiteboardRef ? isSameRef((WhiteboardRef)refB) : false; }
+	
+	public static List<WhiteboardRef> sortByDisplayName(List<WhiteboardRef> set)
+	{
+		Map<String, WhiteboardRef> valueMap = new HashMap<>();
+		set.forEach((val) -> valueMap.put(val.displayName.getString(), val));
+		List<String> nameSet = Lists.newArrayList();
+		nameSet.addAll(valueMap.keySet());
+		Collections.sort(nameSet);
+		
+		List<WhiteboardRef> sorted = Lists.newArrayList();
+		nameSet.forEach((name) -> sorted.add(valueMap.get(name)));
+		
+		return sorted;
+	}
 	
 	public boolean isSameRef(WhiteboardRef refB) { return refB.name.equals(this.name) && refB.varType == this.varType && refB.onBoard == this.onBoard; }
 	

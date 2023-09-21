@@ -147,10 +147,20 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		return false;
 	}
 	
-	public final TreeNode<N> assign(WhiteboardRef variable, WhiteboardRef value)
+	public final TreeNode<N> assign(WhiteboardRef variable, @Nullable WhiteboardRef value)
 	{
-		if(variableSet.containsKey(variable))
-			variableSet.put(variable, Optional.of(value));
+		WhiteboardRef mapEntry = null;
+		for(WhiteboardRef entry : variableSet.keySet())
+			if(entry.equals(variable))
+			{
+				mapEntry = entry;
+				break;
+			}
+		
+		if(mapEntry != null)
+			variableSet.put(mapEntry, value == null ? Optional.empty() : Optional.of(value));
+		else
+			TricksyFoxes.LOGGER.warn("Attempted to assign a variable this node does not have! "+variable.name()+" in "+subType.toString()+" of "+nodeType.getRegistryName().toString());
 		return this;
 	}
 	
@@ -191,12 +201,27 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	public boolean isRunnable() { return true; }
 	
 	/** Returns true if this node can accept the given child node */
-	public boolean canAddChild(TreeNode<?> child) { return true; }
+	public boolean canAddChild() { return true; }
 	
 	public final TreeNode<?> addChild(TreeNode<?> childIn)
 	{
 		children.add(childIn.setParent(this));
 		return this;
+	}
+	
+	public final void replaceChild(UUID childID, TreeNode<?> replacement)
+	{
+		int index = -1;
+		for(int i=0; i<this.children.size(); i++)
+			if(children.get(i).nodeID.equals(childID))
+			{
+				index = i;
+				break;
+			}
+		if(index < 0)
+			return;
+		
+		children.set(index, replacement.setParent(this));
 	}
 	
 	public final void removeChild(TreeNode<?> nodeIn) { removeChild(nodeIn.getID()); }
@@ -218,7 +243,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	public List<TreeNode<?>> children() { return children; }
 	
 	/** Returns true if this node has no parent and, hence, is a root node */
-	public final boolean isRoot() { return parent != null; }
+	public final boolean isRoot() { return parent == null; }
 	
 	protected TreeNode<?> setParent(TreeNode<?> node) { parent = node; return this; }
 	
@@ -267,7 +292,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			for(int i=0; i<children.size(); i++)
 			{
 				TreeNode<?> child = create(children.getCompound(i));
-				if(child != null && parent.canAddChild(child))
+				if(child != null && parent.canAddChild())
 					parent.addChild(child);
 			}
 			

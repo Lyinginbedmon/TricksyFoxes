@@ -27,7 +27,7 @@ import net.minecraft.nbt.NbtCompound;
 public class BehaviourTree
 {
 	/** Default behaviour tree applied on tricksy mob startup before being overridden by NBT */
-	private static final TreeNode<?> INITIAL_TREE = 
+	public static final TreeNode<?> INITIAL_TREE = 
 			TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID())
 			.setSubType(ControlFlowNode.VARIANT_SEQUENCE)
 			.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID())
@@ -40,7 +40,6 @@ public class BehaviourTree
 				.setSubType(LeafNode.VARIANT_GOTO)
 				.assign(CommonVariables.VAR_POS, Whiteboard.Local.NEAREST_SAGE));
 	
-	@Nullable
 	private TreeNode<?> root;
 	
 	public BehaviourTree() { this(INITIAL_TREE.copy()); }
@@ -52,17 +51,16 @@ public class BehaviourTree
 	
 	public BehaviourTree copy() { return create(storeInNbt()); }
 	
-	public TreeNode<?> root() { return this.root; }
+	public TreeNode<?> root() { return this.root == null ? (this.root = TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID())) : this.root; }
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> void update(T tricksy, Local<T> local, Global global)
 	{
-		if(root != null)
-			root.tick(tricksy, local, global);
+		root().tick(tricksy, local, global);
 	}
 	
 	public NbtCompound storeInNbt()
 	{
-		return root.write(new NbtCompound());
+		return root().write(new NbtCompound());
 	}
 	
 	public static BehaviourTree create(NbtCompound data)
@@ -74,7 +72,7 @@ public class BehaviourTree
 	/** Returns the total number of nodes in this behaviour tree */
 	public int size()
 	{
-		return recursiveNodeCount(root);
+		return recursiveNodeCount(root());
 	}
 	
 	private static int recursiveNodeCount(TreeNode<?> node)

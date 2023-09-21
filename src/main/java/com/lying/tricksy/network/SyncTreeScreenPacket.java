@@ -8,6 +8,8 @@ import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.TreeScreenHandler;
 
 import io.netty.buffer.Unpooled;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -32,34 +34,26 @@ public class SyncTreeScreenPacket
 		ServerPlayNetworking.send((ServerPlayerEntity)player, PACKET_ID, buffer);
 	}
 	
+	@Environment(EnvType.CLIENT)
 	public static class Receiver implements ClientPlayNetworking.PlayChannelHandler
 	{
 		public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender)
 		{
 			int syncId = buf.readInt();
+			UUID tricksyID = buf.readUuid();
+			
 			client.execute(() -> 
 			{
 				if(client.player == null)
 					return;
-
+				
 				PlayerEntity player = client.player;
 				ScreenHandler screenHandler = client.player.currentScreenHandler;
 				if(syncId == screenHandler.syncId && screenHandler instanceof TreeScreenHandler)
 				{
-					UUID tricksyID = buf.readUuid();
-					
-					PathAwareEntity entity = null;
 					List<PathAwareEntity> entities = player.getWorld().getEntitiesByClass(PathAwareEntity.class, player.getBoundingBox().expand(16D), (mob) -> mob.getUuid().equals(tricksyID));
 					if(!entities.isEmpty())
-						entity = entities.get(0);
-					
-					if(entity != null)
-					{
-						ITricksyMob<?> tricksy = (ITricksyMob<?>)entity;
-						// Set behaviour tree to screen
-						((TreeScreenHandler)screenHandler).setTricksy(tricksy);
-						((TreeScreenHandler)screenHandler).setTree(tricksy.getBehaviourTree());
-					}
+						((TreeScreenHandler)screenHandler).sync((ITricksyMob<?>)entities.get(0), entities.get(0).getUuid());
 				}
 			});
 		}
