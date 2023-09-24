@@ -1,6 +1,6 @@
 package com.lying.tricksy.renderer.layer;
 
-import com.lying.tricksy.TFModelParts;
+import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.armor.ModelSageHat;
 import com.lying.tricksy.reference.Reference;
 

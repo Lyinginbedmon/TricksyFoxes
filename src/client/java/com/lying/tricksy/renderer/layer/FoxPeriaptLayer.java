@@ -1,7 +1,7 @@
 package com.lying.tricksy.renderer.layer;
 
-import com.lying.tricksy.TFModelParts;
 import com.lying.tricksy.init.TFComponents;
+import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.layer.ModelFoxPeriapt;
 import com.lying.tricksy.reference.Reference;
 

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 import org.jetbrains.annotations.NotNull;
@@ -102,6 +103,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		}
 		return null;
 	}
+	
+	public Random getRNG() { return new Random(getID().getLeastSignificantBits()); }
 	
 	/** Returns the unique ID of this node */
 	public final UUID getID() { return this.nodeID; }

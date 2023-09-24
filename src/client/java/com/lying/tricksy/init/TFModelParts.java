@@ -1,4 +1,4 @@
-package com.lying.tricksy;
+package com.lying.tricksy.init;
 
 import com.lying.tricksy.model.armor.ModelSageHat;
 import com.lying.tricksy.model.entity.ModelTricksyFox;

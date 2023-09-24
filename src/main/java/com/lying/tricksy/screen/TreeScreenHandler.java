@@ -12,7 +12,6 @@ import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFScreenHandlerTypes;
-import com.lying.tricksy.network.SaveTreePacket;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -26,7 +25,6 @@ public class TreeScreenHandler extends ScreenHandler
 	private List<WhiteboardRef> references = Lists.newArrayList();
 	private ITricksyMob<?> tricksy = null;
 	private UUID tricksyID;
-	private boolean shouldWrite = false;
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> TreeScreenHandler(int syncId, T tricksyIn)
 	{
@@ -60,8 +58,6 @@ public class TreeScreenHandler extends ScreenHandler
 	
 	public BehaviourTree getTree() { return tricksyTree; }
 	
-	public void setWrite(boolean var) { this.shouldWrite = var; }
-	
 	public void sync(@NotNull ITricksyMob<?> tricksyIn, UUID mobID)
 	{
 		this.tricksy = tricksyIn;
@@ -86,10 +82,6 @@ public class TreeScreenHandler extends ScreenHandler
 			this.tricksyTree = new BehaviourTree();
 	}
 	
-	public void onClosed(PlayerEntity player)
-	{
-		if(player.getWorld().isClient() && shouldWrite && tricksy != null)
-			SaveTreePacket.send(player, tricksyID, tricksyTree);
-	}
+	public UUID tricksyUUID() { return this.tricksyID; }
 
 }
