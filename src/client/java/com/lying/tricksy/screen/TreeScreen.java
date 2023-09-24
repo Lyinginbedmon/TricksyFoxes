@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.function.Predicate;
 
+import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
@@ -245,7 +246,7 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 		for(TreeNode<?> child : node.children())
 		{
 			Random childRNG = child.getRNG();
-			int xOffset = (1 + childRNG.nextInt(8)) * 5;
+			int xOffset = TricksyFoxesClient.config.fancyTrees() ? childRNG.nextInt(2, 8) * 5 : 10;
 			scaleAndPositionNode(child, node.screenX + NodeRenderUtils.CONNECTOR_OFFSET + xOffset, childY);
 			childY += NodeRenderUtils.nodeDisplayHeightRecursive(child) + NodeRenderUtils.NODE_SPACING;
 		}

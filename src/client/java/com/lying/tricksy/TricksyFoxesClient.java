@@ -1,12 +1,13 @@
 package com.lying.tricksy;
 
+import com.lying.tricksy.config.ClientConfig;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.init.TFScreenHandlerTypes;
-import com.lying.tricksy.network.SyncTreeScreenReceiver;
 import com.lying.tricksy.network.SyncTreeScreenPacket;
+import com.lying.tricksy.network.SyncTreeScreenReceiver;
 import com.lying.tricksy.renderer.entity.EntityTricksyFoxRenderer;
 import com.lying.tricksy.renderer.layer.SageHatRenderer;
 import com.lying.tricksy.screen.TreeScreen;
@@ -20,6 +21,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.DyeableItem;
@@ -27,8 +29,15 @@ import net.minecraft.item.DyeableItem;
 @Environment(EnvType.CLIENT)
 public class TricksyFoxesClient implements ClientModInitializer
 {
+	public static MinecraftClient mc;
+	public static ClientConfig config;
+	
 	public void onInitializeClient()
 	{
+		mc = MinecraftClient.getInstance();
+		config = new ClientConfig(mc.runDirectory.getAbsolutePath() + "/config/TricksyFoxesClient.cfg");
+		config.read();
+		
 		BlockRenderLayerMap.INSTANCE.putBlock(TFBlocks.PRESCIENCE, RenderLayer.getCutout());
 		
 		ClientBus.registerEventCallbacks();

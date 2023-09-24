@@ -24,6 +24,12 @@ public interface IWhiteboardObject<T>
 	/** Adds the given value to this object */
 	public void add(T val);
 	
+	public default void tryAdd(IWhiteboardObject<?> val)
+	{
+		if(val.type().castableTo(type()))
+			add(val.as(type()).get());
+	}
+	
 	/** Returns true if this object holds no appreciable value */
 	public default boolean isEmpty() { return size() == 0 || type().isEmpty(this); }
 	

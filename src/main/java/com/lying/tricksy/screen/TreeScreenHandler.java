@@ -68,7 +68,7 @@ public class TreeScreenHandler extends ScreenHandler
 		if(tricksy != null)
 		{
 			references.addAll(tricksyIn.getLocalWhiteboard().allReferences());
-			// TODO Add references from global whiteboard
+			references.addAll(tricksyIn.getGlobalWhiteboard().allReferences());
 		}
 		
 		resetTree();

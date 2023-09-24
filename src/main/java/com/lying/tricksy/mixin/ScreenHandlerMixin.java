@@ -44,9 +44,7 @@ public class ScreenHandlerMixin
 			ItemStack stack = slot.getStack();
 			if(stack.getItem() == TFItems.NOTE)
 			{
-				ItemStack converted = convertTo(stack, TFItems.NOTE_POS);
-				ItemPrescientNote.setVariable(TFObjType.BLOCK.create(new NbtCompound()), converted);
-				
+				ItemStack converted = convertTo(stack.copy(), TFItems.NOTE_POS);
 				slot.setStack(converted);
 				ci.cancel();
 			}

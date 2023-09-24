@@ -4,9 +4,11 @@ import java.util.function.Consumer;
 
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFItems;
+import com.lying.tricksy.init.TFSpecialRecipes;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
+import net.minecraft.data.server.recipe.ComplexRecipeJsonBuilder;
 import net.minecraft.data.server.recipe.RecipeJsonProvider;
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
 import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder;
@@ -23,6 +25,10 @@ public class TFRecipeProvider extends FabricRecipeProvider
 	// XXX Recipe does not load or unlock ingame? Unreliable
 	public void generate(Consumer<RecipeJsonProvider> exporter)
 	{
+		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_INTEGER_SERIALIZER).offerTo(exporter, "note_integer");
+		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_BOOLEAN_SERIALIZER).offerTo(exporter, "note_boolean");
+		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_ITEM_SERIALIZER).offerTo(exporter, "note_item");
+		
 		ShapedRecipeJsonBuilder.create(RecipeCategory.COMBAT, TFItems.SAGE_HAT)
 			.pattern("gag").pattern("l l")
 			.input('l', Items.LEATHER).input('a',Items.AMETHYST_SHARD).input('g', Items.GOLD_INGOT)
@@ -40,7 +46,6 @@ public class TFRecipeProvider extends FabricRecipeProvider
 			.criterion(FabricRecipeProvider.hasItem(Items.EXPERIENCE_BOTTLE), FabricRecipeProvider.conditionsFromItem(Items.EXPERIENCE_BOTTLE))
 			.criterion(FabricRecipeProvider.hasItem(Items.AMETHYST_SHARD), FabricRecipeProvider.conditionsFromItem(Items.AMETHYST_SHARD))
 			.criterion(FabricRecipeProvider.hasItem(TFBlocks.PRESCIENCE), FabricRecipeProvider.conditionsFromItem(TFBlocks.PRESCIENCE)).offerTo(exporter);
-		
 	}
 	
 	public static void addBrewingRecipes()

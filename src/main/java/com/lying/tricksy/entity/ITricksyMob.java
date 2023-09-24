@@ -25,16 +25,16 @@ import net.minecraft.nbt.NbtCompound;
  */
 public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 {
-	/** Returns true if this mob has a master */
-	public default boolean hasSage() { return getMaster().isPresent(); }
+	/** Returns true if this mob has a sage */
+	public default boolean hasSage() { return getSage().isPresent(); }
 	
-	public Optional<UUID> getMaster();
+	public Optional<UUID> getSage();
 	
-	/** Sets the UUID of this mob's master */
-	public void setMaster(@Nullable UUID uuidIn);
+	/** Sets the UUID of this mob's sage */
+	public void setSage(@Nullable UUID uuidIn);
 	
 	/**
-	 * Returns true if the given entity should be recognised as this mob's master due to a matching Sage Hat
+	 * Returns true if the given entity should be recognised as this mob's sage due to a matching Sage Hat
 	 * @param living
 	 */
 	public default boolean isSage(LivingEntity living)
@@ -49,7 +49,7 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 		{
 			ItemStack hatStack = living.getEquippedStack(slot);
 			if(!hatStack.isEmpty() && hatStack.getItem() == TFItems.SAGE_HAT)
-				if(getMaster().get().equals(ItemSageHat.getMasterID(hatStack)))
+				if(getSage().get().equals(ItemSageHat.getMasterID(hatStack)))
 					return true;
 		}
 		
@@ -62,6 +62,8 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 	/** Returns the local whiteboard of this mob. */
 	public Whiteboard.Local<T> getLocalWhiteboard();
 	
+	public Whiteboard.Global getGlobalWhiteboard();
+	
 	@SuppressWarnings("unchecked")
 	public static <T extends PathAwareEntity & ITricksyMob<?>> void updateBehaviourTree(T tricksy)
 	{
@@ -70,7 +72,7 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 		
 		// Update whiteboards
 		Whiteboard.Local<T> local = (Local<T>)tricksy.getLocalWhiteboard();
-		Whiteboard.Global global = null;	// TODO Implement global whiteboards
+		Whiteboard.Global global = tricksy.getGlobalWhiteboard();
 		
 		// Update behaviour tree
 		BehaviourTree tree = tricksy.getBehaviourTree();

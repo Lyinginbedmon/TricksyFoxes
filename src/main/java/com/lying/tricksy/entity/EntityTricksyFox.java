@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
@@ -15,6 +16,7 @@ import com.lying.tricksy.item.ItemSageHat;
 import com.lying.tricksy.network.SyncTreeScreenPacket;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.TreeScreenHandler;
+import com.lying.tricksy.utility.ServerWhiteboards;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.VariantHolder;
@@ -80,7 +82,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		if(data.contains("Color", NbtElement.INT_TYPE))
 			getDataTracker().set(COLOR, OptionalInt.of(data.getInt("Color")));
 		if(data.contains("MasterID", NbtElement.INT_ARRAY_TYPE))
-			setMaster(data.getUuid("MasterID"));
+			setSage(data.getUuid("MasterID"));
 		setVariant(Type.byName(data.getString("Type")));
 		
 		boardLocal.readFromNbt(data.getCompound("Whiteboard"));
@@ -109,7 +111,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		{
 			if(!hasSage() || isSage(player))
 			{
-				setMaster(ItemSageHat.getMasterID(heldStack, player));
+				setSage(ItemSageHat.getSageID(heldStack, player));
 				player.sendMessage(Text.translatable("entity."+Reference.ModInfo.MOD_ID+".tricksy_fox.master_set", getDisplayName()), true);
 				return ActionResult.success(isClient);
 			}
@@ -178,9 +180,9 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		return null;
 	}
 	
-	public Optional<UUID> getMaster() { return this.getDataTracker().get(OWNER_UUID); }
+	public Optional<UUID> getSage() { return this.getDataTracker().get(OWNER_UUID); }
 	
-	public void setMaster(@Nullable UUID uuidIn) { this.getDataTracker().set(OWNER_UUID, Optional.of(uuidIn)); }
+	public void setSage(@Nullable UUID uuidIn) { this.getDataTracker().set(OWNER_UUID, Optional.of(uuidIn)); }
 	
 	public BehaviourTree getBehaviourTree()
 	{
@@ -188,6 +190,13 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	}
 	
 	public Local<EntityTricksyFox> getLocalWhiteboard() { return this.boardLocal; }
+	
+	public Global getGlobalWhiteboard()
+	{
+		return hasSage() ? 
+					ServerWhiteboards.getServerWhiteboards(getServer()).getWhiteboardFor(getSage().get()) : 
+					new Whiteboard.Global(getEntityWorld());
+	}
 	
 	public void setBehaviourTree(NbtCompound data)
 	{

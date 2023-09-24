@@ -31,7 +31,7 @@ public class ItemSageHat extends DyeableArmorItem
 	
 	/** Returns the UUID stored in this hat, or sets it to that of the living entity if there isn't one */
 	@Nullable
-	public static UUID getMasterID(ItemStack stack, LivingEntity living)
+	public static UUID getSageID(ItemStack stack, LivingEntity living)
 	{
 		NbtCompound stackData = stack.getOrCreateNbt();
 		if(stackData.contains("MasterID"))

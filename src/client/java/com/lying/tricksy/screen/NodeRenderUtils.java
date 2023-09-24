@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.joml.Matrix4f;
 
 import com.google.common.collect.Lists;
+import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.entity.ai.node.NodeSubType;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
@@ -118,8 +119,23 @@ public class NodeRenderUtils
 		int startY = node.screenY + node.height;
 		Vec2f branchStart = new Vec2f(startX, startY);
 		
-        // Main branch
         TreeNode<?> lastChild = node.children().get(node.children().size() - 1);
+		if(!TricksyFoxesClient.config.fancyTrees())
+		{
+			int col = decimalToARGB(colour);
+			context.fill(startX - 1, startY, startX + 1, lastChild.screenY + lastChild.height / 2 + 1, col);
+			
+			node.children().forEach((child) -> 
+			{
+				int y = child.screenY + child.height / 2;
+				context.fill(startX, y - 1, child.screenX, y + 1, col);
+				drawNodeConnections(context, child, child.getType().color());
+			});
+			
+			return;
+		}
+		
+        // Main branch
         Vec2f branchEnd = new Vec2f(startX, lastChild.screenY + lastChild.height * 0.75F);
         int branchLength = (int)branchEnd.add(branchStart.negate()).length();
         List<Vec2f> branchPoints = Lists.newArrayList();
@@ -222,7 +238,7 @@ public class NodeRenderUtils
 			height += 14;
 		}
 		
-		return height + nodeIn.getRNG().nextInt(4);
+		return height + (TricksyFoxesClient.config.fancyTrees() ? nodeIn.getRNG().nextInt(4) : 0);
 	}
 	
 	public static int decimalToARGB(int colour)

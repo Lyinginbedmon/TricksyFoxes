@@ -38,13 +38,15 @@ public abstract class Whiteboard<T>
 	protected final Map<WhiteboardRef, IWhiteboardObject<?>> cache = new HashMap<>();
 	
 	protected final BoardType type;
-	protected final World world;
+	protected World world;
 	
 	protected Whiteboard(BoardType typeIn, World worldIn)
 	{
 		this.type = typeIn;
 		this.world = worldIn;
 	}
+	
+	public void setWorld(World worldIn) { this.world = worldIn; }
 	
 	/** Populates the whiteboard with its system values, post-construction */
 	public abstract Whiteboard<?> build();

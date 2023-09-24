@@ -1,15 +1,23 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "equipment",
-  "ingredients": [
-    {
-      "item": "minecraft:leather"
-    },
-    {
+  "key": {
+    "a": {
       "item": "minecraft:amethyst_shard"
+    },
+    "g": {
+      "item": "minecraft:gold_ingot"
+    },
+    "l": {
+      "item": "minecraft:leather"
     }
+  },
+  "pattern": [
+    "gag",
+    "l l"
   ],
   "result": {
     "item": "tricksy:sage_hat"
-  }
+  },
+  "show_notification": true
 }

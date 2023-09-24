@@ -30,7 +30,7 @@ public class ItemPrescientNote extends Item
 {
 	public ItemPrescientNote(Settings settings)
 	{
-		super(settings);
+		super(settings.maxCount(16));
 	}
 	
 	public static IWhiteboardObject<?> getVariable(ItemStack stack)
@@ -45,13 +45,20 @@ public class ItemPrescientNote extends Item
 		stack.setNbt(nbt);
 	}
 	
+	public static void addVariable(IWhiteboardObject<?> obj, ItemStack stack)
+	{
+		IWhiteboardObject<?> variable = getVariable(stack);
+		variable.tryAdd(obj);
+		setVariable(variable, stack);
+	}
+	
 	public static abstract class Typed<T> extends Item
 	{
 		private final TFObjType<T> type;
 		
 		protected Typed(TFObjType<T> typeIn, Settings settings)
 		{
-			super(settings);
+			super(settings.maxCount(16));
 			this.type = typeIn;
 		}
 		
@@ -63,14 +70,7 @@ public class ItemPrescientNote extends Item
 		{
 			ItemStack stack = user.getStackInHand(hand);
 			if(user.isSneaking())
-			{
-				if(!world.isClient())
-				{
-					stack.decrement(1);
-					user.giveItemStack(new ItemStack(TFItems.NOTE));
-				}
-				return TypedActionResult.success(stack);
-			}
+				return TypedActionResult.success(new ItemStack(TFItems.NOTE, stack.getCount()));
 			
 			return TypedActionResult.pass(user.getStackInHand(hand));
 		}
@@ -140,8 +140,6 @@ public class ItemPrescientNote extends Item
 	
 	public static class Int extends Typed<Integer>
 	{
-		// TODO Numbers added by crafting with any amount of paper
-		
 		public Int(Settings settings)
 		{
 			super(TFObjType.INT, settings);
@@ -150,8 +148,6 @@ public class ItemPrescientNote extends Item
 	
 	public static class Bool extends Typed<Boolean>
 	{
-		// TODO Booleans added by crafting with black or white dye
-		
 		public Bool(Settings settings)
 		{
 			super(TFObjType.BOOL, settings);
@@ -160,8 +156,6 @@ public class ItemPrescientNote extends Item
 	
 	public static class Items extends Typed<ItemStack>
 	{
-		// TODO Items added by crafting with any single itemstack
-		
 		public Items(Settings settings)
 		{
 			super(TFObjType.ITEM, settings);
