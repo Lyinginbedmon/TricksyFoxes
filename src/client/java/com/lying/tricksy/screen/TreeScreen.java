@@ -1,11 +1,9 @@
 package com.lying.tricksy.screen;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.entity.ai.node.TreeNode;
@@ -138,28 +136,20 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 					WhiteboardRef inputRef = null;
 					
 					int index = Math.floorDiv((int)mouseY - hoveredNode.screenY - 24, 11);
-					List<Pair<Text, Optional<Text>>> sortedVariables = NodeRenderUtils.getSortedVariables(hoveredNode);
-					Text indexName = sortedVariables.get(index).getLeft();
-					
-					Map<WhiteboardRef, Predicate<WhiteboardRef>> variables = hoveredNode.getSubType().variableSet();
-					for(WhiteboardRef ref : variables.keySet())
-						if(ref.displayName().getString().equals(indexName.getString()))
-						{
-							inputRef = ref;
-							break;
-						}
-					if(inputRef == null)
+					List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> sortedVariables = NodeRenderUtils.getSortedVariables(hoveredNode);
+					if(index >= sortedVariables.size())
 						return false;
 					
 					// The current whiteboard value in use (if any)
+					inputRef = sortedVariables.get(index).getLeft();
 					WhiteboardRef valueRef = hoveredNode.variable(inputRef);
 					
-					List<WhiteboardRef> options = this.handler.getMatches(variables.get(inputRef));
+					List<WhiteboardRef> options = this.handler.getMatches(hoveredNode.getSubType().variableSet().get(inputRef));
 					if(options.isEmpty())
 						valueRef = null;
 					else
 					{
-						options = WhiteboardRef.sortByDisplayName(options);
+						options.sort(WhiteboardRef.REF_SORT);
 						int optionIndex = 0;
 						if(valueRef != null)
 							optionIndex = options.indexOf(valueRef);

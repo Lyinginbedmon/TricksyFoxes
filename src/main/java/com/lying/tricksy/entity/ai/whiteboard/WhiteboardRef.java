@@ -1,6 +1,7 @@
 package com.lying.tricksy.entity.ai.whiteboard;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,37 @@ import net.minecraft.util.Identifier;
 
 public class WhiteboardRef
 {
+	public static final Comparator<WhiteboardRef> REF_SORT = new Comparator<>()
+	{
+		public int compare(WhiteboardRef o1, WhiteboardRef o2)
+		{
+			String a = o1.displayName().getString();
+			String b = o2.displayName().getString();
+			
+			// Attempt numerical sort
+			int numA = Integer.MIN_VALUE;
+			int numB = Integer.MIN_VALUE;
+			try
+			{
+				numA = Integer.valueOf(a);
+				numB = Integer.valueOf(b);
+				return numA > numB ? 1 : numA < numB ? -1 : 0;
+			}
+			catch(NumberFormatException e) { }
+			if(numA > Integer.MIN_VALUE && numB == Integer.MIN_VALUE)
+				return -1;
+			else if(numB > Integer.MIN_VALUE && numA == Integer.MIN_VALUE)
+				return 1;
+			
+			// Perform string sort
+			List<String> names = Lists.newArrayList(a, b);
+			Collections.sort(names);
+			int indA = names.indexOf(a);
+			int indB = names.indexOf(b);
+			return indA > indB ? 1 : indA < indB ? -1 : 0;
+		}
+	};
+	
 	private final String name;
 	private final BoardType onBoard;
 	private final TFObjType<?> varType;

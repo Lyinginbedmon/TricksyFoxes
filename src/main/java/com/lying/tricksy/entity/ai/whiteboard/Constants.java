@@ -10,11 +10,13 @@ public class Constants extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 {
 	public static final WhiteboardRef NUM_1 = new WhiteboardRef("number_1", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("1"));
 	public static final WhiteboardRef NUM_2 = new WhiteboardRef("number_2", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("2"));
+	public static final WhiteboardRef NUM_3 = new WhiteboardRef("number_3", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("3"));
 	public static final WhiteboardRef NUM_4 = new WhiteboardRef("number_4", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("4"));
+	public static final WhiteboardRef NUM_5 = new WhiteboardRef("number_5", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("5"));
 	public static final WhiteboardRef NUM_8 = new WhiteboardRef("number_8", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("8"));
 	public static final WhiteboardRef NUM_16 = new WhiteboardRef("number_16", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("16"));
 	public static final WhiteboardRef NUM_32 = new WhiteboardRef("number_32", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("32"));
-	public static final WhiteboardRef NUM_64 = new WhiteboardRef("number_64", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("16"));
+	public static final WhiteboardRef NUM_64 = new WhiteboardRef("number_64", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("64"));
 	public static final WhiteboardRef BOOL_TRUE = new WhiteboardRef("boolean_true", TFObjType.BOOL, BoardType.CONSTANT).displayName(new WhiteboardObj.Bool(true).describe().get(0));
 	public static final WhiteboardRef BOOL_FALSE = new WhiteboardRef("boolean_false", TFObjType.BOOL, BoardType.CONSTANT).displayName(new WhiteboardObj.Bool(false).describe().get(0));
 	
@@ -24,7 +26,9 @@ public class Constants extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 	{
 		register(NUM_1, () -> new WhiteboardObj.Int(1));
 		register(NUM_2, () -> new WhiteboardObj.Int(2));
+		register(NUM_3, () -> new WhiteboardObj.Int(3));
 		register(NUM_4, () -> new WhiteboardObj.Int(4));
+		register(NUM_5, () -> new WhiteboardObj.Int(5));
 		register(NUM_8, () -> new WhiteboardObj.Int(8));
 		register(NUM_16, () -> new WhiteboardObj.Int(16));
 		register(NUM_32, () -> new WhiteboardObj.Int(32));

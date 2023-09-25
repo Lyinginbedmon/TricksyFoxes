@@ -32,6 +32,7 @@ public class ConditionNode extends TreeNode<ConditionNode>
 	public static final Identifier VARIANT_VALUE_EXISTS = new Identifier(Reference.ModInfo.MOD_ID, "value_exists");
 	public static final Identifier VARIANT_VALUE_EQUALS = new Identifier(Reference.ModInfo.MOD_ID, "value_equals");
 	public static final Identifier VARIANT_CLOSER_THAN = new Identifier(Reference.ModInfo.MOD_ID, "closer_than");
+	public static final Identifier VARIANT_CLOSER_THAN_2 = new Identifier(Reference.ModInfo.MOD_ID, "closer_than_2");
 	
 	public ConditionNode(UUID uuidIn)
 	{
@@ -117,6 +118,37 @@ public class ConditionNode extends TreeNode<ConditionNode>
 				BlockPos position = objPos.as(TFObjType.BLOCK).get();
 				int dist = Whiteboard.get(referenceDist, local, global).as(TFObjType.INT).get();
 				return Math.sqrt(tricksy.squaredDistanceTo(position.getX(), position.getY(), position.getZ())) < dist ? Result.SUCCESS : Result.FAILURE;
+			}
+		}));
+		/** Performs a simple distance check from the mob to the given position and returns SUCCESS if the distance is less than a desired value */
+		set.add(new NodeSubType<ConditionNode>(VARIANT_CLOSER_THAN_2, new NodeTickHandler<ConditionNode>()
+		{
+			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			{
+				return Map.of(
+						CommonVariables.VAR_POS_A, NodeTickHandler.ofType(TFObjType.BLOCK), 
+						CommonVariables.VAR_POS_B, NodeTickHandler.ofType(TFObjType.BLOCK), 
+						CommonVariables.VAR_DIS, NodeTickHandler.ofType(TFObjType.INT));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			{
+				WhiteboardRef referencePosA = parent.variable(CommonVariables.VAR_POS);
+				WhiteboardRef referencePosB = parent.variable(CommonVariables.VAR_POS);
+				WhiteboardRef referenceDist = parent.variable(CommonVariables.VAR_DIS);
+				
+				IWhiteboardObject<?> objPosA = Whiteboard.get(referencePosA, local, global);
+				if(objPosA.isEmpty())
+					return Result.FAILURE;
+				
+				IWhiteboardObject<?> objPosB = Whiteboard.get(referencePosB, local, global);
+				if(objPosB.isEmpty())
+					return Result.FAILURE;
+				
+				BlockPos posA = objPosA.as(TFObjType.BLOCK).get();
+				BlockPos posB = objPosB.as(TFObjType.BLOCK).get();
+				int dist = Whiteboard.get(referenceDist, local, global).as(TFObjType.INT).get();
+				return Math.sqrt(posA.getSquaredDistance(posB)) < dist ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 	}

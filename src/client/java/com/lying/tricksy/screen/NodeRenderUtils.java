@@ -1,10 +1,9 @@
 package com.lying.tricksy.screen;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import org.joml.Matrix4f;
 
@@ -36,6 +35,7 @@ public class NodeRenderUtils
 	public static final Identifier TREE_TEXTURES_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/behaviour_tree_overlay.png");
 	public static final Identifier LINE_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree_branch.png");
 	public static final Identifier LINE_TEXTURE_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree_branch_overlay.png");
+	public static final Identifier BUSH_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree_foliage.png");
 	
 	public static final int NODE_SPACING = 10;
 	public static final int CONNECTOR_OFFSET = 20;
@@ -61,16 +61,41 @@ public class NodeRenderUtils
 		context.drawText(textRenderer, subName, node.screenX + (NODE_WIDTH - textRenderer.getWidth(subName)) / 2, drawY, 0x404040, false);
 		drawY += 11;
 		
-		for(Pair<Text, Optional<Text>> line : getSortedVariables(node))
+		for(Pair<WhiteboardRef, Optional<WhiteboardRef>> line : getSortedVariables(node))
 		{
-			context.drawText(textRenderer, line.getLeft(), node.screenX + 4 + (46 - textRenderer.getWidth(line.getLeft())) / 2, drawY, 0x404040, false);
+			renderReference(line.getLeft(), context, textRenderer, node.screenX + 4, drawY, 45, true);
 			if(line.getRight().isPresent())
-				context.drawText(textRenderer, line.getRight().get(), node.screenX + 50 + (100 - textRenderer.getWidth(line.getRight().get())) / 2, drawY, 0x404040, false);
+				renderReference(line.getRight().get(), context, textRenderer, node.screenX + 52, drawY, 94, false);
 			drawY += 11;
 		}
 		
 		for(TreeNode<?> child : node.children())
 			renderNode(child, context, textRenderer);
+	}
+	
+	private static void renderReference(WhiteboardRef reference, DrawContext context, TextRenderer textRenderer, int x, int y, int maxWidth, boolean iconRight)
+	{
+		int iconX = x + (iconRight ? maxWidth - 8 : 0);
+		
+		maxWidth -= 8;
+		if(maxWidth > 0)
+		{
+			Text name = reference.displayName();
+			boolean centred = true;
+			if(textRenderer.getWidth(name) > maxWidth)
+			{
+				centred = false;
+				String display = "";
+				while(textRenderer.getWidth(display) < (maxWidth - 4))
+					display += name.getString().charAt(display.length());
+				name = Text.literal(display + "...");
+			}
+			context.drawText(textRenderer, name, x + (iconRight ? 0 : 8) + (centred ? (maxWidth - textRenderer.getWidth(name)) / 2 : 0), y, 0x404040, false);
+		}
+		
+		int texX = reference.type().texIndex() * 8;
+		int texY = 175;
+		context.drawTexture(TREE_TEXTURES, iconX, y, texX, texY, 8, 8);
 	}
 	
 	private static void drawNodeBackground(DrawContext context, TreeNode<?> node, int colour, int x, int y)
@@ -111,6 +136,8 @@ public class NodeRenderUtils
 	{
 		if(node.children().isEmpty())
 			return;
+		
+		Random rand = node.getRNG();
         int r = ((colour & 0xFF0000) >> 16);
         int g = ((colour & 0xFF00) >> 8);
         int b = ((colour & 0xFF) >> 0);
@@ -149,7 +176,7 @@ public class NodeRenderUtils
         	double offsetAmount = (dist / branchLength) * 8;
         	point = point.add(new Vec2f((float)Math.sin(dist / 15D) * (float)offsetAmount, 0F));
         	
-        	drawTexturedLine(context, branchPoints.get(i), point, 0, 0, 16, (int)point.add(branchPoints.get(i).negate()).length(), r, g, b);
+        	drawTexturedLine(context, branchPoints.get(i), point, 0, 0, 16, (int)point.add(branchPoints.get(i).negate()).length(), rand.nextInt(4) == 0, r, g, b);
         	branchPoints.add(point);
         }
         
@@ -191,16 +218,22 @@ public class NodeRenderUtils
 				Vec2f offset = direct.add(dir.negate());
 				dir = dir.add(offset.multiply(0.5F)).normalize();
 				Vec2f nextPoint = start.add(dir.multiply(16F));
-				drawTexturedLine(context, start, nextPoint, 0, 0, 16, 16, r, g, b);
+				drawTexturedLine(context, start, nextPoint, 0, 0, 16, 16, rand.nextInt(4) == 0, r, g, b);
 				
 				start = nextPoint;
 			}
 			while(!child.containsPoint((int)start.x, (int)start.y));
 			
-			// TODO Random chance of leaf/bush
-			
 			drawNodeConnections(context, child, child.getType().color());
 		}
+		
+		int bushes = rand.nextInt(Math.floorDiv(branchPoints.size(), 3));
+		if(bushes > 0)
+			while(bushes-- > 0 && branchPoints.size() > 3)
+			{
+				Vec2f point = branchPoints.remove(rand.nextInt(1, branchPoints.size() - 2));
+				context.drawTexture(BUSH_TEXTURE, (int)point.x - 8, (int)point.y - 8, 0, 0, 16, 16, 16, 16);
+			}
 	}
 	
 	public static int nodeDisplayHeightRecursive(TreeNode<?> nodeIn)
@@ -255,10 +288,11 @@ public class NodeRenderUtils
 		drawTintedTexture(TREE_TEXTURES_OVERLAY, context, x, y, uv0, uv1, width, height, red, green, blue);
 	}
 	
-	protected static void drawTexturedLine(DrawContext context, Vec2f start, Vec2f end, int uv0, int uv1, int width, int height, int red, int green, int blue)
+	protected static void drawTexturedLine(DrawContext context, Vec2f start, Vec2f end, int uv0, int uv1, int width, int height, boolean overlay, int red, int green, int blue)
 	{
 		drawTintedTexture(LINE_TEXTURE, context, start, end, uv0, uv1, width, height, 255, 255, 255);
-		drawTintedTexture(LINE_TEXTURE_OVERLAY, context, start, end, uv0, uv1, width, height, red, green, blue);
+		if(overlay)
+			drawTintedTexture(LINE_TEXTURE_OVERLAY, context, start, end, uv0, uv1, width, height, red, green, blue);
 	}
 	
 	protected static void drawTintedTexture(Identifier texture, DrawContext context, int x, int y, int uv0, int uv1, int width, int height, int red, int green, int blue)
@@ -317,34 +351,21 @@ public class NodeRenderUtils
         RenderSystem.disableBlend();
 	}
 	
-	public static List<Pair<Text, Optional<Text>>> getSortedVariables(TreeNode<?> node)
+	public static List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> getSortedVariables(TreeNode<?> node)
 	{
-		List<Pair<Text, Optional<Text>>> variablesToDisplay = Lists.newArrayList();
+		List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> variablesToDisplay = Lists.newArrayList();
 		for(WhiteboardRef input : node.getSubType().variableSet().keySet())
 		{
-			Text inputName = input.displayName();
-			
-			Optional<Text> variableName = Optional.empty();
-			WhiteboardRef variable = node.variable(input);
-			if(variable != null)
-				variableName = Optional.of(variable.displayName());
-			variablesToDisplay.add(new Pair<>(inputName, variableName));
+			WhiteboardRef value = node.variable(input);
+			variablesToDisplay.add(new Pair<>(input, value == null ? Optional.empty() : Optional.of(value)));
 		}
+		
 		// Sort variables by input name
 		variablesToDisplay.sort(new Comparator<>()
 		{
-			public int compare(Pair<Text, Optional<Text>> o1, Pair<Text, Optional<Text>> o2)
+			public int compare(Pair<WhiteboardRef, Optional<WhiteboardRef>> o1, Pair<WhiteboardRef, Optional<WhiteboardRef>> o2)
 			{
-				Text a = o1.getLeft();
-				Text b = o2.getLeft();
-				ArrayList<String> names = Lists.newArrayList();
-				names.add(a.getString());
-				names.add(b.getString());
-				Collections.sort(names);
-				
-				int indA = names.indexOf(a.getString());
-				int indB = names.indexOf(b.getString());
-				return indA > indB ? 1 : indA < indB ? -1 : 0;
+				return WhiteboardRef.REF_SORT.compare(o1.getLeft(), o2.getLeft());
 			}
 		});
 		return variablesToDisplay;

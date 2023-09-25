@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFScreenHandlerTypes;
 
@@ -62,16 +61,13 @@ public class TreeScreenHandler extends ScreenHandler
 	{
 		this.tricksy = tricksyIn;
 		this.tricksyID = mobID;
-		
-		references.clear();
-		references.addAll(Whiteboard.CONSTANTS.allReferences());
-		if(tricksy != null)
-		{
-			references.addAll(tricksyIn.getLocalWhiteboard().allReferences());
-			references.addAll(tricksyIn.getGlobalWhiteboard().allReferences());
-		}
-		
 		resetTree();
+	}
+	
+	public void setAvailableReferences(List<WhiteboardRef> refsIn)
+	{
+		references.clear();
+		references.addAll(refsIn);
 	}
 	
 	public void resetTree()

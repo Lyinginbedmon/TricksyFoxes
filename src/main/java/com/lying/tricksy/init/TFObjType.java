@@ -27,6 +27,7 @@ import net.minecraft.util.math.Direction;
 public class TFObjType<T>
 {
 	private static final Map<Identifier, TFObjType<?>> REGISTRY = new HashMap<>();
+	private static int iconIndex = 0;
 	
 	/** Empty value, usually obtained when the whiteboard grabs a value it doesn't have */
 	public static final TFObjType<Object> EMPTY = register(new TFObjType<>("empty", () -> WhiteboardObj.EMPTY)
@@ -53,6 +54,7 @@ public class TFObjType<T>
 	
 	private final Identifier name;
 	private final Supplier<IWhiteboardObject<T>> supplier;
+	private int texIndex;
 	
 	private Map<TFObjType<?>, Function<IWhiteboardObject<T>, ?>> castingMap = new HashMap<>();
 	private Predicate<IWhiteboardObject<T>> isEmpty = (obj) -> obj.get() == null;
@@ -71,6 +73,8 @@ public class TFObjType<T>
 	public Identifier registryName() { return this.name; }
 	
 	public Text translated() { return Text.translatable("type."+registryName().getNamespace()+"."+registryName().getPath().toString()); }
+	
+	public int texIndex() { return this.texIndex; }
 	
 	public static void init() { }
 	
@@ -114,6 +118,7 @@ public class TFObjType<T>
 	
 	private static <N> TFObjType<N> register(TFObjType<N> typeIn)
 	{
+		typeIn.texIndex = iconIndex++;
 		REGISTRY.put(typeIn.registryName(), typeIn);
 		return typeIn;
 	}

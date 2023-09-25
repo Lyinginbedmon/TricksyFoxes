@@ -15,6 +15,8 @@ public class CommonVariables
 	public static final WhiteboardRef VAR_B = new WhiteboardRef("value_b", TFObjType.BOOL).displayName(translate("value_b"));
 	/** A location or destination */
 	public static final WhiteboardRef VAR_POS = new WhiteboardRef("position", TFObjType.BLOCK).displayName(translate("position"));
+	public static final WhiteboardRef VAR_POS_A = new WhiteboardRef("position_a", TFObjType.BLOCK).displayName(translate("position_a"));
+	public static final WhiteboardRef VAR_POS_B = new WhiteboardRef("position_b", TFObjType.BLOCK).displayName(translate("position_b"));
 	/** A distance value */
 	public static final WhiteboardRef VAR_DIS = new WhiteboardRef("distance", TFObjType.INT).displayName(translate("range"));
 	/** A number value */
