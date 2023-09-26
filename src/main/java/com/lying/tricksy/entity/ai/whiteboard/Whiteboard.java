@@ -110,6 +110,20 @@ public abstract class Whiteboard<T>
 	
 	protected abstract T objectToSupplier(IWhiteboardObject<?> object);
 	
+	public void delete(WhiteboardRef reference)
+	{
+		Map<WhiteboardRef, T> valuesNext = new HashMap<>();
+		values.forEach((ref,val) -> 
+		{
+			if(ref.isSameRef(reference))
+				return;
+			valuesNext.put(ref, val);
+		});
+		
+		values.clear();
+		valuesNext.forEach((ref,val) -> values.put(ref, val));
+	}
+	
 	public void addValue(WhiteboardRef reference, T object)
 	{
 		if(reference.boardType() != this.type)
@@ -122,6 +136,20 @@ public abstract class Whiteboard<T>
 			TricksyFoxes.LOGGER.warn("Attempted to add reference value with non-matching object: "+reference.name());
 			return;
 		}
+		
+		boolean exists = false;
+		for(WhiteboardRef entry : values.keySet())
+			if(entry.isSameRef(reference))
+			{
+				exists = true;
+				break;
+			}
+		if(exists)
+		{
+			TricksyFoxes.LOGGER.warn("Overwrote existing value in whiteboard: "+reference.name());
+			delete(reference);
+		}
+		
 		values.put(reference, object);
 	}
 	
@@ -196,6 +224,8 @@ public abstract class Whiteboard<T>
 		GLOBAL;
 		
 		public String asString() { return name().toLowerCase(); }
+		
+		public Text translate() { return Text.translatable("board."+Reference.ModInfo.MOD_ID+"."+asString()); }
 		
 		@Nullable
 		public static BoardType fromString(String nameIn)
@@ -306,6 +336,6 @@ public abstract class Whiteboard<T>
 		
 		protected IWhiteboardObject<?> supplierToValue(Function<T, IWhiteboardObject<?>> supplier) { return supplier.apply(tricksy); }
 		
-		protected Function<T, IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return (tricksy) -> object; }
+		public Function<T, IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return (tricksy) -> object; }
 	}
 }

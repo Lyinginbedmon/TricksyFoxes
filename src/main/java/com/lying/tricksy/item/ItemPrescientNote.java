@@ -4,10 +4,14 @@ import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
+import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBase;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFObjType;
 
@@ -82,6 +86,37 @@ public class ItemPrescientNote extends Item
 			if(variable.size() > 0)
 				tooltip.addAll(variable.describe());
 		}
+		
+		public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand)
+		{
+			if(!user.isSneaking() && entity instanceof ITricksyMob)
+			{
+				if(!stack.hasCustomName())
+					return ActionResult.PASS;
+				
+				Text displayName = stack.getName();
+				boolean isClient = user.getWorld().isClient();
+				if(!isClient)
+				{
+					ITricksyMob<?> tricksy = (ITricksyMob<?>)entity;
+					IWhiteboardObject<?> value = getVariable(stack);
+					if(value.size() == 0)
+						return ActionResult.PASS;
+					
+					WhiteboardRef name = new WhiteboardRef(displayName.getString().replace(' ', '_'), value.type(), BoardType.LOCAL);
+					name.displayName(displayName);
+					Local<?> whiteboard = tricksy.getLocalWhiteboard();
+					whiteboard.addValue(name, (mob) -> value);
+					
+					if(!user.isCreative())
+						stack.decrement(1);
+				}
+				
+				return ActionResult.success(isClient);
+			}
+			
+			return ActionResult.PASS;
+		}
 	}
 	
 	public static class Block extends Typed<BlockPos>
@@ -134,7 +169,7 @@ public class ItemPrescientNote extends Item
 				return ActionResult.success(isClient);
 			}
 			
-			return ActionResult.PASS;
+			return super.useOnEntity(stack, user, entity, hand);
 		}
 	}
 	

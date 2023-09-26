@@ -82,4 +82,8 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 	
 	/** Overwrites the structure of the mob's behaviour tree. */
 	public void setBehaviourTree(NbtCompound data);
+	
+	public int addUser();
+	
+	public int removeUser();
 }

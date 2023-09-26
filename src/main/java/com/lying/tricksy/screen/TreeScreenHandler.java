@@ -23,6 +23,7 @@ public class TreeScreenHandler extends ScreenHandler
 	private BehaviourTree tricksyTree = new BehaviourTree();
 	private List<WhiteboardRef> references = Lists.newArrayList();
 	private ITricksyMob<?> tricksy = null;
+	private PathAwareEntity tricksyMob = null;
 	private UUID tricksyID;
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> TreeScreenHandler(int syncId, T tricksyIn)
@@ -34,12 +35,16 @@ public class TreeScreenHandler extends ScreenHandler
 	{
 		super(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, syncId);
 		if(tricksyIn != null)
+		{
+			tricksy = tricksyIn;
+			tricksyMob = tricksyIn;
 			sync(tricksyIn, tricksyIn.getUuid());
+		}
 	}
 	
 	public ItemStack quickMove(PlayerEntity var1, int var2) { return null; }
 	
-	public boolean canUse(PlayerEntity var1) { return var1.isCreative() || tricksy != null && tricksy.isSage(var1); }
+	public boolean canUse(PlayerEntity var1) { return var1.isCreative() || tricksy != null && tricksy.isSage(var1) && tricksyMob.distanceTo(var1) < 6D; }
 	
 	public List<WhiteboardRef> getMatches(Predicate<WhiteboardRef> predicate)
 	{
@@ -79,5 +84,15 @@ public class TreeScreenHandler extends ScreenHandler
 	}
 	
 	public UUID tricksyUUID() { return this.tricksyID; }
-
+	
+	public void onClosed(PlayerEntity player)
+	{
+		if(this.tricksy != null)
+			this.tricksy.removeUser();
+	}
+	
+	public void removeRef(WhiteboardRef reference)
+	{
+		references.remove(reference);
+	}
 }

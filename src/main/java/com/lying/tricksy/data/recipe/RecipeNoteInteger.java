@@ -10,43 +10,34 @@ import com.lying.tricksy.reference.Reference;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.SpecialCraftingRecipe;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
-public class RecipeNoteInteger extends SpecialCraftingRecipe
+public class RecipeNoteInteger extends RecipeNote
 {
 	public static final Identifier ID = new Identifier(Reference.ModInfo.MOD_ID, "note_integer");
 	
-	public RecipeNoteInteger()
-	{
-		super(ID, CraftingRecipeCategory.MISC);
-	}
+	public RecipeNoteInteger() { super(ID); }
 	
 	public boolean matches(RecipeInputInventory var1, World var2)
 	{
-		System.out.println("Matching against recipe "+ID.toString());
 		ItemStack note = ItemStack.EMPTY;
 		for(int i=0; i<var1.size(); i++)
 		{
 			ItemStack stackInSlot = var1.getStack(i);
 			if(stackInSlot.isEmpty())
 				continue;
-			if(stackInSlot.getItem() == TFItems.NOTE_INT)
+			else if(stackInSlot.getItem() == TFItems.NOTE_INT)
 			{
 				if(note.isEmpty())
-					note = stackInSlot;
+					note = stackInSlot.copy();
 				else
 					return false;
 			}
 			else if(!stackInSlot.isIn(TFItemTags.PAPER))
 				return false;
 		}
-		
-		
 		return !note.isEmpty();
 	}
 	
@@ -57,10 +48,12 @@ public class RecipeNoteInteger extends SpecialCraftingRecipe
 		for(int i=0; i<var1.size(); i++)
 		{
 			ItemStack stackInSlot = var1.getStack(i);
-			if(stackInSlot.getItem() == TFItems.NOTE_INT)
+			if(stackInSlot.isEmpty())
+				continue;
+			else if(stackInSlot.getItem() == TFItems.NOTE_INT)
 			{
 				if(note.isEmpty())
-					note = stackInSlot;
+					note = stackInSlot.copy();
 				else
 					return ItemStack.EMPTY;
 			}
@@ -70,7 +63,7 @@ public class RecipeNoteInteger extends SpecialCraftingRecipe
 				return ItemStack.EMPTY;
 		}
 		
-		if(!note.isEmpty() && paperTally > 0)
+		if(!note.isEmpty() && paperTally >= 0)
 		{
 			ItemStack theNote = note.copy();
 			ItemPrescientNote.addVariable(new WhiteboardObj.Int(paperTally), theNote);
@@ -79,13 +72,9 @@ public class RecipeNoteInteger extends SpecialCraftingRecipe
 		return ItemStack.EMPTY;
 	}
 	
-	public boolean fits(int var1, int var2) { return var1 * var2 > 1; }
-	
 	public ItemStack getOutput(DynamicRegistryManager var1) { return new ItemStack(TFItems.NOTE_INT); }
 	
 	public Identifier getId() { return ID; }
 	
 	public RecipeSerializer<?> getSerializer() { return TFSpecialRecipes.NOTE_INTEGER_SERIALIZER; }
-	
-	public RecipeType<?> getType() { return TFSpecialRecipes.NOTE_INTEGER_TYPE; }
 }

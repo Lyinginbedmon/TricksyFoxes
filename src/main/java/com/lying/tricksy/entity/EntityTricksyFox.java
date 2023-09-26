@@ -12,6 +12,7 @@ import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
+import com.lying.tricksy.item.ItemPrescientNote;
 import com.lying.tricksy.item.ItemSageHat;
 import com.lying.tricksy.network.SyncTreeScreenPacket;
 import com.lying.tricksy.reference.Reference;
@@ -56,6 +57,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	@SuppressWarnings("unchecked")
 	protected Whiteboard.Local<EntityTricksyFox> boardLocal = (Local<EntityTricksyFox>)(new Local<EntityTricksyFox>(this)).build();
 	
+	private int activeUsers = 0;
+	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
 		super(TFEntityTypes.TRICKSY_FOX, world);
@@ -86,7 +89,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		setVariant(Type.byName(data.getString("Type")));
 		
 		boardLocal.readFromNbt(data.getCompound("Whiteboard"));
-//		setBehaviourTree(data.getCompound("BehaviourTree"));
+		setBehaviourTree(data.getCompound("BehaviourTree"));
 	}
 	
 	public void writeCustomDataToNbt(NbtCompound data)
@@ -149,6 +152,10 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 			}
 			else if(!player.isSneaking())
 			{
+				if(heldStack.getItem() instanceof ItemPrescientNote.Typed)
+					return ActionResult.PASS;
+				
+				addUser();
 				player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new TreeScreenHandler(id, this), getDisplayName())).ifPresent(syncId -> SyncTreeScreenPacket.send(player, this, syncId));
 				return ActionResult.success(isClient);
 			}
@@ -160,7 +167,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	public void tick()
 	{
 		super.tick();
-		ITricksyMob.updateBehaviourTree(this);
+		if(activeUsers <= 0)
+			ITricksyMob.updateBehaviourTree(this);
 	}
 	
 	@Nullable
@@ -228,4 +236,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	
 	@Nullable
 	protected SoundEvent getDeathSound() { return SoundEvents.ENTITY_FOX_DEATH; }
+	
+	public int addUser() { return ++this.activeUsers; }
+	
+	public int removeUser() { return --this.activeUsers; }
 }

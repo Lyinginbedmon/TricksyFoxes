@@ -90,4 +90,22 @@ public abstract class Config
 		}
 		catch(NumberFormatException e) { return val; }
 	}
+	
+	protected static void writeInt(FileWriter writer, String name, int value)
+	{
+		try
+		{
+			writer.write(name+"="+Integer.valueOf(value)+'\n');
+		}
+		catch(Exception e) { }
+	}
+	
+	protected static int parseIntOr(String name, int val)
+	{
+		try
+		{
+			return Integer.parseInt(name);
+		}
+		catch(NumberFormatException e) { return val; }
+	}
 }

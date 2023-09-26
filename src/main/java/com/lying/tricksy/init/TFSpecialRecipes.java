@@ -21,13 +21,8 @@ public class TFSpecialRecipes
 	private static final Map<RecipeSerializer<?>, Identifier> RECIPE_SERIALIZERS = new HashMap<>();
 	private static final Map<RecipeType<?>, Identifier> RECIPE_TYPES = new HashMap<>();
 	
-	public static final RecipeType<RecipeNoteInteger> NOTE_INTEGER_TYPE = makeType("note_integer");
 	public static final RecipeSerializer<RecipeNoteInteger> NOTE_INTEGER_SERIALIZER = makeSerializer("note_integer", new SerializerSimple<RecipeNoteInteger>(RecipeNoteInteger::new));
-	
-	public static final RecipeType<RecipeNoteBool> NOTE_BOOLEAN_TYPE = makeType("note_boolean");
 	public static final RecipeSerializer<RecipeNoteBool> NOTE_BOOLEAN_SERIALIZER = makeSerializer("note_boolean", new SerializerSimple<RecipeNoteBool>(RecipeNoteBool::new));
-	
-	public static final RecipeType<RecipeNoteItem> NOTE_ITEM_TYPE = makeType("note_item");
 	public static final RecipeSerializer<RecipeNoteItem> NOTE_ITEM_SERIALIZER = makeSerializer("note_item", new SerializerSimple<RecipeNoteItem>(RecipeNoteItem::new));
 	
 	static <T extends Recipe<?>> RecipeSerializer<T> makeSerializer(String name, RecipeSerializer<T> serializer)
@@ -36,6 +31,7 @@ public class TFSpecialRecipes
 		return serializer;
 	}
 	
+	@SuppressWarnings("unused")
 	private static <T extends Recipe<?>> RecipeType<T> makeType(String name)
 	{
 		RecipeType<T> type = new RecipeType<>() { public String toString() { return name; } };
@@ -45,7 +41,7 @@ public class TFSpecialRecipes
 	
 	public static void init()
 	{
-		RECIPE_SERIALIZERS.keySet().forEach(recipeSerializer -> Registry.register(Registries.RECIPE_SERIALIZER, RECIPE_SERIALIZERS.get(recipeSerializer), recipeSerializer));
-		RECIPE_TYPES.keySet().forEach(recipeType -> Registry.register(Registries.RECIPE_TYPE, RECIPE_TYPES.get(recipeType), recipeType));
+		RECIPE_SERIALIZERS.keySet().forEach(serializer -> Registry.register(Registries.RECIPE_SERIALIZER, RECIPE_SERIALIZERS.get(serializer), serializer));
+		RECIPE_TYPES.keySet().forEach(type -> Registry.register(Registries.RECIPE_TYPE, RECIPE_TYPES.get(type), type));
 	}
 }

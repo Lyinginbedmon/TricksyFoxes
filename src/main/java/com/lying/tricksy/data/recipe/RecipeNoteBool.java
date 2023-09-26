@@ -10,25 +10,18 @@ import com.lying.tricksy.reference.Reference;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.SpecialCraftingRecipe;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
-public class RecipeNoteBool extends SpecialCraftingRecipe
+public class RecipeNoteBool extends RecipeNote
 {
 	public static final Identifier ID = new Identifier(Reference.ModInfo.MOD_ID, "note_boolean");
 	
-	public RecipeNoteBool()
-	{
-		super(ID, CraftingRecipeCategory.MISC);
-	}
+	public RecipeNoteBool() { super(ID); }
 	
 	public boolean matches(RecipeInputInventory var1, World var2)
 	{
-		System.out.println("Matching against recipe "+ID.toString());
 		ItemStack note = ItemStack.EMPTY;
 		ItemStack dye = ItemStack.EMPTY;
 		for(int i=0; i<var1.size(); i++)
@@ -36,7 +29,7 @@ public class RecipeNoteBool extends SpecialCraftingRecipe
 			ItemStack stackInSlot = var1.getStack(i);
 			if(stackInSlot.isEmpty())
 				continue;
-			if(stackInSlot.getItem() == TFItems.NOTE_BOOL)
+			else if(stackInSlot.getItem() == TFItems.NOTE_BOOL)
 			{
 				if(note.isEmpty())
 					note = stackInSlot;
@@ -64,7 +57,9 @@ public class RecipeNoteBool extends SpecialCraftingRecipe
 		for(int i=0; i<var1.size(); i++)
 		{
 			ItemStack stackInSlot = var1.getStack(i);
-			if(stackInSlot.getItem() == TFItems.NOTE_BOOL)
+			if(stackInSlot.isEmpty())
+				continue;
+			else if(stackInSlot.getItem() == TFItems.NOTE_BOOL)
 			{
 				if(note.isEmpty())
 					note = stackInSlot;
@@ -91,13 +86,9 @@ public class RecipeNoteBool extends SpecialCraftingRecipe
 		return ItemStack.EMPTY;
 	}
 	
-	public boolean fits(int var1, int var2) { return var1 * var2 > 1; }
-	
 	public ItemStack getOutput(DynamicRegistryManager var1) { return new ItemStack(TFItems.NOTE_BOOL); }
 	
 	public Identifier getId() { return ID; }
 	
 	public RecipeSerializer<?> getSerializer() { return TFSpecialRecipes.NOTE_BOOLEAN_SERIALIZER; }
-	
-	public RecipeType<?> getType() { return TFSpecialRecipes.NOTE_BOOLEAN_TYPE; }
 }

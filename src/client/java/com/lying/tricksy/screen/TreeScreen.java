@@ -27,8 +27,9 @@ import net.minecraft.util.math.Vec2f;
 @Environment(EnvType.CLIENT)
 public class TreeScreen extends HandledScreen<TreeScreenHandler>
 {
-	
 	private final PlayerEntity player;
+	private final PlayerInventory playerInv;
+	
 	private TreeNode<?> hoveredNode = null;
 	private HoveredElement hoveredPart = null;
 	
@@ -36,9 +37,12 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 	public ButtonWidget addNode;
 	// Button to delete a node
 	public ButtonWidget delNode;
-	
+	// Button reset to the tree the fox is using
 	public ButtonWidget reset;
+	// Button to set the fox's tree to this one
 	public ButtonWidget save;
+	// Button to view whiteboards
+	public ButtonWidget whiteboards;
 	
 	private Vec2f position = Vec2f.ZERO;
 	private Vec2f moveStart = null;
@@ -46,6 +50,7 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 	public TreeScreen(TreeScreenHandler handler, PlayerInventory playerInventory, Text title)
 	{
 		super(handler, playerInventory, title);
+		this.playerInv = playerInventory;
 		this.player = playerInventory.player;
 	}
 	
@@ -71,6 +76,10 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 			SaveTreePacket.send(player, handler.tricksyUUID(), handler.getTree());
 			client.setScreen(null);
 		}).dimensions(midPoint + 70 - 20, 7, 40, 16).build());
+		addDrawableChild(whiteboards = ButtonWidget.builder(Text.literal("Whiteboards"), (button) -> 
+		{
+			client.setScreen(new WhiteboardScreen(getScreenHandler(), this.playerInv, this.title));
+		}).dimensions(0, this.height - 16, 50, 16).build());
 		
 		position = new Vec2f(-this.width / 4, -this.height / 4);
 	}
@@ -132,43 +141,64 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 					
 					return true;
 				case VARIABLES:
-					// The input variable we are cycling
-					WhiteboardRef inputRef = null;
-					
 					int index = Math.floorDiv((int)mouseY - hoveredNode.screenY - 24, 11);
 					List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> sortedVariables = NodeRenderUtils.getSortedVariables(hoveredNode);
 					if(index >= sortedVariables.size())
 						return false;
-					
-					// The current whiteboard value in use (if any)
-					inputRef = sortedVariables.get(index).getLeft();
-					WhiteboardRef valueRef = hoveredNode.variable(inputRef);
-					
-					List<WhiteboardRef> options = this.handler.getMatches(hoveredNode.getSubType().variableSet().get(inputRef));
-					if(options.isEmpty())
-						valueRef = null;
-					else
-					{
-						options.sort(WhiteboardRef.REF_SORT);
-						int optionIndex = 0;
-						if(valueRef != null)
-							optionIndex = options.indexOf(valueRef);
-						
-						optionIndex += amount;
-						if(optionIndex >= options.size())
-							optionIndex -= options.size();
-						
-						if(optionIndex < 0)
-							valueRef = null;
-						else
-							valueRef = options.get(optionIndex);
-					}
-					
-					hoveredNode.assign(inputRef, valueRef);
+					hoveredNode.assign(sortedVariables.get(index).getLeft(), incrementOption(hoveredNode, index, (int)Math.signum(amount)));
 					return true;
 			}
 		}
 		return super.mouseScrolled(mouseX, mouseY, amount);
+	}
+	
+	private WhiteboardRef incrementOption(TreeNode<?> node, int index, int scroll)
+	{
+		System.out.println("Scrolling variable by "+scroll);
+		// The input variable we are cycling
+		WhiteboardRef inputRef = null;
+		
+		List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> sortedVariables = NodeRenderUtils.getSortedVariables(node);
+		if(index >= sortedVariables.size())
+			return null;
+		
+		// The current whiteboard value in use (if any)
+		inputRef = sortedVariables.get(index).getLeft();
+		WhiteboardRef valueRef = node.variable(inputRef);
+		if(scroll == 0)
+			return valueRef;
+		
+		List<WhiteboardRef> options = this.handler.getMatches(node.getSubType().variableSet().get(inputRef));
+		if(options.isEmpty())
+			return null;
+		else
+		{
+			options.sort(WhiteboardRef.REF_SORT);
+			System.out.println("Option set: "+options.size());
+			options.forEach((option) -> System.out.println(" * "+option.displayName().getString()));
+			
+			int optionIndex = 0;
+			if(valueRef != null)
+			{
+				System.out.println("Value set: "+valueRef.displayName().getString());
+				for(int i=0; i<options.size(); i++)
+					if(options.get(i).equals(valueRef))
+					{
+						optionIndex = i;
+						break;
+					}
+			}
+			System.out.println("Existing index: "+optionIndex);
+			System.out.println(" * "+options.get(optionIndex).displayName().getString());
+			
+			optionIndex += Math.signum(scroll);
+			if(scroll > 0)
+				optionIndex %= options.size();
+			
+			System.out.println("New index: "+optionIndex);
+			System.out.println(" * "+options.get(optionIndex).displayName().getString());
+			return optionIndex < 0 ? null : options.get(optionIndex);
+		}
 	}
 	
 	public boolean mouseReleased(double x, double y, int mouseKey)

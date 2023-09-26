@@ -73,7 +73,7 @@ public class NodeRenderUtils
 			renderNode(child, context, textRenderer);
 	}
 	
-	private static void renderReference(WhiteboardRef reference, DrawContext context, TextRenderer textRenderer, int x, int y, int maxWidth, boolean iconRight)
+	public static void renderReference(WhiteboardRef reference, DrawContext context, TextRenderer textRenderer, int x, int y, int maxWidth, boolean iconRight)
 	{
 		int iconX = x + (iconRight ? maxWidth - 8 : 0);
 		
