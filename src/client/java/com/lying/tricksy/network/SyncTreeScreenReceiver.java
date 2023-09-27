@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBase;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.screen.TreeScreenHandler;
 
@@ -16,10 +18,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.util.Pair;
 
 @Environment(EnvType.CLIENT)
 public class SyncTreeScreenReceiver implements ClientPlayNetworking.PlayChannelHandler
@@ -28,11 +32,7 @@ public class SyncTreeScreenReceiver implements ClientPlayNetworking.PlayChannelH
 	{
 		int syncId = buf.readInt();
 		UUID tricksyID = buf.readUuid();
-		
-		NbtList refList = buf.readNbt().getList("References", NbtElement.COMPOUND_TYPE);
-		List<WhiteboardRef> references = Lists.newArrayList();
-		for(int i=0; i<refList.size(); i++)
-			references.add(WhiteboardRef.fromNbt(refList.getCompound(i)));
+		List<Pair<WhiteboardRef, IWhiteboardObject<?>>> references = unpackReferences(buf.readNbt().getList("References", NbtElement.COMPOUND_TYPE));
 		
 		client.execute(() -> 
 		{
@@ -52,5 +52,18 @@ public class SyncTreeScreenReceiver implements ClientPlayNetworking.PlayChannelH
 				}
 			}
 		});
+	}
+	
+	public List<Pair<WhiteboardRef, IWhiteboardObject<?>>> unpackReferences(NbtList refList)
+	{
+		List<Pair<WhiteboardRef, IWhiteboardObject<?>>> references = Lists.newArrayList();
+		for(int i=0; i<refList.size(); i++)
+		{
+			NbtCompound data = refList.getCompound(i);
+			WhiteboardRef ref = WhiteboardRef.fromNbt(data.getCompound("Ref"));
+			IWhiteboardObject<?> val = data.contains("Val", NbtElement.COMPOUND_TYPE) ? WhiteboardObjBase.createFromNbt(data.getCompound("Val")) : null;
+			references.add(new Pair<>(ref, val));
+		}
+		return references;
 	}
 }

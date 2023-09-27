@@ -1,6 +1,7 @@
 package com.lying.tricksy.network;
 
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.reference.Reference;
 
@@ -25,13 +26,26 @@ public class SyncTreeScreenPacket
 		buffer.writeUuid(tricksy.getUuid());
 		
 		NbtList refList = new NbtList();
-		tricksy.getLocalWhiteboard().allReferences().forEach(ref -> refList.add(ref.writeToNbt(new NbtCompound())));
-		tricksy.getGlobalWhiteboard().allReferences().forEach(ref -> refList.add(ref.writeToNbt(new NbtCompound())));
-		Whiteboard.CONSTANTS.allReferences().forEach(ref -> refList.add(ref.writeToNbt(new NbtCompound())));
+		addBoardToList(refList, tricksy.getLocalWhiteboard());
+		addBoardToList(refList, tricksy.getGlobalWhiteboard());
+		addBoardToList(refList, Whiteboard.CONSTANTS);
 		NbtCompound data = new NbtCompound();
 		data.put("References", refList);
 		buffer.writeNbt(data);
 		
 		ServerPlayNetworking.send((ServerPlayerEntity)player, PACKET_ID, buffer);
+	}
+	
+	private static void addBoardToList(NbtList refList, Whiteboard<?> board)
+	{
+		board.allReferences().forEach((ref) -> 
+		{
+			NbtCompound data = new NbtCompound();
+			data.put("Ref", ref.writeToNbt(new NbtCompound()));
+			IWhiteboardObject<?> value = board.getValue(ref);
+			if(!value.isEmpty())
+				data.put("Val", board.getValue(ref).writeToNbt(new NbtCompound()));
+			refList.add(data);
+		});
 	}
 }

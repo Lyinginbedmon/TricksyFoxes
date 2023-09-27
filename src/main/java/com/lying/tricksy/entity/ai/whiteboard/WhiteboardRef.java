@@ -22,6 +22,14 @@ public class WhiteboardRef
 	{
 		public int compare(WhiteboardRef o1, WhiteboardRef o2)
 		{
+			int index1 = o1.type().texIndex();
+			int index2 = o2.type().texIndex();
+			if(index1 != index2)
+				return index1 > index2 ? 1 : index1 < index2 ? -1 : 0;
+			
+			if(o1.uncached() != o2.uncached())
+				return o1.uncached() && !o2.uncached() ? -1 : !o1.uncached() && o2.uncached() ? 1 : 0;
+			
 			String a = o1.displayName().getString();
 			String b = o2.displayName().getString();
 			

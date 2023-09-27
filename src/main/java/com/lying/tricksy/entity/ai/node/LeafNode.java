@@ -21,6 +21,7 @@ import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.ai.FuzzyTargeting;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventory;
@@ -87,13 +88,7 @@ public class LeafNode extends TreeNode<LeafNode>
 					if(targetObj.isEmpty())
 						return Result.FAILURE;
 					
-					BlockPos dest = targetObj.as(TFObjType.BLOCK).get();
-					if(navigator.findPathTo(dest, 20) == null)
-					{
-						System.out.println("Failed to find path to "+dest.toShortString());
-						return Result.FAILURE;
-					}
-					
+					BlockPos dest = FuzzyTargeting.towardTarget(tricksy, 32, true, targetObj.as(TFObjType.BLOCK).get());
 					navigator.startMovingTo(dest.getX(), dest.getY(), dest.getZ(), 0.5D);
 					return Result.RUNNING;
 				}

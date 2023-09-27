@@ -28,7 +28,10 @@ public class WhiteboardObjBlock extends WhiteboardObjBase<BlockPos, com.lying.tr
 	
 	public Text describeValue(WhiteboardObjBlock.BlockData value)
 	{
-		return Text.translatable("value."+Reference.ModInfo.MOD_ID+".blockpos", value.pos.toShortString(), value.face.getName());
+		if(value.face != Direction.UP)
+			return Text.translatable("value."+Reference.ModInfo.MOD_ID+".blockpos_long", value.pos.toShortString(), value.face.getName());
+		else
+			return Text.translatable("value."+Reference.ModInfo.MOD_ID+".blockpos", value.pos.toShortString());
 	}
 	
 	public Direction direction() { return value.isEmpty() ? Direction.UP : value.get(0).blockFace(); }

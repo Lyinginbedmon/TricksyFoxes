@@ -76,10 +76,10 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 			SaveTreePacket.send(player, handler.tricksyUUID(), handler.getTree());
 			client.setScreen(null);
 		}).dimensions(midPoint + 70 - 20, 7, 40, 16).build());
-		addDrawableChild(whiteboards = ButtonWidget.builder(Text.literal("Whiteboards"), (button) -> 
+		addDrawableChild(whiteboards = ButtonWidget.builder(Text.literal("W"), (button) -> 
 		{
 			client.setScreen(new WhiteboardScreen(getScreenHandler(), this.playerInv, this.title));
-		}).dimensions(0, this.height - 16, 50, 16).build());
+		}).dimensions((this.width / 2) + 40, 16, 16, 16).build());
 		
 		position = new Vec2f(-this.width / 4, -this.height / 4);
 	}
@@ -154,7 +154,6 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 	
 	private WhiteboardRef incrementOption(TreeNode<?> node, int index, int scroll)
 	{
-		System.out.println("Scrolling variable by "+scroll);
 		// The input variable we are cycling
 		WhiteboardRef inputRef = null;
 		
@@ -168,35 +167,25 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 		if(scroll == 0)
 			return valueRef;
 		
-		List<WhiteboardRef> options = this.handler.getMatches(node.getSubType().variableSet().get(inputRef));
+		List<WhiteboardRef> options = this.handler.getMatches(node.getSubType().variableSet().get(inputRef), null);
 		if(options.isEmpty())
 			return null;
 		else
 		{
 			options.sort(WhiteboardRef.REF_SORT);
-			System.out.println("Option set: "+options.size());
-			options.forEach((option) -> System.out.println(" * "+option.displayName().getString()));
 			
 			int optionIndex = 0;
 			if(valueRef != null)
-			{
-				System.out.println("Value set: "+valueRef.displayName().getString());
 				for(int i=0; i<options.size(); i++)
-					if(options.get(i).equals(valueRef))
+					if(options.get(i).isSameRef(valueRef))
 					{
 						optionIndex = i;
 						break;
 					}
-			}
-			System.out.println("Existing index: "+optionIndex);
-			System.out.println(" * "+options.get(optionIndex).displayName().getString());
 			
 			optionIndex += Math.signum(scroll);
 			if(scroll > 0)
 				optionIndex %= options.size();
-			
-			System.out.println("New index: "+optionIndex);
-			System.out.println(" * "+options.get(optionIndex).displayName().getString());
 			return optionIndex < 0 ? null : options.get(optionIndex);
 		}
 	}
@@ -288,6 +277,8 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 	
 	protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY)
 	{
+		if(hoveredNode == null)
+			this.addNode.visible = this.delNode.visible = false;
 		renderBackground(context);
 		if(handler.getTree() == null)
 			return;

@@ -46,9 +46,9 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		return value.valueName != null ? value.valueName : Text.translatable("value."+Reference.ModInfo.MOD_ID+".entity");
 	}
 	
-	protected EntityData storeValue(Entity val) { return new EntityData(val); }
+	protected EntityData storeValue(Entity val) { return val == null ? new EntityData() : new EntityData(val); }
 	
-	protected Entity getValue(WhiteboardObjEntity.EntityData entry) { return entry.value; }
+	protected Entity getValue(WhiteboardObjEntity.EntityData entry) { return entry.blank ? null : entry.value; }
 	
 	protected NbtElement valueToNbt(WhiteboardObjEntity.EntityData val) { return val.storeToNbt(new NbtCompound()); }
 	
@@ -79,7 +79,15 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		
 		private final UUID uuid;
 		private final boolean isPlayer;
+		private final boolean blank;
 		private BlockPos lastKnownPos;
+		
+		public EntityData()
+		{
+			blank = true;
+			uuid = UUID.randomUUID();
+			isPlayer = false;
+		}
 		
 		public EntityData(@NotNull Entity entIn)
 		{
@@ -91,12 +99,16 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		
 		public EntityData(UUID uuidIn, boolean isPlayerIn)
 		{
+			this.blank = false;
 			this.uuid = uuidIn;
 			this.isPlayer = isPlayerIn;
 		}
 		
 		protected NbtCompound storeToNbt(NbtCompound data)
 		{
+			if(blank)
+				return data;
+			
 			data.putUuid("UUID", this.uuid);
 			data.putBoolean("IsPlayer", this.isPlayer);
 			data.put("LastKnownPos", NbtHelper.fromBlockPos(this.lastKnownPos));
@@ -108,6 +120,9 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		
 		public void recache(World world)
 		{
+			if(blank)
+				return;
+			
 			if(value != null)
 			{
 				this.valueName = value.getDisplayName();

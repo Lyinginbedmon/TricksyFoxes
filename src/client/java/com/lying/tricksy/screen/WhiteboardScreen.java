@@ -1,11 +1,9 @@
 package com.lying.tricksy.screen;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.network.DeleteReferencePacket;
@@ -26,14 +24,12 @@ public class WhiteboardScreen extends HandledScreen<TreeScreenHandler>
 	
 	// Button to view behaviour tree
 	public ButtonWidget tree;
-	// Button to delete a cached value
-	public ButtonWidget delete;
 	// Whiteboard tabs
 	public Map<BoardType, ButtonWidget> boardMap = new HashMap<>();
 	
-	private List<WhiteboardRef> references = Lists.newArrayList();
-	private WhiteboardRef targetRef = null;
 	private BoardType currentBoard = BoardType.LOCAL;
+	
+	private WhiteboardList list;
 	
 	public WhiteboardScreen(TreeScreenHandler handler, PlayerInventory inventory, Text title)
 	{
@@ -44,14 +40,14 @@ public class WhiteboardScreen extends HandledScreen<TreeScreenHandler>
 	
 	protected void init()
 	{
-		addDrawableChild(tree = ButtonWidget.builder(Text.literal("Tree"), (button) -> 
+		addSelectableChild(list = new WhiteboardList(this, 200, this.height, 28, this.height));
+		list.setLeftPos((this.width - 200) / 2);
+		setBoard(BoardType.LOCAL);
+		
+		addDrawableChild(tree = ButtonWidget.builder(Text.literal("T"), (button) -> 
 		{
 			client.setScreen(new TreeScreen(this.handler, this.playerInv, this.title));
-		}).dimensions(0, this.height - 16, 50, 16).build());
-		addDrawableChild(delete = ButtonWidget.builder(Text.literal("X"), (button) -> 
-		{
-			((WhiteboardScreen)mc.currentScreen).deleteCurrentRef();
-		}).dimensions(0, 0, 16, 16).build());
+		}).dimensions((this.width / 2) + 40, 16, 16, 16).build());
 		
 		boardMap.put(BoardType.CONSTANT, makeBoardButton(BoardType.CONSTANT, 0));
 		boardMap.put(BoardType.GLOBAL, makeBoardButton(BoardType.GLOBAL, 20));
@@ -67,7 +63,7 @@ public class WhiteboardScreen extends HandledScreen<TreeScreenHandler>
 			WhiteboardScreen screen = (WhiteboardScreen)mc.currentScreen;
 			screen.setBoard(board);
 			screen.manageBoardButtons();
-		}).dimensions((this.width - 200) / 2, 60 + y, 60, 16).build();
+		}).dimensions((this.width - 200) / 2 - 60, 60 + y, 60, 20).build();
 	}
 	
 	private void manageBoardButtons()
@@ -79,9 +75,19 @@ public class WhiteboardScreen extends HandledScreen<TreeScreenHandler>
 	public void setBoard(BoardType board)
 	{
 		this.currentBoard = board;
+		this.list.setEntries(this.handler.getEntriesOnBoard(board));
+		this.list.setScrollAmount(0D);
 	}
 	
-	public void deleteCurrentRef()
+	public boolean mouseClicked(double mouseX, double mouseY, int button)
+	{
+		if(this.list.mouseClicked(mouseX, mouseY, button))
+			return true;
+		else
+			return super.mouseClicked(mouseX, mouseY, button);
+	}
+	
+	public void deleteReference(WhiteboardRef targetRef)
 	{
 		if(targetRef == null)
 			return;
@@ -91,29 +97,15 @@ public class WhiteboardScreen extends HandledScreen<TreeScreenHandler>
 		targetRef = null;
 	}
 	
+	protected void drawForeground(DrawContext context, int mouseX, int mouseY)
+	{
+		context.drawText(textRenderer, this.title, (this.width - this.textRenderer.getWidth(this.title)) / 2, 2 + (26 - this.textRenderer.fontHeight) / 2, 0x404040, false);
+	}
+	
 	protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY)
 	{
 		renderBackground(context);
-		
-		int listStart = 50;
-		int slot = Math.floorDiv(mouseY - listStart, 16);
-		if(Math.abs((this.width / 2) - mouseX) > 100)
-			slot = -1;
-		
-		references.clear();
-		references.addAll(getScreenHandler().getMatches((ref) -> ref.boardType() == currentBoard));
-		references.sort(WhiteboardRef.REF_SORT);
-		for(int i=0; i<references.size(); i++)
-			NodeRenderUtils.renderReference(references.get(i), context, textRenderer, (this.width - 150) / 2, listStart + i * 16 + (16 - textRenderer.fontHeight) / 2, 150, true);
-		
-		if(slot >= 0 && slot < references.size() && currentBoard != BoardType.CONSTANT)
-		{
-			this.targetRef = references.get(slot);
-			delete.visible = true;
-			delete.active = !references.get(slot).uncached();
-			delete.setPosition((this.width / 2) + 80, listStart + slot * 16);
-		}
-		else
-			delete.visible = delete.active = false;
+		this.list.render(context, mouseX, mouseY, delta);
+		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
 	}
 }
