@@ -58,11 +58,13 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 	{
 		addDrawableChild(addNode = ButtonWidget.builder(Text.literal("+"), (button) -> 
 		{
-			hoveredNode.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID()));
+			this.hoveredNode.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID()));
+			this.handler.countNodes();
 		}).dimensions(16, 16, 16, 16).build());
 		addDrawableChild(delNode = ButtonWidget.builder(Text.literal("-"), (button) -> 
 		{
-			handler.getTree().root().removeChild(hoveredNode);
+			this.handler.getTree().root().removeChild(hoveredNode);
+			this.handler.countNodes();
 		}).dimensions(16, 32, 16, 16).build());
 		
 		int midPoint = this.width / 2;
@@ -217,8 +219,9 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 		
 		if(hoveredNode != null)
 		{
-			addNode.visible = delNode.visible = true;
-			addNode.active = hoveredNode.canAddChild();
+			addNode.visible = this.handler.canAddNode(); 
+			delNode.visible = true;
+			addNode.active = hoveredNode.canAddChild() && this.handler.canAddNode();
 			delNode.active = hoveredNode != root;
 			addNode.setPosition(hoveredNode.screenX + hoveredNode.width - 7 - addNode.getWidth(), hoveredNode.screenY + 6);
 			delNode.setPosition(hoveredNode.screenX + 7, hoveredNode.screenY + 6);

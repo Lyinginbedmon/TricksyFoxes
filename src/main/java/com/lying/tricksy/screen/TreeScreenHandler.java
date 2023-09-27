@@ -31,25 +31,30 @@ public class TreeScreenHandler extends ScreenHandler
 	private PathAwareEntity tricksyMob = null;
 	private UUID tricksyID;
 	
+	private int treeSize;
+	private int treeSizeCap;
+	
 	public <T extends PathAwareEntity & ITricksyMob<?>> TreeScreenHandler(int syncId, T tricksyIn)
 	{
-		this(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, syncId, tricksyIn);
+		this(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, syncId, tricksyIn, 12);
 	}
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> TreeScreenHandler(ScreenHandlerType<?> type, int syncId, @NotNull T tricksyIn)
+	public <T extends PathAwareEntity & ITricksyMob<?>> TreeScreenHandler(ScreenHandlerType<?> type, int syncId, @NotNull T tricksyIn, int sizeCap)
 	{
 		super(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, syncId);
 		if(tricksyIn != null)
 		{
 			tricksy = tricksyIn;
 			tricksyMob = tricksyIn;
-			sync(tricksyIn, tricksyIn.getUuid());
+			sync(tricksyIn, tricksyIn.getUuid(), sizeCap);
 		}
 	}
 	
 	public ItemStack quickMove(PlayerEntity var1, int var2) { return null; }
 	
 	public boolean canUse(PlayerEntity var1) { return var1.isCreative() || tricksy != null && tricksy.isSage(var1) && tricksyMob.distanceTo(var1) < 6D; }
+	
+	public boolean canAddNode() { return this.treeSize < this.treeSizeCap; }
 	
 	public List<WhiteboardRef> getMatches(Predicate<WhiteboardRef> predicate, BoardType board)
 	{
@@ -75,10 +80,11 @@ public class TreeScreenHandler extends ScreenHandler
 	
 	public BehaviourTree getTree() { return tricksyTree; }
 	
-	public void sync(@NotNull ITricksyMob<?> tricksyIn, UUID mobID)
+	public void sync(@NotNull ITricksyMob<?> tricksyIn, UUID mobID, int capIn)
 	{
 		this.tricksy = tricksyIn;
 		this.tricksyID = mobID;
+		this.treeSizeCap = capIn;
 		resetTree();
 	}
 	
@@ -98,6 +104,12 @@ public class TreeScreenHandler extends ScreenHandler
 			this.tricksyTree = tricksy.getBehaviourTree().copy();
 		else
 			this.tricksyTree = new BehaviourTree();
+		countNodes();
+	}
+	
+	public void countNodes()
+	{
+		this.treeSize = this.tricksyTree.size();
 	}
 	
 	public UUID tricksyUUID() { return this.tricksyID; }

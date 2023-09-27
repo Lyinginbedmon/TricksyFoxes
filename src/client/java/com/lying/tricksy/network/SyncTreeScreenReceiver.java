@@ -33,6 +33,7 @@ public class SyncTreeScreenReceiver implements ClientPlayNetworking.PlayChannelH
 		int syncId = buf.readInt();
 		UUID tricksyID = buf.readUuid();
 		List<Pair<WhiteboardRef, IWhiteboardObject<?>>> references = unpackReferences(buf.readNbt().getList("References", NbtElement.COMPOUND_TYPE));
+		int sizeCap = buf.readInt();
 		
 		client.execute(() -> 
 		{
@@ -47,7 +48,7 @@ public class SyncTreeScreenReceiver implements ClientPlayNetworking.PlayChannelH
 				if(!entities.isEmpty())
 				{
 					TreeScreenHandler screen = (TreeScreenHandler)screenHandler;
-					screen.sync((ITricksyMob<?>)entities.get(0), entities.get(0).getUuid());
+					screen.sync((ITricksyMob<?>)entities.get(0), entities.get(0).getUuid(), sizeCap);
 					screen.setAvailableReferences(references);
 				}
 			}

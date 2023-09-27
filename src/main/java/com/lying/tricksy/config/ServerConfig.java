@@ -16,6 +16,8 @@ public class ServerConfig extends Config
 	
 	protected Properties getDefaults() { return DEFAULT_SETTINGS; }
 	
+	public int treeSizeCap() { return this.nodeCap; }
+	
 	protected void readValues(Properties valuesIn)
 	{
 		nodeCap = parseIntOr(valuesIn.getProperty("TreeNodeCap"), 12);

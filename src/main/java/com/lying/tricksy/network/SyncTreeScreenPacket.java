@@ -1,5 +1,6 @@
 package com.lying.tricksy.network;
 
+import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
@@ -32,6 +33,8 @@ public class SyncTreeScreenPacket
 		NbtCompound data = new NbtCompound();
 		data.put("References", refList);
 		buffer.writeNbt(data);
+		
+		buffer.writeInt(TricksyFoxes.config.treeSizeCap());
 		
 		ServerPlayNetworking.send((ServerPlayerEntity)player, PACKET_ID, buffer);
 	}
