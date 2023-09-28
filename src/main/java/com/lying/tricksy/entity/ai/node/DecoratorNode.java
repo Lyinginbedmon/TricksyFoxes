@@ -3,16 +3,15 @@ package com.lying.tricksy.entity.ai.node;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
@@ -151,15 +150,14 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 		}));
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_DELAY, new NodeTickHandler<DecoratorNode>()
 		{
-			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_COUNT, NodeTickHandler.any());
+				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.any(), new WhiteboardObj.Int(1)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
 			{
-				WhiteboardRef reference = parent.variable(CommonVariables.VAR_COUNT);
-				IWhiteboardObject<Integer> duration = Whiteboard.get(reference, local, global).as(TFObjType.INT);
+				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
 				
 				if(!parent.isRunning())
 					parent.ticks = duration.get() * Reference.Values.TICKS_PER_SECOND;
@@ -170,9 +168,9 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 		}));
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_REPEAT, new NodeTickHandler<DecoratorNode>()
 		{
-			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_COUNT, NodeTickHandler.any());
+				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.any(), new WhiteboardObj.Int(4)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
@@ -184,8 +182,7 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 				if(result == Result.FAILURE)
 					return Result.FAILURE;
 				
-				WhiteboardRef reference = parent.variable(CommonVariables.VAR_COUNT);
-				IWhiteboardObject<Integer> duration = Whiteboard.get(reference, local, global).as(TFObjType.INT);
+				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
 				if(result.isEnd() && parent.ticks++ >= duration.get())
 					return Result.SUCCESS;
 				
@@ -194,9 +191,9 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 		}));
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_RETRY, new NodeTickHandler<DecoratorNode>()
 		{
-			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			public @NotNull Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_COUNT, NodeTickHandler.any());
+				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.any(), new WhiteboardObj.Int(4)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
@@ -208,9 +205,7 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 				if(result == Result.SUCCESS)
 					return Result.SUCCESS;
 				
-				WhiteboardRef reference = parent.variable(CommonVariables.VAR_COUNT);
-				IWhiteboardObject<Integer> duration = Whiteboard.get(reference, local, global).as(TFObjType.INT);
-				
+				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
 				if(result.isEnd() && parent.ticks++ >= duration.get())
 					return Result.FAILURE;
 				

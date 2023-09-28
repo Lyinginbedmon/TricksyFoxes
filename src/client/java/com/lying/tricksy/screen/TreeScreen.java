@@ -169,7 +169,7 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 		if(scroll == 0)
 			return valueRef;
 		
-		List<WhiteboardRef> options = this.handler.getMatches(node.getSubType().variableSet().get(inputRef), null);
+		List<WhiteboardRef> options = this.handler.getMatches(node.getSubType().variableSet().get(inputRef).predicate(), null);
 		if(options.isEmpty())
 			return null;
 		else

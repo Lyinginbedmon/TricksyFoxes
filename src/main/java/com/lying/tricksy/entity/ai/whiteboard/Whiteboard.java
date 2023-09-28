@@ -274,10 +274,17 @@ public abstract class Whiteboard<T>
 		return references;
 	}
 	
+	/** Returns an uncached whiteboard reference of the given type and board with a corresponding translated name */
+	protected static WhiteboardRef makeSystemRef(String name, TFObjType<?> type, BoardType board)
+	{
+		name = name.replace(' ', '_').toLowerCase();
+		return new WhiteboardRef(name, type, board).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+"."+name));
+	}
+	
 	/** A whiteboard containing globally-accessible values set by a tricksy mob's sage */
 	public static class Global extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 	{
-		public static final WhiteboardRef SPAWN = new WhiteboardRef("spawn_pos", TFObjType.BLOCK, BoardType.GLOBAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".spawn_pos"));
+		public static final WhiteboardRef SPAWN = makeSystemRef("spawn_pos", TFObjType.BLOCK, BoardType.GLOBAL);
 		
 		public Global(World worldIn)
 		{
@@ -298,15 +305,17 @@ public abstract class Whiteboard<T>
 	/** A whiteboard containing locally-accessible values set by a tricksy mob itself */
 	public static class Local<T extends PathAwareEntity & ITricksyMob<?>> extends Whiteboard<Function<T, IWhiteboardObject<?>>>
 	{
-		public static final WhiteboardRef SELF = new WhiteboardRef("self", TFObjType.ENT, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".self"));
-		public static final WhiteboardRef HP = new WhiteboardRef("health", TFObjType.INT, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".health"));
-		public static final WhiteboardRef ARMOUR = new WhiteboardRef("armor", TFObjType.INT, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".armor"));
-		public static final WhiteboardRef HANDS_FULL = new WhiteboardRef("hands_full", TFObjType.BOOL, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".hands_full"));
-		public static final WhiteboardRef HOME = new WhiteboardRef("home_pos", TFObjType.BLOCK, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".home_pos"));
-		public static final WhiteboardRef HAS_SAGE = new WhiteboardRef("has_sage", TFObjType.BOOL, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".has_sage"));
-		public static final WhiteboardRef NEAREST_SAGE = new WhiteboardRef("nearest_sage", TFObjType.ENT, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".nearest_sage"));
-		public static final WhiteboardRef ATTACK_TARGET = new WhiteboardRef("attack_target", TFObjType.ENT, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".attack_target"));
-		public static final WhiteboardRef ON_GROUND = new WhiteboardRef("on_ground", TFObjType.BOOL, BoardType.LOCAL).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".on_ground"));
+		public static final WhiteboardRef SELF = makeSystemRef("self", TFObjType.ENT, BoardType.LOCAL);
+		public static final WhiteboardRef HP = makeSystemRef("health", TFObjType.INT, BoardType.LOCAL);
+		public static final WhiteboardRef ARMOUR = makeSystemRef("armor", TFObjType.INT, BoardType.LOCAL);
+		public static final WhiteboardRef HANDS_FULL = makeSystemRef("hands_full", TFObjType.BOOL, BoardType.LOCAL);
+		public static final WhiteboardRef MAIN_ITEM = makeSystemRef("mainhand_item", TFObjType.ITEM, BoardType.LOCAL);
+		public static final WhiteboardRef OFF_ITEM = makeSystemRef("offhand_item", TFObjType.ITEM, BoardType.LOCAL);
+		public static final WhiteboardRef HOME = makeSystemRef("home_pos", TFObjType.BLOCK, BoardType.LOCAL);
+		public static final WhiteboardRef HAS_SAGE = makeSystemRef("has_sage", TFObjType.BOOL, BoardType.LOCAL);
+		public static final WhiteboardRef NEAREST_SAGE = makeSystemRef("nearest_sage", TFObjType.ENT, BoardType.LOCAL);
+		public static final WhiteboardRef ATTACK_TARGET = makeSystemRef("attack_target", TFObjType.ENT, BoardType.LOCAL);
+		public static final WhiteboardRef ON_GROUND = makeSystemRef("on_ground", TFObjType.BOOL, BoardType.LOCAL);
 		
 		private final T tricksy;
 		
@@ -322,6 +331,8 @@ public abstract class Whiteboard<T>
 			register(HP, (tricksy) -> new WhiteboardObj.Int((int)tricksy.getHealth()));
 			register(ARMOUR, (tricksy) -> new WhiteboardObj.Int(tricksy.getArmor()));
 			register(HANDS_FULL, (tricksy) -> new WhiteboardObj.Bool(!tricksy.getMainHandStack().isEmpty() && !tricksy.getOffHandStack().isEmpty()));
+			register(MAIN_ITEM, (tricksy) -> new WhiteboardObj.Item(tricksy.getMainHandStack()));
+			register(OFF_ITEM, (tricksy) -> new WhiteboardObj.Item(tricksy.getOffHandStack()));
 			register(HOME, (tricksy) -> new WhiteboardObjBlock(tricksy.getPositionTarget(), Direction.UP));
 			register(HAS_SAGE, (tricksy) -> new WhiteboardObj.Bool(tricksy.hasSage()));
 			register(NEAREST_SAGE, (tricksy) -> 

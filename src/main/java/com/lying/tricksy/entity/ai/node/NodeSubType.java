@@ -1,7 +1,6 @@
 package com.lying.tricksy.entity.ai.node;
 
 import java.util.Map;
-import java.util.function.Predicate;
 
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ITricksyMob;
@@ -32,7 +31,7 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public Text description() { return Text.translatable("variant."+registryName.getNamespace()+"."+registryName.getPath()+".desc"); }
 	
-	public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet(){ return tickFunc.variableSet(); }
+	public Map<WhiteboardRef, INodeInput> variableSet(){ return tickFunc.variableSet(); }
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, Local<T> local, Global global, M parent)
 	{

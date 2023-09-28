@@ -93,6 +93,8 @@
 	"whiteboard.tricksy.attack_target": "Attack Target",
 	"whiteboard.tricksy.on_ground": "On The Ground",
 	"whiteboard.tricksy.spawn_pos": "World Spawn",
+	"whiteboard.tricksy.mainhand_item": "Mainhand Item",
+	"whiteboard.tricksy.offhand_item": "Offhand Item",
 	"entity.tricksy.tricksy_fox": "Tricksy Fox",
 	"entity.tricksy.tricksy_fox.master_set": "%s will now follow the ways of this sage",
 	"entity.tricksy.tricksy_fox.master_set.fail": "%s already follows a sage!"

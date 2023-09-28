@@ -3,7 +3,6 @@ package com.lying.tricksy.entity.ai.node;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -14,6 +13,7 @@ import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
@@ -72,19 +72,17 @@ public class LeafNode extends TreeNode<LeafNode>
 	{
 		set.add(new NodeSubType<LeafNode>(VARIANT_GOTO, new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_POS, NodeTickHandler.ofType(TFObjType.BLOCK));
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
-				WhiteboardRef reference = parent.variable(CommonVariables.VAR_POS);
-				
 				EntityNavigation navigator = tricksy.getNavigation();
 				if(!parent.isRunning())
 				{
-					IWhiteboardObject<?> targetObj = Whiteboard.get(reference, local, global);
+					IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 					if(targetObj.isEmpty())
 						return Result.FAILURE;
 					
@@ -138,14 +136,14 @@ public class LeafNode extends TreeNode<LeafNode>
 		{
 			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BOOL).displayName(CommonVariables.translate("to_cycle"));
 			
-			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(VAR_A, NodeTickHandler.anyLocal());
+				return Map.of(VAR_A, INodeInput.makeInput(NodeTickHandler.anyLocal()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
-				IWhiteboardObject<?> value = Whiteboard.get(parent.variable(VAR_A), local, global);
+				IWhiteboardObject<?> value = getOrDefault(VAR_A, parent, local, global);
 				if(!value.isList())
 					return Result.FAILURE;
 				
@@ -158,11 +156,11 @@ public class LeafNode extends TreeNode<LeafNode>
 			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_copy", TFObjType.BOOL).displayName(CommonVariables.translate("to_copy"));
 			public static final WhiteboardRef VAR_B = new WhiteboardRef("target_reference", TFObjType.BOOL).displayName(CommonVariables.translate("ref_target"));
 			
-			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						VAR_A, NodeTickHandler.any(),
-						VAR_B, NodeTickHandler.anyLocal());
+						VAR_A, INodeInput.makeInput(NodeTickHandler.any()),
+						VAR_B, INodeInput.makeInput(NodeTickHandler.anyLocal()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
@@ -180,15 +178,14 @@ public class LeafNode extends TreeNode<LeafNode>
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_WAIT, new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_COUNT, NodeTickHandler.ofType(TFObjType.INT));
+				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(1)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
-				WhiteboardRef reference = parent.variable(CommonVariables.VAR_COUNT);
-				IWhiteboardObject<Integer> duration = Whiteboard.get(reference, local, global).as(TFObjType.INT);
+				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
 				
 				if(!parent.isRunning())
 					parent.ticks = duration.get() * Reference.Values.TICKS_PER_SECOND;
@@ -199,20 +196,18 @@ public class LeafNode extends TreeNode<LeafNode>
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_INSERT_ITEM, new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_POS, (ref) -> ref.type() == TFObjType.BLOCK);
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
-				WhiteboardRef reference = parent.variable(CommonVariables.VAR_POS);
-				
 				ItemStack heldStack = tricksy.getMainHandStack();
 				if(heldStack.isEmpty())
 					return Result.FAILURE;
 				
-				IWhiteboardObject<BlockPos> value = Whiteboard.get(reference, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<BlockPos> value = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
 				BlockPos block = value.get();
 				if(tricksy.squaredDistanceTo(block.getX(), block.getY(), block.getZ()) > (4* 4))
 					return Result.FAILURE;
@@ -280,16 +275,14 @@ public class LeafNode extends TreeNode<LeafNode>
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_EXTRACT_ITEM, new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, Predicate<WhiteboardRef>> variableSet()
+			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_POS, (ref) -> ref.type() == TFObjType.BLOCK);
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
-				WhiteboardRef reference = parent.variable(CommonVariables.VAR_POS);
-				
-				IWhiteboardObject<BlockPos> value = Whiteboard.get(reference, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<BlockPos> value = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
 				BlockPos block = value.get();
 				if(tricksy.squaredDistanceTo(block.getX(), block.getY(), block.getZ()) > (4* 4))
 					return Result.FAILURE;
