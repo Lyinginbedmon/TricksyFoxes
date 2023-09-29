@@ -125,7 +125,7 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 		{
 			context.drawTexture(BOARD_TEXTURES, x, y, 0, 0, 180, 25);
 			
-			NodeRenderUtils.renderReference(reference, context, mc.textRenderer, x, y + 3, 150, true);
+			NodeRenderUtils.renderReference(reference, context, mc.textRenderer, x, y + 3, 150, true, false);
 			if(reference.boardType() == BoardType.CONSTANT)
 				return;
 			

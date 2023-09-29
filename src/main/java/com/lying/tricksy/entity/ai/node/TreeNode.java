@@ -145,7 +145,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	public final boolean variableAssigned(WhiteboardRef reference)
 	{
 		for(Entry<WhiteboardRef, Optional<WhiteboardRef>> entry : variableSet.entrySet())
-			if(entry.getKey().equals(reference))
+			if(entry.getKey().isSameRef(reference))
 				return entry.getValue().isPresent();
 		return false;
 	}
@@ -153,8 +153,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	public final TreeNode<N> assign(WhiteboardRef variable, @Nullable WhiteboardRef value)
 	{
 		WhiteboardRef mapEntry = null;
-		for(WhiteboardRef entry : variableSet.keySet())
-			if(entry.equals(variable))
+		for(WhiteboardRef entry : nodeType.getSubType(subType).variableSet().keySet())
+			if(entry.isSameRef(variable))
 			{
 				mapEntry = entry;
 				break;
@@ -281,13 +281,12 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			if(data.contains("Variables", NbtElement.LIST_TYPE))
 			{
 				NbtList variables = data.getList("Variables", NbtElement.COMPOUND_TYPE);
-				parent.variableSet.clear();
 				for(int i=0; i<variables.size(); i++)
 				{
 					NbtCompound nbt = variables.getCompound(i);
 					WhiteboardRef variable = WhiteboardRef.fromNbt(nbt.getCompound("Variable"));
 					WhiteboardRef value = WhiteboardRef.fromNbt(nbt.getCompound("Value"));
-					parent.variableSet.put(variable, Optional.of(value));
+					parent.assign(variable, value);
 				}
 			}
 			
@@ -315,7 +314,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			NbtList variables = new NbtList();
 			variableSet.entrySet().forEach((entry) -> 
 			{
-				if(entry.getValue().isEmpty())
+				if(!entry.getValue().isPresent())
 					return;
 				
 				NbtCompound nbt = new NbtCompound();

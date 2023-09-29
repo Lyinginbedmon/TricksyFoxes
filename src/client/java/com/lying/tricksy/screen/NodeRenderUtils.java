@@ -2,6 +2,7 @@ package com.lying.tricksy.screen;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -9,6 +10,7 @@ import org.joml.Matrix4f;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxesClient;
+import com.lying.tricksy.entity.ai.node.INodeInput;
 import com.lying.tricksy.entity.ai.node.NodeSubType;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
@@ -23,7 +25,9 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
@@ -61,11 +65,21 @@ public class NodeRenderUtils
 		context.drawText(textRenderer, subName, node.screenX + (NODE_WIDTH - textRenderer.getWidth(subName)) / 2, drawY, 0x404040, false);
 		drawY += 11;
 		
+		Map<WhiteboardRef, INodeInput> variableSet = subType.variableSet();
 		for(Pair<WhiteboardRef, Optional<WhiteboardRef>> line : getSortedVariables(node))
 		{
-			renderReference(line.getLeft(), context, textRenderer, node.screenX + 4, drawY, 45, true);
+			renderReference(line.getLeft(), context, textRenderer, node.screenX + 4, drawY, 45, true, variableSet.get(line.getLeft()).isOptional());
 			if(line.getRight().isPresent())
-				renderReference(line.getRight().get(), context, textRenderer, node.screenX + 52, drawY, 94, false);
+				renderReference(line.getRight().get(), context, textRenderer, node.screenX + 52, drawY, 94, false, false);
+			else
+			{
+				INodeInput input = variableSet.get(line.getLeft());
+				if(input.defaultValue().isPresent())
+				{
+					Text defaultName = input.defaultValue().get().describe().get(0);
+					context.drawText(textRenderer, defaultName, node.screenX + 52 + (94 - textRenderer.getWidth(defaultName)) / 2, drawY, 0x808080, false);
+				}
+			}
 			drawY += 11;
 		}
 		
@@ -73,14 +87,14 @@ public class NodeRenderUtils
 			renderNode(child, context, textRenderer);
 	}
 	
-	public static void renderReference(WhiteboardRef reference, DrawContext context, TextRenderer textRenderer, int x, int y, int maxWidth, boolean iconRight)
+	public static void renderReference(WhiteboardRef reference, DrawContext context, TextRenderer textRenderer, int x, int y, int maxWidth, boolean iconRight, boolean isOptional)
 	{
 		int iconX = x + (iconRight ? maxWidth - 8 : 0);
 		
 		maxWidth -= 8;
 		if(maxWidth > 0)
 		{
-			Text name = reference.displayName();
+			MutableText name = reference.displayName().copy();
 			boolean centred = true;
 			if(textRenderer.getWidth(name) > maxWidth)
 			{
@@ -90,6 +104,8 @@ public class NodeRenderUtils
 					display += name.getString().charAt(display.length());
 				name = Text.literal(display + "...");
 			}
+			if(isOptional)
+				name.formatted(Formatting.ITALIC);
 			context.drawText(textRenderer, name, x + (iconRight ? 0 : 8) + (centred ? (maxWidth - textRenderer.getWidth(name)) / 2 : 0), y, 0x404040, false);
 		}
 		
