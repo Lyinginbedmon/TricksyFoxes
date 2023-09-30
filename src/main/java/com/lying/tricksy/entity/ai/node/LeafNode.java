@@ -1,6 +1,8 @@
 package com.lying.tricksy.entity.ai.node;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -8,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
+import com.lying.tricksy.entity.ai.whiteboard.Constants;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
@@ -15,19 +18,22 @@ import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.ai.FuzzyTargeting;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -44,6 +50,7 @@ import net.minecraft.world.World;
 public class LeafNode extends TreeNode<LeafNode>
 {
 	public static final Identifier VARIANT_CYCLE = new Identifier(Reference.ModInfo.MOD_ID, "cycle_value");
+	public static final Identifier VARIANT_SORT_NEAREST = new Identifier(Reference.ModInfo.MOD_ID, "sort_nearest");
 	public static final Identifier VARIANT_SET = new Identifier(Reference.ModInfo.MOD_ID, "set_value");
 	
 	public static final Identifier VARIANT_GOTO = new Identifier(Reference.ModInfo.MOD_ID, "goto");
@@ -53,6 +60,8 @@ public class LeafNode extends TreeNode<LeafNode>
 	public static final Identifier VARIANT_EXTRACT_ITEM = new Identifier(Reference.ModInfo.MOD_ID, "extract_item");
 	public static final Identifier VARIANT_WAIT = new Identifier(Reference.ModInfo.MOD_ID, "wait");
 	public static final Identifier VARIANT_SLEEP = new Identifier(Reference.ModInfo.MOD_ID, "sleep");
+	public static final Identifier VARIANT_SET_HOME = new Identifier(Reference.ModInfo.MOD_ID, "set_home");
+	public static final Identifier VARIANT_SET_ATTACK = new Identifier(Reference.ModInfo.MOD_ID, "set_attack");
 	
 	protected int ticks = 20;
 	
@@ -84,11 +93,18 @@ public class LeafNode extends TreeNode<LeafNode>
 				{
 					IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 					if(targetObj.isEmpty())
+					{
+						tricksy.logStatus(Text.literal("No destination to go to"));
 						return Result.FAILURE;
+					}
 					
-					BlockPos dest = FuzzyTargeting.towardTarget(tricksy, 32, true, targetObj.as(TFObjType.BLOCK).get());
+					BlockPos dest = targetObj.as(TFObjType.BLOCK).get();
+					if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 1D)
+						return Result.SUCCESS;
+					
 					navigator.startMovingTo(dest.getX(), dest.getY(), dest.getZ(), 0.5D);
-					return Result.RUNNING;
+					tricksy.logStatus(Text.literal(navigator.isFollowingPath() ? "Moving to destination" : "No path found"));
+					return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
 				}
 				else
 					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
@@ -96,14 +112,19 @@ public class LeafNode extends TreeNode<LeafNode>
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_DROP, new NodeTickHandler<LeafNode>()
 		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(1)));
+			}
+			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
 				ItemStack heldStack = tricksy.getMainHandStack();
 				if(heldStack.isEmpty())
 					return Result.FAILURE;
 				
-				tricksy.dropStack(heldStack);
-				tricksy.setStackInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
+				int amount = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT).get();
+				tricksy.dropStack(heldStack.split(amount));
 				return Result.SUCCESS;
 			}
 		}));
@@ -124,7 +145,10 @@ public class LeafNode extends TreeNode<LeafNode>
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
 				if(tricksy.hurtTime > 0 || !tricksy.isOnGround())
+				{
+					tricksy.logStatus(Text.literal("I can't sleep now"));
 					return Result.FAILURE;
+				}
 				
 				if(parent.ticksRunning > 0 && parent.ticksRunning%Reference.Values.TICKS_PER_SECOND == 0)
 					tricksy.heal(1F);
@@ -148,6 +172,51 @@ public class LeafNode extends TreeNode<LeafNode>
 					return Result.FAILURE;
 				
 				value.cycle();
+				return Result.SUCCESS;
+			}
+		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_SORT_NEAREST, new NodeTickHandler<LeafNode>()
+		{
+			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BLOCK).displayName(CommonVariables.translate("to_cycle"));
+			private static BlockPos position;
+			
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(
+						VAR_A, INodeInput.makeInput((ref) -> ref.type().castableTo(TFObjType.BLOCK) && ref.boardType() == BoardType.LOCAL),
+						CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK), new WhiteboardObjBlock(), Whiteboard.Local.SELF.displayName()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
+			{
+				WhiteboardRef reference = parent.variable(VAR_A);
+				IWhiteboardObject<BlockPos> value = getOrDefault(VAR_A, parent, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
+				
+				position = null;
+				if(pos.size() == 0)
+					position = tricksy.getBlockPos();
+				else
+					position = pos.as(TFObjType.BLOCK).get();
+				
+				if(value.isEmpty() || !value.isList())
+					return Result.FAILURE;
+				
+				List<BlockPos> points = value.getAll();
+				points.sort(new Comparator<BlockPos>() 
+				{
+					public int compare(BlockPos o1, BlockPos o2)
+					{
+						double dist1 = o1.getSquaredDistance(position);
+						double dist2 = o2.getSquaredDistance(position);
+						return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+					}
+				});
+				
+				tricksy.logStatus(Text.literal("Closest position was "+points.get(0).toShortString()));
+				WhiteboardObjBlock sorted = new WhiteboardObjBlock();
+				points.forEach((point) -> sorted.add(point));
+				local.setValue(reference, sorted);
 				return Result.SUCCESS;
 			}
 		}));
@@ -194,164 +263,186 @@ public class LeafNode extends TreeNode<LeafNode>
 				return Result.RUNNING;
 			}
 		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_INSERT_ITEM, new NodeTickHandler<LeafNode>()
+		set.add(new NodeSubType<LeafNode>(VARIANT_INSERT_ITEM, new InventoryHandler()
 		{
+			public static final WhiteboardRef TILE = CommonVariables.VAR_POS;
+			public static final WhiteboardRef FACE = InventoryHandler.FACE;
+			public static final WhiteboardRef LIMIT = CommonVariables.VAR_COUNT;
+			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
+			
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK));
+				return Map.of(
+						TILE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK),
+						FACE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK, new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.UP), Constants.DIRECTIONS.get(Direction.UP).displayName()),
+						LIMIT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int()),
+						FILTER, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ITEM), new WhiteboardObj.Item()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
-				ItemStack heldStack = tricksy.getMainHandStack();
-				if(heldStack.isEmpty())
+				IWhiteboardObject<BlockPos> value = getOrDefault(TILE, parent, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<BlockPos> face = getOrDefault(FACE, parent, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<?> filter = getOrDefault(FILTER, parent, local, global);
+				IWhiteboardObject<?> count = getOrDefault(LIMIT, parent, local, global);
+				
+				BlockPos block = value.get();
+				if(!NodeTickHandler.canInteractWith(tricksy, block))
 					return Result.FAILURE;
 				
-				IWhiteboardObject<BlockPos> value = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
-				BlockPos block = value.get();
-				if(tricksy.squaredDistanceTo(block.getX(), block.getY(), block.getZ()) > (4* 4))
+				ItemStack heldStack = tricksy.getMainHandStack();
+				// Fail if we have nothing to insert OR we don't have enough items to insert
+				if(heldStack.isEmpty() || count.size() > 0 && count.as(TFObjType.INT).get() > heldStack.getCount())
+				{
+					tricksy.logStatus(Text.literal("I don't have anything to insert"));
 					return Result.FAILURE;
+				}
+				
+				// Fail if our held stack doesn't meet a provided item filter
+				if(filter.size() > 0 && !InventoryHandler.matchesFilter(heldStack, filter.as(TFObjType.ITEM)))
+				{
+					tricksy.logStatus(Text.literal("I don't have the right item to insert"));
+					return Result.FAILURE;
+				}
 				
 				World world = tricksy.getWorld();
 				BlockEntity tile = world.getBlockEntity(block);
-				if(tile == null || !(tile instanceof Inventory))
-					return Result.FAILURE;
+				ItemStack insertStack = heldStack.split(count.size() == 0 ? heldStack.getCount() : count.as(TFObjType.INT).get());
 				
-				if(tile instanceof SidedInventory)
-				{
-					SidedInventory inv = (SidedInventory)tile;
-					Direction face = ((WhiteboardObjBlock)value).direction();
-					int[] slots = inv.getAvailableSlots(face);
-					
-					for(int slot : slots)
-						if(inv.canInsert(slot, heldStack, face) && inv.isValid(slot, heldStack) && insertStackInto(inv, slot, heldStack))
-							return Result.SUCCESS;
-				}
-				else if(insertStackInto((Inventory)tile, -1, heldStack))
-					return Result.SUCCESS;
-				
-				return Result.FAILURE;
+				insertStack = InventoryHandler.insertStackIntoTile(insertStack, tile, ((WhiteboardObjBlock)face).direction());
+				// Return any remaining items in insertStack to the heldStack
+				heldStack.increment(insertStack.getCount());
+				tricksy.logStatus(Text.literal(insertStack.isEmpty() ? "Item inserted successfully" : "I couldn't insert the item"));
+				if(insertStack.isEmpty())
+					tile.markDirty();
+				return insertStack.isEmpty() ? Result.SUCCESS : Result.FAILURE;
 			}
-			
-			/** Inserts the given itemstack into the given inventory slot, or all viable slots, until the stack is empty */
-			private static boolean insertStackInto(Inventory inv, int slot, ItemStack stack)
-			{
-				// Try insert into any slot in the inventory
-				if(slot < 0)
-				{
-					boolean foundSlot = false;
-					for(int i=0; i<inv.size(); i++)
-						if(insertStackInto(inv, i, stack))
-						{
-							foundSlot = true;
-							if(stack.getCount() == 0)
-								return true;
-						}
-					return foundSlot;
-					
-				}
-				// Try insert into specified slot in the inventory
-				else
-				{
-					ItemStack stackInSlot = inv.getStack(slot);
-					if(stackInSlot.isEmpty())
-					{
-						inv.setStack(slot, stack.copy());
-						stack.decrement(stack.getCount());
-						return true;
-					}
-					else if(canMergeStacks(stackInSlot, stack))
-					{
-						int amount = Math.min(stackInSlot.getMaxCount() - stackInSlot.getCount(), stack.getCount());
-						stackInSlot.increment(amount);
-						stack.decrement(amount);
-						return true;
-					}
-				}
-				return false;
-			}
-			
-			private static boolean canMergeStacks(ItemStack a, ItemStack b) { return a.getCount() <= a.getMaxCount() && ItemStack.canCombine(a, b); }
 		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_EXTRACT_ITEM, new NodeTickHandler<LeafNode>()
+		set.add(new NodeSubType<LeafNode>(VARIANT_EXTRACT_ITEM, new InventoryHandler()
 		{
+			public static final WhiteboardRef TILE = CommonVariables.VAR_POS;
+			public static final WhiteboardRef FACE = InventoryHandler.FACE;
+			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
+			
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK));
+				return Map.of(
+						TILE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK),
+						FACE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK, new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.DOWN), Constants.DIRECTIONS.get(Direction.DOWN).displayName()),
+						FILTER, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ITEM), new WhiteboardObj.Item()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
-				IWhiteboardObject<BlockPos> value = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<BlockPos> value = getOrDefault(TILE, parent, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<BlockPos> face = getOrDefault(FACE, parent, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<ItemStack> filter = getOrDefault(FILTER, parent, local, global).as(TFObjType.ITEM);
+				
 				BlockPos block = value.get();
-				if(tricksy.squaredDistanceTo(block.getX(), block.getY(), block.getZ()) > (4* 4))
+				if(!NodeTickHandler.canInteractWith(tricksy, block))
 					return Result.FAILURE;
 				
 				World world = tricksy.getWorld();
 				BlockEntity tile = world.getBlockEntity(block);
 				if(tile == null || !(tile instanceof Inventory))
+				{
+					tricksy.logStatus(Text.literal("That's not an inventory"));
 					return Result.FAILURE;
+				}
 				
+				// Fail if we can't put the extracted item into our main hand
 				ItemStack heldStack = tricksy.getMainHandStack();
-				if(!heldStack.isEmpty() && heldStack.getCount() == heldStack.getMaxCount())
-					return Result.FAILURE;
+				if(!heldStack.isEmpty())
+					if(heldStack.getCount() == heldStack.getMaxCount() || !InventoryHandler.matchesFilter(heldStack, filter))
+					{
+						tricksy.logStatus(Text.literal("I can't extract that currently"));
+						return Result.FAILURE;
+					}
 				
+				Inventory inv = (Inventory)tile;
+				
+				// Fail if the inventory doesn't contain any items that match the filter
+				if(filter.size() > 0 && !inv.containsAny((stack) -> InventoryHandler.matchesFilter(stack, filter)))
+				{
+					tricksy.logStatus(Text.literal("There isn't any of that there"));
+					return Result.FAILURE;
+				}
+				
+				// The extracted item
+				ItemStack extracted = ItemStack.EMPTY;
 				if(tile instanceof SidedInventory)
 				{
-					SidedInventory inv = (SidedInventory)tile;
-					Direction face = ((WhiteboardObjBlock)value).direction();
-					int[] slots = inv.getAvailableSlots(face);
-					
+					SidedInventory sidedInv = (SidedInventory)inv;
+					Direction side = ((WhiteboardObjBlock)face).direction();
+					int[] slots = sidedInv.getAvailableSlots(side);
 					for(int slot : slots)
-						if(inv.canExtract(slot, heldStack, face))
-						{
-							heldStack = extractStackFrom(inv, slot, heldStack);
-							tricksy.setStackInHand(Hand.MAIN_HAND, heldStack);
-						}
+					{
+						if(InventoryHandler.matchesFilter(sidedInv.getStack(slot), filter))
+							extracted = InventoryHandler.extractItemFrom(inv, slot, heldStack);
+						
+						if(!extracted.isEmpty())
+							break;
+					}
+				}
+				else
+					extracted = InventoryHandler.extractItemFrom(inv, heldStack);
+				
+				if(extracted.isEmpty())
+				{
+					tricksy.logStatus(Text.literal("I didn't manage to extract anything"));
+					return Result.FAILURE;
 				}
 				else
 				{
-					heldStack = extractStackFrom((Inventory)tile, -1, heldStack);
-					tricksy.setStackInHand(Hand.MAIN_HAND, heldStack);
+					tile.markDirty();
+					tricksy.setStackInHand(Hand.MAIN_HAND, InventoryHandler.mergeStacks(heldStack, extracted));
+					tricksy.logStatus(Text.literal("I'm now holding ").append(tricksy.getMainHandStack().getName()).append(Text.literal(" x"+tricksy.getMainHandStack().getCount())));
+					return Result.SUCCESS;
+				}
+			}
+		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_SET_ATTACK, new NodeTickHandler<LeafNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT), new WhiteboardObjEntity()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
+			{
+				IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
+				if(value.size() == 0)
+				{
+					tricksy.setTarget(null);
+					return Result.SUCCESS;
 				}
 				
-				return heldStack.isEmpty() ? Result.FAILURE : Result.SUCCESS;
-			}
-			
-			/** Extracts the contents of the given slot, or all available slots, merging with the given stack */
-			private static ItemStack extractStackFrom(Inventory inv, int slot, ItemStack stack)
-			{
-				// Try extract from any slot in the inventory
-				if(slot < 0)
+				Entity ent = value.get();
+				if(ent instanceof LivingEntity)
 				{
-					for(int i=0; i<inv.size(); i++)
-						extractStackFrom(inv, i, stack);
-					return stack;
+					tricksy.setTarget((LivingEntity)ent);
+					return Result.SUCCESS;
 				}
-				// Try extract from specified slot in the inventory
 				else
-				{
-					ItemStack stackInSlot = inv.getStack(slot);
-					if(stackInSlot.isEmpty())
-						return stack;
-					else if(stack.isEmpty())
-					{
-						stack = stackInSlot.copy();
-						inv.setStack(slot, ItemStack.EMPTY);
-						return stack;
-					}
-					else if(canMergeStacks(stack, stackInSlot))
-					{
-						int amount = Math.min(stack.getMaxCount() - stack.getCount(), stackInSlot.getCount());
-						stackInSlot.decrement(amount);
-						stack.increment(amount);
-						return stack;
-					}
-				}
-				return stack;
+					return Result.FAILURE;
+			}
+		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_SET_HOME, new NodeTickHandler<LeafNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK), new WhiteboardObjBlock()));
 			}
 			
-			private static boolean canMergeStacks(ItemStack a, ItemStack b) { return a.getCount() <= a.getMaxCount() && ItemStack.canCombine(a, b); }
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
+			{
+				IWhiteboardObject<BlockPos> value = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
+				if(value.size() == 0)
+					tricksy.clearPositionTarget();
+				else
+					tricksy.setPositionTarget(value.get(), 6);
+				return Result.SUCCESS;
+			}
 		}));
 	}
 }

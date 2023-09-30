@@ -178,7 +178,18 @@ public abstract class Whiteboard<T>
 	
 	protected abstract IWhiteboardObject<?> supplierToValue(T supplier);
 	
-	public void setValue(WhiteboardRef reference, IWhiteboardObject<?> obj) { values.put(reference, objectToSupplier(obj)); }
+	public void setValue(WhiteboardRef reference, IWhiteboardObject<?> obj)
+	{
+		WhiteboardRef mapEntry = reference;
+		for(WhiteboardRef entry : values.keySet())
+			if(entry.isSameRef(reference))
+			{
+				mapEntry = entry;
+				break;
+			}
+		
+		values.put(mapEntry, objectToSupplier(obj));
+	}
 	
 	protected IWhiteboardObject<?> getAndCache(WhiteboardRef nameIn, @Nullable World world)
 	{
@@ -202,7 +213,7 @@ public abstract class Whiteboard<T>
 	protected boolean cached(WhiteboardRef nameIn)
 	{
 		for(WhiteboardRef ref : cache.keySet())
-			if(ref.equals(nameIn))
+			if(ref.isSameRef(nameIn))
 				return true;
 		return false;
 	}
@@ -210,7 +221,7 @@ public abstract class Whiteboard<T>
 	public IWhiteboardObject<?> fromCache(WhiteboardRef nameIn)
 	{
 		for(Entry<WhiteboardRef, IWhiteboardObject<?>> entry : cache.entrySet())
-			if(entry.getKey().equals(nameIn))
+			if(entry.getKey().isSameRef(nameIn))
 				return entry.getValue();
 		return null;
 	}
@@ -245,10 +256,10 @@ public abstract class Whiteboard<T>
 				return global.getValue(nameIn);
 			case LOCAL:
 				return local.getValue(nameIn);
-			default:
 			case CONSTANT:
 				return CONSTANTS.getValue(nameIn);
 		}
+		return TFObjType.EMPTY.blank();
 	}
 	
 	/** Returns a collection of all references stored in this whiteboard, without their values */
@@ -257,7 +268,7 @@ public abstract class Whiteboard<T>
 	protected boolean hasReference(WhiteboardRef reference)
 	{
 		for(WhiteboardRef ref : allReferences())
-			if(ref.equals(reference))
+			if(ref.isSameRef(reference))
 				return true;
 		return false;
 	}

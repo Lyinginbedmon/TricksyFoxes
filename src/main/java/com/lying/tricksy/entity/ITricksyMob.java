@@ -18,6 +18,7 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.Text;
 
 /**
  * Interface defining common features and functions of all Tricksy mobs
@@ -83,7 +84,13 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 	/** Overwrites the structure of the mob's behaviour tree. */
 	public void setBehaviourTree(NbtCompound data);
 	
-	public int addUser();
+	public int activeUsers();
 	
-	public int removeUser();
+	public void addUser();
+	
+	public void removeUser();
+	
+	public void logStatus(Text message);
+	
+	public Text latestLog();
 }

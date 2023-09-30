@@ -33,7 +33,7 @@ public class ScreenHandlerMixin
 	public DefaultedList<Slot> slots;
 	
 	@Inject(method = "internalOnSlotClick", at = @At("HEAD"), cancellable = true)
-	private void cycleNoteType(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, final CallbackInfo ci)
+	private void tricksy$cycleNoteType(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, final CallbackInfo ci)
 	{
 		if(slotIndex < 0 || slotIndex >= slots.size())
 			return;

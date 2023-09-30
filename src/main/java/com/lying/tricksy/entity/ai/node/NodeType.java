@@ -1,6 +1,7 @@
 package com.lying.tricksy.entity.ai.node;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.utility.TricksyUtils;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -34,6 +36,7 @@ public class NodeType<M extends TreeNode<?>>
 			return Result.FAILURE;
 		}
 	});
+	public Comparator<Identifier> subTypeSort = (o1,o2) -> TricksyUtils.stringComparator(getSubType(o1).translatedName().getString(), getSubType(o2).translatedName().getString());
 	private Identifier registryName = null;
 	private final int displayColor;
 	
@@ -90,6 +93,7 @@ public class NodeType<M extends TreeNode<?>>
 	{
 		List<Identifier> subtypes = Lists.newArrayList();
 		subtypes.addAll(this.subTypes.keySet());
+		subtypes.sort(subTypeSort);
 		return subtypes;
 	}
 	

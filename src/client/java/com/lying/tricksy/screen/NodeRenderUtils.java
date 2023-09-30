@@ -73,12 +73,8 @@ public class NodeRenderUtils
 				renderReference(line.getRight().get(), context, textRenderer, node.screenX + 52, drawY, 94, false, false);
 			else
 			{
-				INodeInput input = variableSet.get(line.getLeft());
-				if(input.defaultValue().isPresent())
-				{
-					Text defaultName = input.defaultValue().get().describe().get(0);
-					context.drawText(textRenderer, defaultName, node.screenX + 52 + (94 - textRenderer.getWidth(defaultName)) / 2, drawY, 0x808080, false);
-				}
+				Text defaultName = variableSet.get(line.getLeft()).describeValue();
+				context.drawText(textRenderer, defaultName, node.screenX + 52 + (94 - textRenderer.getWidth(defaultName)) / 2, drawY, 0x808080, false);
 			}
 			drawY += 11;
 		}
@@ -370,7 +366,8 @@ public class NodeRenderUtils
 	public static List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> getSortedVariables(TreeNode<?> node)
 	{
 		List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> variablesToDisplay = Lists.newArrayList();
-		for(WhiteboardRef input : node.getSubType().variableSet().keySet())
+		Map<WhiteboardRef, INodeInput> variableSet = node.getSubType().variableSet();
+		for(WhiteboardRef input : variableSet.keySet())
 		{
 			WhiteboardRef value = node.variable(input);
 			variablesToDisplay.add(new Pair<>(input, value == null ? Optional.empty() : Optional.of(value)));
@@ -381,6 +378,10 @@ public class NodeRenderUtils
 		{
 			public int compare(Pair<WhiteboardRef, Optional<WhiteboardRef>> o1, Pair<WhiteboardRef, Optional<WhiteboardRef>> o2)
 			{
+				boolean optional1 = variableSet.get(o1.getLeft()).isOptional();
+				boolean optional2 = variableSet.get(o2.getLeft()).isOptional();
+				if(optional1 != optional2)
+					return optional1 && !optional2 ? 1 : !optional1 && optional2 ? -1 : 0;
 				return WhiteboardRef.REF_SORT.compare(o1.getLeft(), o2.getLeft());
 			}
 		});

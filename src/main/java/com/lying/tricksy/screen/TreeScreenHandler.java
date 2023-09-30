@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
@@ -56,7 +57,7 @@ public class TreeScreenHandler extends ScreenHandler
 	
 	public boolean canAddNode() { return this.treeSize < this.treeSizeCap; }
 	
-	public List<WhiteboardRef> getMatches(Predicate<WhiteboardRef> predicate, BoardType board)
+	public List<WhiteboardRef> getMatches(Predicate<WhiteboardRef> predicate, @Nullable BoardType board)
 	{
 		List<WhiteboardRef> options = Lists.newArrayList();
 		if(board != null)

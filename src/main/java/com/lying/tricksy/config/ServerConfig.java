@@ -7,7 +7,7 @@ public class ServerConfig extends Config
 {
 	private static final Properties DEFAULT_SETTINGS = new Properties();
 	
-	private int nodeCap = 12;
+	private int nodeCap = 25;
 	
 	public ServerConfig(String fileIn)
 	{
@@ -20,7 +20,7 @@ public class ServerConfig extends Config
 	
 	protected void readValues(Properties valuesIn)
 	{
-		nodeCap = parseIntOr(valuesIn.getProperty("TreeNodeCap"), 12);
+		nodeCap = parseIntOr(valuesIn.getProperty("TreeNodeCap"), 25);
 	}
 	
 	protected void writeValues(FileWriter writer)
@@ -30,6 +30,6 @@ public class ServerConfig extends Config
 	
 	static
 	{
-		DEFAULT_SETTINGS.setProperty("TreeNodeCap", "12");
+		DEFAULT_SETTINGS.setProperty("TreeNodeCap", "25");
 	}
 }

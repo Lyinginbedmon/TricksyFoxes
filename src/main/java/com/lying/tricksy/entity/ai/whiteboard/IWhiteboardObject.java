@@ -2,6 +2,7 @@ package com.lying.tricksy.entity.ai.whiteboard;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import com.lying.tricksy.init.TFObjType;
 
 import net.minecraft.nbt.NbtCompound;
@@ -17,6 +18,17 @@ public interface IWhiteboardObject<T>
 	public TFObjType<T> type();
 	
 	public T get();
+	
+	public default List<T> getAll()
+	{
+		List<T> set = Lists.newArrayList();
+		for(int i=0; i<size(); i++)
+		{
+			set.add(get());
+			cycle();
+		}
+		return set;
+	}
 	
 	/** Clears all values from this object and adds the given one */
 	public void set(T val);

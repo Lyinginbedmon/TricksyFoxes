@@ -173,7 +173,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	{
 		if(variableAssigned(reference))
 			for(Entry<WhiteboardRef, Optional<WhiteboardRef>> entry : variableSet.entrySet())
-				if(entry.getKey().equals(reference))
+				if(entry.getKey().isSameRef(reference))
 					return entry.getValue().get();
 		return null;
 	}
@@ -206,9 +206,14 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** Returns true if this node can accept the given child node */
 	public boolean canAddChild() { return true; }
 	
-	public final TreeNode<?> addChild(TreeNode<?> childIn)
+	public final TreeNode<?> addChild(TreeNode<?> childIn) { return addChild(childIn, false); }
+	
+	public final TreeNode<?> addChild(TreeNode<?> childIn, boolean toStart)
 	{
-		children.add(childIn.setParent(this));
+		if(!toStart)
+			children.add(childIn.setParent(this));
+		else
+			children.add(0, childIn.setParent(this));
 		return this;
 	}
 	
@@ -255,6 +260,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	/** Returns true if the previous tick of this node did not end in a completion result */
 	public boolean isRunning() { return !lastResult.isEnd(); }
+	
+	public void stop() { lastResult = Result.FAILURE; }
 	
 	@Nullable
 	public static TreeNode<?> create(NbtCompound data)

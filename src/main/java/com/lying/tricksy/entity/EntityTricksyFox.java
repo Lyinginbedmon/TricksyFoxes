@@ -52,12 +52,12 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	private static final TrackedData<OptionalInt> COLOR = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.OPTIONAL_INT);
 	public static final TrackedData<Optional<UUID>> OWNER_UUID = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
+	private static final TrackedData<Integer> USERS = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
+	public static final TrackedData<Text> LOG = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.TEXT_COMPONENT);
 	
 	protected BehaviourTree behaviourTree = new BehaviourTree();
 	@SuppressWarnings("unchecked")
 	protected Whiteboard.Local<EntityTricksyFox> boardLocal = (Local<EntityTricksyFox>)(new Local<EntityTricksyFox>(this)).build();
-	
-	private int activeUsers = 0;
 	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
@@ -71,6 +71,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		this.getDataTracker().startTracking(OWNER_UUID, Optional.empty());
 		this.getDataTracker().startTracking(COLOR, OptionalInt.empty());
 		this.getDataTracker().startTracking(TREE_NBT, BehaviourTree.INITIAL_TREE.write(new NbtCompound()));
+		this.getDataTracker().startTracking(LOG, Text.empty());
+		this.getDataTracker().startTracking(USERS, 0);
 	}
 	
 	protected void initGoals()
@@ -167,7 +169,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	public void tick()
 	{
 		super.tick();
-		if(activeUsers <= 0)
+		if(activeUsers() <= 0)
 			ITricksyMob.updateBehaviourTree(this);
 	}
 	
@@ -237,7 +239,17 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	@Nullable
 	protected SoundEvent getDeathSound() { return SoundEvents.ENTITY_FOX_DEATH; }
 	
-	public int addUser() { return ++this.activeUsers; }
+	public int activeUsers() { return this.getDataTracker().get(USERS).intValue(); }
 	
-	public int removeUser() { return --this.activeUsers; }
+	public void addUser() { this.getDataTracker().set(USERS, activeUsers() + 1); }
+	
+	public void removeUser() { this.getDataTracker().set(USERS, Math.max(0, activeUsers() - 1)); }
+	
+	public void logStatus(Text message)
+	{
+		this.getDataTracker().set(LOG, message);
+//		System.out.println("Logged: "+message.getString());	// FIXME Remove this before publishing
+	}
+	
+	public Text latestLog() { return this.getDataTracker().get(LOG); }
 }

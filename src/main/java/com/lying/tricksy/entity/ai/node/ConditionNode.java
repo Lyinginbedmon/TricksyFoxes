@@ -12,6 +12,7 @@ import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
@@ -31,7 +32,9 @@ public class ConditionNode extends TreeNode<ConditionNode>
 	public static final Identifier VARIANT_VALUE_EXISTS = new Identifier(Reference.ModInfo.MOD_ID, "value_exists");
 	public static final Identifier VARIANT_VALUE_EQUALS = new Identifier(Reference.ModInfo.MOD_ID, "value_equals");
 	public static final Identifier VARIANT_CLOSER_THAN = new Identifier(Reference.ModInfo.MOD_ID, "closer_than");
-	public static final Identifier VARIANT_CLOSER_THAN_2 = new Identifier(Reference.ModInfo.MOD_ID, "closer_than_2");
+	
+	public static final Identifier VARIANT_ITEM_EMPTY = new Identifier(Reference.ModInfo.MOD_ID, "item_empty");
+	public static final Identifier VARIANT_BLOCK_POWERED = new Identifier(Reference.ModInfo.MOD_ID, "block_powered");
 	
 	public ConditionNode(UUID uuidIn)
 	{
@@ -96,46 +99,47 @@ public class ConditionNode extends TreeNode<ConditionNode>
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK)), 
-						CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(8)));
-			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
-			{
-				IWhiteboardObject<?> objPos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
-				if(objPos.isEmpty())
-					return Result.FAILURE;
-				
-				BlockPos position = objPos.as(TFObjType.BLOCK).get();
-				int dist = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT).get();
-				return Math.sqrt(tricksy.squaredDistanceTo(position.getX(), position.getY(), position.getZ())) < dist ? Result.SUCCESS : Result.FAILURE;
-			}
-		}));
-		/** Performs a simple distance check from the mob to the given position and returns SUCCESS if the distance is less than a desired value */
-		set.add(new NodeSubType<ConditionNode>(VARIANT_CLOSER_THAN_2, new NodeTickHandler<ConditionNode>()
-		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
-			{
-				return Map.of(
 						CommonVariables.VAR_POS_A, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK)), 
-						CommonVariables.VAR_POS_B, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK)), 
+						CommonVariables.VAR_POS_B, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK), new WhiteboardObjBlock(), Local.SELF.displayName()), 
 						CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(8)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
 			{
+				// Value A - mandatory
 				IWhiteboardObject<?> objPosA = getOrDefault(CommonVariables.VAR_POS_A, parent, local, global);
 				if(objPosA.isEmpty())
 					return Result.FAILURE;
-				
-				IWhiteboardObject<?> objPosB = getOrDefault(CommonVariables.VAR_POS_B, parent, local, global);
-				if(objPosB.isEmpty())
-					return Result.FAILURE;
-				
 				BlockPos posA = objPosA.as(TFObjType.BLOCK).get();
-				BlockPos posB = objPosB.as(TFObjType.BLOCK).get();
+				
+				// Value B - optional, defaults to mob's position
+				IWhiteboardObject<?> objPosB = getOrDefault(CommonVariables.VAR_POS_B, parent, local, global);
+				BlockPos posB;
+				if(objPosB.isEmpty())
+				{
+					if(objPosB.size() == 0)
+						posB = local.getValue(Local.SELF).as(TFObjType.BLOCK).get();
+					else
+						return Result.FAILURE;
+				}
+				else
+					posB = objPosB.as(TFObjType.BLOCK).get();
+				
 				int dist = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT).get();
 				return Math.sqrt(posA.getSquaredDistance(posB)) < dist ? Result.SUCCESS : Result.FAILURE;
+			}
+		}));
+		set.add(new NodeSubType<ConditionNode>(VARIANT_BLOCK_POWERED, new NodeTickHandler<ConditionNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			{
+				BlockPos position = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK).get();
+				return tricksy.getEntityWorld().isReceivingRedstonePower(position) ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 	}

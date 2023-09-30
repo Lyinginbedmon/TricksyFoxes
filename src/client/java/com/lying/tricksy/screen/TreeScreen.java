@@ -58,7 +58,7 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 	{
 		addDrawableChild(addNode = ButtonWidget.builder(Text.literal("+"), (button) -> 
 		{
-			this.hoveredNode.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID()));
+			this.hoveredNode.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID()), hasShiftDown());
 			this.handler.countNodes();
 		}).dimensions(16, 16, 16, 16).build());
 		addDrawableChild(delNode = ButtonWidget.builder(Text.literal("-"), (button) -> 
@@ -147,24 +147,16 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 					List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> sortedVariables = NodeRenderUtils.getSortedVariables(hoveredNode);
 					if(index >= sortedVariables.size())
 						return false;
-					hoveredNode.assign(sortedVariables.get(index).getLeft(), incrementOption(hoveredNode, index, (int)Math.signum(amount)));
+					WhiteboardRef input = sortedVariables.get(index).getLeft();
+					hoveredNode.assign(input, incrementOption(hoveredNode, input, (int)Math.signum(amount)));
 					return true;
 			}
 		}
 		return super.mouseScrolled(mouseX, mouseY, amount);
 	}
 	
-	private WhiteboardRef incrementOption(TreeNode<?> node, int index, int scroll)
+	private WhiteboardRef incrementOption(TreeNode<?> node, WhiteboardRef inputRef, int scroll)
 	{
-		// The input variable we are cycling
-		WhiteboardRef inputRef = null;
-		
-		List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> sortedVariables = NodeRenderUtils.getSortedVariables(node);
-		if(index >= sortedVariables.size())
-			return null;
-		
-		// The current whiteboard value in use (if any)
-		inputRef = sortedVariables.get(index).getLeft();
 		WhiteboardRef valueRef = node.variable(inputRef);
 		if(scroll == 0)
 			return valueRef;
@@ -172,23 +164,22 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 		List<WhiteboardRef> options = this.handler.getMatches(node.getSubType().variableSet().get(inputRef).predicate(), null);
 		if(options.isEmpty())
 			return null;
+		else if(valueRef == null)
+			return scroll > 0 ? options.get(0) : null;
 		else
 		{
 			options.sort(WhiteboardRef.REF_SORT);
 			
 			int optionIndex = 0;
-			if(valueRef != null)
-				for(int i=0; i<options.size(); i++)
-					if(options.get(i).isSameRef(valueRef))
-					{
-						optionIndex = i;
-						break;
-					}
+			for(int i=0; i<options.size(); i++)
+				if(options.get(i).isSameRef(valueRef))
+				{
+					optionIndex = i;
+					break;
+				}
 			
 			optionIndex += Math.signum(scroll);
-			if(scroll > 0)
-				optionIndex %= options.size();
-			return optionIndex < 0 ? null : options.get(optionIndex);
+			return optionIndex < 0 ? null : options.get(optionIndex % options.size());
 		}
 	}
 	
@@ -219,9 +210,10 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 		
 		if(hoveredNode != null)
 		{
-			addNode.visible = this.handler.canAddNode(); 
+			boolean additionAllowed = this.player.isCreative() || this.handler.canAddNode();
+			addNode.visible = additionAllowed; 
 			delNode.visible = true;
-			addNode.active = hoveredNode.canAddChild() && this.handler.canAddNode();
+			addNode.active = hoveredNode.canAddChild() && additionAllowed;
 			delNode.active = hoveredNode != root;
 			addNode.setPosition(hoveredNode.screenX + hoveredNode.width - 7 - addNode.getWidth(), hoveredNode.screenY + 6);
 			delNode.setPosition(hoveredNode.screenX + 7, hoveredNode.screenY + 6);

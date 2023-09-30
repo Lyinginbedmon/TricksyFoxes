@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.utility.TricksyUtils;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -48,12 +49,7 @@ public class WhiteboardRef
 			else if(numB > Integer.MIN_VALUE && numA == Integer.MIN_VALUE)
 				return 1;
 			
-			// Perform string sort
-			List<String> names = Lists.newArrayList(a, b);
-			Collections.sort(names);
-			int indA = names.indexOf(a);
-			int indB = names.indexOf(b);
-			return indA > indB ? 1 : indA < indB ? -1 : 0;
+			return TricksyUtils.stringComparator(a, b);
 		}
 	};
 	

@@ -1,10 +1,14 @@
 package com.lying.tricksy.entity.ai.whiteboard;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import com.lying.tricksy.init.TFObjType;
 
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 
 public class Constants extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 {
@@ -19,6 +23,7 @@ public class Constants extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 	public static final WhiteboardRef NUM_64 = new WhiteboardRef("number_64", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("64"));
 	public static final WhiteboardRef BOOL_TRUE = new WhiteboardRef("boolean_true", TFObjType.BOOL, BoardType.CONSTANT).displayName(new WhiteboardObj.Bool(true).describe().get(0));
 	public static final WhiteboardRef BOOL_FALSE = new WhiteboardRef("boolean_false", TFObjType.BOOL, BoardType.CONSTANT).displayName(new WhiteboardObj.Bool(false).describe().get(0));
+	public static final Map<Direction, WhiteboardRef> DIRECTIONS = new HashMap<>();
 	
 	public Constants() { super(BoardType.CONSTANT, null); }
 	
@@ -35,6 +40,12 @@ public class Constants extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 		register(NUM_64, () -> new WhiteboardObj.Int(64));
 		register(BOOL_TRUE, () -> new WhiteboardObj.Bool(true));
 		register(BOOL_FALSE, () -> new WhiteboardObj.Bool(false));
+		for(Direction dir : Direction.values())
+		{
+			WhiteboardRef ref = new WhiteboardRef("dir_"+dir.asString(), TFObjType.BLOCK, BoardType.CONSTANT).displayName(Text.literal(dir.name()));
+			DIRECTIONS.put(dir, ref);
+			register(ref, () -> new WhiteboardObjBlock(BlockPos.ORIGIN, dir));
+		}
 		return this;
 	}
 	

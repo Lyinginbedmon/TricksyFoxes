@@ -10,12 +10,14 @@ import com.lying.tricksy.entity.ai.node.ControlFlowNode;
 import com.lying.tricksy.entity.ai.node.DecoratorNode;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
+import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.Constants;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFNodeTypes;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -34,13 +36,14 @@ public class BehaviourTree
 				.setSubType(DecoratorNode.VARIANT_INVERTER)
 				.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID())
 					.setSubType(ConditionNode.VARIANT_CLOSER_THAN)
-					.assign(CommonVariables.VAR_POS, Whiteboard.Local.NEAREST_SAGE)
+					.assign(CommonVariables.VAR_POS_A, Whiteboard.Local.NEAREST_SAGE)
 					.assign(CommonVariables.VAR_DIS, Constants.NUM_4)))
 			.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID())
 				.setSubType(LeafNode.VARIANT_GOTO)
 				.assign(CommonVariables.VAR_POS, Whiteboard.Local.NEAREST_SAGE));
 	
 	private TreeNode<?> root;
+	private int waitTicks = 0;
 	
 	public BehaviourTree() { this(INITIAL_TREE.copy()); }
 	
@@ -55,7 +58,11 @@ public class BehaviourTree
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> void update(T tricksy, Local<T> local, Global global)
 	{
-		root().tick(tricksy, local, global);
+		if(waitTicks > 0)
+			--waitTicks;
+		
+		if(root().tick(tricksy, local, global) == Result.FAILURE)
+			waitTicks = Reference.Values.TICKS_PER_SECOND;
 	}
 	
 	public NbtCompound storeInNbt()

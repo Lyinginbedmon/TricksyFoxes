@@ -17,12 +17,14 @@ public class CommonVariables
 	public static final WhiteboardRef VAR_POS = new WhiteboardRef("position", TFObjType.BLOCK).displayName(translate("position"));
 	public static final WhiteboardRef VAR_POS_A = new WhiteboardRef("position_a", TFObjType.BLOCK).displayName(translate("position_a"));
 	public static final WhiteboardRef VAR_POS_B = new WhiteboardRef("position_b", TFObjType.BLOCK).displayName(translate("position_b"));
+	public static final WhiteboardRef VAR_SIDE = new WhiteboardRef("side", TFObjType.BLOCK).displayName(translate("side"));
 	/** A distance value */
 	public static final WhiteboardRef VAR_DIS = new WhiteboardRef("distance", TFObjType.INT).displayName(translate("range"));
 	/** A number value */
 	public static final WhiteboardRef VAR_COUNT = new WhiteboardRef("count", TFObjType.INT).displayName(translate("number"));
 	/** A receiver entity */
 	public static final WhiteboardRef TARGET_ENT = new WhiteboardRef("target", TFObjType.ENT).displayName(translate("ref_ent"));
+	public static final WhiteboardRef VAR_ITEM = new WhiteboardRef("item", TFObjType.ITEM).displayName(translate("item"));
 	
 	public static Text translate(String nameIn) { return Text.translatable("variable."+Reference.ModInfo.MOD_ID+"."+nameIn); }
 }
