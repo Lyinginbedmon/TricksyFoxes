@@ -144,17 +144,35 @@ public class LeafNode extends TreeNode<LeafNode>
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
-				if(tricksy.hurtTime > 0 || !tricksy.isOnGround())
+				if(!parent.isRunning())
 				{
-					tricksy.logStatus(Text.literal("I can't sleep now"));
-					return Result.FAILURE;
+					if(canSleep(tricksy))
+					{
+						tricksy.logStatus(Text.literal("zzZZzzzZZ"));
+						tricksy.setSleeping(true);
+						return Result.RUNNING;
+					}
+					else
+					{
+						tricksy.logStatus(Text.literal("I can't sleep now"));
+						return Result.FAILURE;
+					}
 				}
-				
-				if(parent.ticksRunning > 0 && parent.ticksRunning%Reference.Values.TICKS_PER_SECOND == 0)
-					tricksy.heal(1F);
-				
-				return tricksy.getHealth() >= tricksy.getMaxHealth() ? Result.SUCCESS : Result.RUNNING;
+				else
+				{
+					Result end = Result.RUNNING;
+					
+					if(!canSleep(tricksy))
+						end = Result.FAILURE;
+					else if(parent.ticksRunning%Reference.Values.TICKS_PER_SECOND == 0 && tricksy.getHealth() < tricksy.getMaxHealth())
+						tricksy.heal(1F);
+					
+					tricksy.setSleeping(!end.isEnd());
+					return end;
+				}
 			}
+			
+			private <T extends PathAwareEntity & ITricksyMob<?>> boolean canSleep(T tricksy) { return tricksy.isOnGround() && tricksy.hurtTime <= 0; }
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_CYCLE, new NodeTickHandler<LeafNode>()
 		{

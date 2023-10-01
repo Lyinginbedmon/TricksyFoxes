@@ -14,10 +14,12 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -56,7 +58,7 @@ public class ItemPrescientNote extends Item
 		setVariable(variable, stack);
 	}
 	
-	public static abstract class Typed<T> extends Item
+	public static abstract class Typed<T> extends Item implements ISealableItem, ITreeItem
 	{
 		private final TFObjType<T> type;
 		
@@ -68,12 +70,14 @@ public class ItemPrescientNote extends Item
 		
 		public String getTranslationKey(ItemStack stack) { return TFItems.NOTE.getTranslationKey(); }
 		
+		public boolean canBeSealed(ItemStack stack) { return getVariable(stack).size() > 0; }
+		
 		public TFObjType<?> getType() { return this.type; }
 		
 		public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand)
 		{
 			ItemStack stack = user.getStackInHand(hand);
-			if(user.isSneaking())
+			if(user.isSneaking() && !ISealableItem.isSealed(stack))
 				return TypedActionResult.success(new ItemStack(TFItems.NOTE, stack.getCount()));
 			
 			return TypedActionResult.pass(user.getStackInHand(hand));
@@ -82,40 +86,36 @@ public class ItemPrescientNote extends Item
 		public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
 		{
 			IWhiteboardObject<?> variable = getVariable(stack);
-			tooltip.add(Text.translatable(getTranslationKey(stack)+".type", variable.type().translated()));
+			tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.type", variable.type().translated()));
 			if(variable.size() > 0)
 				tooltip.addAll(variable.describe());
 		}
 		
-		public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand)
+		public static boolean isValidNote(ItemStack stack) { return stack.hasCustomName() && getVariable(stack).size() > 0; }
+		
+		public <N extends PathAwareEntity & ITricksyMob<?>> ActionResult useOnTricksy(ItemStack stack, N tricksy, PlayerEntity user)
 		{
-			if(!user.isSneaking() && entity instanceof ITricksyMob)
+			if(!isValidNote(stack) || !tricksy.isSage(user) || user.isSneaking())
+				return ActionResult.PASS;
+			
+			Text displayName = stack.getName();
+			boolean isClient = user.getWorld().isClient();
+			if(!isClient)
 			{
-				if(!stack.hasCustomName())
-					return ActionResult.PASS;
+				IWhiteboardObject<?> value = getVariable(stack);
 				
-				Text displayName = stack.getName();
-				boolean isClient = user.getWorld().isClient();
-				if(!isClient)
-				{
-					ITricksyMob<?> tricksy = (ITricksyMob<?>)entity;
-					IWhiteboardObject<?> value = getVariable(stack);
-					if(value.size() == 0)
-						return ActionResult.PASS;
-					
-					WhiteboardRef name = new WhiteboardRef(displayName.getString().replace(' ', '_'), value.type(), BoardType.LOCAL);
-					name.displayName(displayName);
-					Local<?> whiteboard = tricksy.getLocalWhiteboard();
-					whiteboard.addValue(name, (mob) -> value);
-					
-					if(!user.isCreative())
-						stack.decrement(1);
-				}
+				WhiteboardRef name = new WhiteboardRef(displayName.getString().replace(' ', '_'), value.type(), BoardType.LOCAL);
+				name.displayName(displayName);
+				Local<?> whiteboard = tricksy.getLocalWhiteboard();
+				whiteboard.addValue(name, (mob) -> value);
 				
-				return ActionResult.success(isClient);
+				if(!user.isCreative() && !ISealableItem.isSealed(stack))
+					stack.decrement(1);
+				
+				user.sendMessage(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.give_value", tricksy.getDisplayName()), true);
 			}
 			
-			return ActionResult.PASS;
+			return ActionResult.success(isClient);
 		}
 	}
 	
@@ -130,7 +130,7 @@ public class ItemPrescientNote extends Item
 		{
 			PlayerEntity user = context.getPlayer();
 			ItemStack stack = context.getStack();
-			if(user.isSneaking())
+			if(!ISealableItem.isSealed(stack) && user.isSneaking())
 			{
 				boolean isClient = user.getWorld().isClient();
 				if(!isClient)
@@ -156,20 +156,37 @@ public class ItemPrescientNote extends Item
 		
 		public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand)
 		{
-			if(user.isSneaking())
+			if(!ISealableItem.isSealed(stack) && user.isSneaking())
 			{
 				boolean isClient = user.getWorld().isClient();
 				if(!isClient)
-				{
-					WhiteboardObjEntity value = (WhiteboardObjEntity)getVariable(stack);
-					value.add(new WhiteboardObjEntity(entity));
-					setVariable(value, stack);
-				}
+					addEntityToStack(stack, entity);
 				
 				return ActionResult.success(isClient);
 			}
 			
 			return super.useOnEntity(stack, user, entity, hand);
+		}
+		
+		public <N extends PathAwareEntity & ITricksyMob<?>> ActionResult useOnTricksy(ItemStack stack, N tricksy, PlayerEntity user)
+		{
+			if(user.isSneaking())
+			{
+				boolean isClient = user.getWorld().isClient();
+				if(!isClient)
+					addEntityToStack(stack, tricksy);
+				
+				return ActionResult.success(isClient);
+			}
+			else
+				return super.useOnTricksy(stack, tricksy, user);
+		}
+		
+		private void addEntityToStack(ItemStack stack, LivingEntity entity)
+		{
+			WhiteboardObjEntity value = (WhiteboardObjEntity)getVariable(stack);
+			value.add(new WhiteboardObjEntity(entity));
+			setVariable(value, stack);
 		}
 	}
 	

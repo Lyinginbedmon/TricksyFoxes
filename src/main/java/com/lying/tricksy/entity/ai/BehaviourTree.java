@@ -61,6 +61,7 @@ public class BehaviourTree
 		if(waitTicks > 0)
 			--waitTicks;
 		
+		tricksy.setSleeping(false);
 		if(root().tick(tricksy, local, global) == Result.FAILURE)
 			waitTicks = Reference.Values.TICKS_PER_SECOND;
 	}
@@ -70,10 +71,11 @@ public class BehaviourTree
 		return root().write(new NbtCompound());
 	}
 	
+	@Nullable
 	public static BehaviourTree create(NbtCompound data)
 	{
 		TreeNode<?> root = TreeNode.create(data);
-		return new BehaviourTree(root);
+		return (root == null || root.getType() != TFNodeTypes.CONTROL_FLOW) ? null : new BehaviourTree(root);
 	}
 	
 	/** Returns the total number of nodes in this behaviour tree */

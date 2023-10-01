@@ -2,7 +2,8 @@ package com.lying.tricksy.renderer.layer;
 
 import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.init.TFModelParts;
-import com.lying.tricksy.model.entity.ModelTricksyFox;
+import com.lying.tricksy.model.entity.ModelTricksyFoxMain;
+import com.lying.tricksy.model.entity.ModelTricksyFoxBase;
 import com.lying.tricksy.reference.Reference;
 
 import net.fabricmc.api.EnvType;
@@ -19,25 +20,25 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
-public class TricksyFoxClothingLayer extends FeatureRenderer<EntityTricksyFox, ModelTricksyFox<EntityTricksyFox>>
+public class TricksyFoxClothingLayer extends FeatureRenderer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>
 {
 	public static final Identifier TEXTURE_CLOTHING = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_fox.png");
 	public static final Identifier TEXTURE_CLOTHING_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_fox_overlay.png");
 	
-	private final ModelTricksyFox<EntityTricksyFox> clothingModel;
+	private final ModelTricksyFoxMain<EntityTricksyFox> clothingModel;
 	
-	public TricksyFoxClothingLayer(FeatureRendererContext<EntityTricksyFox, ModelTricksyFox<EntityTricksyFox>> context)
+	public TricksyFoxClothingLayer(FeatureRendererContext<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>> context)
 	{
 		super(context);
-		this.clothingModel = new ModelTricksyFox<EntityTricksyFox>(MinecraftClient.getInstance().getEntityModelLoader().getModelPart(TFModelParts.TRICKSY_FOX_CLOTHING));
+		this.clothingModel = new ModelTricksyFoxMain<EntityTricksyFox>(MinecraftClient.getInstance().getEntityModelLoader().getModelPart(TFModelParts.TRICKSY_FOX_CLOTHING));
 	}
 	
-	public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, EntityTricksyFox living, float var5, float var6, float partialTicks, float var8, float var9, float var10)
+	public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, EntityTricksyFox living, float limbAngle, float limbDistance, float age, float headYaw, float headPitch, float tickDelta)
 	{
 		if(living.isInvisible())
 			return;
 		
-		this.getContextModel().copyBipedStateTo(clothingModel);
+		this.getContextModel().copyFoxStateTo(clothingModel);
 		
         clothingModel.render(matrices, vertexConsumers.getBuffer(RenderLayer.getArmorCutoutNoCull(TEXTURE_CLOTHING)), light, OverlayTexture.DEFAULT_UV, 1, 1, 1, 1);
         
@@ -48,7 +49,7 @@ public class TricksyFoxClothingLayer extends FeatureRenderer<EntityTricksyFox, M
             int o = DyeColor.values().length;
             int p = n % o;
             int q = (n + 1) % o;
-            float r = ((float)(living.age % 25) + partialTicks) / 25.0f;
+            float r = ((float)(living.age % 25) + age) / 25.0f;
             float[] fs = SheepEntity.getRgbColor((DyeColor)DyeColor.byId((int)p));
             float[] gs = SheepEntity.getRgbColor((DyeColor)DyeColor.byId((int)q));
             s = fs[0] * (1.0f - r) + gs[0] * r;

@@ -11,16 +11,16 @@ import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFEntityTypes;
-import com.lying.tricksy.init.TFItems;
-import com.lying.tricksy.item.ItemPrescientNote;
-import com.lying.tricksy.item.ItemSageHat;
+import com.lying.tricksy.item.ITreeItem;
 import com.lying.tricksy.network.SyncTreeScreenPacket;
-import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.TreeScreenHandler;
 import com.lying.tricksy.utility.ServerWhiteboards;
 
+import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.VariantHolder;
+import net.minecraft.entity.ai.control.LookControl;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.damage.DamageSource;
@@ -37,6 +37,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
@@ -49,6 +50,7 @@ import net.minecraft.world.World;
 public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<EntityTricksyFox>, VariantHolder<Type>
 {
 	private static final TrackedData<Integer> TYPE = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
+	private static final TrackedData<Boolean> SLEEPING = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<OptionalInt> COLOR = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.OPTIONAL_INT);
 	public static final TrackedData<Optional<UUID>> OWNER_UUID = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
@@ -62,12 +64,14 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
 		super(TFEntityTypes.TRICKSY_FOX, world);
+		this.lookControl = new FoxLookControl();
 	}
 	
 	public void initDataTracker()
 	{
 		super.initDataTracker();
 		this.getDataTracker().startTracking(TYPE, 0);
+		this.getDataTracker().startTracking(SLEEPING, false);
 		this.getDataTracker().startTracking(OWNER_UUID, Optional.empty());
 		this.getDataTracker().startTracking(COLOR, OptionalInt.empty());
 		this.getDataTracker().startTracking(TREE_NBT, BehaviourTree.INITIAL_TREE.write(new NbtCompound()));
@@ -112,18 +116,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	{
 		boolean isClient = player.getWorld().isClient;
 		ItemStack heldStack = player.getStackInHand(hand);
-		if(heldStack.getItem() == TFItems.SAGE_HAT)
-		{
-			if(!hasSage() || isSage(player))
-			{
-				setSage(ItemSageHat.getSageID(heldStack, player));
-				player.sendMessage(Text.translatable("entity."+Reference.ModInfo.MOD_ID+".tricksy_fox.master_set", getDisplayName()), true);
-				return ActionResult.success(isClient);
-			}
-			else
-				player.sendMessage(Text.translatable("entity."+Reference.ModInfo.MOD_ID+".tricksy_fox.master_set.fail", getDisplayName()), true);
-		}
-		else if(isSage(player))
+		if(isSage(player))
 		{
 			if(heldStack.getItem() instanceof DyeItem)
 			{
@@ -152,11 +145,10 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 					getDataTracker().set(COLOR, OptionalInt.empty());
 				return ActionResult.success(isClient);
 			}
+			else if(heldStack.getItem() instanceof ITreeItem)
+				return ((ITreeItem)heldStack.getItem()).useOnTricksy(heldStack, this, player);
 			else if(!player.isSneaking())
 			{
-				if(heldStack.getItem() instanceof ItemPrescientNote.Typed)
-					return ActionResult.PASS;
-				
 				addUser();
 				player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new TreeScreenHandler(id, this), getDisplayName())).ifPresent(syncId -> SyncTreeScreenPacket.send(player, this, syncId));
 				return ActionResult.success(isClient);
@@ -188,6 +180,38 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		}
 		
 		return null;
+	}
+	
+	public boolean isSleeping() { return this.getDataTracker().get(SLEEPING).booleanValue(); }
+	
+	public void setSleeping(boolean var)
+	{
+		this.getDataTracker().set(SLEEPING, var);
+		if(var)
+			setPose(EntityPose.SITTING);
+		else
+			setPose(EntityPose.STANDING);
+	}
+	
+	public EntityDimensions getDimensions(EntityPose pose)
+	{
+		switch(pose)
+		{
+			case SITTING:	return EntityDimensions.fixed(super.getDimensions(pose).width, 0.7F);
+			default:
+				return super.getDimensions(pose);
+		}
+	}
+	
+	public void tickMovement()
+	{
+		if(isSleeping() || isImmobile())
+		{
+			this.jumping = false;
+			this.sidewaysSpeed = 0F;
+			this.forwardSpeed = 0F;
+		}
+		super.tickMovement();
 	}
 	
 	public Optional<UUID> getSage() { return this.getDataTracker().get(OWNER_UUID); }
@@ -223,13 +247,10 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	@Nullable
 	protected SoundEvent getAmbientSound()
 	{
-//		List<Entity> list;
-//		if (this.isSleeping()) {
-//			return SoundEvents.ENTITY_FOX_SLEEP;
-//		}
-//		if (!this.getWorld().isDay() && this.random.nextFloat() < 0.1f && (list = this.getWorld().getEntitiesByClass(PlayerEntity.class, this.getBoundingBox().expand(16.0, 16.0, 16.0), EntityPredicates.EXCEPT_SPECTATOR)).isEmpty()) {
-//			return SoundEvents.ENTITY_FOX_SCREECH;
-//		}
+		if(this.isSleeping())
+			return SoundEvents.ENTITY_FOX_SLEEP;
+		if(!this.getWorld().isDay() && this.random.nextFloat() < 0.1f && getWorld().getEntitiesByClass(PlayerEntity.class, this.getBoundingBox().expand(16.0, 16.0, 16.0), EntityPredicates.EXCEPT_SPECTATOR).isEmpty())
+			return SoundEvents.ENTITY_FOX_SCREECH;
 		return SoundEvents.ENTITY_FOX_AMBIENT;
 	}
 	
@@ -252,4 +273,17 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	}
 	
 	public Text latestLog() { return this.getDataTracker().get(LOG); }
+	
+	protected class FoxLookControl extends LookControl
+	{
+		public FoxLookControl() { super(EntityTricksyFox.this); }
+		
+		public void tick()
+		{
+			if(!EntityTricksyFox.this.isSleeping())
+				super.tick();
+		}
+		
+		protected boolean shouldStayHorizontal() { return true; }
+	}
 }

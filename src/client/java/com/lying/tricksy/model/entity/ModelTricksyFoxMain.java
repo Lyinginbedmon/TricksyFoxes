@@ -1,5 +1,7 @@
 package com.lying.tricksy.model.entity;
 
+import com.lying.tricksy.entity.EntityTricksyFox;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.model.Dilation;
@@ -9,26 +11,18 @@ import net.minecraft.client.model.ModelPartBuilder;
 import net.minecraft.client.model.ModelPartData;
 import net.minecraft.client.model.ModelTransform;
 import net.minecraft.client.model.TexturedModelData;
-import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.render.entity.model.CrossbowPosing;
 import net.minecraft.client.render.entity.model.EntityModelPartNames;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 
 @Environment(EnvType.CLIENT)
-public class ModelTricksyFox<T extends LivingEntity> extends BipedEntityModel<T>
+public class ModelTricksyFoxMain<T extends EntityTricksyFox> extends ModelTricksyFoxBase<T>
 {
-	public final ModelPart tailRoot;
-	public final ModelPart tail0, tail1;
-	
-	public ModelTricksyFox(ModelPart root)
+	public ModelTricksyFoxMain(ModelPart root)
 	{
 		super(root);
-		this.tailRoot = this.body.getChild(EntityModelPartNames.TAIL);
-		this.tail0 = this.tailRoot.getChild("tail0");
-		this.tail1 = this.tailRoot.getChild("tail1");
 	}
 	
 	public static TexturedModelData getMainModel() { return getTexturedModelData(0F); }
@@ -55,20 +49,12 @@ public class ModelTricksyFox<T extends LivingEntity> extends BipedEntityModel<T>
 			tail.addChild("tail0", ModelPartBuilder.create().uv(30, 0).cuboid(-1.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.0F, 0.0F, 1.5708F, 0.6109F, 0.0F));
 		
 		root.addChild(EntityModelPartNames.RIGHT_LEG, ModelPartBuilder.create().uv(13, 24).cuboid(-2.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(-1.0F, 18.0F, 0.0F));
-		
 		root.addChild(EntityModelPartNames.LEFT_LEG, ModelPartBuilder.create().uv(13, 24).mirrored().cuboid(0.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(1.0F, 18.0F, 0.0F));
 		
 		root.addChild(EntityModelPartNames.RIGHT_ARM, ModelPartBuilder.create().uv(4, 24).mirrored().cuboid(-2.0F, -1.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(-3.0F, 10.0F, 0.0F));
-		
 		root.addChild(EntityModelPartNames.LEFT_ARM, ModelPartBuilder.create().uv(4, 24).cuboid(0.0F, -1.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(3.0F, 10.0F, 0.0F));
 		
 		return TexturedModelData.of(meshdefinition, 48, 32);
-	}
-	
-	public void animateModel(T livingEntity, float f, float g, float h)
-	{
-		super.animateModel(livingEntity, f, g, h);
-		this.tailRoot.yaw = MathHelper.cos((float)(f * 0.6662f)) * 1.4f * g;
 	}
 	
 	public void setAngles(T livingEntity, float limbSwing, float limbSwingAmount, float ageInTicks, float headYaw, float headPitch)
@@ -80,8 +66,8 @@ public class ModelTricksyFox<T extends LivingEntity> extends BipedEntityModel<T>
 				bl ? -0.7853982f : 
 					(this.leaningPitch > 0.0f ? 
 						this.lerpAngle(this.leaningPitch, this.head.pitch, headPitch * ((float)Math.PI / 180)) : headPitch * ((float)Math.PI / 180));
+		this.head.roll = 0.0f;
 		
-		this.body.yaw = 0.0f;
 		this.rightArm.pivotZ = 0.0f;
 		this.rightArm.pivotX = -3.0f;
 		this.leftArm.pivotZ = 0.0f;

@@ -3,7 +3,8 @@
 	"package": "com.lying.tricksy.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-		"ScreenHandlerMixin"
+		"ScreenHandlerMixin",
+		"ItemStackMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

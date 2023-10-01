@@ -1,3 +1,11 @@
 {
-  "parent": "tricksy:item/prescient_note"
+	"parent": "tricksy:item/note",
+	"overrides": [
+			{
+					"predicate": {
+							"tricksy:sealed": 1
+					},
+					"model": "tricksy:item/note_sealed"
+			}
+	]	
 }

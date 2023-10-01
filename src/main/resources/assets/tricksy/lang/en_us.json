@@ -3,8 +3,11 @@
 	"item.tricksy.sage_hat": "Sage Hat",
 	"item.tricksy.fox_spawn_egg": "Tricksy Fox Spawn Egg",
 	"item.tricksy.periapt_prescience": "Periapt O' Prescience",
-	"item.tricksy.prescient_note": "Prescient Note",
+	"item.tricksy.prescient_note": "Prescient Scroll",
 	"item.tricksy.prescient_note.type": "Value type: [%s]",
+	"item.tricksy.scripture": "Scripture",
+	"item.tricksy.scripture.tooltip": "Contains a tree of %s nodes",
+	"item.tricksy.sealed_item": "Sealed %s",
 	"block.tricksy.bottle_prescience": "Bottle O' Prescience",
 	"board.tricksy.constant": "Constants",
 	"board.tricksy.global": "Sage",
@@ -106,6 +109,9 @@
 	"whiteboard.tricksy.mainhand_item": "Mainhand Item",
 	"whiteboard.tricksy.offhand_item": "Offhand Item",
 	"entity.tricksy.tricksy_fox": "Tricksy Fox",
-	"entity.tricksy.tricksy_fox.master_set": "%s will now follow the ways of this sage",
-	"entity.tricksy.tricksy_fox.master_set.fail": "%s already follows a sage!"
+	"item.tricksy.sage_hat.master_set": "%s will now follow the ways of this sage",
+	"item.tricksy.sage_hat.master_set.fail": "%s already follows a sage!",
+	"item.tricksy.prescient_note.give_value": "%s will remember this",
+	"item.tricksy.scripture.copy": "%s now details the behaviour of %s",
+	"item.tricksy.scripture.paste": "%s will now follow this doctrine"
 }

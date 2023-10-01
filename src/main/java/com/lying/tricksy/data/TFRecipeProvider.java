@@ -28,6 +28,7 @@ public class TFRecipeProvider extends FabricRecipeProvider
 		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_INTEGER_SERIALIZER).offerTo(exporter, "note_integer");
 		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_BOOLEAN_SERIALIZER).offerTo(exporter, "note_boolean");
 		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_ITEM_SERIALIZER).offerTo(exporter, "note_item");
+		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_SEALING_SERIALIZER).offerTo(exporter, "note_sealing");
 		
 		ShapedRecipeJsonBuilder.create(RecipeCategory.COMBAT, TFItems.SAGE_HAT)
 			.pattern("gag").pattern("l l")
@@ -46,6 +47,13 @@ public class TFRecipeProvider extends FabricRecipeProvider
 			.criterion(FabricRecipeProvider.hasItem(Items.EXPERIENCE_BOTTLE), FabricRecipeProvider.conditionsFromItem(Items.EXPERIENCE_BOTTLE))
 			.criterion(FabricRecipeProvider.hasItem(Items.AMETHYST_SHARD), FabricRecipeProvider.conditionsFromItem(Items.AMETHYST_SHARD))
 			.criterion(FabricRecipeProvider.hasItem(TFBlocks.PRESCIENCE), FabricRecipeProvider.conditionsFromItem(TFBlocks.PRESCIENCE)).offerTo(exporter);
+		
+		ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, TFItems.SCRIPTURE)
+			.pattern("ppp")
+			.pattern("pbp")
+			.pattern("ppp")
+			.criterion(FabricRecipeProvider.hasItem(TFItems.NOTE), FabricRecipeProvider.conditionsFromItem(TFItems.NOTE))
+			.criterion(FabricRecipeProvider.hasItem(Items.WRITABLE_BOOK), FabricRecipeProvider.conditionsFromItem(Items.WRITABLE_BOOK)).offerTo(exporter);
 	}
 	
 	public static void addBrewingRecipes()

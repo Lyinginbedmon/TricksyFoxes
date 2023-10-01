@@ -24,8 +24,8 @@ import net.minecraft.util.Identifier;
 @Environment(EnvType.CLIENT)
 public class SageHatRenderer implements ArmorRenderer
 {
-	private static final Identifier TEXTURE_0 = new Identifier(Reference.ModInfo.MOD_ID, "textures/armor/sage_hat_0.png");
-	private static final Identifier TEXTURE_1 = new Identifier(Reference.ModInfo.MOD_ID, "textures/armor/sage_hat_1.png");
+	private static final Identifier TEXTURE_0 = new Identifier(Reference.ModInfo.MOD_ID, "textures/armor/sage_hat.png");
+	private static final Identifier TEXTURE_1 = new Identifier(Reference.ModInfo.MOD_ID, "textures/armor/sage_hat_overlay.png");
 	
 	private ModelSageHat<LivingEntity> model = null;
 	

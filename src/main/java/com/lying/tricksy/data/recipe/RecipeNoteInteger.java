@@ -4,6 +4,7 @@ import com.lying.tricksy.data.TFItemTags;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFSpecialRecipes;
+import com.lying.tricksy.item.ISealableItem;
 import com.lying.tricksy.item.ItemPrescientNote;
 import com.lying.tricksy.reference.Reference;
 
@@ -28,7 +29,7 @@ public class RecipeNoteInteger extends RecipeNote
 			ItemStack stackInSlot = var1.getStack(i);
 			if(stackInSlot.isEmpty())
 				continue;
-			else if(stackInSlot.getItem() == TFItems.NOTE_INT)
+			else if(stackInSlot.getItem() == TFItems.NOTE_INT && !ISealableItem.isSealed(stackInSlot))
 			{
 				if(note.isEmpty())
 					note = stackInSlot.copy();
@@ -50,7 +51,7 @@ public class RecipeNoteInteger extends RecipeNote
 			ItemStack stackInSlot = var1.getStack(i);
 			if(stackInSlot.isEmpty())
 				continue;
-			else if(stackInSlot.getItem() == TFItems.NOTE_INT)
+			else if(stackInSlot.getItem() == TFItems.NOTE_INT && !ISealableItem.isSealed(stackInSlot))
 			{
 				if(note.isEmpty())
 					note = stackInSlot.copy();

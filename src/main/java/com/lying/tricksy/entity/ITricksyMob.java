@@ -40,19 +40,19 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 	 */
 	public default boolean isSage(LivingEntity living)
 	{
-		if(living.getType() == EntityType.PLAYER && ((PlayerEntity)living).isCreative())
-			return true;
-		
 		if(!hasSage())
 			return false;
 		
-		for(EquipmentSlot slot : new EquipmentSlot[] { EquipmentSlot.HEAD, EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND })
-		{
-			ItemStack hatStack = living.getEquippedStack(slot);
-			if(!hatStack.isEmpty() && hatStack.getItem() == TFItems.SAGE_HAT)
-				if(getSage().get().equals(ItemSageHat.getMasterID(hatStack)))
-					return true;
-		}
+		if(living.getType() == EntityType.PLAYER && ((PlayerEntity)living).isCreative())
+			return true;
+		else
+			for(EquipmentSlot slot : new EquipmentSlot[] { EquipmentSlot.HEAD, EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND })
+			{
+				ItemStack hatStack = living.getEquippedStack(slot);
+				if(!hatStack.isEmpty() && hatStack.getItem() == TFItems.SAGE_HAT)
+					if(getSage().get().equals(ItemSageHat.getMasterID(hatStack)))
+						return true;
+			}
 		
 		return false;
 	}
@@ -93,4 +93,8 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 	public void logStatus(Text message);
 	
 	public Text latestLog();
+	
+	public void setSleeping(boolean var);
+	
+	public boolean isSleeping();
 }

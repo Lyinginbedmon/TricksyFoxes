@@ -1,7 +1,5 @@
 package com.lying.tricksy.mixin;
 
-import java.util.List;
-
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -25,7 +23,6 @@ import net.minecraft.util.collection.DefaultedList;
 @Mixin(ScreenHandler.class)
 public class ScreenHandlerMixin
 {
-	private static final List<Item> NOTE_ITEMS = List.of(TFItems.NOTE_POS, TFItems.NOTE_ENT, TFItems.NOTE_ITEM, TFItems.NOTE_INT, TFItems.NOTE_BOOL);
 	private static final int RIGHT_CLICK = 1;
 	
 	@Shadow
@@ -48,10 +45,10 @@ public class ScreenHandlerMixin
 				slot.setStack(converted);
 				ci.cancel();
 			}
-			else if(NOTE_ITEMS.contains(stack.getItem()))
+			else if(TFItems.NOTES.contains(stack.getItem()))
 			{
-				int index = NOTE_ITEMS.indexOf(stack.getItem()) + 1;
-				Item nextItem = NOTE_ITEMS.get(index % NOTE_ITEMS.size());
+				int index = TFItems.NOTES.indexOf(stack.getItem()) + 1;
+				Item nextItem = TFItems.NOTES.get(index % TFItems.NOTES.size());
 				ItemStack converted = convertTo(stack, nextItem);
 				TFObjType<?> type = ((ItemPrescientNote.Typed<?>)nextItem).getType();
 				ItemPrescientNote.setVariable(type.create(new NbtCompound()), converted);

@@ -1,0 +1,14 @@
+{
+	"parent": "minecraft:item/generated",
+	"textures": {
+		"layer0": "tricksy:item/scripture"
+	},
+	"overrides": [
+		{
+			"predicate": {
+					"tricksy:sealed": 1
+			},
+			"model": "tricksy:item/scripture_sealed"
+		}
+	]
+}
