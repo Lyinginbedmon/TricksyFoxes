@@ -27,7 +27,7 @@ public class ItemSageHat extends DyeableArmorItem implements ITreeItem
 	
 	/** Returns the UUID stored in this hat, or null if there isn't one */
 	@Nullable
-	public static UUID getMasterID(ItemStack stack)
+	public static UUID getSageID(ItemStack stack)
 	{
 		NbtCompound stackData = stack.getOrCreateNbt();
 		if(stackData.contains("MasterID"))

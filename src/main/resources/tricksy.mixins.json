@@ -6,6 +6,9 @@
 		"ScreenHandlerMixin",
 		"ItemStackMixin"
 	],
+	"client": [
+		"EntityMixinClient"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	}

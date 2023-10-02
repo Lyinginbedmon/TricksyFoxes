@@ -73,6 +73,7 @@ public class RecipeNoteSeal extends RecipeNote
 		if(!note.isEmpty() && !candle.isEmpty())
 		{
 			ItemStack copy = note.copy();
+			copy.setCount(1);
 			ISealableItem.seal(copy);
 			return copy;
 		}

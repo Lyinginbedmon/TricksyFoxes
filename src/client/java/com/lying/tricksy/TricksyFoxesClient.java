@@ -5,10 +5,12 @@ import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFModelParts;
+import com.lying.tricksy.init.TFParticles;
 import com.lying.tricksy.init.TFScreenHandlerTypes;
 import com.lying.tricksy.item.ISealableItem;
 import com.lying.tricksy.network.SyncTreeScreenPacket;
 import com.lying.tricksy.network.SyncTreeScreenReceiver;
+import com.lying.tricksy.particle.PaperParticle;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.renderer.entity.EntityTricksyFoxRenderer;
 import com.lying.tricksy.renderer.layer.SageHatRenderer;
@@ -20,6 +22,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
@@ -52,6 +55,8 @@ public class TricksyFoxesClient implements ClientModInitializer
 		EntityRendererRegistry.register(TFEntityTypes.TRICKSY_FOX, EntityTricksyFoxRenderer::new);
 		
 		ColorProviderRegistry.ITEM.register((stack, index) -> { return index == 0 ? ((DyeableItem)stack.getItem()).getColor(stack) : -1; }, TFItems.SAGE_HAT);
+		
+		ParticleFactoryRegistry.getInstance().register(TFParticles.PAPER, PaperParticle.Factory::new);
 		
 		Identifier note_sealed = new Identifier(Reference.ModInfo.MOD_ID, "sealed");
 		for(Item scroll : TFItems.SEALABLES)

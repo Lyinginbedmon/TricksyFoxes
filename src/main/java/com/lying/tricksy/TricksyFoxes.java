@@ -10,7 +10,9 @@ import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFParticles;
 import com.lying.tricksy.init.TFSpecialRecipes;
+import com.lying.tricksy.network.AddGlobalRefReceiver;
 import com.lying.tricksy.network.DeleteReferenceReceiver;
 import com.lying.tricksy.network.SaveTreeReceiver;
 import com.lying.tricksy.reference.Reference;
@@ -41,8 +43,10 @@ public class TricksyFoxes implements ModInitializer
 		TFEntityTypes.init();
 		TFSpecialRecipes.init();
 		TFRecipeProvider.addBrewingRecipes();
+		TFParticles.init();
 		
 		ServerPlayNetworking.registerGlobalReceiver(SaveTreeReceiver.PACKET_ID, new SaveTreeReceiver());
 		ServerPlayNetworking.registerGlobalReceiver(DeleteReferenceReceiver.PACKET_ID, new DeleteReferenceReceiver());
+		ServerPlayNetworking.registerGlobalReceiver(AddGlobalRefReceiver.PACKET_ID, new AddGlobalRefReceiver());
 	}
 }

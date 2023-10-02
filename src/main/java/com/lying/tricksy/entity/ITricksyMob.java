@@ -50,7 +50,7 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 			{
 				ItemStack hatStack = living.getEquippedStack(slot);
 				if(!hatStack.isEmpty() && hatStack.getItem() == TFItems.SAGE_HAT)
-					if(getSage().get().equals(ItemSageHat.getMasterID(hatStack)))
+					if(getSage().get().equals(ItemSageHat.getSageID(hatStack)))
 						return true;
 			}
 		

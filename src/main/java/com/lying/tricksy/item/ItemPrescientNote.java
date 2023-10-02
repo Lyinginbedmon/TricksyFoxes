@@ -44,6 +44,22 @@ public class ItemPrescientNote extends Item
 		return WhiteboardObjBase.createFromNbt(stack.getOrCreateSubNbt("Variable"));
 	}
 	
+	@Nullable
+	public static WhiteboardRef createReference(ItemStack stack, BoardType board)
+	{
+		Text displayName = null;
+		try
+		{
+			displayName = Text.Serializer.fromJson(stack.getSubNbt(ItemStack.DISPLAY_KEY).getString(ItemStack.NAME_KEY));
+			if(displayName == null)
+				return null;
+		}
+		catch(Exception e) { }
+		WhiteboardRef name = new WhiteboardRef(displayName.getString().replace(' ', '_'), getVariable(stack).type(), board);
+		name.displayName(displayName);
+		return name;
+	}
+	
 	public static void setVariable(IWhiteboardObject<?> obj, ItemStack stack)
 	{
 		NbtCompound nbt = stack.getOrCreateNbt();
@@ -57,6 +73,8 @@ public class ItemPrescientNote extends Item
 		variable.tryAdd(obj);
 		setVariable(variable, stack);
 	}
+	
+	public static boolean isFinalised(ItemStack stack) { return stack.hasCustomName() && getVariable(stack).size() > 0; }
 	
 	public static abstract class Typed<T> extends Item implements ISealableItem, ITreeItem
 	{
@@ -91,21 +109,16 @@ public class ItemPrescientNote extends Item
 				tooltip.addAll(variable.describe());
 		}
 		
-		public static boolean isValidNote(ItemStack stack) { return stack.hasCustomName() && getVariable(stack).size() > 0; }
-		
 		public <N extends PathAwareEntity & ITricksyMob<?>> ActionResult useOnTricksy(ItemStack stack, N tricksy, PlayerEntity user)
 		{
-			if(!isValidNote(stack) || !tricksy.isSage(user) || user.isSneaking())
+			if(!isFinalised(stack) || !tricksy.isSage(user) || user.isSneaking())
 				return ActionResult.PASS;
 			
-			Text displayName = stack.getName();
 			boolean isClient = user.getWorld().isClient();
 			if(!isClient)
 			{
 				IWhiteboardObject<?> value = getVariable(stack);
-				
-				WhiteboardRef name = new WhiteboardRef(displayName.getString().replace(' ', '_'), value.type(), BoardType.LOCAL);
-				name.displayName(displayName);
+				WhiteboardRef name = createReference(stack, BoardType.LOCAL);
 				Local<?> whiteboard = tricksy.getLocalWhiteboard();
 				whiteboard.addValue(name, (mob) -> value);
 				
