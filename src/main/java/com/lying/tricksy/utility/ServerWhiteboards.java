@@ -58,7 +58,7 @@ public class ServerWhiteboards extends PersistentState
 			NbtCompound compound = set.getCompound(i);
 			UUID sage = compound.getUuid("ID");
 			Whiteboard.Global board = new Whiteboard.Global(null);
-			board.readFromNbt(compound);
+			board.readFromNbt(compound.getCompound("Board"));
 			boards.whiteboards.put(sage, board);
 		}
 		return boards;

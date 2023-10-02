@@ -146,7 +146,7 @@ public abstract class Whiteboard<T>
 			}
 		if(exists)
 		{
-			TricksyFoxes.LOGGER.warn("Overwrote existing value in whiteboard: "+reference.name());
+			TricksyFoxes.LOGGER.warn("Overwrote existing value in "+this.type.asString()+" whiteboard: "+reference.name());
 			delete(reference);
 		}
 		

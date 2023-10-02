@@ -2,7 +2,6 @@ package com.lying.tricksy.entity.ai.node;
 
 import java.util.Map;
 
-import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
@@ -37,7 +36,7 @@ public class NodeSubType<M extends TreeNode<?>>
 	{
 		if(!tickFunc.variablesSufficient(parent))
 		{
-			TricksyFoxes.LOGGER.warn("Tree node of type "+parent.getType().getRegistryName().toString()+", subtype: "+registryName.toString()+" in entity "+tricksy.getDisplayName().getString()+" is missing one or more input variables");
+			tricksy.logStatus(Text.literal(registryName.toString()+" in "+tricksy.getDisplayName().getString()+" is missing one or more input variables"));
 			return Result.FAILURE;
 		}
 		

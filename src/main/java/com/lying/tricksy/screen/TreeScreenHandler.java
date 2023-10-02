@@ -95,7 +95,6 @@ public class TreeScreenHandler extends ScreenHandler
 		references.put(BoardType.CONSTANT, new HashMap<>());
 		references.put(BoardType.GLOBAL, new HashMap<>());
 		references.put(BoardType.LOCAL, new HashMap<>());
-		System.out.println("Received "+refsIn.size()+" references from packet");
 		refsIn.forEach((pair) -> references.get(pair.getLeft().boardType()).put(pair.getLeft(), pair.getRight()));
 	}
 	

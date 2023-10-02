@@ -14,11 +14,14 @@ import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFSoundEvents;
 import com.lying.tricksy.item.ISealableItem;
 import com.lying.tricksy.item.ItemPrescientNote;
 import com.lying.tricksy.item.ItemSageHat;
 import com.lying.tricksy.network.AddGlobalRefPacket;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -80,7 +83,7 @@ public class ScreenHandlerMixin
 					
 					IWhiteboardObject<?> value = ItemPrescientNote.getVariable(cursorStack);
 					WhiteboardRef name = ItemPrescientNote.createReference(cursorStack, BoardType.GLOBAL);
-					// TODO Play sound effect to verify success
+					MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(TFSoundEvents.WHITEBOARD_UPDATED, 1F));
 					AddGlobalRefPacket.send(player, sageID, name, value);
 				}
 				

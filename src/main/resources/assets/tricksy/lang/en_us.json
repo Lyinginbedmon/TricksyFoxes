@@ -113,5 +113,7 @@
 	"item.tricksy.sage_hat.master_set.fail": "%s already follows a sage!",
 	"item.tricksy.prescient_note.give_value": "%s will remember this",
 	"item.tricksy.scripture.copy": "%s now details the behaviour of %s",
-	"item.tricksy.scripture.paste": "%s will now follow this doctrine"
+	"item.tricksy.scripture.paste": "%s will now follow this doctrine",
+	"sound.tricksy.whiteboard_updated": "Whiteboard updated",
+	"sound.tricksy.tricksy_enlightened": "Mob enlightened"
 }

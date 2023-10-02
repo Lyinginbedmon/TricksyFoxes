@@ -1,0 +1,15 @@
+{
+	"whiteboard_updated": {
+		"subtitle": "sound.tricksy.whiteboard_updated",
+		"sounds": [
+			"tricksy:whiteboard_updated0",
+			"tricksy:whiteboard_updated1"
+		]
+	},
+	"tricksy_enlightened": {
+		"subtitle": "sound.tricksy.tricksy_enlightened",
+		"sounds": [
+			"tricksy:tricksy_enlightened"
+		]
+	}
+}

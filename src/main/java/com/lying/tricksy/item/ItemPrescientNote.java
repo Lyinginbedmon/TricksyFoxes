@@ -14,6 +14,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFSoundEvents;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.client.item.TooltipContext;
@@ -25,6 +26,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -126,6 +128,7 @@ public class ItemPrescientNote extends Item
 					stack.decrement(1);
 				
 				user.sendMessage(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.give_value", tricksy.getDisplayName()), true);
+				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.MASTER, 1F, 0.75F + (tricksy.getRandom().nextFloat() * 0.5F));
 			}
 			
 			return ActionResult.success(isClient);

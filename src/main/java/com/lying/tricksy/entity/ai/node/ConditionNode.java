@@ -50,49 +50,8 @@ public class ConditionNode extends TreeNode<ConditionNode>
 	
 	public static void populateSubTypes(Collection<NodeSubType<ConditionNode>> set)
 	{
-		/** Returns SUCCESS if the boolean value of the given object is TRUE */
-		set.add(new NodeSubType<ConditionNode>(VARIANT_VALUE_TRUE, new NodeTickHandler<ConditionNode>()
-		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
-			{
-				return Map.of(CommonVariables.VAR, INodeInput.makeInput(NodeTickHandler.any()));
-			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
-			{
-				return getOrDefault(CommonVariables.VAR, parent, local, global).as(TFObjType.BOOL).get() ? Result.SUCCESS : Result.FAILURE;
-			}
-		}));
-		/** Returns SUCCESS if the given object is not considered empty (this differs from VALUE_TRUE for several data types) */
-		set.add(new NodeSubType<ConditionNode>(VARIANT_VALUE_EXISTS, new NodeTickHandler<ConditionNode>()
-		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
-			{
-				return Map.of(CommonVariables.VAR, INodeInput.makeInput(NodeTickHandler.any()));
-			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
-			{
-				return getOrDefault(CommonVariables.VAR, parent, local, global).isEmpty() ? Result.FAILURE : Result.SUCCESS;
-			}
-		}));
-		/** Returns SUCCESS if the given objects match */
-		set.add(new NodeSubType<ConditionNode>(VARIANT_VALUE_EQUALS, new NodeTickHandler<ConditionNode>()
-		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
-			{
-				return Map.of(
-						CommonVariables.VAR_A, INodeInput.makeInput(NodeTickHandler.any()), 
-						CommonVariables.VAR_B, INodeInput.makeInput(NodeTickHandler.any()));
-			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
-			{
-				IWhiteboardObject<?> objA = getOrDefault(CommonVariables.VAR_A, parent, local, global);
-				IWhiteboardObject<?> objB = getOrDefault(CommonVariables.VAR_B, parent, local, global);
-				return objA.type() == objB.type() && objA.get() == objB.get() ? Result.SUCCESS : Result.FAILURE;
-			}
-		}));
+		addWhiteboardConditions(set);
+		
 		/** Performs a simple distance check from the mob to the given position and returns SUCCESS if the distance is less than a desired value */
 		set.add(new NodeSubType<ConditionNode>(VARIANT_CLOSER_THAN, new NodeTickHandler<ConditionNode>()
 		{
@@ -140,6 +99,53 @@ public class ConditionNode extends TreeNode<ConditionNode>
 			{
 				BlockPos position = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK).get();
 				return tricksy.getEntityWorld().isReceivingRedstonePower(position) ? Result.SUCCESS : Result.FAILURE;
+			}
+		}));
+	}
+	
+	private static void addWhiteboardConditions(Collection<NodeSubType<ConditionNode>> set)
+	{
+		/** Returns SUCCESS if the boolean value of the given object is TRUE */
+		set.add(new NodeSubType<ConditionNode>(VARIANT_VALUE_TRUE, new NodeTickHandler<ConditionNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR, INodeInput.makeInput(NodeTickHandler.any()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			{
+				return getOrDefault(CommonVariables.VAR, parent, local, global).as(TFObjType.BOOL).get() ? Result.SUCCESS : Result.FAILURE;
+			}
+		}));
+		/** Returns SUCCESS if the given object is not considered empty (this differs from VALUE_TRUE for several data types) */
+		set.add(new NodeSubType<ConditionNode>(VARIANT_VALUE_EXISTS, new NodeTickHandler<ConditionNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR, INodeInput.makeInput(NodeTickHandler.any()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			{
+				return getOrDefault(CommonVariables.VAR, parent, local, global).isEmpty() ? Result.FAILURE : Result.SUCCESS;
+			}
+		}));
+		/** Returns SUCCESS if the given objects match */
+		set.add(new NodeSubType<ConditionNode>(VARIANT_VALUE_EQUALS, new NodeTickHandler<ConditionNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(
+						CommonVariables.VAR_A, INodeInput.makeInput(NodeTickHandler.any()), 
+						CommonVariables.VAR_B, INodeInput.makeInput(NodeTickHandler.any()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			{
+				IWhiteboardObject<?> objA = getOrDefault(CommonVariables.VAR_A, parent, local, global);
+				IWhiteboardObject<?> objB = getOrDefault(CommonVariables.VAR_B, parent, local, global);
+				return objA.type() == objB.type() && objA.get() == objB.get() ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 	}

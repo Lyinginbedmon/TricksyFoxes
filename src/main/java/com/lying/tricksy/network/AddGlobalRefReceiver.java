@@ -30,7 +30,6 @@ public class AddGlobalRefReceiver implements PlayChannelHandler
 		
 		WhiteboardRef ref = WhiteboardRef.fromNbt(refNbt);
 		IWhiteboardObject<?> val = WhiteboardObjBase.createFromNbt(valNbt);
-		System.out.println("Transmitting "+ref.displayName().getString()+" with value "+val.describe().get(0));
 		
 		ServerWhiteboards boards = ServerWhiteboards.getServerWhiteboards(player.getServer());
 		Global whiteboard = boards.getWhiteboardFor(sageID);

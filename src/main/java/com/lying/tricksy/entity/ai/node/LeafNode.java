@@ -22,6 +22,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFSoundEvents;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.block.entity.BlockEntity;
@@ -33,6 +34,8 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -79,6 +82,10 @@ public class LeafNode extends TreeNode<LeafNode>
 	
 	public static void populateSubTypes(Collection<NodeSubType<LeafNode>> set)
 	{
+		addWhiteboardActions(set);
+		addInventoryActions(set);
+		addCombatActions(set);
+		
 		set.add(new NodeSubType<LeafNode>(VARIANT_GOTO, new NodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
@@ -108,36 +115,6 @@ public class LeafNode extends TreeNode<LeafNode>
 				}
 				else
 					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
-			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_DROP, new NodeTickHandler<LeafNode>()
-		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
-			{
-				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(1)));
-			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
-			{
-				ItemStack heldStack = tricksy.getMainHandStack();
-				if(heldStack.isEmpty())
-					return Result.FAILURE;
-				
-				int amount = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT).get();
-				tricksy.dropStack(heldStack.split(amount));
-				return Result.SUCCESS;
-			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_SWAP, new NodeTickHandler<LeafNode>()
-		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
-			{
-				ItemStack mainStack = tricksy.getMainHandStack().copy();
-				ItemStack offStack = tricksy.getOffHandStack().copy();
-				
-				tricksy.setStackInHand(Hand.MAIN_HAND, offStack);
-				tricksy.setStackInHand(Hand.OFF_HAND, mainStack);
-				return Result.SUCCESS;
 			}
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_SLEEP, new NodeTickHandler<LeafNode>()
@@ -174,6 +151,45 @@ public class LeafNode extends TreeNode<LeafNode>
 			
 			private <T extends PathAwareEntity & ITricksyMob<?>> boolean canSleep(T tricksy) { return tricksy.isOnGround() && tricksy.hurtTime <= 0; }
 		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_WAIT, new NodeTickHandler<LeafNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(1)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
+			{
+				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
+				
+				if(!parent.isRunning())
+					parent.ticks = duration.get() * Reference.Values.TICKS_PER_SECOND;
+				else if(parent.ticks-- <= 0)
+					return Result.SUCCESS;
+				return Result.RUNNING;
+			}
+		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_SET_HOME, new NodeTickHandler<LeafNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK), new WhiteboardObjBlock()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
+			{
+				IWhiteboardObject<BlockPos> value = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
+				if(value.size() == 0)
+					tricksy.clearPositionTarget();
+				else
+					tricksy.setPositionTarget(value.get(), 6);
+				return Result.SUCCESS;
+			}
+		}));
+	}
+	
+	private static void addWhiteboardActions(Collection<NodeSubType<LeafNode>> set)
+	{
 		set.add(new NodeSubType<LeafNode>(VARIANT_CYCLE, new NodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BOOL).displayName(CommonVariables.translate("to_cycle"));
@@ -235,6 +251,7 @@ public class LeafNode extends TreeNode<LeafNode>
 				WhiteboardObjBlock sorted = new WhiteboardObjBlock();
 				points.forEach((point) -> sorted.add(point));
 				local.setValue(reference, sorted);
+				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
 		}));
@@ -260,10 +277,15 @@ public class LeafNode extends TreeNode<LeafNode>
 					return Result.FAILURE;
 				
 				local.setValue(to, Whiteboard.get(from, local, global).as(to.type()));
+				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
 		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_WAIT, new NodeTickHandler<LeafNode>()
+	}
+	
+	private static void addInventoryActions(Collection<NodeSubType<LeafNode>> set)
+	{
+		set.add(new NodeSubType<LeafNode>(VARIANT_DROP, new NodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
@@ -272,13 +294,25 @@ public class LeafNode extends TreeNode<LeafNode>
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
-				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
+				ItemStack heldStack = tricksy.getMainHandStack();
+				if(heldStack.isEmpty())
+					return Result.FAILURE;
 				
-				if(!parent.isRunning())
-					parent.ticks = duration.get() * Reference.Values.TICKS_PER_SECOND;
-				else if(parent.ticks-- <= 0)
-					return Result.SUCCESS;
-				return Result.RUNNING;
+				int amount = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT).get();
+				tricksy.dropStack(heldStack.split(amount));
+				return Result.SUCCESS;
+			}
+		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_SWAP, new NodeTickHandler<LeafNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
+			{
+				ItemStack mainStack = tricksy.getMainHandStack().copy();
+				ItemStack offStack = tricksy.getOffHandStack().copy();
+				
+				tricksy.setStackInHand(Hand.MAIN_HAND, offStack);
+				tricksy.setStackInHand(Hand.OFF_HAND, mainStack);
+				return Result.SUCCESS;
 			}
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_INSERT_ITEM, new InventoryHandler()
@@ -415,10 +449,17 @@ public class LeafNode extends TreeNode<LeafNode>
 					tile.markDirty();
 					tricksy.setStackInHand(Hand.MAIN_HAND, InventoryHandler.mergeStacks(heldStack, extracted));
 					tricksy.logStatus(Text.literal("I'm now holding ").append(tricksy.getMainHandStack().getName()).append(Text.literal(" x"+tricksy.getMainHandStack().getCount())));
+					
+					if(tricksy.getRandom().nextInt(20) == 0)
+						tricksy.getWorld().playSound(null, tricksy.getBlockPos(), SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 					return Result.SUCCESS;
 				}
 			}
 		}));
+	}
+	
+	private static void addCombatActions(Collection<NodeSubType<LeafNode>> set)
+	{
 		set.add(new NodeSubType<LeafNode>(VARIANT_SET_ATTACK, new NodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
@@ -443,23 +484,6 @@ public class LeafNode extends TreeNode<LeafNode>
 				}
 				else
 					return Result.FAILURE;
-			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_SET_HOME, new NodeTickHandler<LeafNode>()
-		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
-			{
-				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK), new WhiteboardObjBlock()));
-			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
-			{
-				IWhiteboardObject<BlockPos> value = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
-				if(value.size() == 0)
-					tricksy.clearPositionTarget();
-				else
-					tricksy.setPositionTarget(value.get(), 6);
-				return Result.SUCCESS;
 			}
 		}));
 	}

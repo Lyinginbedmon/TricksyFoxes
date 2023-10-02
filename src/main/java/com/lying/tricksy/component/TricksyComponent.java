@@ -1,15 +1,17 @@
 package com.lying.tricksy.component;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
 import com.lying.tricksy.init.TFEntityTypes;
+import com.lying.tricksy.init.TFSoundEvents;
 
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
@@ -20,11 +22,13 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
@@ -35,7 +39,7 @@ import net.minecraft.world.World;
 public final class TricksyComponent implements ServerTickingComponent, AutoSyncedComponent
 {
 	/** Map of entity types to functions that convert mobs of that type to their enlightened equivalents */
-	private static final Map<EntityType<? extends MobEntity>, Function<MobEntity, MobEntity>> ENLIGHTEN_MAP = new HashMap<>();
+	private static final Map<EntityType<? extends MobEntity>, EnlightenmentPath<?,?>> ENLIGHTEN_MAP = new HashMap<>();
 	
 	/** The mob this component is monitoring */
 	private final MobEntity theMob;
@@ -46,7 +50,8 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	/** True if the mob has been given a periapt */
 	private boolean hasPeriapt = false;
 	
-	private List<Identifier> dimensionsVisited = Lists.newArrayList();
+	/** List of unique accomplishments */
+	private List<Accomplishment> accomplishments = Lists.newArrayList();
 	private Identifier lastDimension = null;
 	
 	public TricksyComponent(MobEntity entityIn)
@@ -62,17 +67,15 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 		if(tag.contains("LastDimension", NbtElement.STRING_TYPE))
 			this.lastDimension = new Identifier(tag.getString("LastDimension"));
 		
-		if(tag.contains("Dimensions", NbtElement.LIST_TYPE))
+		if(tag.contains("Accomplishments", NbtElement.LIST_TYPE))
 		{
-			NbtList list = tag.getList("Dimensions", NbtElement.STRING_TYPE);
+			NbtList list = tag.getList("Accomplishments", NbtElement.STRING_TYPE);
 			for(int i=0; i<list.size(); i++)
 			{
 				Identifier id = new Identifier(list.getString(i));
-				if(!hasVisited(id))
-				{
-					this.dimensionsVisited.add(id);
-					this.lastDimension = id;
-				}
+				Accomplishment acc = TFAccomplishments.get(id);
+				if(!hasAchieved(id) && acc != null)
+					this.accomplishments.add(acc);
 			}
 		}
 	}
@@ -84,12 +87,12 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 		if(this.lastDimension != null)
 			tag.putString("LastDimension", this.lastDimension.toString());
 		
-		if(!this.dimensionsVisited.isEmpty())
+		if(!this.accomplishments.isEmpty())
 		{
 			NbtList list = new NbtList();
-			for(Identifier type : this.dimensionsVisited)
-				list.add(NbtString.of(type.toString()));
-			tag.put("Dimensions", list);
+			for(Accomplishment type : this.accomplishments)
+				list.add(NbtString.of(type.registryName().toString()));
+			tag.put("Accomplishments", list);
 		}
 	}
 	
@@ -109,7 +112,7 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	{
 		this.hasPeriapt = par1;
 		if(!par1)
-			this.dimensionsVisited.clear();
+			this.accomplishments.clear();
 		markDirty();
 	}
 	
@@ -120,17 +123,21 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 		if(!this.canEnlighten)
 			return;
 		
-		if(hasPeriapt() && this.dimensionsVisited.size() > 1)
+		Identifier dimension = theMob.getWorld().getDimensionKey().getValue();
+		if(hasPeriapt() && this.accomplishments.size() > 1)
 		{
 			theMob.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION));
-			if(!theMob.hasPortalCooldown() && theMob.getWorld().getDimensionKey().getValue().equals(this.lastDimension))
+			if(!theMob.hasPortalCooldown())
 				enlighten();
 		}
+		
+		if(!theMob.hasPortalCooldown() && !dimension.equals(this.lastDimension))
+			this.lastDimension = dimension;
 	}
 	
 	private boolean enlighten()
 	{
-		MobEntity tricksy = ENLIGHTEN_MAP.get(theMob.getType()).apply(theMob);
+		PathAwareEntity tricksy = ENLIGHTEN_MAP.get(theMob.getType()).giveEnlightenment(theMob);
 		theMob.getActiveStatusEffects().forEach((effect,instance) -> tricksy.addStatusEffect(instance));
 		if(theMob.hasCustomName())
 			tricksy.setCustomName(theMob.getCustomName());
@@ -140,9 +147,10 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 		World world = theMob.getWorld();
 		if(Dismounting.canPlaceEntityAt(world, tricksy, tricksy.getBoundingBox(EntityPose.STANDING)))
 		{
-			// TODO Add dramatic flair
 			if(!world.isClient())
 			{
+				// TODO Add particles to enlightenment event
+				world.playSound(null, theMob.getBlockPos(), TFSoundEvents.TRICKSY_ENLIGHTENED, SoundCategory.NEUTRAL, 1F, 0.75F + theMob.getRandom().nextFloat());
 				world.spawnEntity(tricksy);
 				theMob.discard();
 			}
@@ -153,33 +161,51 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 			return false;
 	}
 	
-	public boolean hasVisited(Identifier type)
+	public boolean hasAchieved(Accomplishment acc)
 	{
-		for(Identifier dim : this.dimensionsVisited)
-			if(dim.toString().equals(type.toString()))
+		return hasAchieved(acc.registryName());
+	}
+	
+	public boolean hasAchieved(Identifier type)
+	{
+		for(Accomplishment dim : this.accomplishments)
+			if(dim.registryName().equals(type))
 				return true;
 		return false;
 	}
 	
-	public void addVisited(Identifier type)
+	public void addAccomplishment(Accomplishment type)
 	{
-		if(!hasPeriapt() || hasVisited(type))
+		if(!hasPeriapt() || hasAchieved(type.registryName()))
 			return;
 		
-		this.dimensionsVisited.add(type);
-		this.lastDimension = type;
+		this.accomplishments.add(type);
 		markDirty();
+	}
+	
+	private static void addEnlightenment(EntityType<? extends MobEntity> type, EnlightenmentPath<?,?> path)
+	{
+		ENLIGHTEN_MAP.put(type, path);
 	}
 	
 	static
 	{
-		ENLIGHTEN_MAP.put(EntityType.FOX, (mob) -> 
+		addEnlightenment(EntityType.FOX, new EnlightenmentPath<FoxEntity, EntityTricksyFox>() 
 		{
-			FoxEntity fox = (FoxEntity)mob;
-			EntityTricksyFox tricksy = TFEntityTypes.TRICKSY_FOX.create(fox.getEntityWorld());
-			tricksy.setVariant(fox.getVariant());
-			tricksy.equipStack(EquipmentSlot.MAINHAND, fox.getEquippedStack(EquipmentSlot.MAINHAND));
-			return tricksy;
+			public EntityTricksyFox enlighten(FoxEntity fox)
+			{
+				EntityTricksyFox tricksy = TFEntityTypes.TRICKSY_FOX.create(fox.getEntityWorld());
+				tricksy.setVariant(fox.getVariant());
+				tricksy.equipStack(EquipmentSlot.MAINHAND, fox.getEquippedStack(EquipmentSlot.MAINHAND));
+				return tricksy;
+			}
+			
+			public boolean conditionsMet(Collection<Accomplishment> accomplishments)
+			{
+				return 
+						accomplishments.contains(TFAccomplishments.VISIT_NETHER) &&
+						accomplishments.contains(TFAccomplishments.VISIT_OVERWORLD);
+			}
 		});
 	}
 }

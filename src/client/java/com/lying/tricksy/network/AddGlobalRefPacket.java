@@ -20,7 +20,6 @@ public class AddGlobalRefPacket
 	public static void send(PlayerEntity player, UUID sageID, WhiteboardRef ref, IWhiteboardObject<?> val)
 	{
 		PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-		System.out.println("Transmitting "+ref.displayName().getString()+" with value "+val.describe().get(0));
 		buffer.writeUuid(sageID);
 		buffer.writeNbt(ref.writeToNbt(new NbtCompound()));
 		buffer.writeNbt(val.writeToNbt(new NbtCompound()));
