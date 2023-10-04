@@ -16,6 +16,12 @@ public class TFAccomplishments
 	public static final Accomplishment VISIT_OVERWORLD = make("visit_overworld");
 	public static final Accomplishment VISIT_END = make("visit_end");
 	public static final Accomplishment DIMENSIONAL_TRAVEL = make("dimensional_travel");
+	public static final Accomplishment SQUIRE = make("squire");	// Be present when the enderdragon is slain
+	public static final Accomplishment CLOUDSEEKER = make("cloudseeker");	// Set foot on the top of the overworld
+	public static final Accomplishment OUTSIDE_THE_BOX = make("outside_the_box");	// Set foot on the bedrock ceiling of the Nether
+	public static final Accomplishment FIRETOUCHED = make("firetouched");	// Survive fire damage with at most 2 health
+	public static final Accomplishment WATERBORNE = make("waterborne");	// Survive drowning damage with at most 2 health
+	public static final Accomplishment FISHERMAN = make("fisherman");	// Holding a raw fish of any kind
 	
 	private static Accomplishment make(String nameIn)
 	{

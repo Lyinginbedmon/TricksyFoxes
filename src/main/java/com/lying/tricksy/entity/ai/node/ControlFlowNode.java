@@ -4,10 +4,12 @@ import java.util.Collection;
 import java.util.UUID;
 
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
+import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;
+import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFNodeTypes;
-import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -23,9 +25,9 @@ import net.minecraft.util.Identifier;
  */
 public class ControlFlowNode extends TreeNode<ControlFlowNode>
 {
-	public static final Identifier VARIANT_SEQUENCE = new Identifier(Reference.ModInfo.MOD_ID, "sequence");
-	public static final Identifier VARIANT_SELECTOR = new Identifier(Reference.ModInfo.MOD_ID, "selector");
-	public static final Identifier VARIANT_REACTIVE = new Identifier(Reference.ModInfo.MOD_ID, "reactive");
+	public static final Identifier VARIANT_SEQUENCE = ISubtypeGroup.variant("sequence");
+	public static final Identifier VARIANT_SELECTOR = ISubtypeGroup.variant("selector");
+	public static final Identifier VARIANT_REACTIVE = ISubtypeGroup.variant("reactive");
 	
 	private int index = 0;
 	

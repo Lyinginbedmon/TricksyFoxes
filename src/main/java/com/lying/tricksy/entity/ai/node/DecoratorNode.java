@@ -7,6 +7,10 @@ import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.node.handler.INodeInput;
+import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
+import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;
+import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
@@ -34,13 +38,13 @@ import net.minecraft.util.Identifier;
  */
 public class DecoratorNode extends TreeNode<DecoratorNode>
 {
-	public static final Identifier VARIANT_INVERTER = new Identifier(Reference.ModInfo.MOD_ID, "inverter");
-	public static final Identifier VARIANT_FORCE_FAILURE = new Identifier(Reference.ModInfo.MOD_ID, "force_failure");
-	public static final Identifier VARIANT_FORCE_SUCCESS = new Identifier(Reference.ModInfo.MOD_ID, "force_success");
-	public static final Identifier VARIANT_DELAY = new Identifier(Reference.ModInfo.MOD_ID, "delay");
-	public static final Identifier VARIANT_REPEAT = new Identifier(Reference.ModInfo.MOD_ID, "repeat");
-	public static final Identifier VARIANT_RETRY = new Identifier(Reference.ModInfo.MOD_ID, "retry");
-	public static final Identifier VARIANT_FOR_EACH = new Identifier(Reference.ModInfo.MOD_ID, "for_each");
+	public static final Identifier VARIANT_INVERTER = ISubtypeGroup.variant("inverter");
+	public static final Identifier VARIANT_FORCE_FAILURE = ISubtypeGroup.variant("force_failure");
+	public static final Identifier VARIANT_FORCE_SUCCESS = ISubtypeGroup.variant("force_success");
+	public static final Identifier VARIANT_DELAY = ISubtypeGroup.variant("delay");
+	public static final Identifier VARIANT_REPEAT = ISubtypeGroup.variant("repeat");
+	public static final Identifier VARIANT_RETRY = ISubtypeGroup.variant("retry");
+	public static final Identifier VARIANT_FOR_EACH = ISubtypeGroup.variant("for_each");
 	
 	protected int ticks = 20;
 	

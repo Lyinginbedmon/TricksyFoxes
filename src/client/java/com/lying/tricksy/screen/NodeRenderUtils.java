@@ -10,9 +10,9 @@ import org.joml.Matrix4f;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxesClient;
-import com.lying.tricksy.entity.ai.node.INodeInput;
-import com.lying.tricksy.entity.ai.node.NodeSubType;
 import com.lying.tricksy.entity.ai.node.TreeNode;
+import com.lying.tricksy.entity.ai.node.handler.INodeInput;
+import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.reference.Reference;
 import com.mojang.blaze3d.systems.RenderSystem;

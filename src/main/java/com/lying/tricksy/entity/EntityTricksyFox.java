@@ -23,6 +23,8 @@ import net.minecraft.entity.VariantHolder;
 import net.minecraft.entity.ai.control.LookControl;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -85,6 +87,11 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		this.goalSelector.add(8, new LookAroundGoal(this));
 	}
 	
+	public static DefaultAttributeContainer.Builder createMobAttributes()
+	{
+		return FoxEntity.createFoxAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20D).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2D);
+	}
+	
 	public void readCustomDataFromNbt(NbtCompound data)
 	{
 		super.readCustomDataFromNbt(data);
@@ -116,7 +123,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	{
 		boolean isClient = player.getWorld().isClient;
 		ItemStack heldStack = player.getStackInHand(hand);
-		if(isSage(player))
+		if(!hasSage() || isSage(player))
 		{
 			if(heldStack.getItem() instanceof DyeItem)
 			{

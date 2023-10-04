@@ -28,8 +28,11 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
 /**
@@ -176,10 +179,23 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	
 	public void addAccomplishment(Accomplishment type)
 	{
-		if(!hasPeriapt() || hasAchieved(type.registryName()))
+		if(!hasPeriapt() || hasAchieved(type))
 			return;
 		
 		this.accomplishments.add(type);
+		if(this.theMob != null && this.theMob.isAlive())
+		{
+			World world = theMob.getWorld();
+			Random random = theMob.getRandom();
+			world.playSound(null, theMob.getBlockPos(), SoundEvents.ENTITY_PLAYER_LEVELUP, SoundCategory.NEUTRAL, 1F, 0.75F + random.nextFloat());
+			for (int i = 0; i < 5; ++i)
+			{
+				double d = random.nextGaussian() * 0.02;
+				double e = random.nextGaussian() * 0.02;
+				double f = random.nextGaussian() * 0.02;
+				world.addParticle(ParticleTypes.HAPPY_VILLAGER, theMob.getParticleX(1.0), theMob.getRandomBodyY() + 1.0, theMob.getParticleZ(1.0), d, e, f);
+			}
+		}
 		markDirty();
 	}
 	

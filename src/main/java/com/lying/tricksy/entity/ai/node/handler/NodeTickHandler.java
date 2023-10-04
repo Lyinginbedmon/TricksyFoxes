@@ -1,4 +1,4 @@
-package com.lying.tricksy.entity.ai.node;
+package com.lying.tricksy.entity.ai.node.handler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicates;
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
@@ -19,6 +20,7 @@ import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -72,8 +74,13 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	@NotNull
 	public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, Local<T> local, Global global, M parent);
 	
-	public static <T extends PathAwareEntity & ITricksyMob<?>> boolean canInteractWith(T tricksy, BlockPos pos)
+	public static <T extends PathAwareEntity & ITricksyMob<?>> boolean canInteractWithBlock(T tricksy, BlockPos pos)
 	{
 		return tricksy.getEyePos().distanceTo(new Vec3d(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D)) < INTERACT_RANGE;
+	}
+	
+	public static <T extends PathAwareEntity & ITricksyMob<?>> boolean canInteractWithEntity(T tricksy, Entity pos)
+	{
+		return tricksy.distanceTo(pos) < INTERACT_RANGE;
 	}
 }

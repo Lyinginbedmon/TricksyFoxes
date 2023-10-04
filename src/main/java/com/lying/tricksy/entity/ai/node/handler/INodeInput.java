@@ -1,4 +1,4 @@
-package com.lying.tricksy.entity.ai.node;
+package com.lying.tricksy.entity.ai.node.handler;
 
 import java.util.Optional;
 import java.util.function.Predicate;

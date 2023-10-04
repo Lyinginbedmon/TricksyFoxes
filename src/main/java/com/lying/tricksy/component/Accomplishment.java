@@ -4,6 +4,8 @@ import net.minecraft.util.Identifier;
 
 public class Accomplishment
 {
+	// TODO Add predicate for achieving
+	
 	private final Identifier name;
 	
 	public Accomplishment(Identifier nameIn)

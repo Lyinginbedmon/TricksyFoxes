@@ -1,5 +1,6 @@
-package com.lying.tricksy.entity.ai.node;
+package com.lying.tricksy.entity.ai.node.handler;
 
+import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
@@ -89,7 +90,7 @@ public interface InventoryHandler extends NodeTickHandler<LeafNode>
 	public static ItemStack mergeStacks(ItemStack stackA, ItemStack stackB)
 	{
 		if(stackA.isEmpty())
-			return stackB;
+			return stackB.copyAndEmpty();
 		if(canMergeStacks(stackA, stackB))
 		{
 			int amount = Math.min(stackA.getMaxCount() - stackA.getCount(), stackB.getCount());
