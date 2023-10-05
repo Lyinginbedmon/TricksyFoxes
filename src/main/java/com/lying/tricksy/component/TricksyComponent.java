@@ -57,10 +57,12 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	private List<Accomplishment> accomplishments = Lists.newArrayList();
 	private Identifier lastDimension = null;
 	
+	private boolean isBurning, isDrowning;
+	
 	public TricksyComponent(MobEntity entityIn)
 	{
 		theMob = entityIn;
-		canEnlighten = !(entityIn instanceof ITricksyMob) && ENLIGHTEN_MAP.containsKey(entityIn.getType());
+		canEnlighten = !(entityIn instanceof ITricksyMob) && isEnlightenable(entityIn);
 	}
 	
 	public void readFromNbt(NbtCompound tag)
@@ -109,6 +111,8 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	
 	public boolean canBeEnlightened() { return this.canEnlighten; }
 	
+	public static boolean isEnlightenable(MobEntity entity) { return ENLIGHTEN_MAP.containsKey(entity.getType()); }
+	
 	public boolean hasPeriapt() { return this.hasPeriapt; }
 	
 	public void setPeriapt(boolean par1)
@@ -125,6 +129,33 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	{
 		if(!this.canEnlighten)
 			return;
+		
+		// Accomplishments checked every tick
+		List.of(TFAccomplishments.CLOUDSEEKER, TFAccomplishments.OUTSIDE_THE_BOX, TFAccomplishments.FISHERMAN).forEach((acc) -> 
+		{
+			if(acc.achieved(theMob))
+				addAccomplishment(acc);
+		});
+		
+		// Accomplishments from taking damage
+		// XXX More flexible approach to accomplishments based on entity state change
+		if(theMob.isOnFire())
+			this.isBurning = true;
+		else if(isBurning)
+		{
+			if(TFAccomplishments.FIRETOUCHED.achieved(theMob))
+				addAccomplishment(TFAccomplishments.FIRETOUCHED);
+			isBurning = false;
+		}
+		
+		if(theMob.getAir() <= 0)
+			this.isDrowning = true;
+		else if(isDrowning)
+		{
+			if(TFAccomplishments.WATERBORNE.achieved(theMob))
+				addAccomplishment(TFAccomplishments.WATERBORNE);
+			isDrowning = false;
+		}
 		
 		Identifier dimension = theMob.getWorld().getDimensionKey().getValue();
 		if(hasPeriapt() && this.accomplishments.size() > 1)

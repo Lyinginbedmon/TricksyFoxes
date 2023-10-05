@@ -8,12 +8,15 @@ import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.init.TFParticles;
 import com.lying.tricksy.init.TFScreenHandlerTypes;
 import com.lying.tricksy.item.ISealableItem;
-import com.lying.tricksy.network.SyncTreeScreenPacket;
+import com.lying.tricksy.network.RefAddedReceiver;
+import com.lying.tricksy.network.SyncScriptureScreenReceiver;
 import com.lying.tricksy.network.SyncTreeScreenReceiver;
+import com.lying.tricksy.network.TFPacketHandler;
 import com.lying.tricksy.particle.PaperParticle;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.renderer.entity.EntityTricksyFoxRenderer;
 import com.lying.tricksy.renderer.layer.SageHatRenderer;
+import com.lying.tricksy.screen.ScriptureScreen;
 import com.lying.tricksy.screen.TreeScreen;
 import com.lying.tricksy.utility.ClientBus;
 
@@ -65,7 +68,10 @@ public class TricksyFoxesClient implements ClientModInitializer
 		TFModelParts.init();
 		TFScreenHandlerTypes.init();
 		
-		ClientPlayNetworking.registerGlobalReceiver(SyncTreeScreenPacket.PACKET_ID, new SyncTreeScreenReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_SCRIPTURE_ID, new SyncScriptureScreenReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_TREE_ID, new SyncTreeScreenReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.REF_ADDED_ID, new RefAddedReceiver());
+		HandledScreens.register(TFScreenHandlerTypes.SCRIPTURE_SCREEN_HANDLER, ScriptureScreen::new);
 		HandledScreens.register(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, TreeScreen::new);
 	}
 }

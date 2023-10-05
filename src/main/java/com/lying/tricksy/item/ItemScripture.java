@@ -6,7 +6,9 @@ import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
+import com.lying.tricksy.network.SyncScriptureScreenPacket;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.screen.ScriptureScreenHandler;
 
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -15,8 +17,13 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 
 public class ItemScripture extends Item implements ISealableItem, ITreeItem
@@ -29,14 +36,35 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
 	{
 		if(hasTree(stack))
-			tooltip.add(Text.translatable(getTranslationKey()+".tooltip", getTree(stack).size()));
+		{
+			if(!stack.getNbt().contains("Size", NbtElement.INT_TYPE))
+			{
+				NbtCompound nbt = stack.getNbt();
+				nbt.putInt("Size", getTree(stack).size());
+				stack.setNbt(nbt);
+			}
+			tooltip.add(Text.translatable(getTranslationKey()+".tooltip", stack.getNbt().getInt("Size")));
+		}
+		if(!ISealableItem.isSealed(stack))
+			tooltip.add(Text.translatable(getTranslationKey()+".tooltip_copy").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
+		if(hasTree(stack))
+			tooltip.add(Text.translatable(getTranslationKey()+".tooltip_paste").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
+	}
+	
+	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand)
+	{
+		ItemStack itemStack = user.getStackInHand(hand);
+		boolean hasTree = hasTree(itemStack);
+		if(!world.isClient() && hasTree)
+			user.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new ScriptureScreenHandler(id, itemStack), itemStack.getName())).ifPresent(syncId -> SyncScriptureScreenPacket.send(user, itemStack, syncId));
+		return hasTree ? TypedActionResult.success(itemStack, world.isClient()) : TypedActionResult.fail(itemStack);
 	}
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> ActionResult useOnTricksy(ItemStack stack, T tricksy, PlayerEntity user)
 	{
-		if(user.isSneaking() && tricksy.isSage(user))
+		if(user.isSneaking())
 		{
-			if(hasTree(stack))
+			if(tricksy.isSage(user) && hasTree(stack))
 			{
 				user.sendMessage(Text.translatable("item."+Reference.ModInfo.MOD_ID+".scripture.paste", tricksy.getDisplayName()), true);
 				tricksy.setBehaviourTree(stack.getOrCreateSubNbt("Tree"));
@@ -55,7 +83,7 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 		return ActionResult.PASS;
 	}
 	
-	public static boolean hasTree(ItemStack stack) { return getTree(stack) != null; }
+	public static boolean hasTree(ItemStack stack) { return stack.getNbt().contains("Tree", NbtElement.COMPOUND_TYPE); }
 	
 	@Nullable
 	public static BehaviourTree getTree(ItemStack stack)
@@ -66,6 +94,7 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 	public static void setTree(BehaviourTree obj, ItemStack stack)
 	{
 		NbtCompound nbt = stack.getOrCreateNbt();
+		nbt.putInt("Size", obj.size());
 		nbt.put("Tree", obj.storeInNbt());
 		stack.setNbt(nbt);
 	}

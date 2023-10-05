@@ -8,20 +8,13 @@ import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.network.DeleteReferencePacket;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 
-public class WhiteboardScreen extends HandledScreen<TreeScreenHandler>
+public class WhiteboardScreen extends TricksyScreenBase
 {
-	public static final MinecraftClient mc = MinecraftClient.getInstance();
-	private final PlayerEntity player;
-	private final PlayerInventory playerInv;
-	
 	// Button to view behaviour tree
 	public ButtonWidget tree;
 	// Whiteboard tabs
@@ -34,8 +27,6 @@ public class WhiteboardScreen extends HandledScreen<TreeScreenHandler>
 	public WhiteboardScreen(TreeScreenHandler handler, PlayerInventory inventory, Text title)
 	{
 		super(handler, inventory, title);
-		this.player = inventory.player;
-		this.playerInv = inventory;
 	}
 	
 	protected void init()

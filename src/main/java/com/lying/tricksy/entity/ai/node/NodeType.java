@@ -10,6 +10,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
@@ -41,6 +42,7 @@ public class NodeType<M extends TreeNode<?>>
 	public Comparator<Identifier> subTypeSort = (o1,o2) -> TricksyUtils.stringComparator(getSubType(o1).translatedName().getString(), getSubType(o2).translatedName().getString());
 	private Identifier registryName = null;
 	private final int displayColor;
+	private final Identifier flowerTexture;
 	
 	private Map<Identifier, NodeSubType<M>> subTypes = new HashMap<>();
 	private Identifier baseSubType;
@@ -49,7 +51,13 @@ public class NodeType<M extends TreeNode<?>>
 	
 	public NodeType(int colorIn, BiFunction<UUID,NbtCompound, M> factoryIn, Consumer<Collection<NodeSubType<M>>> subTypeBuilder)
 	{
+		this(colorIn, null, factoryIn, subTypeBuilder);
+	}
+	
+	public NodeType(int colorIn, Identifier tex, BiFunction<UUID,NbtCompound, M> factoryIn, Consumer<Collection<NodeSubType<M>>> subTypeBuilder)
+	{
 		displayColor = colorIn;
+		flowerTexture = tex;
 		factory = factoryIn;
 		
 		List<NodeSubType<M>> subTypeList = Lists.newArrayList();
@@ -70,6 +78,9 @@ public class NodeType<M extends TreeNode<?>>
 	public final Identifier getRegistryName() { return this.registryName; }
 	
 	public int color() { return this.displayColor; }
+	
+	@Nullable
+	public Identifier flowerTexture() { return this.flowerTexture; }
 	
 	public Text translatedName() { return Text.translatable("node."+registryName.getNamespace()+"."+registryName.getPath()); }
 	

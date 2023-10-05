@@ -330,6 +330,8 @@ public abstract class Whiteboard<T>
 		
 		private final T tricksy;
 		
+		private int attackCooldown = 0;
+		
 		public Local(T tricksyIn)
 		{
 			super(BoardType.LOCAL, tricksyIn.getWorld());
@@ -359,5 +361,14 @@ public abstract class Whiteboard<T>
 		protected IWhiteboardObject<?> supplierToValue(Function<T, IWhiteboardObject<?>> supplier) { return supplier.apply(tricksy); }
 		
 		public Function<T, IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return (tricksy) -> object; }
+		
+		public void tick()
+		{
+			attackCooldown = Math.max(0, attackCooldown - 1);
+		}
+		
+		public boolean canAttack() { return attackCooldown == 0; }
+		
+		public void setAttackCooldown(int var) { this.attackCooldown = Math.max(0, var); }
 	}
 }

@@ -6,6 +6,9 @@ import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.dimension.DimensionTypes;
@@ -16,6 +19,9 @@ public class ServerBus
 	{
 		ServerEntityWorldChangeEvents.AFTER_ENTITY_CHANGE_WORLD.register((originalEntity, newEntity, origin, destination) -> 
 		{
+			if(!(newEntity instanceof MobEntity) || !TricksyComponent.isEnlightenable((MobEntity)newEntity))
+				return;
+			
 			TricksyComponent compNew = TFComponents.TRICKSY_TRACKING.get(newEntity);
 			compNew.cloneFrom(TFComponents.TRICKSY_TRACKING.get(originalEntity));
 			
@@ -33,6 +39,17 @@ public class ServerBus
 			
 			if(accomplishment != null && !compNew.hasAchieved(accomplishment))
 				compNew.addAccomplishment(accomplishment);
+		});
+		ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> 
+		{
+			if(entity.getType() != EntityType.ENDER_DRAGON)
+				return;
+			
+			entity.getWorld().getEntitiesByClass(MobEntity.class, entity.getBoundingBox().expand(64), (mob) -> mob.isAlive() && TricksyComponent.isEnlightenable(mob)).forEach((mob) -> 
+			{
+				TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(mob);
+				comp.addAccomplishment(TFAccomplishments.SQUIRE);
+			});
 		});
 	}
 }

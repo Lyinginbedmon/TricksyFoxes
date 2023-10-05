@@ -17,6 +17,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -63,7 +64,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT)));
+				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT).and((var) -> var != Local.SELF)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
@@ -73,16 +74,19 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 					return Result.FAILURE;
 				
 				Entity ent = value.get();
-				if(!(ent instanceof LivingEntity) || ent.isSpectator() || ent.getType() == EntityType.PLAYER && ((PlayerEntity)ent).isCreative())
+				if(ent == tricksy || !(ent instanceof LivingEntity) || ent.isSpectator() || ent.getType() == EntityType.PLAYER && ((PlayerEntity)ent).isCreative())
 					return Result.FAILURE;
 				
-				// TODO Implement attack cooldown
+				if(!local.canAttack())
+					return Result.RUNNING;
+				
 				LivingEntity living = (LivingEntity)ent;
 				if(tricksy.isInAttackRange(living) && !living.isInvulnerable())
 				{
 					tricksy.swingHand(Hand.MAIN_HAND);
-					
 					boolean success = tricksy.tryAttack(living);
+					if(success)
+						local.setAttackCooldown(Reference.Values.TICKS_PER_SECOND);
 					return success ? Result.SUCCESS : Result.FAILURE;
 				}
 				

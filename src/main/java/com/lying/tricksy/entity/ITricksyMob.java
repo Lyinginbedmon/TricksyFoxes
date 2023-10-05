@@ -75,6 +75,9 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 		Whiteboard.Local<T> local = (Local<T>)tricksy.getLocalWhiteboard();
 		Whiteboard.Global global = tricksy.getGlobalWhiteboard();
 		
+		// Update local whiteboard
+		local.tick();
+		
 		// Update behaviour tree
 		BehaviourTree tree = tricksy.getBehaviourTree();
 		

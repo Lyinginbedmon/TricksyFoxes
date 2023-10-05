@@ -45,7 +45,7 @@ public class TFItems
     public static final Item NOTE_INT = register("prescient_note_number", new ItemPrescientNote.Int(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
     public static final Item NOTE_BOOL = register("prescient_note_boolean", new ItemPrescientNote.Bool(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
     public static final Item NOTE_ITEM = register("prescient_note_item", new ItemPrescientNote.Items(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
-    public static final Item SCRIPTURE = register("scripture", new ItemScripture(new FabricItemSettings().maxCount(1).rarity(Rarity.COMMON)));
+    public static final Item SCRIPTURE = register("scripture", new ItemScripture(new FabricItemSettings().maxCount(1).rarity(Rarity.UNCOMMON)));
     
     public static final List<Item> NOTES = List.of(TFItems.NOTE_POS, TFItems.NOTE_ENT, TFItems.NOTE_ITEM, TFItems.NOTE_INT, TFItems.NOTE_BOOL);
     

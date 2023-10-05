@@ -37,9 +37,6 @@ public class NodeRenderUtils
 {
 	public static final Identifier TREE_TEXTURES = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/behaviour_tree.png");
 	public static final Identifier TREE_TEXTURES_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/behaviour_tree_overlay.png");
-	public static final Identifier LINE_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree_branch.png");
-	public static final Identifier LINE_TEXTURE_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree_branch_overlay.png");
-	public static final Identifier BUSH_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree_foliage.png");
 	
 	public static final int NODE_SPACING = 10;
 	public static final int CONNECTOR_OFFSET = 20;
@@ -150,9 +147,7 @@ public class NodeRenderUtils
 			return;
 		
 		Random rand = node.getRNG();
-        int r = ((colour & 0xFF0000) >> 16);
-        int g = ((colour & 0xFF00) >> 8);
-        int b = ((colour & 0xFF) >> 0);
+        Identifier flowerTex = node.getType().flowerTexture();
 		
 		int startX = node.screenX + CONNECTOR_OFFSET;
 		int startY = node.screenY + node.height;
@@ -177,8 +172,8 @@ public class NodeRenderUtils
         // Main branch
         Vec2f branchEnd = new Vec2f(startX, lastChild.screenY + lastChild.height * 0.75F);
         int branchLength = (int)branchEnd.add(branchStart.negate()).length();
-        List<Vec2f> branchPoints = Lists.newArrayList();
-        branchPoints.add(branchStart);
+        List<Vec2f> mainPoints = Lists.newArrayList();
+        mainPoints.add(branchStart);
         Vec2f line = branchEnd.add(branchStart.negate()).normalize();
         int segmentRate = 16;
         for(int i=0; i<Math.ceil(branchLength / segmentRate) + 1; i++)
@@ -186,11 +181,10 @@ public class NodeRenderUtils
         	Vec2f point = branchStart.add(line.multiply(i * segmentRate));
         	double dist = point.add(branchStart.negate()).length();
         	double offsetAmount = (dist / branchLength) * 8;
-        	point = point.add(new Vec2f((float)Math.sin(dist / 15D) * (float)offsetAmount, 0F));
-        	
-        	drawTexturedLine(context, branchPoints.get(i), point, 0, 0, 16, (int)point.add(branchPoints.get(i).negate()).length(), rand.nextInt(4) == 0, r, g, b);
-        	branchPoints.add(point);
+        	mainPoints.add(point.add(new Vec2f((float)Math.sin(dist / 15D) * (float)offsetAmount, 0F)));
         }
+        BranchLine mainLine = new BranchLine(mainPoints, rand, flowerTex);
+        mainLine.render(context);
         
 		// Offshoots
 		for(TreeNode<?> child : node.children())
@@ -204,16 +198,18 @@ public class NodeRenderUtils
 			 * Step from that point, with that direction, rotating until it enters the child node's area
 			 */
 			
+			List<Vec2f> offshootPoints = Lists.newArrayList();
+			
 			Vec2f start = branchStart;
 			Vec2f dir = new Vec2f(0, 1F);
 			float targetY = lineTarget.y - (child.getRNG().nextFloat() * child.height);
 			if(targetY > branchStart.y)
 			{
 				// Find index of first branch point above the targetY
-				for(int i=1; i<branchPoints.size(); i++)
+				for(int i=1; i<mainPoints.size(); i++)
 				{
-					Vec2f posA = branchPoints.get(i - 1);
-					Vec2f posB = branchPoints.get(i);
+					Vec2f posA = mainPoints.get(i - 1);
+					Vec2f posB = mainPoints.get(i);
 					if(posB.y > targetY )
 					{
 						Vec2f direction = posB.add(posA.negate()).normalize();
@@ -223,6 +219,7 @@ public class NodeRenderUtils
 					}
 				}
 			}
+			offshootPoints.add(start);
 			
 			do
 			{
@@ -230,22 +227,18 @@ public class NodeRenderUtils
 				Vec2f offset = direct.add(dir.negate());
 				dir = dir.add(offset.multiply(0.5F)).normalize();
 				Vec2f nextPoint = start.add(dir.multiply(16F));
-				drawTexturedLine(context, start, nextPoint, 0, 0, 16, 16, rand.nextInt(4) == 0, r, g, b);
 				
 				start = nextPoint;
+				offshootPoints.add(start);
 			}
 			while(!child.containsPoint((int)start.x, (int)start.y));
+			
+	        (new BranchLine(offshootPoints, rand, flowerTex)).render(context);
 			
 			drawNodeConnections(context, child, child.getType().color());
 		}
 		
-		int bushes = rand.nextInt(Math.floorDiv(branchPoints.size(), 3));
-		if(bushes > 0)
-			while(bushes-- > 0 && branchPoints.size() > 3)
-			{
-				Vec2f point = branchPoints.remove(rand.nextInt(1, branchPoints.size() - 2));
-				context.drawTexture(BUSH_TEXTURE, (int)point.x - 8, (int)point.y - 8, 0, 0, 16, 16, 16, 16);
-			}
+		mainLine.renderBushes(context);
 	}
 	
 	public static int nodeDisplayHeightRecursive(TreeNode<?> nodeIn)
@@ -298,13 +291,6 @@ public class NodeRenderUtils
 	{
 		context.drawTexture(TREE_TEXTURES, x, y, uv0, uv1, width, height);
 		drawTintedTexture(TREE_TEXTURES_OVERLAY, context, x, y, uv0, uv1, width, height, red, green, blue);
-	}
-	
-	protected static void drawTexturedLine(DrawContext context, Vec2f start, Vec2f end, int uv0, int uv1, int width, int height, boolean overlay, int red, int green, int blue)
-	{
-		drawTintedTexture(LINE_TEXTURE, context, start, end, uv0, uv1, width, height, 255, 255, 255);
-		if(overlay)
-			drawTintedTexture(LINE_TEXTURE_OVERLAY, context, start, end, uv0, uv1, width, height, red, green, blue);
 	}
 	
 	protected static void drawTintedTexture(Identifier texture, DrawContext context, int x, int y, int uv0, int uv1, int width, int height, int red, int green, int blue)

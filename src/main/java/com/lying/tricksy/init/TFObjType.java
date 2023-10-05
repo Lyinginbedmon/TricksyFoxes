@@ -112,7 +112,7 @@ public class TFObjType<T>
 		return typeIn.blank();
 	}
 	
-	public IWhiteboardObject<T> blank() { return create(new NbtCompound()); }
+	public IWhiteboardObject<T> blank() { return supplier.get(); }
 	
 	public boolean isEmpty(IWhiteboardObject<T> obj) { return isEmpty.test(obj); }
 	

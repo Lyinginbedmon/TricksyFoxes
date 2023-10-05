@@ -2,6 +2,7 @@ package com.lying.tricksy.entity.ai.node;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.jetbrains.annotations.NotNull;
@@ -35,6 +36,8 @@ public class ConditionNode extends TreeNode<ConditionNode>
 	public static final Identifier VARIANT_CLOSER_THAN = ISubtypeGroup.variant("closer_than");
 	public static final Identifier VARIANT_BLOCK_POWERED = ISubtypeGroup.variant("block_powered");
 	
+	private static final Set<ISubtypeGroup<ConditionNode>> SUBTYPES = Set.of(new ConditionWhiteboard());
+	
 	public ConditionNode(UUID uuidIn)
 	{
 		super(TFNodeTypes.CONDITION, uuidIn);
@@ -49,7 +52,7 @@ public class ConditionNode extends TreeNode<ConditionNode>
 	
 	public static void populateSubTypes(Collection<NodeSubType<ConditionNode>> set)
 	{
-		new ConditionWhiteboard().addActions(set);
+		SUBTYPES.forEach((group) -> group.addActions(set));
 		
 		/** Performs a simple distance check from the mob to the given position and returns SUCCESS if the distance is less than a desired value */
 		set.add(new NodeSubType<ConditionNode>(VARIANT_CLOSER_THAN, new NodeTickHandler<ConditionNode>()

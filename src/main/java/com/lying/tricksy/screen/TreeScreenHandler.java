@@ -37,7 +37,7 @@ public class TreeScreenHandler extends ScreenHandler
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> TreeScreenHandler(int syncId, T tricksyIn)
 	{
-		this(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, syncId, tricksyIn, 12);
+		this(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, syncId, tricksyIn, 25);
 	}
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> TreeScreenHandler(ScreenHandlerType<?> type, int syncId, @NotNull T tricksyIn, int sizeCap)
@@ -113,12 +113,6 @@ public class TreeScreenHandler extends ScreenHandler
 	}
 	
 	public UUID tricksyUUID() { return this.tricksyID; }
-	
-	public void onClosed(PlayerEntity player)
-	{
-		if(this.tricksy != null)
-			this.tricksy.removeUser();
-	}
 	
 	public void removeRef(WhiteboardRef reference)
 	{

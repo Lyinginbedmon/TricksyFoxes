@@ -15,21 +15,16 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec2f;
 
 @Environment(EnvType.CLIENT)
-public class TreeScreen extends HandledScreen<TreeScreenHandler>
+public class TreeScreen extends TricksyScreenBase
 {
-	private final PlayerEntity player;
-	private final PlayerInventory playerInv;
-	
 	private TreeNode<?> hoveredNode = null;
 	private HoveredElement hoveredPart = null;
 	
@@ -50,8 +45,6 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 	public TreeScreen(TreeScreenHandler handler, PlayerInventory playerInventory, Text title)
 	{
 		super(handler, playerInventory, title);
-		this.playerInv = playerInventory;
-		this.player = playerInventory.player;
 	}
 	
 	protected void init()
@@ -85,8 +78,6 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 		
 		position = new Vec2f(-this.width / 4, -this.height / 4);
 	}
-	
-	public boolean shouldPause() { return true; }
 	
 	public boolean mouseClicked(double x, double y, int mouseKey)
 	{
@@ -296,7 +287,7 @@ public class TreeScreen extends HandledScreen<TreeScreenHandler>
 		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
 	}
 	
-	private static enum HoveredElement
+	public static enum HoveredElement
 	{
 		TYPE,
 		SUBTYPE,
