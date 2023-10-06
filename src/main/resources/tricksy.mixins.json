@@ -4,7 +4,8 @@
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
 		"ScreenHandlerMixin",
-		"ItemStackMixin"
+		"ItemStackMixin",
+		"TargetPredicateMixin"
 	],
 	"client": [
 		"EntityMixinClient",

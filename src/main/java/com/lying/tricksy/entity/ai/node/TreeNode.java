@@ -262,7 +262,11 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** Returns true if the previous tick of this node did not end in a completion result */
 	public boolean isRunning() { return !lastResult.isEnd(); }
 	
-	public void stop() { lastResult = Result.FAILURE; }
+	public void stop()
+	{
+		lastResult = Result.FAILURE;
+		children.forEach((child) -> child.stop());
+	}
 	
 	@Nullable
 	public static TreeNode<?> create(NbtCompound data)

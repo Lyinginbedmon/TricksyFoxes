@@ -3,15 +3,18 @@ package com.lying.tricksy.screen;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.network.DeleteReferencePacket;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.Vec2f;
 
 public class WhiteboardScreen extends TricksyScreenBase
 {
@@ -23,10 +26,18 @@ public class WhiteboardScreen extends TricksyScreenBase
 	private BoardType currentBoard = BoardType.LOCAL;
 	
 	private WhiteboardList list;
+	private final BranchLine leftLine, rightLine;
 	
 	public WhiteboardScreen(TreeScreenHandler handler, PlayerInventory inventory, Text title)
 	{
 		super(handler, inventory, title);
+		
+		Random rand = new Random(this.player.getUuid().getLeastSignificantBits());
+		int leftX = (this.width - 200) / 2;
+		int rightX = (this.width + 200) / 2;
+		
+		leftLine = BranchLine.between(new Vec2f(leftX, 0), new Vec2f(leftX, this.height), rand, rand.nextBoolean() ? TFNodeTypes.ROSE_FLOWER : TFNodeTypes.GRAPE_FLOWER);
+		rightLine = BranchLine.between(new Vec2f(rightX, 0), new Vec2f(rightX, this.height), rand, rand.nextBoolean() ? TFNodeTypes.ROSE_FLOWER : TFNodeTypes.GRAPE_FLOWER);
 	}
 	
 	protected void init()
@@ -97,6 +108,10 @@ public class WhiteboardScreen extends TricksyScreenBase
 	{
 		renderBackground(context);
 		this.list.render(context, mouseX, mouseY, delta);
+		
+		leftLine.render(context);
+		rightLine.render(context);
+		
 		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
 	}
 }

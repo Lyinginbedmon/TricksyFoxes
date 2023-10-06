@@ -19,10 +19,18 @@ import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 public interface NodeTickHandler<M extends TreeNode<?>>
@@ -82,5 +90,18 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	public static <T extends PathAwareEntity & ITricksyMob<?>> boolean canInteractWithEntity(T tricksy, Entity pos)
 	{
 		return tricksy.distanceTo(pos) < INTERACT_RANGE;
+	}
+	
+	public static <T extends PathAwareEntity & ITricksyMob<?>> ActionResult interactWith(BlockPos blockPos, ServerWorld world, T tricksy, Identifier builderID)
+	{
+		BlockState state = world.getBlockState(blockPos);
+		ServerFakePlayer player = ServerFakePlayer.makeForMob(tricksy, builderID);
+		Vec3d hitPos = new Vec3d(blockPos.getX() + 0.5D, blockPos.getY() + 0.5D, blockPos.getZ() + 0.5D);
+		Vec3d hitDir = hitPos.subtract(tricksy.getEyePos()).normalize().negate();
+		BlockHitResult hitResult = new BlockHitResult(hitPos, Direction.getFacing(hitDir.x, hitDir.y, hitDir.z), blockPos, false);
+		
+		ActionResult result = state.onUse(world, player, Hand.MAIN_HAND, hitResult);
+		player.discard();
+		return result;
 	}
 }

@@ -56,7 +56,7 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 		ItemStack itemStack = user.getStackInHand(hand);
 		boolean hasTree = hasTree(itemStack);
 		if(!world.isClient() && hasTree)
-			user.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new ScriptureScreenHandler(id, itemStack), itemStack.getName())).ifPresent(syncId -> SyncScriptureScreenPacket.send(user, itemStack, syncId));
+			user.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new ScriptureScreenHandler(id, itemStack), getTreeName(itemStack))).ifPresent(syncId -> SyncScriptureScreenPacket.send(user, itemStack, syncId));
 		return hasTree ? TypedActionResult.success(itemStack, world.isClient()) : TypedActionResult.fail(itemStack);
 	}
 	
@@ -81,6 +81,22 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 		}
 		
 		return ActionResult.PASS;
+	}
+	
+	public static Text getTreeName(ItemStack stack)
+	{
+		Text displayName = stack.getName();
+		if(!ISealableItem.isSealed(stack))
+			return displayName;
+		
+		try
+		{
+			displayName = Text.Serializer.fromJson(stack.getSubNbt(ItemStack.DISPLAY_KEY).getString(ItemStack.NAME_KEY));
+			if(displayName == null)
+				return null;
+		}
+		catch(Exception e) { }
+		return displayName;
 	}
 	
 	public static boolean hasTree(ItemStack stack) { return stack.getNbt().contains("Tree", NbtElement.COMPOUND_TYPE); }

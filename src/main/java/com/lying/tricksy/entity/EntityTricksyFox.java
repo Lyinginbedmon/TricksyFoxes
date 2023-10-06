@@ -154,9 +154,10 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 			}
 			else if(heldStack.getItem() instanceof ITreeItem)
 				return ((ITreeItem)heldStack.getItem()).useOnTricksy(heldStack, this, player);
-			else if(!player.isSneaking())
+			else if(!player.isSneaking() && activeUsers() == 0)
 			{
-				addUser();
+				if(!player.getWorld().isClient())
+					addUser();
 				player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new TreeScreenHandler(id, this), getDisplayName())).ifPresent(syncId -> SyncTreeScreenPacket.send(player, this, syncId));
 				return ActionResult.success(isClient);
 			}

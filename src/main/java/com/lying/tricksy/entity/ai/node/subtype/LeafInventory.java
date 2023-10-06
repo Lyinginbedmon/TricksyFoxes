@@ -21,6 +21,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
@@ -33,6 +34,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -87,6 +89,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_INSERT_ITEM, new InventoryHandler()
 		{
+			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_insert");
+			
 			public static final WhiteboardRef TILE = CommonVariables.VAR_POS;
 			public static final WhiteboardRef FACE = InventoryHandler.FACE;
 			public static final WhiteboardRef LIMIT = CommonVariables.VAR_COUNT;
@@ -137,11 +141,17 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				tricksy.logStatus(Text.literal(insertStack.isEmpty() ? "Item inserted successfully" : "I couldn't insert the item"));
 				if(insertStack.isEmpty())
 					tile.markDirty();
+				
+				if(tricksy.getRandom().nextInt(20) == 0)
+					NodeTickHandler.interactWith(block, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
+				
 				return insertStack.isEmpty() ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_EXTRACT_ITEM, new InventoryHandler()
 		{
+			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_extract");
+			
 			public static final WhiteboardRef TILE = CommonVariables.VAR_POS;
 			public static final WhiteboardRef FACE = InventoryHandler.FACE;
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
@@ -221,7 +231,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 					tricksy.logStatus(Text.literal("I'm now holding ").append(tricksy.getMainHandStack().getName()).append(Text.literal(" x"+tricksy.getMainHandStack().getCount())));
 					
 					if(tricksy.getRandom().nextInt(20) == 0)
-						tricksy.getWorld().playSound(null, tricksy.getBlockPos(), SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
+						NodeTickHandler.interactWith(block, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
 					return Result.SUCCESS;
 				}
 			}

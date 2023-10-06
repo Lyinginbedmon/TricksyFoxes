@@ -13,6 +13,7 @@ import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;
 import com.lying.tricksy.entity.ai.node.subtype.LeafCombat;
 import com.lying.tricksy.entity.ai.node.subtype.LeafGetter;
+import com.lying.tricksy.entity.ai.node.subtype.LeafInteraction;
 import com.lying.tricksy.entity.ai.node.subtype.LeafInventory;
 import com.lying.tricksy.entity.ai.node.subtype.LeafWhiteboard;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
@@ -31,7 +32,6 @@ import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
@@ -45,15 +45,13 @@ import net.minecraft.util.math.BlockPos;
 public class LeafNode extends TreeNode<LeafNode>
 {
 	public static final Identifier VARIANT_GOTO = ISubtypeGroup.variant("goto");
-	public static final Identifier VARIANT_ACTIVATE = ISubtypeGroup.variant("activate");
-	public static final Identifier VARIANT_USE_ITEM_ON = ISubtypeGroup.variant("use_item_on");	// TODO
 	public static final Identifier VARIANT_WAIT = ISubtypeGroup.variant("wait");
 	public static final Identifier VARIANT_SLEEP = ISubtypeGroup.variant("sleep");
 	public static final Identifier VARIANT_SET_HOME = ISubtypeGroup.variant("set_home");
 	
 	protected int ticks = 20;
 	
-	private static final Set<ISubtypeGroup<LeafNode>> SUBTYPES = Set.of(new LeafWhiteboard(), new LeafInventory(), new LeafCombat(), new LeafGetter());
+	private static final Set<ISubtypeGroup<LeafNode>> SUBTYPES = Set.of(new LeafWhiteboard(), new LeafInventory(), new LeafInteraction(), new LeafCombat(), new LeafGetter());
 	
 	public LeafNode(UUID uuidIn)
 	{
@@ -100,25 +98,6 @@ public class LeafNode extends TreeNode<LeafNode>
 				}
 				else
 					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
-			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_ACTIVATE, new NodeTickHandler<LeafNode>()
-		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
-			{
-				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK)));
-			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
-			{
-				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
-				if(!NodeTickHandler.canInteractWithBlock(tricksy, pos.get()))
-					return Result.FAILURE;
-				
-				// FIXME Implement using fake player to activate onUse of target block
-				ActionResult success = ActionResult.SUCCESS;
-				
-				return success == ActionResult.SUCCESS ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_SLEEP, new NodeTickHandler<LeafNode>()

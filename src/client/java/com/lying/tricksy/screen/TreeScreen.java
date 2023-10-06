@@ -69,7 +69,7 @@ public class TreeScreen extends TricksyScreenBase
 		addDrawableChild(save = ButtonWidget.builder(Text.literal("Save"), (button) -> 
 		{
 			SaveTreePacket.send(player, handler.tricksyUUID(), handler.getTree());
-			client.setScreen(null);
+			client.currentScreen.close();
 		}).dimensions(midPoint + 70 - 20, 7, 40, 16).build());
 		addDrawableChild(whiteboards = ButtonWidget.builder(Text.literal("W"), (button) -> 
 		{

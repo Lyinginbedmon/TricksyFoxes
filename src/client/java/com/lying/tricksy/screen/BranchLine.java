@@ -54,10 +54,27 @@ public class BranchLine
 		}
 		
 		// Generate bushes
-		int bushes = rand.nextInt(Math.floorDiv(points.size(), 3));
-		if(bushes > 0)
-			while(bushes-- > 0 && points.size() > 3)
-				bushList.add(points.remove(rand.nextInt(1, points.size() - 2)));
+		if(points.size() >= 3)
+		{
+			int bushes = rand.nextInt(Math.floorDiv(points.size(), 3));
+			if(bushes > 0)
+				while(bushes-- > 0 && points.size() > 3)
+					bushList.add(points.remove(rand.nextInt(1, points.size() - 2)));
+		}
+	}
+	
+	public static BranchLine between(Vec2f a, Vec2f b, Random rand, Identifier flowerTexture)
+	{
+		List<Vec2f> points = Lists.newArrayList();
+		points.add(a);
+		
+		Vec2f dir = b.add(a.negate());
+		int len = (Math.floorDiv((int)dir.length(), 16) + 1) * 16;
+		dir = dir.normalize();
+		for(int i=0; i<len; i++)
+			points.add(a = a.add(dir.multiply(16F)));
+		
+		return new BranchLine(points, rand, flowerTexture);
 	}
 	
 	public void render(DrawContext context)
