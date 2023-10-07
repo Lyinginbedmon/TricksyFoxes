@@ -23,7 +23,9 @@ import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -92,7 +94,7 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 		return tricksy.distanceTo(pos) < INTERACT_RANGE;
 	}
 	
-	public static <T extends PathAwareEntity & ITricksyMob<?>> ActionResult interactWith(BlockPos blockPos, ServerWorld world, T tricksy, Identifier builderID)
+	public static <T extends PathAwareEntity & ITricksyMob<?>> ActionResult activateBlock(BlockPos blockPos, ServerWorld world, T tricksy, Identifier builderID)
 	{
 		BlockState state = world.getBlockState(blockPos);
 		ServerFakePlayer player = ServerFakePlayer.makeForMob(tricksy, builderID);
@@ -101,6 +103,29 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 		BlockHitResult hitResult = new BlockHitResult(hitPos, Direction.getFacing(hitDir.x, hitDir.y, hitDir.z), blockPos, false);
 		
 		ActionResult result = state.onUse(world, player, Hand.MAIN_HAND, hitResult);
+		player.discard();
+		return result;
+	}
+	
+	public static <T extends PathAwareEntity & ITricksyMob<?>> ActionResult useHeldOnBlock(BlockPos blockPos, ServerWorld world, T tricksy, Identifier builderID)
+	{
+		ServerFakePlayer player = ServerFakePlayer.makeForMob(tricksy, builderID);
+		Vec3d hitPos = new Vec3d(blockPos.getX() + 0.5D, blockPos.getY() + 0.5D, blockPos.getZ() + 0.5D);
+		Vec3d hitDir = hitPos.subtract(tricksy.getEyePos()).normalize().negate();
+		Direction face = Direction.getFacing(hitDir.x, hitDir.y, hitDir.z);
+		BlockHitResult hitResult = new BlockHitResult(hitPos, face, blockPos, false);
+		
+		ActionResult result = player.getMainHandStack().useOnBlock(new ItemUsageContext(player, Hand.MAIN_HAND, hitResult));
+		tricksy.setStackInHand(Hand.MAIN_HAND, player.getMainHandStack().copy());
+		player.discard();
+		return result;
+	}
+	
+	public static <T extends PathAwareEntity & ITricksyMob<?>> ActionResult useHeldOnEntity(LivingEntity living, ServerWorld world, T tricksy, Identifier builderID)
+	{
+		ServerFakePlayer player = ServerFakePlayer.makeForMob(tricksy, builderID);
+		ActionResult result = living.interact(player, Hand.MAIN_HAND);
+		tricksy.setStackInHand(Hand.MAIN_HAND, player.getMainHandStack().copy());
 		player.discard();
 		return result;
 	}

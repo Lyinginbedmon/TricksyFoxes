@@ -5,18 +5,19 @@ import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.entity.ModelTricksyFoxBase;
 import com.lying.tricksy.model.entity.ModelTricksyFoxMain;
 import com.lying.tricksy.model.entity.ModelTricksyFoxSleeping;
+import com.lying.tricksy.renderer.layer.TricksyFoxHeldItemLayer;
 import com.lying.tricksy.renderer.layer.TricksyFoxClothingLayer;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.BipedEntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory.Context;
+import net.minecraft.client.render.entity.MobEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
-public class EntityTricksyFoxRenderer extends BipedEntityRenderer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>
+public class EntityTricksyFoxRenderer extends MobEntityRenderer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>
 {
 	public static final Identifier TEXTURE_RED = new Identifier("textures/entity/fox/fox.png");
 	public static final Identifier TEXTURE_SNOW = new Identifier("textures/entity/fox/snow_fox.png");
@@ -31,6 +32,7 @@ public class EntityTricksyFoxRenderer extends BipedEntityRenderer<EntityTricksyF
 	{
 		super(ctx, new ModelTricksyFoxMain<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX)), 0.5F);
 		this.addFeature(new TricksyFoxClothingLayer(this));
+		this.addFeature(new TricksyFoxHeldItemLayer(this, ctx.getHeldItemRenderer()));
 		
 		this.standing = this.model;
 		this.sleeping = new ModelTricksyFoxSleeping<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX_SLEEPING));

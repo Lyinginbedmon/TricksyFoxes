@@ -66,7 +66,7 @@ public class TFNodeTypes
 		
 		TYPES.forEach((name,type) -> 
 		{
-			TricksyFoxes.LOGGER.info(" # "+name.toString());
+			TricksyFoxes.LOGGER.info(" # "+name.toString()+" ("+type.subTypes().size()+")");
 			type.subTypes().forEach((sub) -> TricksyFoxes.LOGGER.info(" # - "+sub.toString()));
 		});
 	}

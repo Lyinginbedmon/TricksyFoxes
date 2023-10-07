@@ -42,6 +42,8 @@ public class TreeScreen extends TricksyScreenBase
 	private Vec2f position = Vec2f.ZERO;
 	private Vec2f moveStart = null;
 	
+	private int ticksOpen = 0;
+	
 	public TreeScreen(TreeScreenHandler handler, PlayerInventory playerInventory, Text title)
 	{
 		super(handler, playerInventory, title);
@@ -190,6 +192,11 @@ public class TreeScreen extends TricksyScreenBase
 		return super.mouseReleased(mouseKey, mouseKey, mouseKey);
 	}
 	
+	public void handledScreenTick()
+	{
+		this.ticksOpen++;
+	}
+	
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)
 	{
 		context.drawText(textRenderer, this.title, (this.width - this.textRenderer.getWidth(this.title)) / 2, 2 + (26 - this.textRenderer.fontHeight) / 2, 0x404040, false);
@@ -282,7 +289,7 @@ public class TreeScreen extends TricksyScreenBase
 		}
 		
 		scaleAndPositionNode(root, renderX, renderY);
-		NodeRenderUtils.renderTree(root, context, this.textRenderer);
+		NodeRenderUtils.renderTree(root, context, this.textRenderer, this.ticksOpen);
 		
 		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
 	}

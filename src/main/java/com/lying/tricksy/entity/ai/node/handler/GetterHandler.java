@@ -44,7 +44,8 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 			local.setValue(entry, type.blank());
 			return Result.FAILURE;
 		}
-		local.setValue(entry, result);
+		
+		local.setValue(parent.variable(entry), result);
 		return Result.SUCCESS;
 	}
 	

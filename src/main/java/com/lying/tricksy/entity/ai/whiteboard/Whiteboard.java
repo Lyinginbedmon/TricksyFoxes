@@ -226,7 +226,7 @@ public abstract class Whiteboard<T>
 		return null;
 	}
 	
-	protected IWhiteboardObject<?> cache(WhiteboardRef reference, WhiteboardObj<?> obj) { cache.put(reference, obj); return obj; }
+	protected IWhiteboardObject<?> cache(WhiteboardRef reference, WhiteboardObj<?,?> obj) { cache.put(reference, obj); return obj; }
 	
 	public static enum BoardType implements StringIdentifiable
 	{

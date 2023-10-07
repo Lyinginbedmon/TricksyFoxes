@@ -120,7 +120,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				WhiteboardRef to = parent.variable(VAR_B);
 				
 				/** Destination must be a cachable value in a local whiteboard of the same or castable data type */
-				if(to.uncached() || to.boardType() != BoardType.LOCAL || !from.type().castableTo(to.type()))
+				if(!from.type().castableTo(to.type()))
 					return Result.FAILURE;
 				
 				local.setValue(to, Whiteboard.get(from, local, global).as(to.type()));

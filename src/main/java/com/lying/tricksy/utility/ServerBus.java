@@ -4,12 +4,18 @@ import com.lying.tricksy.component.Accomplishment;
 import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
+import com.lying.tricksy.init.TFItems;
+import com.lying.tricksy.item.ItemPrescientNote;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.util.ActionResult;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.dimension.DimensionTypes;
 
@@ -50,6 +56,20 @@ public class ServerBus
 				TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(mob);
 				comp.addAccomplishment(TFAccomplishments.SQUIRE);
 			});
+		});
+		
+		/** Prescient Scroll (Entity) handling */
+		UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> 
+		{
+			ItemStack heldStack = player.getStackInHand(hand);
+			if(heldStack.getItem() == TFItems.NOTE_ENT && player.isSneaking() && entity instanceof LivingEntity)
+			{
+				if(!world.isClient())
+					ItemPrescientNote.Ent.addEntityToStack(heldStack, (LivingEntity)entity);
+				return ActionResult.SUCCESS;
+			}
+			
+			return ActionResult.PASS;
 		});
 	}
 }

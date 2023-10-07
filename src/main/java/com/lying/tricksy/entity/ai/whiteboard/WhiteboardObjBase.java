@@ -2,6 +2,8 @@ package com.lying.tricksy.entity.ai.whiteboard;
 
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.collect.Lists;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
@@ -15,13 +17,13 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
 /** A whiteboard object which stores its values in a form different from how they are retreived */
-public abstract class WhiteboardObjBase<T, N> implements IWhiteboardObject<T>
+public abstract class WhiteboardObjBase<T, N, G extends NbtElement> implements IWhiteboardObject<T>
 {
 	/** Generic empty value, representing null in most contexts */
-	public static final WhiteboardObj<Object> EMPTY = new WhiteboardObj<Object>(TFObjType.EMPTY, NbtElement.STRING_TYPE, null)
+	public static final WhiteboardObj<Object,NbtString> EMPTY = new WhiteboardObj<Object,NbtString>(TFObjType.EMPTY, NbtElement.STRING_TYPE, null)
 	{
-		protected NbtElement valueToNbt(Object val){ return NbtString.of(""); }
-		protected Object valueFromNbt(NbtElement nbt) { return null; }
+		protected NbtString valueToNbt(Object val){ return NbtString.of(""); }
+		protected Object valueFromNbt(NbtString nbt) { return null; }
 		protected Text describeValue(Object value) { return Text.literal("N/A"); }
 	};
 	
@@ -57,7 +59,7 @@ public abstract class WhiteboardObjBase<T, N> implements IWhiteboardObject<T>
 		return description;
 	}
 	
-	public final void add(WhiteboardObjBase<T,N> object)
+	public final void add(WhiteboardObjBase<T,N,G> object)
 	{
 		this.value.addAll(object.value);
 	}
@@ -68,9 +70,9 @@ public abstract class WhiteboardObjBase<T, N> implements IWhiteboardObject<T>
 	
 	protected abstract T getValue(N entry);
 	
-	protected abstract NbtElement valueToNbt(N val);
+	protected abstract G valueToNbt(N val);
 	
-	protected abstract N valueFromNbt(NbtElement nbt);
+	protected abstract N valueFromNbt(G nbt);
 	
 	/** Returns the top-most value of this object */
 	public T get() { return value.isEmpty() ? null : getValue(value.get(0)); }
@@ -110,12 +112,13 @@ public abstract class WhiteboardObjBase<T, N> implements IWhiteboardObject<T>
 	
 	public int size() { return this.value.size(); }
 	
+	@Nullable
 	public static IWhiteboardObject<?> createFromNbt(NbtCompound compound)
 	{
 		TFObjType<?> type = TFObjType.getType(new Identifier(compound.getString("Type")));
 		if(type != null)
 			return type.create(compound);
-		return EMPTY;
+		return null;
 	}
 	
 	public final NbtCompound writeToNbt(NbtCompound compound)
@@ -133,6 +136,7 @@ public abstract class WhiteboardObjBase<T, N> implements IWhiteboardObject<T>
 		return compound;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public final void readFromNbt(NbtCompound compound)
 	{
 		value.clear();
@@ -140,7 +144,7 @@ public abstract class WhiteboardObjBase<T, N> implements IWhiteboardObject<T>
 		{
 			NbtList values = compound.getList("Data", nbtType);
 			for(int i=0; i<values.size(); i++)
-				value.add(valueFromNbt(values.get(i)));
+				value.add(valueFromNbt((G)values.get(i)));
 		}
 	}
 }

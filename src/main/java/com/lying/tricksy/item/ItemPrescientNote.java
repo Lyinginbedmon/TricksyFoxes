@@ -51,7 +51,15 @@ public class ItemPrescientNote extends Item
 	
 	public static IWhiteboardObject<?> getVariable(ItemStack stack)
 	{
-		return WhiteboardObjBase.createFromNbt(stack.getOrCreateSubNbt("Variable"));
+		return WhiteboardObjBase.createFromNbt(stack.getNbt().getCompound("Variable"));
+	}
+	
+	public static void setVariable(IWhiteboardObject<?> obj, ItemStack stack)
+	{
+		NbtCompound nbt = stack.getOrCreateNbt();
+		NbtCompound variable = obj.writeToNbt(new NbtCompound());
+		nbt.put("Variable", variable);
+		stack.setNbt(nbt);
 	}
 	
 	@Nullable
@@ -68,13 +76,6 @@ public class ItemPrescientNote extends Item
 		WhiteboardRef name = new WhiteboardRef(displayName.getString().replace(' ', '_'), getVariable(stack).type(), board);
 		name.displayName(displayName);
 		return name;
-	}
-	
-	public static void setVariable(IWhiteboardObject<?> obj, ItemStack stack)
-	{
-		NbtCompound nbt = stack.getOrCreateNbt();
-		nbt.put("Variable", obj.writeToNbt(new NbtCompound()));
-		stack.setNbt(nbt);
 	}
 	
 	public static void addVariable(IWhiteboardObject<?> obj, ItemStack stack)
@@ -202,38 +203,10 @@ public class ItemPrescientNote extends Item
 			}
 		}
 		
-		public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand)
+		public static void addEntityToStack(ItemStack stack, LivingEntity entity)
 		{
-			if(!ISealableItem.isSealed(stack) && user.isSneaking())
-			{
-				boolean isClient = user.getWorld().isClient();
-				if(!isClient)
-					addEntityToStack(stack, entity);
-				
-				return ActionResult.success(isClient);
-			}
-			
-			return super.useOnEntity(stack, user, entity, hand);
-		}
-		
-		public <N extends PathAwareEntity & ITricksyMob<?>> ActionResult useOnTricksy(ItemStack stack, N tricksy, PlayerEntity user)
-		{
-			if(user.isSneaking())
-			{
-				boolean isClient = user.getWorld().isClient();
-				if(!isClient)
-					addEntityToStack(stack, tricksy);
-				
-				return ActionResult.success(isClient);
-			}
-			else
-				return super.useOnTricksy(stack, tricksy, user);
-		}
-		
-		private void addEntityToStack(ItemStack stack, LivingEntity entity)
-		{
-			WhiteboardObjEntity value = (WhiteboardObjEntity)getVariable(stack);
-			value.add(new WhiteboardObjEntity(entity));
+			WhiteboardObjEntity value = (WhiteboardObjEntity)getVariable(stack).as(TFObjType.ENT);
+			value.add(entity);
 			setVariable(value, stack);
 		}
 	}

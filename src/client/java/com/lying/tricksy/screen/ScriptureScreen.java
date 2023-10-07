@@ -19,6 +19,8 @@ public class ScriptureScreen extends HandledScreen<ScriptureScreenHandler>
 	private Vec2f position = Vec2f.ZERO;
 	private Vec2f moveStart = null;
 	
+	private int ticksOpen = 0;
+	
 	public ScriptureScreen(ScriptureScreenHandler handler, PlayerInventory inventory, Text title)
 	{
 		super(handler, inventory, title);
@@ -56,6 +58,11 @@ public class ScriptureScreen extends HandledScreen<ScriptureScreenHandler>
 			return true;
 		}
 		return super.mouseReleased(mouseKey, mouseKey, mouseKey);
+	}
+	
+	public void handledScreenTick()
+	{
+		ticksOpen++;
 	}
 	
 	public void render(DrawContext context, int mouseX, int mouseY, float delta)
@@ -131,7 +138,7 @@ public class ScriptureScreen extends HandledScreen<ScriptureScreenHandler>
 		}
 		
 		scaleAndPositionNode(getScreenHandler().getRoot(), renderX, renderY);
-		NodeRenderUtils.renderTree(getScreenHandler().getRoot(), context, this.textRenderer);
+		NodeRenderUtils.renderTree(getScreenHandler().getRoot(), context, this.textRenderer, ticksOpen);
 		
 		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
 	}

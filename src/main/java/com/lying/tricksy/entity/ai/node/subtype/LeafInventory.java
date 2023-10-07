@@ -18,12 +18,12 @@ import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -61,7 +61,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(1)));
+				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
@@ -70,8 +70,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				if(heldStack.isEmpty())
 					return Result.FAILURE;
 				
-				int amount = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT).get();
-				tricksy.dropStack(heldStack.split(amount));
+				IWhiteboardObject<Integer> amount = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
+				tricksy.dropStack(heldStack.split(amount.size() == 0 ? heldStack.getCount() : amount.get()));
 				return Result.SUCCESS;
 			}
 		}));
@@ -143,7 +143,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 					tile.markDirty();
 				
 				if(tricksy.getRandom().nextInt(20) == 0)
-					NodeTickHandler.interactWith(block, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
+					NodeTickHandler.activateBlock(block, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
 				
 				return insertStack.isEmpty() ? Result.SUCCESS : Result.FAILURE;
 			}
@@ -231,7 +231,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 					tricksy.logStatus(Text.literal("I'm now holding ").append(tricksy.getMainHandStack().getName()).append(Text.literal(" x"+tricksy.getMainHandStack().getCount())));
 					
 					if(tricksy.getRandom().nextInt(20) == 0)
-						NodeTickHandler.interactWith(block, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
+						NodeTickHandler.activateBlock(block, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
 					return Result.SUCCESS;
 				}
 			}
@@ -240,7 +240,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT), new WhiteboardObjEntity()));
+				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
@@ -312,18 +312,34 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(0)));
+				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
-				IWhiteboardObject<Integer> slotID = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
+				IWhiteboardObject<Integer> slotNum = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
+				EquipmentSlot equip = EquipmentSlot.HEAD;
+				if(slotNum.size() == 0)
+				{
+					// Drop first equipped armour piece that isn't empty or Curse of Binding
+					for(EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET})
+					{
+						ItemStack equipped = tricksy.getEquippedStack(slot);
+						if(!equipped.isEmpty() && !EnchantmentHelper.hasBindingCurse(equipped))
+						{
+							equip = slot;
+							break;
+						}
+					}
+				}
+				else
+				{
+					int slotIndex = MathHelper.clamp(slotNum.get(), 0, 3);
+					equip = EquipmentSlot.fromTypeIndex(Type.ARMOR, slotIndex);
+				}
 				
-				int slot = MathHelper.clamp(slotID.get(), 0, 3);
-				
-				EquipmentSlot equip = EquipmentSlot.fromTypeIndex(Type.ARMOR, slot);
 				ItemStack equipped = tricksy.getEquippedStack(equip);
-				if(equipped.isEmpty())
+				if(equipped.isEmpty() || EnchantmentHelper.hasBindingCurse(equipped))
 					return Result.FAILURE;
 				
 				tricksy.logStatus(Text.literal("Dropping my "+equip.getName()));

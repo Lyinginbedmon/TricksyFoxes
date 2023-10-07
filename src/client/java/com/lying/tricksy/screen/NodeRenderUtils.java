@@ -42,13 +42,13 @@ public class NodeRenderUtils
 	public static final int CONNECTOR_OFFSET = 20;
 	public static final int NODE_WIDTH = 150;
 	
-	public static void renderTree(TreeNode<?> node, DrawContext context, TextRenderer textRenderer)
+	public static void renderTree(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen)
 	{
 		NodeRenderUtils.drawNodeConnections(context, node, node.getType().color());
-		NodeRenderUtils.renderNode(node, context, textRenderer);
+		NodeRenderUtils.renderNode(node, context, textRenderer, ticksOpen);
 	}
 	
-	public static void renderNode(TreeNode<?> node, DrawContext context, TextRenderer textRenderer)
+	public static void renderNode(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen)
 	{
 		drawNodeBackground(context, node, node.getType().color(), node.screenX, node.screenY);
 		
@@ -59,6 +59,24 @@ public class NodeRenderUtils
 		
 		NodeSubType<?> subType = node.getSubType();
 		Text subName = subType.translatedName();
+		if(textRenderer.getWidth(subName) > 80)
+		{
+			// Original width
+			int width = textRenderer.getWidth(subName);
+			
+			// Original number of characters
+			int length = subName.getString().length();
+			
+			int trimAmount = (int)((1F - 75F / (float)width) * length);
+			if(trimAmount%2 > 0)
+				trimAmount++;
+			
+			int offset = trimAmount / 2;
+			
+			int start = offset + (int)(Math.sin((double)ticksOpen * 0.15D) * offset);
+			int end = start + (length - trimAmount);
+			subName = Text.literal(subName.getString().substring(start - 1, end + 1));
+		}
 		context.drawText(textRenderer, subName, node.screenX + (NODE_WIDTH - textRenderer.getWidth(subName)) / 2, drawY, 0x404040, false);
 		drawY += 11;
 		
@@ -77,7 +95,7 @@ public class NodeRenderUtils
 		}
 		
 		for(TreeNode<?> child : node.children())
-			renderNode(child, context, textRenderer);
+			renderNode(child, context, textRenderer, ticksOpen);
 	}
 	
 	public static void renderReference(WhiteboardRef reference, DrawContext context, TextRenderer textRenderer, int x, int y, int maxWidth, boolean iconRight, boolean isOptional)

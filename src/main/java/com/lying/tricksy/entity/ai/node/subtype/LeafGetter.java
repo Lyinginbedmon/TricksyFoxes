@@ -5,6 +5,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.handler.GetterHandler;
@@ -50,8 +52,9 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
 				set.put(CommonVariables.VAR_ITEM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ITEM), new WhiteboardObj.Item()));
 			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getResult(T tricksy, Local<T> local, Global global, LeafNode parent)
+
+			@Override
+			public <N extends PathAwareEntity & ITricksyMob<?>> @Nullable IWhiteboardObject<Entity> getResult(N tricksy, Local<N> local, Global global, LeafNode parent)
 			{
 				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
 				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
@@ -69,15 +72,17 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				if(items.isEmpty())
 					return null;
 				
-				items.sort(new Comparator<ItemEntity>()
-				{
-					public int compare(ItemEntity o1, ItemEntity o2)
+				if(items.size() > 1)
+					items.sort(new Comparator<ItemEntity>()
 					{
-						double dist1 = o1.distanceTo(tricksy);
-						double dist2 = o2.distanceTo(tricksy);
-						return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
-					}
-				});
+						public int compare(ItemEntity o1, ItemEntity o2)
+						{
+							double dist1 = o1.distanceTo(tricksy);
+							double dist2 = o2.distanceTo(tricksy);
+							return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+						}
+					});
+				
 				return new WhiteboardObjEntity(items.get(0));
 			}
 		}));
@@ -102,19 +107,21 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				if(search.minY < world.getBottomY())
 					search = search.withMinY(world.getBottomY());
 				
-				List<MobEntity> monsters = world.getEntitiesByClass(MobEntity.class, search, (ent) -> ent.isAlive() && ent instanceof Monster);
+				List<MobEntity> monsters = world.getEntitiesByClass(MobEntity.class, search, (ent) -> ent.isAlive() && ent instanceof Monster && ent != tricksy);
 				if(monsters.isEmpty())
 					return null;
 				
-				monsters.sort(new Comparator<MobEntity>()
-				{
-					public int compare(MobEntity o1, MobEntity o2)
+				if(monsters.size() > 1)
+					monsters.sort(new Comparator<MobEntity>()
 					{
-						double dist1 = o1.distanceTo(tricksy);
-						double dist2 = o2.distanceTo(tricksy);
-						return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
-					}
-				});
+						public int compare(MobEntity o1, MobEntity o2)
+						{
+							double dist1 = o1.distanceTo(tricksy);
+							double dist2 = o2.distanceTo(tricksy);
+							return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+						}
+					});
+				
 				return new WhiteboardObjEntity(monsters.get(0));
 			}
 		}));
@@ -134,7 +141,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 					return null;
 				
 				Entity assailant = ((LivingEntity)entity).getAttacker();
-				return assailant == null ? new WhiteboardObjEntity() : new WhiteboardObjEntity(assailant);
+				return assailant == null || assailant == tricksy ? new WhiteboardObjEntity() : new WhiteboardObjEntity(assailant);
 			}
 		}));
 	}

@@ -10,7 +10,6 @@ import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
@@ -20,10 +19,8 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity.EntityData>
+public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity.EntityData, NbtCompound>
 {
-	private static final Box SEARCH_AREA = Box.of(Vec3d.ZERO, 16, 16, 16);
-	
 	public WhiteboardObjEntity()
 	{
 		super(TFObjType.ENT, NbtElement.COMPOUND_TYPE);
@@ -50,23 +47,25 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 	
 	protected Entity getValue(WhiteboardObjEntity.EntityData entry) { return entry.blank ? null : entry.value; }
 	
-	protected NbtElement valueToNbt(WhiteboardObjEntity.EntityData val) { return val.storeToNbt(new NbtCompound()); }
+	protected NbtCompound valueToNbt(WhiteboardObjEntity.EntityData val) { return val.storeToNbt(new NbtCompound()); }
 	
-	protected EntityData valueFromNbt(NbtElement nbt)
+	protected EntityData valueFromNbt(NbtCompound nbt)
 	{
-		NbtCompound compound = (NbtCompound)nbt;
-		WhiteboardObjEntity.EntityData data = new EntityData(compound.getUuid("UUID"), compound.getBoolean("IsPlayer"));
-		data.lastKnownPos = NbtHelper.toBlockPos(compound.getCompound("LastKnownPos"));
-		if(compound.contains("EntityName", NbtElement.STRING_TYPE))
+		if(!nbt.contains("UUID", NbtElement.INT_ARRAY_TYPE))
+			return new EntityData();
+		
+		WhiteboardObjEntity.EntityData data = new EntityData(nbt.getUuid("UUID"), nbt.getBoolean("IsPlayer"));
+		data.lastKnownPos = NbtHelper.toBlockPos(nbt.getCompound("LastKnownPos"));
+		if(nbt.contains("EntityName", NbtElement.STRING_TYPE))
 		{
-			String string = compound.getString("EntityName");
+			String string = nbt.getString("EntityName");
 			try
 			{
 				data.valueName = Text.Serializer.fromJson(string);
 			}
 			catch(Exception e)
 			{
-				TricksyFoxes.LOGGER.warn("Failed to parse entity custom name {}", (Object)string, (Object)e);
+				TricksyFoxes.LOGGER.warn("Failed to parse entity name {}", (Object)string, (Object)e);
 			}
 		}
 		return data;
@@ -76,11 +75,11 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 	{
 		private Entity value = null;
 		private Text valueName = null;
+		private BlockPos lastKnownPos;
 		
 		private final UUID uuid;
 		private final boolean isPlayer;
 		private final boolean blank;
-		private BlockPos lastKnownPos;
 		
 		public EntityData()
 		{
@@ -89,19 +88,19 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 			isPlayer = false;
 		}
 		
-		public EntityData(@NotNull Entity entIn)
-		{
-			this(entIn.getUuid(), entIn.getType() == EntityType.PLAYER);
-			this.value = entIn;
-			this.valueName = entIn.getDisplayName();
-			this.lastKnownPos = entIn.getBlockPos();
-		}
-		
 		public EntityData(UUID uuidIn, boolean isPlayerIn)
 		{
 			this.blank = false;
 			this.uuid = uuidIn;
 			this.isPlayer = isPlayerIn;
+		}
+		
+		public EntityData(@NotNull Entity entIn)
+		{
+			this(entIn.getUuid(), entIn.getType() == EntityType.PLAYER);
+			this.value = entIn;
+			storeName(value.getName());
+			this.lastKnownPos = entIn.getBlockPos();
 		}
 		
 		protected NbtCompound storeToNbt(NbtCompound data)
@@ -123,33 +122,36 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 			if(blank)
 				return;
 			
-			if(value != null)
-			{
-				this.valueName = value.getDisplayName();
-				if(!isPlayer)
-					this.lastKnownPos = value.getBlockPos();
-				return;
-			}
-			
 			/*
 			 * If this object represents a player, search the playerlist for them.
 			 * Otherwise, search around the last known position of the entity for one with a matching UUID
 			 */
 			if(isPlayer)
-			{
-				PlayerEntity player = world.getPlayerByUuid(this.uuid);
-				if(player != null)
-					value = player;
-			}
+				value = world.getPlayerByUuid(this.uuid);
 			else
-				for(Entity ent : world.getEntitiesByClass(Entity.class, SEARCH_AREA.offset(this.lastKnownPos), (entity) -> entity.getUuid().equals(this.uuid)))
+			{
+				Box searchArea = Box.from(new Vec3d(0.5D, 0.5D, 0.5D).add(this.lastKnownPos.getX(), this.lastKnownPos.getY(), this.lastKnownPos.getZ())).expand(16D);
+				if(searchArea.minY < world.getBottomY())
+					searchArea = searchArea.withMinY(world.getBottomY());
+				
+				for(Entity ent : world.getEntitiesByClass(Entity.class, searchArea, (entity) -> entity.getUuid().equals(this.uuid)))
 				{
 					value = ent;
 					break;
 				}
+			}
 			
 			if(value != null)
-				this.valueName = value.getDisplayName();
+			{
+				storeName(value.getName());
+				if(!isPlayer)
+					this.lastKnownPos = value.getBlockPos();
+			}
+		}
+		
+		private void storeName(Text nameIn)
+		{
+			this.valueName = nameIn.copyContentOnly();
 		}
 	}
 }

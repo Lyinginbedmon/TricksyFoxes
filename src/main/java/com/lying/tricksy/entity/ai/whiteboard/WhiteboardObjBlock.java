@@ -12,7 +12,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-public class WhiteboardObjBlock extends WhiteboardObjBase<BlockPos, com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock.BlockData>
+public class WhiteboardObjBlock extends WhiteboardObjBase<BlockPos, com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock.BlockData, NbtCompound>
 {
 	public WhiteboardObjBlock()
 	{
@@ -42,15 +42,14 @@ public class WhiteboardObjBlock extends WhiteboardObjBase<BlockPos, com.lying.tr
 	
 	protected BlockPos getValue(WhiteboardObjBlock.BlockData entry) { return entry.pos; }
 	
-	protected NbtElement valueToNbt(WhiteboardObjBlock.BlockData val) { return val.storeToNbt(new NbtCompound()); }
+	protected NbtCompound valueToNbt(WhiteboardObjBlock.BlockData val) { return val.storeToNbt(new NbtCompound()); }
 	
-	protected BlockData valueFromNbt(NbtElement nbt)
+	protected BlockData valueFromNbt(NbtCompound nbt)
 	{
 		NbtCompound compound = (NbtCompound)nbt;
 		BlockPos pos = NbtHelper.toBlockPos(compound.getCompound("Pos"));
 		Direction face = Direction.byName(compound.getString("Face"));
-		WhiteboardObjBlock.BlockData data = new BlockData(pos, face);
-		return data;
+		return new BlockData(pos, face);
 	}
 	
 	public static class BlockData
