@@ -346,14 +346,14 @@ public abstract class Whiteboard<T>
 			register(HANDS_FULL, (tricksy) -> new WhiteboardObj.Bool(!tricksy.getMainHandStack().isEmpty() && !tricksy.getOffHandStack().isEmpty()));
 			register(MAIN_ITEM, (tricksy) -> new WhiteboardObj.Item(tricksy.getMainHandStack()));
 			register(OFF_ITEM, (tricksy) -> new WhiteboardObj.Item(tricksy.getOffHandStack()));
-			register(HOME, (tricksy) -> new WhiteboardObjBlock(tricksy.getPositionTarget(), Direction.UP));
+			register(HOME, (tricksy) -> tricksy.hasPositionTarget() ? new WhiteboardObjBlock(tricksy.getPositionTarget(), Direction.UP) : TFObjType.BLOCK.blank());
 			register(HAS_SAGE, (tricksy) -> new WhiteboardObj.Bool(tricksy.hasSage()));
 			register(NEAREST_SAGE, (tricksy) -> 
 			{
 				PlayerEntity nearestSage = tricksy.getEntityWorld().getClosestPlayer(tricksy.getX(), tricksy.getY(), tricksy.getZ(), 32D, (player) -> tricksy.isSage((PlayerEntity)player));
 				return nearestSage == null ? WhiteboardObj.EMPTY : new WhiteboardObjEntity(nearestSage);
 			});
-			register(ATTACK_TARGET, (tricksy) -> new WhiteboardObjEntity(tricksy.getAttacking()));
+			register(ATTACK_TARGET, (tricksy) -> tricksy.getAttacking() == null ? TFObjType.ENT.blank() : new WhiteboardObjEntity(tricksy.getAttacking()));
 			register(ON_GROUND, (tricksy) -> new WhiteboardObj.Bool(tricksy.isOnGround()));
 			return this;
 		}

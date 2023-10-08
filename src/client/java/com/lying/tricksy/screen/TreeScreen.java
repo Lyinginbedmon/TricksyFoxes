@@ -10,6 +10,7 @@ import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.network.SaveTreePacket;
+import com.lying.tricksy.reference.Reference;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -51,32 +52,32 @@ public class TreeScreen extends TricksyScreenBase
 	
 	protected void init()
 	{
-		addDrawableChild(addNode = ButtonWidget.builder(Text.literal("+"), (button) -> 
+		addDrawableChild(addNode = makeTexturedWidget(16, 16, 0, 184, (button) -> 
 		{
 			this.hoveredNode.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID()), hasShiftDown());
 			this.handler.countNodes();
-		}).dimensions(16, 16, 16, 16).build());
-		addDrawableChild(delNode = ButtonWidget.builder(Text.literal("-"), (button) -> 
+		}));
+		addDrawableChild(delNode = makeTexturedWidget(16, 16, 16, 184, (button) -> 
 		{
 			this.handler.getTree().root().removeChild(hoveredNode);
 			this.handler.countNodes();
-		}).dimensions(16, 32, 16, 16).build());
+		}));
 		
 		int midPoint = this.width / 2;
-		addDrawableChild(reset = ButtonWidget.builder(Text.literal("Reset"), (button) -> 
+		addDrawableChild(reset = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.reset"), (button) -> 
 		{
 			handler.resetTree();
 			position = new Vec2f(-this.width / 4, -this.height / 4);
 		}).dimensions(midPoint - 70 - 20, 7, 40, 16).build());
-		addDrawableChild(save = ButtonWidget.builder(Text.literal("Save"), (button) -> 
+		addDrawableChild(save = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.save"), (button) -> 
 		{
 			SaveTreePacket.send(player, handler.tricksyUUID(), handler.getTree());
 			client.currentScreen.close();
 		}).dimensions(midPoint + 70 - 20, 7, 40, 16).build());
-		addDrawableChild(whiteboards = ButtonWidget.builder(Text.literal("W"), (button) -> 
+		addDrawableChild(whiteboards = makeTexturedWidget((this.width / 2) + 34, 18, 32, 184, (button) -> 
 		{
 			client.setScreen(new WhiteboardScreen(getScreenHandler(), this.playerInv, this.title));
-		}).dimensions((this.width / 2) + 40, 16, 16, 16).build());
+		}));
 		
 		position = new Vec2f(-this.width / 4, -this.height / 4);
 	}
@@ -199,7 +200,13 @@ public class TreeScreen extends TricksyScreenBase
 	
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)
 	{
+		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
 		context.drawText(textRenderer, this.title, (this.width - this.textRenderer.getWidth(this.title)) / 2, 2 + (26 - this.textRenderer.fontHeight) / 2, 0x404040, false);
+		
+		this.reset.render(context, mouseX, mouseY, 0F);
+		this.save.render(context, mouseX, mouseY, 0F);
+		this.whiteboards.render(context, mouseX, mouseY, 0F);
+		
 		TreeNode<?> root = handler.getTree().root();
 		if(mouseY < 28 && Math.abs((this.width / 2) - mouseX) < 100)
 			hoveredNode = null;
@@ -290,8 +297,6 @@ public class TreeScreen extends TricksyScreenBase
 		
 		scaleAndPositionNode(root, renderX, renderY);
 		NodeRenderUtils.renderTree(root, context, this.textRenderer, this.ticksOpen);
-		
-		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
 	}
 	
 	public static enum HoveredElement

@@ -142,5 +142,7 @@
 	"item.tricksy.scripture.copy": "%s now details the behaviour of %s",
 	"item.tricksy.scripture.paste": "%s will now follow this doctrine",
 	"sound.tricksy.whiteboard_updated": "Whiteboard updated",
-	"sound.tricksy.tricksy_enlightened": "Mob enlightened"
+	"sound.tricksy.tricksy_enlightened": "Mob enlightened",
+	"gui.tricksy.tree_screen.reset": "Reset",
+	"gui.tricksy.tree_screen.save": "Save"
 }

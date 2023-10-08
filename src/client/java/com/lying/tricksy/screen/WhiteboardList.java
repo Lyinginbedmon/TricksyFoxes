@@ -2,6 +2,7 @@ package com.lying.tricksy.screen;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -10,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
+import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.reference.Reference;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -28,6 +30,7 @@ import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec2f;
 
 public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEntry>
 {
@@ -35,12 +38,23 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 	public static final Identifier SLICE_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/whiteboard_slice.png");
 	private final WhiteboardScreen parent;
 	
+	private Random rand;
+	private BranchLine leftLine, rightLine;
+	
 	public WhiteboardList(WhiteboardScreen screen, int width, int height, int top, int bottom)
 	{
 		super(WhiteboardScreen.mc, width, height, top, bottom, 25);
 		this.parent = screen;
 		this.setRenderBackground(false);
 		this.setRenderHorizontalShadows(false);
+	}
+	
+	public void setRandSeed(long seedIn)
+	{
+		rand = new Random(seedIn);
+        
+		leftLine = BranchLine.between(new Vec2f(this.left, 0), new Vec2f(this.left, this.height), rand, rand.nextBoolean() ? TFNodeTypes.ROSE_FLOWER : TFNodeTypes.GRAPE_FLOWER);
+		rightLine = BranchLine.between(new Vec2f(this.right, 0), new Vec2f(this.right, this.height), rand, rand.nextBoolean() ? TFNodeTypes.ROSE_FLOWER : TFNodeTypes.GRAPE_FLOWER);
 	}
 	
 	public int getRowWidth() { return this.width - 20; }
@@ -86,6 +100,9 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
         BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
         RenderSystem.disableBlend();
         
+		leftLine.render(context);
+		rightLine.render(context);
+		
 		super.render(context, mouseX, mouseY, delta);
 	}
 	
@@ -103,11 +120,11 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 		{
 			this.reference = referenceIn;
 			this.valueSnapshot = valueIn;
-			this.deleteButton = ButtonWidget.builder(Text.literal("X"), button -> 
+			this.deleteButton = TreeScreen.makeTexturedWidget(0, 0, 16, 184, button -> 
 			{
 				WhiteboardList.this.parent.deleteReference(referenceIn);
 				parent.removeEntry(this);
-			}).dimensions(0, 0, 16, 16).build();
+			});
 			this.deleteButton.active = this.deleteButton.visible = reference.boardType() != BoardType.CONSTANT && !reference.uncached();
 		}
 		
@@ -129,7 +146,7 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 			if(reference.boardType() == BoardType.CONSTANT)
 				return;
 			
-			if(valueSnapshot != null)
+			if(valueSnapshot != null && !valueSnapshot.isEmpty())
 			{
 				List<Text> description = valueSnapshot.describe();
 				
@@ -144,8 +161,8 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 			
 			if(this.deleteButton.visible)
 			{
-				this.deleteButton.setX(x + 180 - deleteButton.getWidth());
-				this.deleteButton.setY(y + (entryHeight - deleteButton.getHeight()) / 2);
+				this.deleteButton.setX(x + 180 - deleteButton.getWidth() - 2);
+				this.deleteButton.setY(y + 2 + (entryHeight - deleteButton.getHeight()) / 2);
 				this.deleteButton.render(context, mouseX, mouseY, tickDelta);
 			}
 		}

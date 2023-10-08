@@ -77,7 +77,7 @@ public class NodeRenderUtils
 			int end = start + (length - trimAmount);
 			subName = Text.literal(subName.getString().substring(start - 1, end + 1));
 		}
-		context.drawText(textRenderer, subName, node.screenX + (NODE_WIDTH - textRenderer.getWidth(subName)) / 2, drawY, 0x404040, false);
+		context.drawText(textRenderer, subName, node.screenX + (NODE_WIDTH - textRenderer.getWidth(subName)) / 2, drawY + 1, 0x404040, false);
 		drawY += 11;
 		
 		Map<WhiteboardRef, INodeInput> variableSet = subType.variableSet();
