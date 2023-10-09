@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.nbt.NbtCompound;
@@ -20,7 +20,7 @@ import net.minecraft.world.World;
 
 public class ServerWhiteboards extends PersistentState
 {
-	private Map<UUID, Whiteboard.Global> whiteboards = new HashMap<>();
+	private Map<UUID, GlobalWhiteboard> whiteboards = new HashMap<>();
 	
 	@Nullable
 	private ServerWorld world;
@@ -57,21 +57,21 @@ public class ServerWhiteboards extends PersistentState
 		{
 			NbtCompound compound = set.getCompound(i);
 			UUID sage = compound.getUuid("ID");
-			Whiteboard.Global board = new Whiteboard.Global(null);
+			GlobalWhiteboard board = new GlobalWhiteboard(null);
 			board.readFromNbt(compound.getCompound("Board"));
 			boards.whiteboards.put(sage, board);
 		}
 		return boards;
 	}
 	
-	public Whiteboard.Global getWhiteboardFor(UUID sageID)
+	public GlobalWhiteboard getWhiteboardFor(UUID sageID)
 	{
 		if(!whiteboards.containsKey(sageID))
 		{
-			whiteboards.put(sageID, new Whiteboard.Global(this.world));
+			whiteboards.put(sageID, new GlobalWhiteboard(this.world));
 			markDirty();
 		}
-		Whiteboard.Global board = whiteboards.get(sageID);
+		GlobalWhiteboard board = whiteboards.get(sageID);
 		board.setWorld(world);
 		return board;
 	}

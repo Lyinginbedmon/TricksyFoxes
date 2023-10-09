@@ -6,8 +6,8 @@ import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBase;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
@@ -130,7 +130,7 @@ public class ItemPrescientNote extends Item
 			{
 				IWhiteboardObject<?> value = getVariable(stack);
 				WhiteboardRef name = createReference(stack, BoardType.LOCAL);
-				Local<?> whiteboard = tricksy.getLocalWhiteboard();
+				LocalWhiteboard<?> whiteboard = tricksy.getLocalWhiteboard();
 				whiteboard.addValue(name, (mob) -> value);
 				
 				if(!user.isCreative() && !ISealableItem.isSealed(stack))

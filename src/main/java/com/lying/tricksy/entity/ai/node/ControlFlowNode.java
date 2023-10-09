@@ -7,8 +7,8 @@ import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFNodeTypes;
 
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -42,11 +42,10 @@ public class ControlFlowNode extends TreeNode<ControlFlowNode>
 	{
 		set.add(new NodeSubType<ControlFlowNode>(VARIANT_SEQUENCE, new NodeTickHandler<ControlFlowNode>() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, Local<T> local, Global global, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ControlFlowNode parent)
 			{
 				if(!parent.isRunning())
 				{
-					parent.index = 0;
 					tricksy.logStatus(Text.literal("Starting sequence of "+parent.children().size()+" steps"));
 					tricksy.logStatus(Text.literal("Step 1: ").append(parent.children().get(0).getSubType().translatedName().getString()));
 				}
@@ -74,10 +73,15 @@ public class ControlFlowNode extends TreeNode<ControlFlowNode>
 				}
 				return Result.SUCCESS;
 			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, ControlFlowNode parent)
+			{
+				parent.index = 0;
+			}
 		}));
 		set.add(new NodeSubType<ControlFlowNode>(VARIANT_SELECTOR, new NodeTickHandler<ControlFlowNode>() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, Local<T> local, Global global, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ControlFlowNode parent)
 			{
 				if(parent.children().isEmpty())
 					return Result.FAILURE;
@@ -109,7 +113,7 @@ public class ControlFlowNode extends TreeNode<ControlFlowNode>
 		}));
 		set.add(new NodeSubType<ControlFlowNode>(VARIANT_REACTIVE, new NodeTickHandler<ControlFlowNode>() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, Local<T> local, Global global, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ControlFlowNode parent)
 			{
 				/**
 				 * Parent result is equal to:

@@ -10,7 +10,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-public class Constants extends Whiteboard<Supplier<IWhiteboardObject<?>>>
+public class ConstantsWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 {
 	public static final WhiteboardRef NUM_1 = new WhiteboardRef("number_1", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("1"));
 	public static final WhiteboardRef NUM_2 = new WhiteboardRef("number_2", TFObjType.INT, BoardType.CONSTANT).displayName(Text.literal("2"));
@@ -25,7 +25,7 @@ public class Constants extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 	public static final WhiteboardRef BOOL_FALSE = new WhiteboardRef("boolean_false", TFObjType.BOOL, BoardType.CONSTANT).displayName(new WhiteboardObj.Bool(false).describe().get(0));
 	public static final Map<Direction, WhiteboardRef> DIRECTIONS = new HashMap<>();
 	
-	public Constants() { super(BoardType.CONSTANT, null); }
+	public ConstantsWhiteboard() { super(BoardType.CONSTANT, null); }
 	
 	public Whiteboard<?> build()
 	{

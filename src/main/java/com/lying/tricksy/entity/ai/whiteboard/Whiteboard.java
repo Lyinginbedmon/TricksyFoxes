@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -17,15 +15,11 @@ import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.entity.player.ItemCooldownManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
 import net.minecraft.util.StringIdentifiable;
-import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
 /**
@@ -34,7 +28,7 @@ import net.minecraft.world.World;
  */
 public abstract class Whiteboard<T>
 {
-	public static final Whiteboard<?> CONSTANTS = new Constants().build();
+	public static final Whiteboard<?> CONSTANTS = new ConstantsWhiteboard().build();
 	
 	private final Map<WhiteboardRef, T> values = new HashMap<>();
 	protected final Map<WhiteboardRef, IWhiteboardObject<?>> cache = new HashMap<>();
@@ -117,13 +111,13 @@ public abstract class Whiteboard<T>
 		Map<WhiteboardRef, T> valuesNext = new HashMap<>();
 		values.forEach((ref,val) -> 
 		{
-			if(ref.isSameRef(reference))
-				return;
-			valuesNext.put(ref, val);
+			if(!ref.isSameRef(reference))
+				valuesNext.put(ref, val);
 		});
 		
 		values.clear();
 		valuesNext.forEach((ref,val) -> values.put(ref, val));
+		uncache(reference);
 	}
 	
 	public void addValue(WhiteboardRef reference, T object)
@@ -182,14 +176,16 @@ public abstract class Whiteboard<T>
 	
 	public void setValue(WhiteboardRef reference, IWhiteboardObject<?> obj)
 	{
-		for(WhiteboardRef entry : values.keySet())
-			if(entry.isSameRef(reference))
-			{
-				values.put(entry, objectToSupplier(obj));
-				return;
-			}
+		Map<WhiteboardRef, T> valuesNext = new HashMap<>();
+		valuesNext.put(reference, objectToSupplier(obj));
+		for(Entry<WhiteboardRef, T> value : values.entrySet())
+			if(!value.getKey().isSameRef(reference))
+				valuesNext.put(value.getKey(), value.getValue());
 		
-		values.put(reference, objectToSupplier(obj));
+		uncache(reference);
+		
+		values.clear();
+		valuesNext.forEach((ref,val) -> values.put(ref, val));
 	}
 	
 	protected IWhiteboardObject<?> getAndCache(WhiteboardRef nameIn, @Nullable World world)
@@ -229,6 +225,17 @@ public abstract class Whiteboard<T>
 	
 	protected IWhiteboardObject<?> cache(WhiteboardRef reference, WhiteboardObj<?,?> obj) { cache.put(reference, obj); return obj; }
 	
+	protected final void uncache(WhiteboardRef reference)
+	{
+		Map<WhiteboardRef, IWhiteboardObject<?>> cacheNext = new HashMap<>();
+		for(Entry<WhiteboardRef, IWhiteboardObject<?>> value : cache.entrySet())
+			if(!value.getKey().isSameRef(reference))
+				cacheNext.put(value.getKey(), value.getValue());
+		
+		cache.clear();
+		cacheNext.forEach((ref,val) -> cache.put(ref, val));
+	}
+	
 	public static enum BoardType implements StringIdentifiable
 	{
 		CONSTANT,
@@ -249,7 +256,7 @@ public abstract class Whiteboard<T>
 		}
 	}
 	
-	public static final <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> get(WhiteboardRef nameIn, Local<T> local, Global global)
+	public static final <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> get(WhiteboardRef nameIn, LocalWhiteboard<T> local, GlobalWhiteboard global)
 	{
 		switch(nameIn.boardType())
 		{
@@ -268,7 +275,7 @@ public abstract class Whiteboard<T>
 	
 	protected boolean hasReference(WhiteboardRef reference)
 	{
-		for(WhiteboardRef ref : allReferences())
+		for(WhiteboardRef ref : values.keySet())
 			if(ref.isSameRef(reference))
 				return true;
 		return false;
@@ -291,98 +298,5 @@ public abstract class Whiteboard<T>
 	{
 		name = name.replace(' ', '_').toLowerCase();
 		return new WhiteboardRef(name, type, board).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+"."+name));
-	}
-	
-	/** A whiteboard containing globally-accessible values set by a tricksy mob's sage */
-	public static class Global extends Whiteboard<Supplier<IWhiteboardObject<?>>>
-	{
-		public static final WhiteboardRef SPAWN = makeSystemRef("spawn_pos", TFObjType.BLOCK, BoardType.GLOBAL);
-		
-		public Global(World worldIn)
-		{
-			super(BoardType.GLOBAL, worldIn);
-		}
-		
-		public Whiteboard<?> build()
-		{
-			register(SPAWN, () -> new WhiteboardObjBlock(world.getSpawnPos(), Direction.UP));
-			return this;
-		}
-		
-		protected IWhiteboardObject<?> supplierToValue(Supplier<IWhiteboardObject<?>> supplier) { return supplier.get(); }
-		
-		protected Supplier<IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return () -> object; }
-	}
-	
-	/** A whiteboard containing locally-accessible values set by a tricksy mob itself */
-	public static class Local<T extends PathAwareEntity & ITricksyMob<?>> extends Whiteboard<Function<T, IWhiteboardObject<?>>>
-	{
-		public static final WhiteboardRef SELF = makeSystemRef("self", TFObjType.ENT, BoardType.LOCAL);
-		public static final WhiteboardRef HP = makeSystemRef("health", TFObjType.INT, BoardType.LOCAL);
-		public static final WhiteboardRef ARMOUR = makeSystemRef("armor", TFObjType.INT, BoardType.LOCAL);
-		public static final WhiteboardRef HANDS_FULL = makeSystemRef("hands_full", TFObjType.BOOL, BoardType.LOCAL);
-		public static final WhiteboardRef MAIN_ITEM = makeSystemRef("mainhand_item", TFObjType.ITEM, BoardType.LOCAL);
-		public static final WhiteboardRef OFF_ITEM = makeSystemRef("offhand_item", TFObjType.ITEM, BoardType.LOCAL);
-		public static final WhiteboardRef HOME = makeSystemRef("home_pos", TFObjType.BLOCK, BoardType.LOCAL);
-		public static final WhiteboardRef HAS_SAGE = makeSystemRef("has_sage", TFObjType.BOOL, BoardType.LOCAL);
-		public static final WhiteboardRef NEAREST_SAGE = makeSystemRef("nearest_sage", TFObjType.ENT, BoardType.LOCAL);
-		public static final WhiteboardRef ATTACK_TARGET = makeSystemRef("attack_target", TFObjType.ENT, BoardType.LOCAL);
-		public static final WhiteboardRef ON_GROUND = makeSystemRef("on_ground", TFObjType.BOOL, BoardType.LOCAL);
-		
-		private final T tricksy;
-		
-		private int attackCooldown = 0;
-		private ItemCooldownManager itemCooldowns = new ItemCooldownManager();
-		
-		public Local(T tricksyIn)
-		{
-			super(BoardType.LOCAL, tricksyIn.getWorld());
-			tricksy = tricksyIn;
-		}
-		
-		public Whiteboard<?> build()
-		{
-			register(SELF, (tricksy) -> new WhiteboardObjEntity(tricksy));
-			register(HP, (tricksy) -> new WhiteboardObj.Int((int)tricksy.getHealth()));
-			register(ARMOUR, (tricksy) -> new WhiteboardObj.Int(tricksy.getArmor()));
-			register(HANDS_FULL, (tricksy) -> new WhiteboardObj.Bool(!tricksy.getMainHandStack().isEmpty() && !tricksy.getOffHandStack().isEmpty()));
-			register(MAIN_ITEM, (tricksy) -> new WhiteboardObj.Item(tricksy.getMainHandStack()));
-			register(OFF_ITEM, (tricksy) -> new WhiteboardObj.Item(tricksy.getOffHandStack()));
-			register(HOME, (tricksy) -> tricksy.hasPositionTarget() ? new WhiteboardObjBlock(tricksy.getPositionTarget(), Direction.UP) : TFObjType.BLOCK.blank());
-			register(HAS_SAGE, (tricksy) -> new WhiteboardObj.Bool(tricksy.hasSage()));
-			register(NEAREST_SAGE, (tricksy) -> 
-			{
-				PlayerEntity nearestSage = tricksy.getEntityWorld().getClosestPlayer(tricksy.getX(), tricksy.getY(), tricksy.getZ(), 32D, (player) -> tricksy.isSage((PlayerEntity)player));
-				return nearestSage == null ? TFObjType.ENT.blank() : new WhiteboardObjEntity(nearestSage);
-			});
-			register(ATTACK_TARGET, (tricksy) -> tricksy.getAttacking() == null ? TFObjType.ENT.blank() : new WhiteboardObjEntity(tricksy.getAttacking()));
-			register(ON_GROUND, (tricksy) -> new WhiteboardObj.Bool(tricksy.isOnGround()));
-			return this;
-		}
-		
-		protected IWhiteboardObject<?> supplierToValue(Function<T, IWhiteboardObject<?>> supplier) { return supplier.apply(tricksy); }
-		
-		public Function<T, IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return (tricksy) -> object; }
-		
-		public void tick()
-		{
-			if(attackCooldown > 0)
-				attackCooldown = Math.max(0, attackCooldown - 1);
-			itemCooldowns.update();
-		}
-		
-		public boolean canAttack() { return attackCooldown == 0; }
-		
-		public void setAttackCooldown(int var) { this.attackCooldown = Math.max(0, var); }
-		
-		public void setItemCooldown(net.minecraft.item.Item item, int var)
-		{
-			if(item == Items.AIR)
-				return;
-			
-			this.itemCooldowns.set(item, var);
-		}
-		
-		public boolean isCoolingDown(net.minecraft.item.Item item) { return item == Items.AIR ? false : this.itemCooldowns.isCoolingDown(item); }
 	}
 }

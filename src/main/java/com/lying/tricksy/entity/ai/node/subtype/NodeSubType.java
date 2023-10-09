@@ -7,8 +7,8 @@ import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -35,7 +35,7 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public Map<WhiteboardRef, INodeInput> variableSet(){ return tickFunc.variableSet(); }
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, Local<T> local, Global global, M parent)
+	public <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, M parent)
 	{
 		if(!tickFunc.variablesSufficient(parent))
 		{
@@ -46,9 +46,9 @@ public class NodeSubType<M extends TreeNode<?>>
 		return tickFunc.doTick(tricksy, local, global, parent);
 	}
 	
-	@SuppressWarnings("unchecked")
-	public <T extends PathAwareEntity & ITricksyMob<?>> void stop(T tricksy, TreeNode<?> parent)
+	/** Performs any end-of-behaviour cleanup */
+	public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, M parent)
 	{
-		tickFunc.stop(tricksy, (M)parent);
+		tickFunc.onEnd(tricksy, parent);
 	}
 }

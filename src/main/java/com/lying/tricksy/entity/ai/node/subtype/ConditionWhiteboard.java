@@ -11,10 +11,9 @@ import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
 
@@ -39,7 +38,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 				return Map.of(CommonVariables.VAR, INodeInput.makeInput(NodeTickHandler.any()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
 			{
 				return getOrDefault(CommonVariables.VAR, parent, local, global).as(TFObjType.BOOL).get() ? Result.SUCCESS : Result.FAILURE;
 			}
@@ -52,12 +51,10 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 				return Map.of(CommonVariables.VAR, INodeInput.makeInput(NodeTickHandler.any()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
 			{
-				WhiteboardRef var = parent.variable(CommonVariables.VAR);
-				if(var.type() == TFObjType.ENT)
-					System.out.println("Retrieved value of "+var.name()+": isEmpty="+Whiteboard.get(var, local, global).isEmpty());
-				return getOrDefault(CommonVariables.VAR, parent, local, global).isEmpty() ? Result.FAILURE : Result.SUCCESS;
+				IWhiteboardObject<?> value = getOrDefault(CommonVariables.VAR, parent, local, global);
+				return (value == null || value.isEmpty()) ? Result.FAILURE : Result.SUCCESS;
 			}
 		});
 		/** Returns SUCCESS if the given objects match */
@@ -70,7 +67,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 						CommonVariables.VAR_B, INodeInput.makeInput(NodeTickHandler.any()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
 			{
 				IWhiteboardObject<?> objA = getOrDefault(CommonVariables.VAR_A, parent, local, global);
 				IWhiteboardObject<?> objB = getOrDefault(CommonVariables.VAR_B, parent, local, global);
@@ -86,7 +83,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 						CommonVariables.VAR_B, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
 			{
 				IWhiteboardObject<Integer> objA = getOrDefault(CommonVariables.VAR_A, parent, local, global).as(TFObjType.INT);
 				IWhiteboardObject<Integer> objB = getOrDefault(CommonVariables.VAR_B, parent, local, global).as(TFObjType.INT);

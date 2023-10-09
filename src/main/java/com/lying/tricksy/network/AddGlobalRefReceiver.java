@@ -2,8 +2,8 @@ package com.lying.tricksy.network;
 
 import java.util.UUID;
 
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBase;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.utility.ServerWhiteboards;
@@ -28,7 +28,7 @@ public class AddGlobalRefReceiver implements PlayChannelHandler
 		IWhiteboardObject<?> val = WhiteboardObjBase.createFromNbt(valNbt);
 		
 		ServerWhiteboards boards = ServerWhiteboards.getServerWhiteboards(player.getServer());
-		Global whiteboard = boards.getWhiteboardFor(sageID);
+		GlobalWhiteboard whiteboard = boards.getWhiteboardFor(sageID);
 		whiteboard.addValue(ref, () -> val);
 		boards.markDirty();
 		

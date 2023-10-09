@@ -12,11 +12,11 @@ import com.google.common.base.Predicates;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
@@ -74,7 +74,7 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	
 	/** Returns the value associated with the given input by the given parent node, or its default value if it is optional */
 	@Nullable
-	public default IWhiteboardObject<?> getOrDefault(WhiteboardRef input, M parent, Whiteboard.Local<?> local, Whiteboard.Global global)
+	public default IWhiteboardObject<?> getOrDefault(WhiteboardRef input, M parent, LocalWhiteboard<?> local, GlobalWhiteboard global)
 	{
 		if(!parent.variableAssigned(input))
 			return variableSet().get(input).isOptional() ? variableSet().get(input).defaultValue().get() : null;
@@ -84,10 +84,10 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	
 	/** Performs a single tick of this node */
 	@NotNull
-	public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, Local<T> local, Global global, M parent);
+	public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, M parent);
 	
 	/** Performs any logic needed when the node stops */
-	public default <T extends PathAwareEntity & ITricksyMob<?>> void stop(T tricksy, M parent) { }
+	public default <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, M parent) { }
 	
 	public static <T extends PathAwareEntity & ITricksyMob<?>> boolean canInteractWithBlock(T tricksy, BlockPos pos)
 	{

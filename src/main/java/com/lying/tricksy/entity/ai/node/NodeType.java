@@ -18,8 +18,8 @@ import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.TricksyUtils;
 
@@ -34,7 +34,7 @@ public class NodeType<M extends TreeNode<?>>
 	public static final Identifier DUMMY_ID = new Identifier(Reference.ModInfo.MOD_ID, "dummy");
 	private final NodeSubType<M> dummy = new NodeSubType<M>(DUMMY_ID, new NodeTickHandler<M>()
 	{
-		public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, M parent)
+		public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, M parent)
 		{
 			return Result.FAILURE;
 		}

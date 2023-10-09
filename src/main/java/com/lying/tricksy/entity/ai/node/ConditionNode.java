@@ -15,9 +15,9 @@ import com.lying.tricksy.entity.ai.node.subtype.ConditionWhiteboard;
 import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
@@ -66,11 +66,11 @@ public class ConditionNode extends TreeNode<ConditionNode>
 			{
 				return Map.of(
 						CommonVariables.VAR_POS_A, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK)), 
-						CommonVariables.VAR_POS_B, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK), new WhiteboardObjBlock(), Local.SELF.displayName()), 
+						CommonVariables.VAR_POS_B, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()), 
 						CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(8)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
 			{
 				// Value A - mandatory
 				IWhiteboardObject<?> objPosA = getOrDefault(CommonVariables.VAR_POS_A, parent, local, global);
@@ -84,7 +84,7 @@ public class ConditionNode extends TreeNode<ConditionNode>
 				if(objPosB.isEmpty())
 				{
 					if(objPosB.size() == 0)
-						posB = local.getValue(Local.SELF).as(TFObjType.BLOCK).get();
+						posB = local.getValue(LocalWhiteboard.SELF).as(TFObjType.BLOCK).get();
 					else
 						return Result.FAILURE;
 				}
@@ -102,7 +102,7 @@ public class ConditionNode extends TreeNode<ConditionNode>
 				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
 			{
 				BlockPos position = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK).get();
 				return tricksy.getEntityWorld().isReceivingRedstonePower(position) ? Result.SUCCESS : Result.FAILURE;
@@ -112,10 +112,10 @@ public class ConditionNode extends TreeNode<ConditionNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT), TFObjType.ENT.blank(), Local.SELF.displayName()));
+				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT), TFObjType.ENT.blank(), LocalWhiteboard.SELF.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
 			{
 				IWhiteboardObject<Entity> var = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
 				

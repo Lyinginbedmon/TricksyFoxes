@@ -12,9 +12,9 @@ import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
@@ -74,7 +74,7 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 	{
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_INVERTER, new NodeTickHandler<DecoratorNode>()
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
 				switch(parent.child().tick(tricksy, local, global))
 				{
@@ -90,14 +90,14 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 		}));
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_FORCE_FAILURE, new NodeTickHandler<DecoratorNode>()
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
 				return parent.child().tick(tricksy, local, global).isEnd() ? Result.FAILURE : Result.RUNNING;
 			}
 		}));
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_FORCE_SUCCESS, new NodeTickHandler<DecoratorNode>()
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
 				return parent.child().tick(tricksy, local, global).isEnd() ? Result.SUCCESS : Result.RUNNING;
 			}
@@ -109,7 +109,7 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.any(), new WhiteboardObj.Int(1)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
 				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
 				
@@ -129,7 +129,7 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 				return Map.of(LIST, INodeInput.makeInput(NodeTickHandler.any()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
 				IWhiteboardObject<?> value = getOrDefault(LIST, parent, local, global);
 				if(!parent.isRunning())
@@ -154,7 +154,7 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(4)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
 				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
 				if(!parent.isRunning())
@@ -180,7 +180,7 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(4)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
 				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
 				if(!parent.isRunning())
@@ -201,7 +201,7 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 		}));
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_DO_ONCE, new NodeTickHandler<DecoratorNode>()
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
 				if(parent.ticks > 0)
 					return Result.FAILURE;

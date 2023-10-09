@@ -70,6 +70,8 @@ public class TFObjType<T>
 		this.supplier = supplierIn;
 	}
 	
+	public String toString() { return name.getPath(); }
+	
 	public Identifier registryName() { return this.name; }
 	
 	public Text translated() { return Text.translatable("type."+registryName().getNamespace()+"."+registryName().getPath().toString()); }

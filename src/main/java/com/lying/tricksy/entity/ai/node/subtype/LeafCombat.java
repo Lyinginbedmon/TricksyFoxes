@@ -13,9 +13,11 @@ import com.lying.tricksy.entity.ai.node.handler.CombatHandler;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
+import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
@@ -26,6 +28,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
@@ -33,6 +36,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 public class LeafCombat implements ISubtypeGroup<LeafNode>
@@ -50,7 +54,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT), new WhiteboardObjEntity()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
 				if(value.size() == 0)
@@ -71,7 +75,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		});
 		add(set, VARIANT_ATTACK_MELEE, new CombatHandler()
 		{
-			protected <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result attack(T tricksy, LivingEntity target, Local<T> local, LeafNode parent)
+			protected <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result attack(T tricksy, LivingEntity target, LocalWhiteboard<T> local, LeafNode parent)
 			{
 				if(tricksy.isInAttackRange(target) && !target.isInvulnerable())
 				{
@@ -87,29 +91,51 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		});
 		add(set, VARIANT_ATTACK_BOW, new CombatHandler()
 		{
-			protected <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result attack(T tricksy, LivingEntity target, Local<T> local, LeafNode parent)
+			private static final WhiteboardRef DRAW = new WhiteboardRef("draw_time", TFObjType.INT).displayName(CommonVariables.translate("draw_time"));
+			/** How long the bow should be drawn */
+			private int drawTicks = 0;
+			
+			protected void addVariables(Map<WhiteboardRef, INodeInput> set)
+			{
+				set.put(DRAW, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(1), ConstantsWhiteboard.NUM_1.displayName()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				drawTicks = 20 * MathHelper.clamp(getOrDefault(DRAW, parent, local, global).as(TFObjType.INT).get(), 1, 3600);
+				return super.doTick(tricksy, local, global, parent);
+			}
+			
+			protected <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result attack(T tricksy, LivingEntity target, LocalWhiteboard<T> local, LeafNode parent)
 			{
 				ItemStack bowStack = tricksy.getMainHandStack();
 				if(bowStack.isEmpty() || bowStack.getItem() != Items.BOW)
 					return Result.FAILURE;
 				
+				if(!tricksy.isUsingItem())
+					tricksy.setCurrentHand(Hand.MAIN_HAND);
+				
 				if(!parent.isRunning())
 				{
-					tricksy.setCurrentHand(Hand.MAIN_HAND);
+					tricksy.logStatus(Text.literal("Draw!"));
 					return Result.RUNNING;
 				}
-				else if(!target.isInvulnerable() && tricksy.getItemUseTime() >= 20)
+				
+				if(target.isInvulnerable())
+					return Result.FAILURE;
+				
+				if(tricksy.getItemUseTime() >= drawTicks)
 				{
 					tricksy.logStatus(Text.literal("Firing!"));
-					attack(target, 1F, tricksy);
-					tricksy.clearActiveItem();
+					attack(target, BowItem.getPullProgress(tricksy.getItemUseTime()), tricksy);
 					local.setAttackCooldown(Reference.Values.TICKS_PER_SECOND);
 					return Result.SUCCESS;
 				}
-				return Result.FAILURE;
+				
+				return Result.RUNNING;
 			}
 			
-		    public void attack(LivingEntity target, float pullProgress, PathAwareEntity shooter)
+		    protected void attack(LivingEntity target, float pullProgress, PathAwareEntity shooter)
 		    {
 		        ItemStack bowStack = this.getProjectileType(shooter.getMainHandStack(), shooter);
 		        PersistentProjectileEntity arrow = ProjectileUtil.createArrowProjectile(shooter, bowStack, pullProgress);
@@ -120,13 +146,16 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		        
 		        World world = shooter.getWorld();
 		        arrow.setVelocity(d, e + g * (double)0.2f, f, 1.6f, 14 - world.getDifficulty().getId() * 4);
+		        if(pullProgress >= 1F)
+		        	arrow.setCritical(true);
 		        shooter.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1.0f, 1.0f / (shooter.getRandom().nextFloat() * 0.4f + 0.8f));
 		        world.spawnEntity(arrow);
 		    }
 		    
-		    public ItemStack getProjectileType(ItemStack stack, PathAwareEntity shooter)
+		    protected ItemStack getProjectileType(ItemStack stack, PathAwareEntity shooter)
 		    {
-		        if (stack.getItem() instanceof RangedWeaponItem) {
+		        if(stack.getItem() instanceof RangedWeaponItem)
+		        {
 		            Predicate<ItemStack> predicate = ((RangedWeaponItem)stack.getItem()).getHeldProjectiles();
 		            ItemStack itemStack = RangedWeaponItem.getHeldProjectile(shooter, predicate);
 		            return itemStack.isEmpty() ? new ItemStack(Items.ARROW) : itemStack;
@@ -134,7 +163,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		        return ItemStack.EMPTY;
 		    }
 		    
-		    public <T extends PathAwareEntity & ITricksyMob<?>> void stop(T tricksy, LeafNode parent)
+		    public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
 		    {
 		    	tricksy.clearActiveItem();
 		    }

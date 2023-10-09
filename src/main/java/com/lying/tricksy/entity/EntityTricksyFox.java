@@ -8,9 +8,9 @@ import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.TricksyLookAroundGoal;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.TricksyLookControl;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.item.ITreeItem;
 import com.lying.tricksy.network.SyncTreeScreenPacket;
@@ -21,7 +21,6 @@ import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.VariantHolder;
-import net.minecraft.entity.ai.control.LookControl;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -61,12 +60,12 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	
 	protected BehaviourTree behaviourTree = new BehaviourTree();
 	@SuppressWarnings("unchecked")
-	protected Whiteboard.Local<EntityTricksyFox> boardLocal = (Local<EntityTricksyFox>)(new Local<EntityTricksyFox>(this)).build();
+	protected LocalWhiteboard<EntityTricksyFox> boardLocal = (LocalWhiteboard<EntityTricksyFox>)(new LocalWhiteboard<EntityTricksyFox>(this)).build();
 	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
 		super(TFEntityTypes.TRICKSY_FOX, world);
-		this.lookControl = new FoxLookControl();
+		this.lookControl = new TricksyLookControl(this);
 	}
 	
 	public void initDataTracker()
@@ -231,13 +230,13 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		return getWorld().isClient() ? BehaviourTree.create(getDataTracker().get(TREE_NBT)) : this.behaviourTree;
 	}
 	
-	public Local<EntityTricksyFox> getLocalWhiteboard() { return this.boardLocal; }
+	public LocalWhiteboard<EntityTricksyFox> getLocalWhiteboard() { return this.boardLocal; }
 	
-	public Global getGlobalWhiteboard()
+	public GlobalWhiteboard getGlobalWhiteboard()
 	{
 		return hasSage() ? 
 					ServerWhiteboards.getServerWhiteboards(getServer()).getWhiteboardFor(getSage().get()) : 
-					new Whiteboard.Global(getEntityWorld());
+					new GlobalWhiteboard(getEntityWorld());
 	}
 	
 	public void setBehaviourTree(NbtCompound data)
@@ -282,16 +281,10 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	
 	public Text latestLog() { return this.getDataTracker().get(LOG); }
 	
-	protected class FoxLookControl extends LookControl
+	public void bark(Bark bark)
 	{
-		public FoxLookControl() { super(EntityTricksyFox.this); }
-		
-		public void tick()
-		{
-			if(!EntityTricksyFox.this.isSleeping())
-				super.tick();
-		}
-		
-		protected boolean shouldStayHorizontal() { return true; }
+		playAmbientSound();
 	}
+	
+	public Bark currentBark() { return Bark.NONE; }
 }

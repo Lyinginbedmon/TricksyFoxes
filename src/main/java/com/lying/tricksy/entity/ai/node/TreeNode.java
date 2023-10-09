@@ -15,8 +15,8 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 
@@ -50,8 +50,6 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	@Nullable
 	private TreeNode<?> parent = null;
 	private List<TreeNode<?>> children = Lists.newArrayList();
-	
-	private TreeNode<?> tickRecipient = null;
 	
 	/** Map of input variable references to corresponding whiteboard references */
 	private Map<WhiteboardRef, Optional<WhiteboardRef>> variableSet = new HashMap<>();
@@ -143,7 +141,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		return this;
 	};
 	
-	public final NodeSubType<?> getSubType() { return this.getType().getSubType(this.subType); }
+	public final NodeSubType<?> getSubType() { return getType().getSubType(this.subType); }
 	
 	public final boolean variableAssigned(WhiteboardRef reference)
 	{
@@ -182,17 +180,10 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	}
 	
 	@SuppressWarnings("unchecked")
-	public final <T extends PathAwareEntity & ITricksyMob<?>> Result tick(T tricksy, Local<T> local, Global global)
+	public final <T extends PathAwareEntity & ITricksyMob<?>> Result tick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global)
 	{
 		if(!isRunnable())
 			return this.lastResult = Result.FAILURE;
-		
-		if(this.tickRecipient != null)
-		{
-			TreeNode<?> recipient = this.tickRecipient;
-			this.tickRecipient = null;
-			return recipient.tick(tricksy, local, global);
-		}
 		
 		if(this.lastResult.isEnd())
 			this.ticksRunning = 0;
@@ -203,26 +194,14 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		Result result = Result.FAILURE;
 		try
 		{
-			NodeSubType<N> subType = this.nodeType.getSubType(this.subType);
+			NodeSubType<N> subType = nodeType.getSubType(this.subType);
 			result = subType.call(tricksy, local, global, (N)this);
-			if(!result.isEnd())
-				setTickRecipient();
+			if(result.isEnd())
+				subType.onEnd(tricksy, (N)this);
 		}
 		catch(Exception e) { }
-		return this.lastResult = result;
-	}
-	
-	/** Sets the next behaviour tree tick to prioritise this node */
-	public void setTickRecipient() { setTickRecipient(this); }
-	
-	/** Sets the next call to this node to bypass it in favour of a descendant */
-	public void setTickRecipient(TreeNode<?> nodeIn)
-	{
-		if(nodeIn != this)
-			this.tickRecipient = nodeIn;
 		
-		if(!isRoot())
-			parent().setTickRecipient(nodeIn);
+		return this.lastResult = result;
 	}
 	
 	/** Returns true if this node is in a runnable condition */
@@ -286,10 +265,21 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** Returns true if the previous tick of this node did not end in a completion result */
 	public boolean isRunning() { return !lastResult.isEnd(); }
 	
+	/** Performs an immediate end to this node's activity */
+	@SuppressWarnings("unchecked")
 	public <T extends PathAwareEntity & ITricksyMob<?>> void stop(T tricksy)
 	{
+		if(!isRunning())
+			return;
+		
+		try
+		{
+			NodeSubType<N> subType = nodeType.getSubType(this.subType);
+			subType.onEnd(tricksy, (N)this);
+		}
+		catch(Exception e) { }
+		
 		lastResult = Result.FAILURE;
-		getSubType().stop(tricksy, this);
 		children.forEach((child) -> child.stop(tricksy));
 	}
 	

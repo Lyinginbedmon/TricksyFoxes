@@ -72,6 +72,8 @@ public class WhiteboardRef
 		this.varType = typeIn;
 	}
 	
+	public String toString() { return "WhiteboardRef["+name+", "+varType.toString()+", "+onBoard+"]"; }
+	
 	public Text displayName() { return displayName == null ? Text.literal(name) : displayName; }
 	
 	public WhiteboardRef displayName(Text nameIn) { this.displayName = nameIn; return this; }

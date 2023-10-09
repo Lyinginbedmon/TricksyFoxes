@@ -9,10 +9,10 @@ import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
 
@@ -36,24 +36,22 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 	
 	public Map<WhiteboardRef, INodeInput> variableSet() { return this.variableSet; }
 	
-	public <N extends PathAwareEntity & ITricksyMob<?>> Result doTick(N tricksy, Local<N> local, Global global, LeafNode parent)
+	public <N extends PathAwareEntity & ITricksyMob<?>> Result doTick(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
 	{
 		WhiteboardRef dest = parent.variable(entry);
 		IWhiteboardObject<T> result = getResult(tricksy, local, global, parent);
 		if(result == null || result.isEmpty())
 		{
-			System.out.println("Getter retrieved useless value");
 			local.setValue(dest, type.blank());
 			return Result.FAILURE;
 		}
 		
 		local.setValue(dest, result);
-		System.out.println("New value of "+dest.name()+": "+result.describe().get(0).getString());
 		return Result.SUCCESS;
 	}
 	
 	public abstract void addVariables(Map<WhiteboardRef, INodeInput> set);
 	
 	@Nullable
-	public abstract <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<T> getResult(N tricksy, Local<N> local, Global global, LeafNode parent);
+	public abstract <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<T> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent);
 }

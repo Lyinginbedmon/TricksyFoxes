@@ -12,10 +12,10 @@ import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.Constants;
+import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.reference.Reference;
 
@@ -36,11 +36,11 @@ public class BehaviourTree
 				.setSubType(DecoratorNode.VARIANT_INVERTER)
 				.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID())
 					.setSubType(ConditionNode.VARIANT_CLOSER_THAN)
-					.assign(CommonVariables.VAR_POS_A, Whiteboard.Local.NEAREST_SAGE)
-					.assign(CommonVariables.VAR_DIS, Constants.NUM_4)))
+					.assign(CommonVariables.VAR_POS_A, LocalWhiteboard.NEAREST_SAGE)
+					.assign(CommonVariables.VAR_DIS, ConstantsWhiteboard.NUM_4)))
 			.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID())
 				.setSubType(LeafNode.VARIANT_GOTO)
-				.assign(CommonVariables.VAR_POS, Whiteboard.Local.NEAREST_SAGE));
+				.assign(CommonVariables.VAR_POS, LocalWhiteboard.NEAREST_SAGE));
 	
 	private TreeNode<?> root;
 	private int waitTicks = 0;
@@ -56,7 +56,7 @@ public class BehaviourTree
 	
 	public TreeNode<?> root() { return this.root == null ? (this.root = TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID())) : this.root; }
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> void update(T tricksy, Local<T> local, Global global)
+	public <T extends PathAwareEntity & ITricksyMob<?>> void update(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global)
 	{
 		if(waitTicks > 0)
 			--waitTicks;

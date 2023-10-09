@@ -6,8 +6,8 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.BehaviourTree;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
+import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemSageHat;
 
@@ -19,6 +19,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
+import net.minecraft.util.StringIdentifiable;
 
 /**
  * Interface defining common features and functions of all Tricksy mobs
@@ -61,9 +62,9 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 	public BehaviourTree getBehaviourTree();
 	
 	/** Returns the local whiteboard of this mob. */
-	public Whiteboard.Local<T> getLocalWhiteboard();
+	public LocalWhiteboard<T> getLocalWhiteboard();
 	
-	public Whiteboard.Global getGlobalWhiteboard();
+	public GlobalWhiteboard getGlobalWhiteboard();
 	
 	@SuppressWarnings("unchecked")
 	public static <T extends PathAwareEntity & ITricksyMob<?>> void updateBehaviourTree(T tricksy)
@@ -72,8 +73,8 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 			return;
 		
 		// Update whiteboards
-		Whiteboard.Local<T> local = (Local<T>)tricksy.getLocalWhiteboard();
-		Whiteboard.Global global = tricksy.getGlobalWhiteboard();
+		LocalWhiteboard<T> local = (LocalWhiteboard<T>)tricksy.getLocalWhiteboard();
+		GlobalWhiteboard global = tricksy.getGlobalWhiteboard();
 		
 		// Update local whiteboard
 		local.tick();
@@ -97,7 +98,22 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 	
 	public Text latestLog();
 	
+	public default void bark(Bark bark) { }
+	
+	public default Bark currentBark() { return Bark.NONE; }
+	
 	public void setSleeping(boolean var);
 	
 	public boolean isSleeping();
+	
+	public static enum Bark implements StringIdentifiable
+	{
+		NONE,
+		HAPPY,
+		CURIOUS,
+		CONFUSED,
+		ALERT;
+		
+		public String asString() { return name().toLowerCase(); }
+	}
 }
