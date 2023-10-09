@@ -2,6 +2,7 @@ package com.lying.tricksy.entity.ai.node.subtype;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -21,6 +22,8 @@ import com.lying.tricksy.reference.Reference;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -35,7 +38,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 	
 	public void addActions(Collection<NodeSubType<LeafNode>> set)
 	{
-		set.add(new NodeSubType<LeafNode>(VARIANT_ACTIVATE, new NodeTickHandler<LeafNode>()
+		add(set, VARIANT_ACTIVATE, new NodeTickHandler<LeafNode>()
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_activate");
 			
@@ -49,17 +52,24 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 				IWhiteboardObject<BlockPos> blockPos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
 				if(!NodeTickHandler.canInteractWithBlock(tricksy, blockPos.get()) || blockPos.isEmpty())
 					return Result.FAILURE;
+				
+				if(local.isCoolingDown(tricksy.getMainHandStack().getItem()))
+					return Result.RUNNING;
+				
 				tricksy.logStatus(Text.literal("Activating ").append(tricksy.getEntityWorld().getBlockState(blockPos.get()).getBlock().getName()));
 				ActionResult result = NodeTickHandler.activateBlock(blockPos.get(), (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
 				tricksy.getLookControl().lookAt(blockPos.get().getX() + 0.5D, blockPos.get().getY() + 0.5D, blockPos.get().getZ() + 0.5D);
 				tricksy.swingHand(Hand.MAIN_HAND);
 				return result != ActionResult.FAIL ? Result.SUCCESS : Result.FAILURE;
 			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_USE_ITEM_ON, new NodeTickHandler<LeafNode>()
+		});
+		add(set, VARIANT_USE_ITEM_ON, new NodeTickHandler<LeafNode>()
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_use_item");
 			public static final WhiteboardRef TARGET = new WhiteboardRef("target", TFObjType.BLOCK).displayName(Text.literal("Target"));
+			
+			// Items that directly affect the player using them, hence cannot be used normally by a mob
+			private static final Set<Item> UNUSABLES = Set.of(Items.ENDER_PEARL, Items.LEAD);
 			
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
@@ -69,8 +79,11 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
 				IWhiteboardObject<?> value = getOrDefault(TARGET, parent, local, global);
-				if(value == null || value.isEmpty())
+				if(value == null || value.isEmpty() || UNUSABLES.contains(tricksy.getMainHandStack().getItem()))
 					return Result.FAILURE;
+				
+				if(local.isCoolingDown(tricksy.getMainHandStack().getItem()))
+					return Result.RUNNING;
 				
 				ActionResult result = ActionResult.FAIL;
 				if(value.type() == TFObjType.BLOCK)
@@ -94,7 +107,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 				tricksy.swingHand(Hand.MAIN_HAND);
 				return result != ActionResult.FAIL ? Result.SUCCESS : Result.FAILURE;
 			}
-		}));
+		});
 	}
 
 }

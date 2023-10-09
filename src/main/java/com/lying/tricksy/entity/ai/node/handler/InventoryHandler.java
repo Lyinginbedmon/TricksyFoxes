@@ -104,7 +104,7 @@ public interface InventoryHandler extends NodeTickHandler<LeafNode>
 	public static boolean canMergeStacks(ItemStack a, ItemStack b) { return a.getCount() < a.getMaxCount() && ItemStack.canCombine(a, b); }
 	
 	/** Returns true if isMatch returns true for any item in the filter, or if the filter is empty */
-	public static boolean matchesFilter(ItemStack stack, IWhiteboardObject<ItemStack> filter)
+	public static boolean matchesItemFilter(ItemStack stack, IWhiteboardObject<ItemStack> filter)
 	{
 		if(filter.size() == 0)
 			return true;

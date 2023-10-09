@@ -25,6 +25,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
@@ -84,6 +86,9 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	@NotNull
 	public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, Local<T> local, Global global, M parent);
 	
+	/** Performs any logic needed when the node stops */
+	public default <T extends PathAwareEntity & ITricksyMob<?>> void stop(T tricksy, M parent) { }
+	
 	public static <T extends PathAwareEntity & ITricksyMob<?>> boolean canInteractWithBlock(T tricksy, BlockPos pos)
 	{
 		return tricksy.getEyePos().distanceTo(new Vec3d(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D)) < INTERACT_RANGE;
@@ -103,6 +108,7 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 		BlockHitResult hitResult = new BlockHitResult(hitPos, Direction.getFacing(hitDir.x, hitDir.y, hitDir.z), blockPos, false);
 		
 		ActionResult result = state.onUse(world, player, Hand.MAIN_HAND, hitResult);
+		updateFromPlayer(tricksy, player);
 		player.discard();
 		return result;
 	}
@@ -116,7 +122,7 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 		BlockHitResult hitResult = new BlockHitResult(hitPos, face, blockPos, false);
 		
 		ActionResult result = player.getMainHandStack().useOnBlock(new ItemUsageContext(player, Hand.MAIN_HAND, hitResult));
-		tricksy.setStackInHand(Hand.MAIN_HAND, player.getMainHandStack().copy());
+		updateFromPlayer(tricksy, player);
 		player.discard();
 		return result;
 	}
@@ -125,8 +131,27 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	{
 		ServerFakePlayer player = ServerFakePlayer.makeForMob(tricksy, builderID);
 		ActionResult result = living.interact(player, Hand.MAIN_HAND);
-		tricksy.setStackInHand(Hand.MAIN_HAND, player.getMainHandStack().copy());
+		updateFromPlayer(tricksy, player);
 		player.discard();
 		return result;
+	}
+	
+	private static <T extends PathAwareEntity & ITricksyMob<?>> void updateFromPlayer(T tricksy, PlayerEntity player)
+	{
+		ItemStack stack = tricksy.getMainHandStack().copy();
+		tricksy.setStackInHand(Hand.MAIN_HAND, player.getMainHandStack().copy());
+		tricksy.setStackInHand(Hand.OFF_HAND, player.getOffHandStack().copy());
+		tricksy.getLocalWhiteboard().setItemCooldown(stack.getItem(), (int)player.getItemCooldownManager().getCooldownProgress(stack.getItem(), 0));
+	}
+	
+	public static boolean matchesEntityFilter(Entity stack, IWhiteboardObject<Entity> filter)
+	{
+		if(filter.size() == 0)
+			return true;
+		
+		for(Entity option : filter.getAll())
+			if(stack.getType() == option.getType())
+				return true;
+		return false;
 	}
 }

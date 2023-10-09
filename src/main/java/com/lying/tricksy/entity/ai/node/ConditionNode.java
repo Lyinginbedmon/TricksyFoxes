@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
+import com.lying.tricksy.entity.ai.node.subtype.ConditionInventory;
 import com.lying.tricksy.entity.ai.node.subtype.ConditionWhiteboard;
 import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
@@ -23,6 +24,8 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
@@ -35,8 +38,10 @@ public class ConditionNode extends TreeNode<ConditionNode>
 {
 	public static final Identifier VARIANT_CLOSER_THAN = ISubtypeGroup.variant("closer_than");
 	public static final Identifier VARIANT_BLOCK_POWERED = ISubtypeGroup.variant("block_powered");
+	public static final Identifier VARIANT_ON_FIRE = ISubtypeGroup.variant("on_fire");
+	public static final Identifier VARIANT_IS_TYPE = ISubtypeGroup.variant("is_type");	// TODO Implement entity type check
 	
-	private static final Set<ISubtypeGroup<ConditionNode>> SUBTYPES = Set.of(new ConditionWhiteboard());
+	private static final Set<ISubtypeGroup<ConditionNode>> SUBTYPES = Set.of(new ConditionWhiteboard(), new ConditionInventory());
 	
 	public ConditionNode(UUID uuidIn)
 	{
@@ -101,6 +106,24 @@ public class ConditionNode extends TreeNode<ConditionNode>
 			{
 				BlockPos position = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK).get();
 				return tricksy.getEntityWorld().isReceivingRedstonePower(position) ? Result.SUCCESS : Result.FAILURE;
+			}
+		}));
+		set.add(new NodeSubType<ConditionNode>(VARIANT_ON_FIRE, new NodeTickHandler<ConditionNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT), TFObjType.ENT.blank(), Local.SELF.displayName()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, ConditionNode parent)
+			{
+				IWhiteboardObject<Entity> var = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
+				
+				Entity ent = var.size() == 0 ? tricksy : var.get();
+				if(ent == null || !(ent instanceof LivingEntity))
+					return Result.FAILURE;
+				
+				return ((LivingEntity)ent).isOnFire() ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 	}

@@ -1,8 +1,10 @@
 package com.lying.tricksy.entity.ai.whiteboard;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.init.TFObjType;
@@ -14,6 +16,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -45,16 +48,20 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 	
 	protected EntityData storeValue(Entity val) { return val == null ? new EntityData() : new EntityData(val); }
 	
-	protected Entity getValue(WhiteboardObjEntity.EntityData entry) { return entry.blank ? null : entry.value; }
+	protected Entity getValue(WhiteboardObjEntity.EntityData entry) { return entry.isBlank() ? null : entry.value; }
 	
 	protected NbtCompound valueToNbt(WhiteboardObjEntity.EntityData val) { return val.storeToNbt(new NbtCompound()); }
 	
 	protected EntityData valueFromNbt(NbtCompound nbt)
 	{
-		if(!nbt.contains("UUID", NbtElement.INT_ARRAY_TYPE))
+		if(!nbt.contains("UUID", NbtElement.INT_ARRAY_TYPE) || !nbt.contains(Entity.ID_KEY, NbtElement.STRING_TYPE))
 			return new EntityData();
 		
-		WhiteboardObjEntity.EntityData data = new EntityData(nbt.getUuid("UUID"), nbt.getBoolean("IsPlayer"));
+		Optional<EntityType<?>> type = EntityType.fromNbt(nbt);
+		if(!type.isPresent())
+			return new EntityData();
+		
+		WhiteboardObjEntity.EntityData data = new EntityData(nbt.getUuid("UUID"), type.get());
 		data.lastKnownPos = NbtHelper.toBlockPos(nbt.getCompound("LastKnownPos"));
 		if(nbt.contains("EntityName", NbtElement.STRING_TYPE))
 		{
@@ -71,33 +78,35 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		return data;
 	}
 	
+	public boolean isBlank() { return value.get(0).isBlank(); }
+	
 	public static class EntityData
 	{
 		private Entity value = null;
 		private Text valueName = null;
 		private BlockPos lastKnownPos;
 		
+		@Nullable
 		private final UUID uuid;
-		private final boolean isPlayer;
-		private final boolean blank;
+		
+		@Nullable
+		private final EntityType<?> type;
 		
 		public EntityData()
 		{
-			blank = true;
 			uuid = UUID.randomUUID();
-			isPlayer = false;
+			type = null;
 		}
 		
-		public EntityData(UUID uuidIn, boolean isPlayerIn)
+		public EntityData(UUID uuidIn, EntityType<?> typeIn)
 		{
-			this.blank = false;
 			this.uuid = uuidIn;
-			this.isPlayer = isPlayerIn;
+			this.type = typeIn;
 		}
 		
 		public EntityData(@NotNull Entity entIn)
 		{
-			this(entIn.getUuid(), entIn.getType() == EntityType.PLAYER);
+			this(entIn.getUuid(), entIn.getType());
 			this.value = entIn;
 			storeName(value.getName());
 			this.lastKnownPos = entIn.getBlockPos();
@@ -105,11 +114,12 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		
 		protected NbtCompound storeToNbt(NbtCompound data)
 		{
-			if(blank)
+			if(isBlank())
 				return data;
 			
 			data.putUuid("UUID", this.uuid);
-			data.putBoolean("IsPlayer", this.isPlayer);
+			String typeName = getSavedEntityId();
+			data.putString(Entity.ID_KEY, typeName == null ? "" : typeName);
 			data.put("LastKnownPos", NbtHelper.fromBlockPos(this.lastKnownPos));
 			if(valueName != null)
 				data.putString("EntityName", Text.Serializer.toJson(valueName));
@@ -117,16 +127,20 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 			return data;
 		}
 		
+		public boolean isPlayer() { return this.type == EntityType.PLAYER; }
+		
+		public boolean isBlank() { return this.type == null; }
+		
 		public void recache(World world)
 		{
-			if(blank)
+			if(isBlank())
 				return;
 			
 			/*
 			 * If this object represents a player, search the playerlist for them.
 			 * Otherwise, search around the last known position of the entity for one with a matching UUID
 			 */
-			if(isPlayer)
+			if(isPlayer())
 				value = world.getPlayerByUuid(this.uuid);
 			else
 			{
@@ -134,7 +148,7 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 				if(searchArea.minY < world.getBottomY())
 					searchArea = searchArea.withMinY(world.getBottomY());
 				
-				for(Entity ent : world.getEntitiesByClass(Entity.class, searchArea, (entity) -> entity.getUuid().equals(this.uuid)))
+				for(Entity ent : world.getEntitiesByClass(this.type.getBaseClass(), searchArea, (entity) -> entity.getUuid().equals(this.uuid)))
 				{
 					value = ent;
 					break;
@@ -143,8 +157,11 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 			
 			if(value != null)
 			{
+				if(value.isSpectator() || !value.isAlive())
+					value = null;
+				
 				storeName(value.getName());
-				if(!isPlayer)
+				if(!isPlayer())
 					this.lastKnownPos = value.getBlockPos();
 			}
 		}
@@ -153,5 +170,13 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		{
 			this.valueName = nameIn.copyContentOnly();
 		}
+		
+	    @Nullable
+	    protected String getSavedEntityId()
+	    {
+	        EntityType<?> entityType = this.type;
+	        Identifier identifier = EntityType.getId(entityType);
+	        return !entityType.isSaveable() || identifier == null ? null : identifier.toString();
+	    }
 	}
 }

@@ -17,7 +17,9 @@ import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -180,15 +182,14 @@ public abstract class Whiteboard<T>
 	
 	public void setValue(WhiteboardRef reference, IWhiteboardObject<?> obj)
 	{
-		WhiteboardRef mapEntry = reference;
 		for(WhiteboardRef entry : values.keySet())
 			if(entry.isSameRef(reference))
 			{
-				mapEntry = entry;
-				break;
+				values.put(entry, objectToSupplier(obj));
+				return;
 			}
 		
-		values.put(mapEntry, objectToSupplier(obj));
+		values.put(reference, objectToSupplier(obj));
 	}
 	
 	protected IWhiteboardObject<?> getAndCache(WhiteboardRef nameIn, @Nullable World world)
@@ -331,6 +332,7 @@ public abstract class Whiteboard<T>
 		private final T tricksy;
 		
 		private int attackCooldown = 0;
+		private ItemCooldownManager itemCooldowns = new ItemCooldownManager();
 		
 		public Local(T tricksyIn)
 		{
@@ -351,7 +353,7 @@ public abstract class Whiteboard<T>
 			register(NEAREST_SAGE, (tricksy) -> 
 			{
 				PlayerEntity nearestSage = tricksy.getEntityWorld().getClosestPlayer(tricksy.getX(), tricksy.getY(), tricksy.getZ(), 32D, (player) -> tricksy.isSage((PlayerEntity)player));
-				return nearestSage == null ? WhiteboardObj.EMPTY : new WhiteboardObjEntity(nearestSage);
+				return nearestSage == null ? TFObjType.ENT.blank() : new WhiteboardObjEntity(nearestSage);
 			});
 			register(ATTACK_TARGET, (tricksy) -> tricksy.getAttacking() == null ? TFObjType.ENT.blank() : new WhiteboardObjEntity(tricksy.getAttacking()));
 			register(ON_GROUND, (tricksy) -> new WhiteboardObj.Bool(tricksy.isOnGround()));
@@ -364,11 +366,23 @@ public abstract class Whiteboard<T>
 		
 		public void tick()
 		{
-			attackCooldown = Math.max(0, attackCooldown - 1);
+			if(attackCooldown > 0)
+				attackCooldown = Math.max(0, attackCooldown - 1);
+			itemCooldowns.update();
 		}
 		
 		public boolean canAttack() { return attackCooldown == 0; }
 		
 		public void setAttackCooldown(int var) { this.attackCooldown = Math.max(0, var); }
+		
+		public void setItemCooldown(net.minecraft.item.Item item, int var)
+		{
+			if(item == Items.AIR)
+				return;
+			
+			this.itemCooldowns.set(item, var);
+		}
+		
+		public boolean isCoolingDown(net.minecraft.item.Item item) { return item == Items.AIR ? false : this.itemCooldowns.isCoolingDown(item); }
 	}
 }

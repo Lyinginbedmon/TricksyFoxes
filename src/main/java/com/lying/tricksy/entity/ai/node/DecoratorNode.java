@@ -45,6 +45,7 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 	public static final Identifier VARIANT_REPEAT = ISubtypeGroup.variant("repeat");
 	public static final Identifier VARIANT_RETRY = ISubtypeGroup.variant("retry");
 	public static final Identifier VARIANT_FOR_EACH = ISubtypeGroup.variant("for_each");
+	public static final Identifier VARIANT_DO_ONCE = ISubtypeGroup.variant("do_once");
 	
 	protected int ticks = 20;
 	
@@ -195,6 +196,22 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 				if(result.isEnd() && ++parent.ticks == duration.get())
 					return Result.FAILURE;
 				
+				return Result.RUNNING;
+			}
+		}));
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_DO_ONCE, new NodeTickHandler<DecoratorNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, DecoratorNode parent)
+			{
+				if(parent.ticks > 0)
+					return Result.FAILURE;
+				
+				Result result = parent.child().tick(tricksy, local, global);
+				if(result.isEnd())
+				{
+					parent.ticks = 1;
+					return result;
+				}
 				return Result.RUNNING;
 			}
 		}));

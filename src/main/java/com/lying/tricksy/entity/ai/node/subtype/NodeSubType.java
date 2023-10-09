@@ -45,4 +45,10 @@ public class NodeSubType<M extends TreeNode<?>>
 		
 		return tickFunc.doTick(tricksy, local, global, parent);
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <T extends PathAwareEntity & ITricksyMob<?>> void stop(T tricksy, TreeNode<?> parent)
+	{
+		tickFunc.stop(tricksy, (M)parent);
+	}
 }

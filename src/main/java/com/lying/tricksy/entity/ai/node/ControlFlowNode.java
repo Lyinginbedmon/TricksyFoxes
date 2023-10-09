@@ -72,7 +72,6 @@ public class ControlFlowNode extends TreeNode<ControlFlowNode>
 							return Result.RUNNING;
 					}
 				}
-				
 				return Result.SUCCESS;
 			}
 		}));
@@ -134,7 +133,7 @@ public class ControlFlowNode extends TreeNode<ControlFlowNode>
 					}
 				
 				if(result.isEnd())
-					parent.children().forEach((child) -> { if(child.isRunning()) child.stop(); });
+					parent.children().forEach((child) -> { if(child.isRunning()) child.stop(tricksy); });
 				
 				return result;
 			}

@@ -51,6 +51,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	private TreeNode<?> parent = null;
 	private List<TreeNode<?>> children = Lists.newArrayList();
 	
+	private TreeNode<?> tickRecipient = null;
+	
 	/** Map of input variable references to corresponding whiteboard references */
 	private Map<WhiteboardRef, Optional<WhiteboardRef>> variableSet = new HashMap<>();
 	
@@ -185,20 +187,42 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		if(!isRunnable())
 			return this.lastResult = Result.FAILURE;
 		
+		if(this.tickRecipient != null)
+		{
+			TreeNode<?> recipient = this.tickRecipient;
+			this.tickRecipient = null;
+			return recipient.tick(tricksy, local, global);
+		}
+		
 		if(this.lastResult.isEnd())
 			this.ticksRunning = 0;
 		else
 			this.ticksRunning++;
 		
 		@Nullable
-		Result result = null;
+		Result result = Result.FAILURE;
 		try
 		{
 			NodeSubType<N> subType = this.nodeType.getSubType(this.subType);
 			result = subType.call(tricksy, local, global, (N)this);
+			if(!result.isEnd())
+				setTickRecipient();
 		}
 		catch(Exception e) { }
-		return this.lastResult = (result == null ? Result.FAILURE : result);
+		return this.lastResult = result;
+	}
+	
+	/** Sets the next behaviour tree tick to prioritise this node */
+	public void setTickRecipient() { setTickRecipient(this); }
+	
+	/** Sets the next call to this node to bypass it in favour of a descendant */
+	public void setTickRecipient(TreeNode<?> nodeIn)
+	{
+		if(nodeIn != this)
+			this.tickRecipient = nodeIn;
+		
+		if(!isRoot())
+			parent().setTickRecipient(nodeIn);
 	}
 	
 	/** Returns true if this node is in a runnable condition */
@@ -262,10 +286,11 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** Returns true if the previous tick of this node did not end in a completion result */
 	public boolean isRunning() { return !lastResult.isEnd(); }
 	
-	public void stop()
+	public <T extends PathAwareEntity & ITricksyMob<?>> void stop(T tricksy)
 	{
 		lastResult = Result.FAILURE;
-		children.forEach((child) -> child.stop());
+		getSubType().stop(tricksy, this);
+		children.forEach((child) -> child.stop(tricksy));
 	}
 	
 	@Nullable

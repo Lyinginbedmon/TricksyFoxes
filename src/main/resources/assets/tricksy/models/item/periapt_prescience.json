@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-      "layer0": "tricksy:items/periapt_prescience"
+      "layer0": "tricksy:item/periapt_prescience"
   }
 }

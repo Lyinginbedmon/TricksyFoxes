@@ -62,7 +62,7 @@ public class BehaviourTree
 			--waitTicks;
 		
 		tricksy.setSleeping(false);
-		if(root().tick(tricksy, local, global) == Result.FAILURE)
+		if(root().tick(tricksy, local, global) == Result.FAILURE)	// TODO Identify active node and tick that instead of entire tree
 			waitTicks = Reference.Values.TICKS_PER_SECOND;
 	}
 	
@@ -91,4 +91,6 @@ public class BehaviourTree
 			tally += recursiveNodeCount(child);
 		return tally;
 	}
+	
+	public boolean isRunning() { return this.waitTicks == 0; }
 }

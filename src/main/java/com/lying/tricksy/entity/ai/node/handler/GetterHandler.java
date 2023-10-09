@@ -38,14 +38,17 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 	
 	public <N extends PathAwareEntity & ITricksyMob<?>> Result doTick(N tricksy, Local<N> local, Global global, LeafNode parent)
 	{
+		WhiteboardRef dest = parent.variable(entry);
 		IWhiteboardObject<T> result = getResult(tricksy, local, global, parent);
 		if(result == null || result.isEmpty())
 		{
-			local.setValue(entry, type.blank());
+			System.out.println("Getter retrieved useless value");
+			local.setValue(dest, type.blank());
 			return Result.FAILURE;
 		}
 		
-		local.setValue(parent.variable(entry), result);
+		local.setValue(dest, result);
+		System.out.println("New value of "+dest.name()+": "+result.describe().get(0).getString());
 		return Result.SUCCESS;
 	}
 	

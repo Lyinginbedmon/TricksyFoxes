@@ -33,11 +33,11 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 {
 	public static final Identifier VARIANT_CYCLE = ISubtypeGroup.variant("cycle_value");
 	public static final Identifier VARIANT_SORT_NEAREST = ISubtypeGroup.variant("sort_nearest");
-	public static final Identifier VARIANT_SET = ISubtypeGroup.variant("set_value");
+	public static final Identifier VARIANT_COPY = ISubtypeGroup.variant("set_value");
 	
 	public void addActions(Collection<NodeSubType<LeafNode>> set)
 	{
-		set.add(new NodeSubType<LeafNode>(VARIANT_CYCLE, new NodeTickHandler<LeafNode>()
+		add(set, VARIANT_CYCLE, new NodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BOOL).displayName(CommonVariables.translate("to_cycle"));
 			
@@ -55,8 +55,8 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				value.cycle();
 				return Result.SUCCESS;
 			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_SORT_NEAREST, new NodeTickHandler<LeafNode>()
+		});
+		add(set, VARIANT_SORT_NEAREST, new NodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BLOCK).displayName(CommonVariables.translate("to_cycle"));
 			private static BlockPos position;
@@ -101,32 +101,37 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_SET, new NodeTickHandler<LeafNode>()
+		});
+		add(set, VARIANT_COPY, new NodeTickHandler<LeafNode>()
 		{
-			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_copy", TFObjType.BOOL).displayName(CommonVariables.translate("to_copy"));
-			public static final WhiteboardRef VAR_B = new WhiteboardRef("target_reference", TFObjType.BOOL).displayName(CommonVariables.translate("ref_target"));
+			public static final WhiteboardRef COPY = new WhiteboardRef("value_to_copy", TFObjType.BOOL).displayName(CommonVariables.translate("to_copy"));
+			public static final WhiteboardRef DEST = new WhiteboardRef("target_reference", TFObjType.BOOL).displayName(CommonVariables.translate("ref_target"));
 			
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						VAR_A, INodeInput.makeInput(NodeTickHandler.any()),
-						VAR_B, INodeInput.makeInput(NodeTickHandler.anyLocal().and((var) -> !var.uncached())));
+						COPY, INodeInput.makeInput(NodeTickHandler.any(), TFObjType.EMPTY.blank(), Text.literal("")),
+						DEST, INodeInput.makeInput((var) -> !var.uncached() && var.boardType() == BoardType.LOCAL));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
-				WhiteboardRef from = parent.variable(VAR_A);
-				WhiteboardRef to = parent.variable(VAR_B);
+				IWhiteboardObject<?> value = getOrDefault(COPY, parent, local, global);
+				WhiteboardRef target = parent.variable(DEST);
 				
-				/** Destination must be a cachable value in a local whiteboard of the same or castable data type */
-				if(!from.type().castableTo(to.type()))
-					return Result.FAILURE;
+				if(value.type() != TFObjType.EMPTY)
+				{
+					if(!target.type().castableTo(value.type()))
+						return Result.FAILURE;
+					
+					local.setValue(target, value.as(target.type()));
+				}
+				else
+					local.setValue(target, target.type().blank());
 				
-				local.setValue(to, Whiteboard.get(from, local, global).as(to.type()));
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
-		}));
+		});
 	}
 }

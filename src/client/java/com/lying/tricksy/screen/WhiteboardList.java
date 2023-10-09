@@ -146,7 +146,7 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 			if(reference.boardType() == BoardType.CONSTANT)
 				return;
 			
-			if(valueSnapshot != null && !valueSnapshot.isEmpty())
+			if(valueSnapshot != null && valueSnapshot.size() > 0)
 			{
 				List<Text> description = valueSnapshot.describe();
 				

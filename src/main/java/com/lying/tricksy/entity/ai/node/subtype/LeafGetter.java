@@ -38,13 +38,18 @@ import net.minecraft.world.World;
 
 public class LeafGetter implements ISubtypeGroup<LeafNode>
 {
+	// World scanning getters
 	public static final Identifier VARIANT_GET_ITEM = ISubtypeGroup.variant("nearest_item");
 	public static final Identifier VARIANT_GET_MONSTER = ISubtypeGroup.variant("nearest_hostile");
+	
+	// Entity value getters
 	public static final Identifier VARIANT_GET_ASSAILANT = ISubtypeGroup.variant("get_assailant");
+	public static final Identifier VARIANT_GET_HEALTH = ISubtypeGroup.variant("get_health");
+	public static final Identifier VARIANT_GET_HELD = ISubtypeGroup.variant("get_held_item");
 	
 	public void addActions(Collection<NodeSubType<LeafNode>> set)
 	{
-		set.add(new NodeSubType<LeafNode>(VARIANT_GET_ITEM, new GetterHandler<Entity>(TFObjType.ENT)
+		add(set, VARIANT_GET_ITEM, new GetterHandler<Entity>(TFObjType.ENT)
 		{
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
@@ -52,8 +57,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
 				set.put(CommonVariables.VAR_ITEM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ITEM), new WhiteboardObj.Item()));
 			}
-
-			@Override
+			
 			public <N extends PathAwareEntity & ITricksyMob<?>> @Nullable IWhiteboardObject<Entity> getResult(N tricksy, Local<N> local, Global global, LeafNode parent)
 			{
 				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
@@ -68,7 +72,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				if(search.minY < world.getBottomY())
 					search = search.withMinY(world.getBottomY());
 				
-				List<ItemEntity> items = world.getEntitiesByClass(ItemEntity.class, search, (item) -> InventoryHandler.matchesFilter(item.getStack(), filter));
+				List<ItemEntity> items = world.getEntitiesByClass(ItemEntity.class, search, (item) -> InventoryHandler.matchesItemFilter(item.getStack(), filter));
 				if(items.isEmpty())
 					return null;
 				
@@ -85,8 +89,8 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				
 				return new WhiteboardObjEntity(items.get(0));
 			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_GET_MONSTER, new GetterHandler<Entity>(TFObjType.ENT)
+		});
+		add(set, VARIANT_GET_MONSTER, new GetterHandler<Entity>(TFObjType.ENT)
 		{
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
@@ -107,7 +111,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				if(search.minY < world.getBottomY())
 					search = search.withMinY(world.getBottomY());
 				
-				List<MobEntity> monsters = world.getEntitiesByClass(MobEntity.class, search, (ent) -> ent.isAlive() && ent instanceof Monster && ent != tricksy);
+				List<MobEntity> monsters = world.getEntitiesByClass(MobEntity.class, search, (ent) -> ent.isAlive() && !ent.isSpectator() && ent instanceof Monster && ent != tricksy);
 				if(monsters.isEmpty())
 					return null;
 				
@@ -121,11 +125,11 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 							return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
 						}
 					});
-				
+				System.out.println("Nearest monster: "+monsters.get(0).getDisplayName().getString());
 				return new WhiteboardObjEntity(monsters.get(0));
 			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_GET_ASSAILANT, new GetterHandler<Entity>(TFObjType.ENT)
+		});
+		add(set, VARIANT_GET_ASSAILANT, new GetterHandler<Entity>(TFObjType.ENT)
 		{
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
@@ -143,6 +147,52 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				Entity assailant = ((LivingEntity)entity).getAttacker();
 				return assailant == null || assailant == tricksy ? new WhiteboardObjEntity() : new WhiteboardObjEntity(assailant);
 			}
-		}));
+		});
+		add(set, VARIANT_GET_HEALTH, new GetterHandler<Integer>(TFObjType.INT)
+		{
+			private static final WhiteboardRef MAX = new WhiteboardRef("max_health", TFObjType.BOOL).displayName(CommonVariables.translate("max_health"));
+			
+			public void addVariables(Map<WhiteboardRef, INodeInput> set)
+			{
+				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT), new WhiteboardObjEntity(), Local.SELF.displayName()));
+				set.put(MAX, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BOOL), new WhiteboardObj.Bool(false)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getResult(T tricksy, Local<T> local, Global global, LeafNode parent)
+			{
+				IWhiteboardObject<Entity> target = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
+				IWhiteboardObject<Boolean> isMax = getOrDefault(MAX, parent, local, global).as(TFObjType.BOOL);
+				
+				Entity entity = target.size() == 0 ? tricksy : target.get();
+				if(!(entity instanceof LivingEntity) || !entity.isAlive())
+					return null;
+				
+				LivingEntity living = (LivingEntity)entity;
+				return new WhiteboardObj.Int((int)(isMax.get() ? living.getMaxHealth() : living.getHealth()));
+			}
+		});
+		add(set, VARIANT_GET_HELD, new GetterHandler<ItemStack>(TFObjType.ITEM)
+		{
+			private static final WhiteboardRef OFF = new WhiteboardRef("offhand", TFObjType.BOOL).displayName(CommonVariables.translate("offhand"));
+			
+			public void addVariables(Map<WhiteboardRef, INodeInput> set)
+			{
+				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT), new WhiteboardObjEntity(), Local.SELF.displayName()));
+				set.put(OFF, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BOOL), new WhiteboardObj.Bool(false)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<ItemStack> getResult(T tricksy, Local<T> local, Global global, LeafNode parent)
+			{
+				IWhiteboardObject<Entity> target = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
+				IWhiteboardObject<Boolean> isOff = getOrDefault(OFF, parent, local, global).as(TFObjType.BOOL);
+				
+				Entity entity = target.size() == 0 ? tricksy : target.get();
+				if(!(entity instanceof LivingEntity))
+					return null;
+				
+				LivingEntity living = (LivingEntity)entity;
+				return new WhiteboardObj.Item(isOff.get() ? living.getOffHandStack() : living.getMainHandStack());
+			}
+		});
 	}
 }

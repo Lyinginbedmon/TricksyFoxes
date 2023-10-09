@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.BehaviourTree;
+import com.lying.tricksy.entity.ai.TricksyLookAroundGoal;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Global;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.Local;
@@ -21,7 +22,6 @@ import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.VariantHolder;
 import net.minecraft.entity.ai.control.LookControl;
-import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -84,7 +84,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	protected void initGoals()
 	{
 		this.goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 6.0f));
-		this.goalSelector.add(8, new LookAroundGoal(this));
+		this.goalSelector.add(8, new TricksyLookAroundGoal(this));
 	}
 	
 	public static DefaultAttributeContainer.Builder createMobAttributes()

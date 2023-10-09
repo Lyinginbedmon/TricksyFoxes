@@ -57,7 +57,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 	
 	public void addActions(Collection<NodeSubType<LeafNode>> set)
 	{
-		set.add(new NodeSubType<LeafNode>(VARIANT_DROP, new NodeTickHandler<LeafNode>()
+		add(set, VARIANT_DROP, new NodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
@@ -74,8 +74,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				tricksy.dropStack(heldStack.split(amount.size() == 0 ? heldStack.getCount() : amount.get()));
 				return Result.SUCCESS;
 			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_SWAP, new NodeTickHandler<LeafNode>()
+		});
+		add(set, VARIANT_SWAP, new NodeTickHandler<LeafNode>()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, Local<T> local, Global global, LeafNode parent)
 			{
@@ -86,8 +86,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				tricksy.setStackInHand(Hand.OFF_HAND, mainStack);
 				return Result.SUCCESS;
 			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_INSERT_ITEM, new InventoryHandler()
+		});
+		add(set, VARIANT_INSERT_ITEM, new InventoryHandler()
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_insert");
 			
@@ -125,7 +125,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				}
 				
 				// Fail if our held stack doesn't meet a provided item filter
-				if(filter.size() > 0 && !InventoryHandler.matchesFilter(heldStack, filter.as(TFObjType.ITEM)))
+				if(filter.size() > 0 && !InventoryHandler.matchesItemFilter(heldStack, filter.as(TFObjType.ITEM)))
 				{
 					tricksy.logStatus(Text.literal("I don't have the right item to insert"));
 					return Result.FAILURE;
@@ -144,11 +144,12 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				
 				if(tricksy.getRandom().nextInt(20) == 0)
 					NodeTickHandler.activateBlock(block, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
+				tricksy.getLookControl().lookAt(block.getX() + 0.5D, block.getY() + 0.5D, block.getZ() + 0.5D);
 				
 				return insertStack.isEmpty() ? Result.SUCCESS : Result.FAILURE;
 			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_EXTRACT_ITEM, new InventoryHandler()
+		});
+		add(set, VARIANT_EXTRACT_ITEM, new InventoryHandler()
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_extract");
 			
@@ -185,7 +186,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				// Fail if we can't put the extracted item into our main hand
 				ItemStack heldStack = tricksy.getMainHandStack();
 				if(!heldStack.isEmpty())
-					if(heldStack.getCount() == heldStack.getMaxCount() || !InventoryHandler.matchesFilter(heldStack, filter))
+					if(heldStack.getCount() == heldStack.getMaxCount() || !InventoryHandler.matchesItemFilter(heldStack, filter))
 					{
 						tricksy.logStatus(Text.literal("I can't extract that currently"));
 						return Result.FAILURE;
@@ -194,11 +195,13 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				Inventory inv = (Inventory)tile;
 				
 				// Fail if the inventory doesn't contain any items that match the filter
-				if(filter.size() > 0 && !inv.containsAny((stack) -> InventoryHandler.matchesFilter(stack, filter)))
+				if(filter.size() > 0 && !inv.containsAny((stack) -> InventoryHandler.matchesItemFilter(stack, filter)))
 				{
 					tricksy.logStatus(Text.literal("There isn't any of that there"));
 					return Result.FAILURE;
 				}
+				
+				tricksy.getLookControl().lookAt(block.getX() + 0.5D, block.getY() + 0.5D, block.getZ() + 0.5D);
 				
 				// The extracted item
 				ItemStack extracted = ItemStack.EMPTY;
@@ -209,7 +212,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 					int[] slots = sidedInv.getAvailableSlots(side);
 					for(int slot : slots)
 					{
-						if(InventoryHandler.matchesFilter(sidedInv.getStack(slot), filter))
+						if(InventoryHandler.matchesItemFilter(sidedInv.getStack(slot), filter))
 							extracted = InventoryHandler.extractItemFrom(inv, slot, heldStack);
 						
 						if(!extracted.isEmpty())
@@ -235,8 +238,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 					return Result.SUCCESS;
 				}
 			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_PICK_UP, new NodeTickHandler<LeafNode>()
+		});
+		add(set, VARIANT_PICK_UP, new NodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
@@ -254,6 +257,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				ItemEntity itemEnt = (ItemEntity)value.get();
 				if(itemEnt.cannotPickup())
 					return Result.FAILURE;
+				
+				tricksy.getLookControl().lookAt(itemEnt);
 				
 				ItemStack itemStack = itemEnt.getStack();
 				ItemStack heldStack = tricksy.getMainHandStack();
@@ -274,8 +279,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_EQUIP, new NodeTickHandler<LeafNode>()
+		});
+		add(set, VARIANT_EQUIP, new NodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
 			
@@ -288,7 +293,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 			{
 				IWhiteboardObject<ItemStack> filter = getOrDefault(FILTER, parent, local, global).as(TFObjType.ITEM);
 				ItemStack heldStack = tricksy.getMainHandStack();
-				if(heldStack.isEmpty() || !InventoryHandler.matchesFilter(heldStack, filter))
+				if(heldStack.isEmpty() || !InventoryHandler.matchesItemFilter(heldStack, filter))
 					return Result.FAILURE;
 				
 				if(!(heldStack.getItem() instanceof ArmorItem))
@@ -307,8 +312,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				tricksy.setStackInHand(Hand.MAIN_HAND, heldStack.getCount() > 0 ? heldStack : ItemStack.EMPTY);
 				return Result.SUCCESS;
 			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_UNEQUIP, new NodeTickHandler<LeafNode>()
+		});
+		add(set, VARIANT_UNEQUIP, new NodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
@@ -347,6 +352,6 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				tricksy.equipStack(equip, ItemStack.EMPTY);
 				return Result.SUCCESS;
 			}
-		}));
+		});
 	}
 }

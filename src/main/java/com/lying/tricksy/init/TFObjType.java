@@ -46,7 +46,7 @@ public class TFObjType<T>
 	/** Entity value, the only object type that must be recached after loading to restore its value */
 	public static final TFObjType<Entity> ENT = register(new TFObjType<>("entity", () -> new WhiteboardObjEntity())
 			.castTo(TFObjType.BLOCK, (obj) -> new WhiteboardObjBlock(obj.get().getBlockPos(), Direction.UP))
-			.emptyIf((obj) -> obj.get() != null && (!obj.get().isAlive() || obj.get().isSpectator())));
+			.emptyIf((obj) -> obj.get() == null || !obj.get().isAlive() || obj.get().isSpectator()));
 	/** ItemStack value */
 	public static final TFObjType<ItemStack> ITEM = register(new TFObjType<>("item", () -> new Item())
 			.castTo(TFObjType.INT, (obj) -> new WhiteboardObj.Int(obj.get().getCount()))
