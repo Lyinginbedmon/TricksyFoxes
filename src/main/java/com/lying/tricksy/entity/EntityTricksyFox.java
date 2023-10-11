@@ -173,11 +173,10 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	public void tick()
 	{
 		super.tick();
-		if(activeUsers() <= 0)
+		if(activeUsers() <= 0 && !isAiDisabled())
 			ITricksyMob.updateBehaviourTree(this);
 		
-		if(this.barkTicks > 0)
-			if(--this.barkTicks == 0)
+		if(this.barkTicks > 0 && --this.barkTicks == 0)
 				getDataTracker().set(BARK, 0);
 	}
 	
@@ -322,4 +321,6 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		int index = getDataTracker().get(BARK).intValue();
 		return Bark.values()[index % Bark.values().length];
 	}
+	
+	public ItemStack getProjectileType(ItemStack stack) { return ITricksyMob.getRangedProjectile(stack, this); }
 }

@@ -6,7 +6,8 @@
 	"mixins": [
 		"ScreenHandlerMixin",
 		"ItemStackMixin",
-		"TargetPredicateMixin"
+		"TargetPredicateMixin",
+		"CrossbowItemInvoker"
 	],
 	"injectors": {
 		"defaultRequire": 1

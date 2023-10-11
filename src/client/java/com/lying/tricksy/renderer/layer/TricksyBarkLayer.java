@@ -38,7 +38,7 @@ public class TricksyBarkLayer<T extends PathAwareEntity & ITricksyMob<?>, M exte
 	public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, T tricksy, float limbAngle, float limbDistance, float age, float headYaw, float headPitch, float tickDelta)
 	{
 		Bark bark = tricksy.currentBark();
-		if(bark == Bark.NONE)
+		if(bark == Bark.NONE || dispatcher.getSquaredDistanceToCamera(tricksy) > (32 * 32))
 			return;
 		
 		Identifier barkTex = bark.textureLocation();
@@ -49,7 +49,11 @@ public class TricksyBarkLayer<T extends PathAwareEntity & ITricksyMob<?>, M exte
 			matrices.push();
 				matrices.multiply(dispatcher.getRotation());
 				matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0f));
-				matrices.translate(0D, tricksy.getHeight(), 0D);
+				float yOffset = tricksy.getHeight() - tricksy.getEyeHeight(tricksy.getPose());
+				yOffset += 0.1D;
+				yOffset += scale / 2D;
+				yOffset += tricksy.hasCustomName() && (tricksy.shouldRenderName() || tricksy == MinecraftClient.getInstance().targetedEntity) ? 1D : 0D;
+				matrices.translate(0D, yOffset, 0D);
 				Tessellator tessellator = Tessellator.getInstance();
 				BufferBuilder consumer = tessellator.getBuffer();
 				consumer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);

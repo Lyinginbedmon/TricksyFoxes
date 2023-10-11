@@ -2,6 +2,7 @@ package com.lying.tricksy.entity;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -18,6 +19,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -107,6 +110,20 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 	public void setSleeping(boolean var);
 	
 	public boolean isSleeping();
+	
+	public ItemStack getProjectileType(ItemStack stack);
+	
+	/** Performs the same projectile-fetching as used by Piglins and Pillagers */
+	public static ItemStack getRangedProjectile(ItemStack stack, LivingEntity shooter)
+	{
+        if(stack.getItem() instanceof RangedWeaponItem)
+        {
+            Predicate<ItemStack> predicate = ((RangedWeaponItem)stack.getItem()).getHeldProjectiles();
+            ItemStack ammo = RangedWeaponItem.getHeldProjectile(shooter, predicate);
+            return ammo.isEmpty() ? new ItemStack(Items.ARROW) : ammo;
+        }
+        return ItemStack.EMPTY;
+	}
 	
 	public static enum Bark implements StringIdentifiable
 	{

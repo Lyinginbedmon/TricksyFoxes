@@ -86,6 +86,7 @@ public class LeafNode extends TreeNode<LeafNode>
 			{
 				int index = MathHelper.clamp(getOrDefault(BARK, parent, local, global).as(TFObjType.INT).get(), 0, Bark.values().length - 1);
 				tricksy.bark(Bark.values()[index]);
+				tricksy.logStatus(Text.literal("Arf! Arf!"));
 				return Result.SUCCESS;
 			}
 		}));

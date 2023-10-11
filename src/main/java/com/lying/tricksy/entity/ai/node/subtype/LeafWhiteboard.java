@@ -33,7 +33,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_CYCLE = ISubtypeGroup.variant("cycle_value");
 	public static final Identifier VARIANT_SORT_NEAREST = ISubtypeGroup.variant("sort_nearest");
 	public static final Identifier VARIANT_COPY = ISubtypeGroup.variant("set_value");
-	public static final Identifier VARIANT_ADD = ISubtypeGroup.variant("addition");	// TODO
+	public static final Identifier VARIANT_ADD = ISubtypeGroup.variant("addition");	// TODO Make in/decrement node
 	
 	public void addActions(Collection<NodeSubType<LeafNode>> set)
 	{

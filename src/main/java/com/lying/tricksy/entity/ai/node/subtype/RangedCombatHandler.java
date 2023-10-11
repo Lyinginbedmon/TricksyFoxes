@@ -49,12 +49,17 @@ public abstract class RangedCombatHandler extends CombatHandler
 		if(tricksy.getItemUseTime() >= getDrawTime())
 		{
 			tricksy.logStatus(Text.literal("Firing!"));
-			attack(target, BowItem.getPullProgress(tricksy.getItemUseTime()), tricksy);
+			attack(target, bowStack, BowItem.getPullProgress(tricksy.getItemUseTime()), tricksy);
 			local.setAttackCooldown(Reference.Values.TICKS_PER_SECOND);
 			return Result.SUCCESS;
 		}
 		
 		return Result.RUNNING;
+	}
+	
+	protected void attack(LivingEntity target, ItemStack bowStack, float pullProgress, PathAwareEntity shooter)
+	{
+		attack(target, pullProgress, shooter);
 	}
 	
 	protected abstract void attack(LivingEntity target, float pullProgress, PathAwareEntity shooter);

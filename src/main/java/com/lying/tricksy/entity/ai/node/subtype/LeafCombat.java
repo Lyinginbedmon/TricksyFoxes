@@ -1,9 +1,11 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
 
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.LeafNode;
@@ -20,23 +22,31 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.mixin.CrossbowItemInvoker;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.entity.projectile.TridentEntity;
+import net.minecraft.entity.projectile.thrown.PotionEntity;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionUtil;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class LeafCombat implements ISubtypeGroup<LeafNode>
@@ -46,10 +56,21 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_ATTACK_BOW = ISubtypeGroup.variant("bow_attack");
 	public static final Identifier VARIANT_ATTACK_TRIDENT = ISubtypeGroup.variant("trident_attack");
 	public static final Identifier VARIANT_ATTACK_CROSSBOW = ISubtypeGroup.variant("crossbow_attack");
+	public static final Identifier VARIANT_ATTACK_POTION = ISubtypeGroup.variant("potion_attack");
 	
 	public void addActions(Collection<NodeSubType<LeafNode>> set)
 	{
-		add(set, VARIANT_SET_ATTACK, new NodeTickHandler<LeafNode>()
+		add(set, VARIANT_SET_ATTACK, setAttackTarget());
+		add(set, VARIANT_ATTACK_MELEE, meleeAttack());
+		add(set, VARIANT_ATTACK_BOW, bowAttack());
+		add(set, VARIANT_ATTACK_TRIDENT, tridentAttack());
+		add(set, VARIANT_ATTACK_CROSSBOW, crossbowAttack());
+		add(set, VARIANT_ATTACK_POTION, potionAttack());
+	}
+	
+	private static NodeTickHandler<LeafNode> setAttackTarget()
+	{
+		return new NodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
@@ -74,24 +95,80 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 				else
 					return Result.FAILURE;
 			}
-		});
-		add(set, VARIANT_ATTACK_MELEE, new CombatHandler()
+		};
+	}
+	
+	private static NodeTickHandler<LeafNode> meleeAttack()
+	{
+		return new CombatHandler()
 		{
 			protected <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result attack(T tricksy, LivingEntity target, LocalWhiteboard<T> local, LeafNode parent)
 			{
 				if(tricksy.isInAttackRange(target) && !target.isInvulnerable())
 				{
 					tricksy.swingHand(Hand.MAIN_HAND);
-					boolean success = tricksy.tryAttack(target);
 					tricksy.logStatus(Text.literal("Have at you!"));
-					if(success)
-						local.setAttackCooldown(Reference.Values.TICKS_PER_SECOND);
-					return success ? Result.SUCCESS : Result.FAILURE;
+					return tricksy.tryAttack(target) ? Result.SUCCESS : Result.FAILURE;
 				}
 				return Result.FAILURE;
 			}
-		});
-		add(set, VARIANT_ATTACK_BOW, new RangedCombatHandler()
+		};
+	}
+	
+	private static NodeTickHandler<LeafNode> potionAttack()
+	{
+		return new RangedCombatHandler()
+		{
+			public boolean isRangeWeapon(ItemStack bowStack) { return bowStack.isOf(Items.SPLASH_POTION) || bowStack.isOf(Items.LINGERING_POTION); }
+			
+			public int getDrawTime() { return 0; }
+			
+			protected void attack(LivingEntity target, ItemStack bowStack, float pullProgress, PathAwareEntity shooter)
+			{
+				Vec3d targetVel = target.getVelocity();
+		        double offsetX = target.getX() + targetVel.x - shooter.getX();
+		        double offsetY = target.getEyeY() - (double)1.1f - shooter.getY();
+		        double offsetZ = target.getZ() + targetVel.z - shooter.getZ();
+		        double distance = Math.sqrt(offsetX * offsetX + offsetZ * offsetZ);
+		        Potion potion = PotionUtil.getPotion(bowStack);
+		        PotionEntity potionEntity = new PotionEntity(shooter.getWorld(), shooter);
+		        potionEntity.setItem(PotionUtil.setPotion(new ItemStack(Items.SPLASH_POTION), potion));
+		        potionEntity.setPitch(potionEntity.getPitch() - -20.0f);
+		        potionEntity.setVelocity(offsetX, offsetY + distance * 0.2, offsetZ, 0.75f, 8.0f);
+		        if(!shooter.isSilent())
+		            shooter.getWorld().playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), SoundEvents.ENTITY_WITCH_THROW, shooter.getSoundCategory(), 1.0f, 0.8f + shooter.getRandom().nextFloat() * 0.4f);
+		        shooter.getWorld().spawnEntity(potionEntity);
+			}
+			
+			protected void attack(LivingEntity target, float pullProgress, PathAwareEntity shooter) { }
+		};
+	}
+	
+	private static NodeTickHandler<LeafNode> tridentAttack()
+	{
+		return new RangedCombatHandler() 
+		{
+			public boolean isRangeWeapon(ItemStack bowStack) { return bowStack.isOf(Items.TRIDENT); }
+			
+			public int getDrawTime() { return Reference.Values.TICKS_PER_SECOND; }
+			
+			protected void attack(LivingEntity target, float pullProgress, PathAwareEntity shooter)
+			{
+		        TridentEntity tridentEntity = new TridentEntity(shooter.getWorld(), (LivingEntity)shooter, new ItemStack(Items.TRIDENT));
+		        double offsetX = target.getX() - shooter.getX();
+		        double offsetY = target.getBodyY(0.3333333333333333) - tridentEntity.getY();
+		        double offsetZ = target.getZ() - shooter.getZ();
+		        double distance = Math.sqrt(offsetX * offsetX + offsetZ * offsetZ);
+		        tridentEntity.setVelocity(offsetX, offsetY + distance * (double)0.2f, offsetZ, 1.6f, 14 - shooter.getWorld().getDifficulty().getId() * 4);
+		        shooter.playSound(SoundEvents.ENTITY_DROWNED_SHOOT, 1.0f, 1.0f / (shooter.getRandom().nextFloat() * 0.4f + 0.8f));
+		        shooter.getWorld().spawnEntity(tridentEntity);
+			}
+		};
+	}
+	
+	private static NodeTickHandler<LeafNode> bowAttack()
+	{
+		return new RangedCombatHandler()
 		{
 			private static final WhiteboardRef DRAW = new WhiteboardRef("draw_time", TFObjType.INT).displayName(CommonVariables.translate("draw_time"));
 			/** How long the bow should be drawn */
@@ -117,7 +194,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 			    ItemStack bowStack = this.getProjectileType(shooter.getMainHandStack(), shooter);
 			    PersistentProjectileEntity arrow = ProjectileUtil.createArrowProjectile(shooter, bowStack, pullProgress);
 			    double d = target.getX() - shooter.getX();
-			    double e = target.getBodyY(0.3333333333333333) - arrow.getY();
+			    double e = target.getBodyY(1D/3D) - arrow.getY();
 			    double f = target.getZ() - shooter.getZ();
 			    double g = Math.sqrt(d * d + f * f);
 			    
@@ -128,27 +205,13 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 			    shooter.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1.0f, 1.0f / (shooter.getRandom().nextFloat() * 0.4f + 0.8f));
 			    world.spawnEntity(arrow);
 			}
-			
-		});
-		add(set, VARIANT_ATTACK_TRIDENT, new RangedCombatHandler() 
-		{
-			public boolean isRangeWeapon(ItemStack bowStack) { return bowStack.isOf(Items.TRIDENT); }
-			
-			public int getDrawTime() { return Reference.Values.TICKS_PER_SECOND; }
-			
-			protected void attack(LivingEntity target, float pullProgress, PathAwareEntity shooter)
-			{
-		        TridentEntity tridentEntity = new TridentEntity(shooter.getWorld(), (LivingEntity)shooter, new ItemStack(Items.TRIDENT));
-		        double d = target.getX() - shooter.getX();
-		        double e = target.getBodyY(0.3333333333333333) - tridentEntity.getY();
-		        double f = target.getZ() - shooter.getZ();
-		        double g = Math.sqrt(d * d + f * f);
-		        tridentEntity.setVelocity(d, e + g * (double)0.2f, f, 1.6f, 14 - shooter.getWorld().getDifficulty().getId() * 4);
-		        shooter.playSound(SoundEvents.ENTITY_DROWNED_SHOOT, 1.0f, 1.0f / (shooter.getRandom().nextFloat() * 0.4f + 0.8f));
-		        shooter.getWorld().spawnEntity(tridentEntity);
-			}
-		});
-		add(set, VARIANT_ATTACK_CROSSBOW, new RangedCombatHandler()
+		};
+	}
+	
+	
+	private static NodeTickHandler<LeafNode> crossbowAttack()
+	{
+		return new RangedCombatHandler()
 		{
 			protected <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result attack(T tricksy, LivingEntity target, LocalWhiteboard<T> local, LeafNode parent)
 			{
@@ -159,24 +222,14 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 				switch(getStage(bowStack, tricksy.getActiveItem().equals(bowStack)))
 				{
 					case UNCHARGED:
-						System.out.println("Crossbow uncharged, starting to draw");
 						tricksy.logStatus(Text.literal("Draw!"));
 						tricksy.setCurrentHand(Hand.MAIN_HAND);
 						break;
 					case CHARGING:
-						int pullTime = CrossbowItem.getPullTime(tricksy.getActiveItem());
-						System.out.println("Crossbow uncharged, drawing "+tricksy.getItemUseTime()+" / "+pullTime);
-						if(tricksy.getItemUseTime() > CrossbowItem.getPullTime(tricksy.getActiveItem()))
-						{
-							System.out.println("Drawing interrupted, charged="+CrossbowItem.isCharged(tricksy.getMainHandStack())+", pull progress="+((float)tricksy.getItemUseTime() / pullTime));
-							tricksy.setStackInHand(Hand.OFF_HAND, new ItemStack(Items.ARROW));
+						if(tricksy.getItemUseTime() >= CrossbowItem.getPullTime(tricksy.getActiveItem()))
 							tricksy.stopUsingItem();
-							tricksy.setStackInHand(Hand.MAIN_HAND, bowStack);
-							tricksy.setStackInHand(Hand.OFF_HAND, ItemStack.EMPTY);
-						}
 						break;
 					case CHARGED:
-						System.out.println("Crossbow charged, firing");
 						return super.attack(tricksy, target, local, parent);
 				}
 				
@@ -189,14 +242,66 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 			
 			protected void attack(LivingEntity target, float pullProgress, PathAwareEntity shooter) 
 			{
-				// TODO Actually shoot crossbow
-				
-				
-				Hand hand = ProjectileUtil.getHandPossiblyHolding(shooter, Items.CROSSBOW);
-				ItemStack bowStack = shooter.getStackInHand(hand);
-				CrossbowItem.setCharged(bowStack, false);
-				shooter.setStackInHand(hand, bowStack);
+				shootAll(target, shooter.getWorld(), shooter, Hand.MAIN_HAND, shooter.getMainHandStack(), 1.6F, 14 - shooter.getWorld().getDifficulty().getId() * 4);
 			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
+			{
+				super.onEnd(tricksy, parent);
+				ItemStack bowStack = tricksy.getMainHandStack();
+				CrossbowItemInvoker.tricksy$postShoot(tricksy.getEntityWorld(), tricksy, bowStack);
+				tricksy.setStackInHand(Hand.MAIN_HAND, bowStack);
+			}
+			
+			public void shootAll(LivingEntity target, World world, LivingEntity shooter, Hand hand, ItemStack stack, float speed, float divergence)
+			{
+				List<ItemStack> projectiles = CrossbowItemInvoker.tricksy$getProjectiles(stack);
+				float[] pitches = CrossbowItemInvoker.tricksy$getSoundPitches(shooter.getRandom());
+				for(int i=0; i < projectiles.size(); ++i)
+				{
+					ItemStack ammo = projectiles.get(i);
+					shoot(target, world, shooter, hand, stack, ammo, pitches[i%3], false, speed, divergence, i%3 == 0 ? 0F : i%3 == 1 ? -10F : 10F);
+				}
+			}
+			
+			public void shoot(LivingEntity target, World world, LivingEntity shooter, Hand hand, ItemStack crossbow, ItemStack projectile, float soundPitch, boolean creative, float speed, float divergence, float simulated)
+			{
+				ProjectileEntity projectileEntity;
+				if(world.isClient())
+					return;
+				boolean isRocket = projectile.isOf(Items.FIREWORK_ROCKET);
+				if(isRocket)
+					projectileEntity = new FireworkRocketEntity(world, projectile, shooter, shooter.getX(), shooter.getEyeY() - (double)0.15f, shooter.getZ(), true);
+				else
+					projectileEntity = CrossbowItemInvoker.tricksy$createArrow(world, shooter, crossbow, projectile);
+				shootAt(target, shooter, projectileEntity, simulated, 1.6F);
+				crossbow.damage(isRocket ? 3 : 1, shooter, e -> e.sendToolBreakStatus(hand));
+				world.spawnEntity(projectileEntity);
+				world.playSound(null,  shooter.getX(), shooter.getY(), shooter.getZ(), SoundEvents.ITEM_CROSSBOW_SHOOT, SoundCategory.PLAYERS, 1F, soundPitch);
+			}
+			
+			public void shootAt(LivingEntity target, LivingEntity entity, ProjectileEntity projectile, float multishotSpray, float speed)
+			{
+		        double offsetX = target.getX() - entity.getX();
+		        double offsetZ = target.getZ() - entity.getZ();
+		        double flatDist = Math.sqrt(offsetX * offsetX + offsetZ * offsetZ);
+		        double yAim = target.getBodyY(0.3333333333333333) - projectile.getY() + flatDist * (double)0.2f;
+		        Vector3f velocity = getLaunchVelocity(entity, new Vec3d(offsetX, yAim, offsetZ), multishotSpray);
+		        projectile.setVelocity(velocity.x(), velocity.y(), velocity.z(), speed, 14 - entity.getWorld().getDifficulty().getId() * 4);
+		        entity.playSound(SoundEvents.ITEM_CROSSBOW_SHOOT, 1.0f, 1.0f / (entity.getRandom().nextFloat() * 0.4f + 0.8f));
+		    }
+			
+			public Vector3f getLaunchVelocity(LivingEntity entity, Vec3d positionDelta, float multishotSpray)
+			{
+		        Vector3f vector3f = positionDelta.toVector3f().normalize();
+		        Vector3f vector3f2 = new Vector3f(vector3f).cross(new Vector3f(0.0f, 1.0f, 0.0f));
+		        if ((double)vector3f2.lengthSquared() <= 1.0E-7) {
+		            Vec3d vec3d = entity.getOppositeRotationVector(1.0f);
+		            vector3f2 = new Vector3f(vector3f).cross(vec3d.toVector3f());
+		        }
+		        Vector3f vector3f3 = new Vector3f(vector3f).rotateAxis(1.5707964f, vector3f2.x, vector3f2.y, vector3f2.z);
+		        return new Vector3f(vector3f).rotateAxis(multishotSpray * ((float)Math.PI / 180), vector3f3.x, vector3f3.y, vector3f3.z);
+		    }
 			
 			private Stage getStage(ItemStack crossbow, boolean isUsing)
 			{
@@ -212,6 +317,6 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 				CHARGING,
 				CHARGED;
 			}
-		});
+		};
 	}
 }
