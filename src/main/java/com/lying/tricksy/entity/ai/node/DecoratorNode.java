@@ -106,12 +106,12 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.any(), new WhiteboardObj.Int(1)));
+				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(NodeTickHandler.any(), new WhiteboardObj.Int(1)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
-				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
+				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT);
 				
 				if(!parent.isRunning())
 					parent.ticks = duration.get() * Reference.Values.TICKS_PER_SECOND;
@@ -151,12 +151,12 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(4)));
+				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(4)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
-				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
+				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT);
 				if(!parent.isRunning())
 				{
 					tricksy.logStatus(Text.literal("Repeating "+parent.child().getSubType().translatedName().getString()+" "+duration.get()+" times"));
@@ -177,12 +177,12 @@ public class DecoratorNode extends TreeNode<DecoratorNode>
 		{
 			public @NotNull Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(4)));
+				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(4)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
-				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
+				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT);
 				if(!parent.isRunning())
 				{
 					tricksy.logStatus(Text.literal("Retrying "+parent.child().getSubType().translatedName().getString()+" "+duration.get()+" times"));

@@ -69,7 +69,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 			public static final WhiteboardRef TARGET = new WhiteboardRef("target", TFObjType.BLOCK).displayName(Text.literal("Target"));
 			
 			// Items that directly affect the player using them, hence cannot be used normally by a mob
-			private static final Set<Item> UNUSABLES = Set.of(Items.ENDER_PEARL, Items.LEAD);
+			private static final Set<Item> UNUSABLES = Set.of(Items.ENDER_PEARL, Items.LEAD, Items.FISHING_ROD);
 			
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{

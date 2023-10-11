@@ -75,7 +75,7 @@ public class LeafNode extends TreeNode<LeafNode>
 		
 		set.add(new NodeSubType<LeafNode>(VARIANT_BARK, new NodeTickHandler<LeafNode>() 
 		{
-			private static final WhiteboardRef BARK = new WhiteboardRef("bark", TFObjType.INT).displayName(CommonVariables.translate("bark"));
+			private static final WhiteboardRef BARK = CommonVariables.VAR_NUM;
 			
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
@@ -158,12 +158,12 @@ public class LeafNode extends TreeNode<LeafNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(1)));
+				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(1)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
-				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
+				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT);
 				
 				if(!parent.isRunning())
 					parent.ticks = duration.get() * Reference.Values.TICKS_PER_SECOND;

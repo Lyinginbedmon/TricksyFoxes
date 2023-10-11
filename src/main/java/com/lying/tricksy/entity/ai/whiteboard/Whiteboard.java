@@ -182,10 +182,11 @@ public abstract class Whiteboard<T>
 			if(!value.getKey().isSameRef(reference))
 				valuesNext.put(value.getKey(), value.getValue());
 		
-		uncache(reference);
-		
 		values.clear();
 		valuesNext.forEach((ref,val) -> values.put(ref, val));
+		
+		uncache(reference);
+		cache.put(reference, obj);
 	}
 	
 	protected IWhiteboardObject<?> getAndCache(WhiteboardRef nameIn, @Nullable World world)

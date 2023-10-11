@@ -68,4 +68,9 @@ public interface IWhiteboardObject<T>
 	public void readFromNbt(NbtCompound data);
 	
 	public NbtCompound writeToNbt(NbtCompound data);
+	
+	public default IWhiteboardObject<T> copy()
+	{
+		return type().create(writeToNbt(new NbtCompound()));
+	}
 }

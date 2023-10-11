@@ -21,7 +21,7 @@ public class CommonVariables
 	/** A distance value */
 	public static final WhiteboardRef VAR_DIS = new WhiteboardRef("distance", TFObjType.INT).displayName(translate("range"));
 	/** A number value */
-	public static final WhiteboardRef VAR_COUNT = new WhiteboardRef("count", TFObjType.INT).displayName(translate("number"));
+	public static final WhiteboardRef VAR_NUM = new WhiteboardRef("count", TFObjType.INT).displayName(translate("number"));
 	/** A receiver entity */
 	public static final WhiteboardRef TARGET_ENT = new WhiteboardRef("target", TFObjType.ENT).displayName(translate("ref_ent"));
 	public static final WhiteboardRef VAR_ITEM = new WhiteboardRef("item", TFObjType.ITEM).displayName(translate("item"));

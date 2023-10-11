@@ -5,6 +5,7 @@ import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.entity.ModelTricksyFoxBase;
 import com.lying.tricksy.model.entity.ModelTricksyFoxMain;
 import com.lying.tricksy.model.entity.ModelTricksyFoxSleeping;
+import com.lying.tricksy.renderer.layer.TricksyBarkLayer;
 import com.lying.tricksy.renderer.layer.TricksyFoxClothingLayer;
 import com.lying.tricksy.renderer.layer.TricksyFoxHeldItemLayer;
 
@@ -38,6 +39,7 @@ public class EntityTricksyFoxRenderer extends MobEntityRenderer<EntityTricksyFox
 		super(ctx, new ModelTricksyFoxMain<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX)), 0.5F);
 		this.addFeature(new TricksyFoxClothingLayer(this));
 		this.addFeature(new TricksyFoxHeldItemLayer(this, ctx.getHeldItemRenderer()));
+		this.addFeature(new TricksyBarkLayer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>(this));
 		
 		this.standing = this.model;
 		this.sleeping = new ModelTricksyFoxSleeping<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX_SLEEPING));

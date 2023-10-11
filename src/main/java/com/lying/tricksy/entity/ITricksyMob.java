@@ -10,6 +10,7 @@ import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemSageHat;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -19,6 +20,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 
 /**
@@ -114,6 +116,15 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
 		CONFUSED,
 		ALERT;
 		
+		private final Identifier texture;
+		
+		private Bark()
+		{
+			this.texture = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/bark/"+asString()+".png");
+		}
+		
 		public String asString() { return name().toLowerCase(); }
+		
+		public Identifier textureLocation() { return this.texture; }
 	}
 }

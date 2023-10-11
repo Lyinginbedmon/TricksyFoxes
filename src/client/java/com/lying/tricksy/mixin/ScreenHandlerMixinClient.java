@@ -26,7 +26,7 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.collection.DefaultedList;
 
 @Mixin(ScreenHandler.class)
-public class ScreenHandlerMixinClient
+public abstract class ScreenHandlerMixinClient
 {
 	private static final int LEFT_CLICK = 0;
 	

@@ -14,6 +14,7 @@ import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.item.ITreeItem;
 import com.lying.tricksy.network.SyncTreeScreenPacket;
+import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.TreeScreenHandler;
 import com.lying.tricksy.utility.ServerWhiteboards;
 
@@ -57,10 +58,13 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	private static final TrackedData<Integer> USERS = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
 	public static final TrackedData<Text> LOG = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.TEXT_COMPONENT);
+	private static final TrackedData<Integer> BARK = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
 	
 	protected BehaviourTree behaviourTree = new BehaviourTree();
 	@SuppressWarnings("unchecked")
 	protected LocalWhiteboard<EntityTricksyFox> boardLocal = (LocalWhiteboard<EntityTricksyFox>)(new LocalWhiteboard<EntityTricksyFox>(this)).build();
+	
+	private int barkTicks = 0;
 	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
@@ -78,6 +82,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		this.getDataTracker().startTracking(TREE_NBT, BehaviourTree.INITIAL_TREE.write(new NbtCompound()));
 		this.getDataTracker().startTracking(LOG, Text.empty());
 		this.getDataTracker().startTracking(USERS, 0);
+		this.getDataTracker().startTracking(BARK, 0);
 	}
 	
 	protected void initGoals()
@@ -170,6 +175,10 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		super.tick();
 		if(activeUsers() <= 0)
 			ITricksyMob.updateBehaviourTree(this);
+		
+		if(this.barkTicks > 0)
+			if(--this.barkTicks == 0)
+				getDataTracker().set(BARK, 0);
 	}
 	
 	@Nullable
@@ -283,8 +292,34 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	
 	public void bark(Bark bark)
 	{
-		playAmbientSound();
+		if(bark == null)
+			bark = Bark.NONE;
+		
+		switch(bark)
+		{
+			case HAPPY:
+				this.playSound(SoundEvents.ENTITY_FOX_AMBIENT, 1F, 1F);
+				break;
+			case CURIOUS:
+				this.playSound(SoundEvents.ENTITY_FOX_SNIFF, 1F, 1F);
+				break;
+			case CONFUSED:
+				this.playSound(SoundEvents.ENTITY_FOX_SCREECH, 2F, 1F);
+				break;
+			case ALERT:
+				this.playSound(SoundEvents.ENTITY_FOX_AGGRO, 5F, 1F);
+				break;
+			case NONE:
+			default:
+				break;
+		}
+		getDataTracker().set(BARK, bark.ordinal());
+		this.barkTicks = Reference.Values.TICKS_PER_SECOND * 3;
 	}
 	
-	public Bark currentBark() { return Bark.NONE; }
+	public Bark currentBark()
+	{
+		int index = getDataTracker().get(BARK).intValue();
+		return Bark.values()[index % Bark.values().length];
+	}
 }

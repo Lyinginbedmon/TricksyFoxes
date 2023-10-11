@@ -17,6 +17,7 @@ import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
@@ -144,14 +145,8 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 		tricksy.getLocalWhiteboard().setItemCooldown(stack.getItem(), (int)player.getItemCooldownManager().getCooldownProgress(stack.getItem(), 0));
 	}
 	
-	public static boolean matchesEntityFilter(Entity stack, IWhiteboardObject<Entity> filter)
+	public static boolean matchesEntityFilter(Entity entity, @Nullable IWhiteboardObject<Entity> filter)
 	{
-		if(filter.size() == 0)
-			return true;
-		
-		for(Entity option : filter.getAll())
-			if(stack.getType() == option.getType())
-				return true;
-		return false;
+		return filter == null ? true : ((WhiteboardObjEntity)filter).matches(entity);
 	}
 }

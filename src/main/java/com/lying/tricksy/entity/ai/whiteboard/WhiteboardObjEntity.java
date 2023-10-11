@@ -43,7 +43,11 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 	
 	public Text describeValue(WhiteboardObjEntity.EntityData value)
 	{
-		return value.valueName != null ? value.valueName : Text.translatable("value."+Reference.ModInfo.MOD_ID+".entity");
+		if(value.valueName != null)
+			return value.valueName;
+		else if(value.isFilter())
+			return value.type.getName();
+		return Text.translatable("value."+Reference.ModInfo.MOD_ID+".entity");
 	}
 	
 	protected EntityData storeValue(Entity val) { return val == null ? new EntityData() : new EntityData(val); }
@@ -54,14 +58,15 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 	
 	protected EntityData valueFromNbt(NbtCompound nbt)
 	{
-		if(!nbt.contains("UUID", NbtElement.INT_ARRAY_TYPE) || !nbt.contains(Entity.ID_KEY, NbtElement.STRING_TYPE))
-			return new EntityData();
-		
 		Optional<EntityType<?>> type = EntityType.fromNbt(nbt);
 		if(!type.isPresent())
 			return new EntityData();
 		
-		WhiteboardObjEntity.EntityData data = new EntityData(nbt.getUuid("UUID"), type.get());
+		UUID id = null;
+		if(nbt.contains("UUID", NbtElement.INT_ARRAY_TYPE))
+			id = nbt.getUuid("UUID");
+		
+		WhiteboardObjEntity.EntityData data = new EntityData(id, type.get());
 		data.lastKnownPos = NbtHelper.toBlockPos(nbt.getCompound("LastKnownPos"));
 		if(nbt.contains("EntityName", NbtElement.STRING_TYPE))
 		{
@@ -80,11 +85,35 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 	
 	public boolean isBlank() { return value.get(0).isBlank(); }
 	
+	/** Creates an entity value that cannot be cached, for use as a filter */
+	public static WhiteboardObjEntity ofTypes(EntityType<?>... typeIn)
+	{
+		WhiteboardObjEntity filter = new WhiteboardObjEntity();
+		filter.value.clear();
+		for(EntityType<?> type : typeIn)
+			filter.value.add(new EntityData((UUID)null, type));
+		return filter;
+	}
+	
+	public boolean matches(Entity entity)
+	{
+		if(value.size() == 0)
+			return true;
+		
+		for(EntityData data : value)
+			if(data.isBlank())
+				continue;
+			else if(data.type == entity.getType() && (data.isFilter() || data.uuid.equals(entity.getUuid())))
+				return true;
+		
+		return false;
+	}
+	
 	public static class EntityData
 	{
 		private Entity value = null;
 		private Text valueName = null;
-		private BlockPos lastKnownPos;
+		private BlockPos lastKnownPos = BlockPos.ORIGIN;
 		
 		@Nullable
 		private final UUID uuid;
@@ -117,7 +146,9 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 			if(isBlank())
 				return data;
 			
-			data.putUuid("UUID", this.uuid);
+			if(!isFilter())
+				data.putUuid("UUID", this.uuid);
+			
 			String typeName = getSavedEntityId();
 			data.putString(Entity.ID_KEY, typeName == null ? "" : typeName);
 			data.put("LastKnownPos", NbtHelper.fromBlockPos(this.lastKnownPos));
@@ -129,11 +160,15 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		
 		public boolean isPlayer() { return this.type == EntityType.PLAYER; }
 		
+		/** An object without an entity type cannot be recached or used as a filter */
 		public boolean isBlank() { return this.type == null; }
+		
+		/** Filters intentionally lack a UUID */
+		public boolean isFilter() { return !isBlank() && this.uuid == null; }
 		
 		public void recache(World world)
 		{
-			if(isBlank())
+			if(isBlank() || isFilter())
 				return;
 			
 			/*
@@ -148,7 +183,16 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 				if(searchArea.minY < world.getBottomY())
 					searchArea = searchArea.withMinY(world.getBottomY());
 				
-				for(Entity ent : world.getEntitiesByClass(this.type.getBaseClass(), searchArea, (entity) -> entity.getUuid().equals(this.uuid)))
+				Class<? extends Entity> typeClass = Entity.class;
+				try
+				{
+					Entity ent = this.type.create(world);
+					typeClass = ent.getClass();
+					ent.discard();
+				}
+				catch(Exception e) { }
+				
+				for(Entity ent : world.getEntitiesByClass(typeClass, searchArea, (entity) -> entity.getUuid().equals(this.uuid)))
 				{
 					value = ent;
 					break;

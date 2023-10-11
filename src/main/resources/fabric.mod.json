@@ -29,7 +29,8 @@
 		]
 	},
 	"mixins": [
-		"tricksy.mixins.json"
+		"tricksy.mixins.json",
+		"tricksy.client.mixins.json"
 	],
 	"custom": {
 		"cardinal-components": [

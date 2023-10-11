@@ -61,7 +61,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int()));
+				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -70,7 +70,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				if(heldStack.isEmpty())
 					return Result.FAILURE;
 				
-				IWhiteboardObject<Integer> amount = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
+				IWhiteboardObject<Integer> amount = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT);
 				tricksy.dropStack(heldStack.split(amount.size() == 0 ? heldStack.getCount() : amount.get()));
 				return Result.SUCCESS;
 			}
@@ -93,7 +93,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 			
 			public static final WhiteboardRef TILE = CommonVariables.VAR_POS;
 			public static final WhiteboardRef FACE = InventoryHandler.FACE;
-			public static final WhiteboardRef LIMIT = CommonVariables.VAR_COUNT;
+			public static final WhiteboardRef LIMIT = CommonVariables.VAR_NUM;
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
 			
 			public Map<WhiteboardRef, INodeInput> variableSet()
@@ -317,12 +317,12 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_COUNT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int()));
+				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
-				IWhiteboardObject<Integer> slotNum = getOrDefault(CommonVariables.VAR_COUNT, parent, local, global).as(TFObjType.INT);
+				IWhiteboardObject<Integer> slotNum = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT);
 				EquipmentSlot equip = EquipmentSlot.HEAD;
 				if(slotNum.size() == 0)
 				{

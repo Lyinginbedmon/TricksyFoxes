@@ -44,6 +44,7 @@ public abstract class CombatHandler implements NodeTickHandler<LeafNode>
 			return Result.FAILURE;
 		
 		tricksy.lookAtEntity(ent, 10F, tricksy.getMaxLookPitchChange());
+		tricksy.setAttacking(true);
 		
 		// Wait for attack cooldown to finish before starting attack
 		if(!local.canAttack())
@@ -51,6 +52,11 @@ public abstract class CombatHandler implements NodeTickHandler<LeafNode>
 		
 		return attack(tricksy, (LivingEntity)ent, local, parent);
 	}
+    
+    public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
+    {
+    	tricksy.setAttacking(false);
+    }
 	
 	protected abstract <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result attack(T tricksy, LivingEntity target, LocalWhiteboard<T> local, LeafNode parent);
 }

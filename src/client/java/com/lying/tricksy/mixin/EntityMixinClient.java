@@ -23,22 +23,22 @@ import net.minecraft.world.World;
 
 @Environment(EnvType.CLIENT)
 @Mixin(Entity.class)
-public class EntityMixinClient
+public abstract class EntityMixinClient
 {
 	@Shadow
-	public World getWorld() { return null; }
+	public abstract World getWorld();
 	
 	@Shadow
-	public Vec3d getVelocity() { return Vec3d.ZERO; }
+	public abstract Vec3d getVelocity();
 	
 	@Shadow
-	public BlockPos getBlockPos() { return BlockPos.ORIGIN; }
+	public abstract BlockPos getBlockPos();
 	
 	@Shadow
-	public BlockPos getLandingPos() { return BlockPos.ORIGIN; }
+	public abstract BlockPos getLandingPos();
 	
-	@Inject(method = "spawnSprintingParticles", at = @At("RETURN"), cancellable = true)
-	protected void tricksy$spawnHatParticles(final CallbackInfo ci)
+	@Inject(method = "spawnSprintingParticles()V", at = @At("RETURN"), cancellable = true)
+	private void tricksy$spawnHatParticles(final CallbackInfo ci)
 	{
 		Entity ent = (Entity)(Object)this;
 		if(ent.getType() != EntityType.PLAYER)

@@ -14,6 +14,7 @@ import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.InventoryHandler;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
+import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
@@ -26,8 +27,6 @@ import com.lying.tricksy.init.TFObjType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
@@ -40,13 +39,14 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 {
 	// World scanning getters
 	public static final Identifier VARIANT_GET_ITEM = ISubtypeGroup.variant("nearest_item");
-	public static final Identifier VARIANT_GET_MONSTER = ISubtypeGroup.variant("nearest_hostile");
+	public static final Identifier VARIANT_GET_ENTITY = ISubtypeGroup.variant("nearest_creature");
 	public static final Identifier VARIANT_GET_DISTANCE = ISubtypeGroup.variant("distance_to");
 	
 	// Entity value getters
 	public static final Identifier VARIANT_GET_ASSAILANT = ISubtypeGroup.variant("get_assailant");
 	public static final Identifier VARIANT_GET_HEALTH = ISubtypeGroup.variant("get_health");
 	public static final Identifier VARIANT_GET_HELD = ISubtypeGroup.variant("get_held_item");
+	public static final Identifier VARIANT_GET_BARK = ISubtypeGroup.variant("get_bark");
 	
 	public void addActions(Collection<NodeSubType<LeafNode>> set)
 	{
@@ -91,18 +91,22 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				return new WhiteboardObjEntity(items.get(0));
 			}
 		});
-		add(set, VARIANT_GET_MONSTER, new GetterHandler<Entity>(TFObjType.ENT)
+		add(set, VARIANT_GET_ENTITY, new GetterHandler<Entity>(TFObjType.ENT)
 		{
+			public static WhiteboardRef FILTER = new WhiteboardRef("entity_filter", TFObjType.ENT).displayName(CommonVariables.translate("item_filter"));
+			
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
 				set.put(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName())); 
 				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
+				set.put(FILTER, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT), ConstantsWhiteboard.FILTER_MONSTER.copy(), ConstantsWhiteboard.ENT_MONSTERS.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
 				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<Entity> filter = getOrDefault(FILTER, parent, local, global).as(TFObjType.ENT);
 				
 				int searchRange = MathHelper.clamp(range.get(), 0, 16);
 				BlockPos point = pos.size() == 0 ? tricksy.getBlockPos() : pos.get();
@@ -112,21 +116,21 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				if(search.minY < world.getBottomY())
 					search = search.withMinY(world.getBottomY());
 				
-				List<MobEntity> monsters = world.getEntitiesByClass(MobEntity.class, search, (ent) -> ent.isAlive() && !ent.isSpectator() && ent instanceof Monster && ent != tricksy);
-				if(monsters.isEmpty())
+				List<LivingEntity> mobs = world.getEntitiesByClass(LivingEntity.class, search, (ent) -> ent.isAlive() && ent != tricksy && !ent.isSpectator() && NodeTickHandler.matchesEntityFilter(ent, filter));
+				if(mobs.isEmpty())
 					return null;
 				
-				if(monsters.size() > 1)
-					monsters.sort(new Comparator<MobEntity>()
+				if(mobs.size() > 1)
+					mobs.sort(new Comparator<LivingEntity>()
 					{
-						public int compare(MobEntity o1, MobEntity o2)
+						public int compare(LivingEntity o1, LivingEntity o2)
 						{
 							double dist1 = o1.distanceTo(tricksy);
 							double dist2 = o2.distanceTo(tricksy);
 							return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
 						}
 					});
-				return new WhiteboardObjEntity(monsters.get(0));
+				return new WhiteboardObjEntity(mobs.get(0));
 			}
 		});
 		add(set, VARIANT_GET_ASSAILANT, new GetterHandler<Entity>(TFObjType.ENT)
@@ -224,6 +228,25 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 					posB = objPosB.as(TFObjType.BLOCK).get();
 				
 				return new WhiteboardObj.Int((int)Math.sqrt(posA.getSquaredDistance(posB)));
+			}
+		});
+		add(set, VARIANT_GET_BARK, new GetterHandler<Integer>(TFObjType.INT)
+		{
+			public void addVariables(Map<WhiteboardRef, INodeInput> set)
+			{
+				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				IWhiteboardObject<Entity> target = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
+				
+				Entity entity = target.size() == 0 ? tricksy : target.get();
+				if(!(entity instanceof ITricksyMob) || !entity.isAlive())
+					return null;
+				
+				ITricksyMob<?> living = (ITricksyMob<?>)entity;
+				return new WhiteboardObj.Int(living.currentBark().ordinal());
 			}
 		});
 	}
