@@ -11,7 +11,6 @@ import com.lying.tricksy.init.TFSoundEvents;
 
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
-import net.minecraft.entity.Dismounting;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -43,6 +42,8 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	/** True if the mob has been given a periapt */
 	private boolean hasPeriapt = false;
 	
+	private int enlightening = -1;
+	
 	/** List of unique accomplishments */
 	private List<Accomplishment> accomplishments = Lists.newArrayList();
 	private Identifier lastDimension = null;
@@ -58,7 +59,7 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	public void readFromNbt(NbtCompound tag)
 	{
 		this.hasPeriapt = tag.getBoolean("Periapt");
-		
+		this.enlightening = tag.getInt("Enlightening");
 		if(tag.contains("LastDimension", NbtElement.STRING_TYPE))
 			this.lastDimension = new Identifier(tag.getString("LastDimension"));
 		
@@ -78,7 +79,7 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	public void writeToNbt(NbtCompound tag)
 	{
 		tag.putBoolean("Periapt", hasPeriapt);
-		
+		tag.putInt("Enlightening", enlightening);
 		if(this.lastDimension != null)
 			tag.putString("LastDimension", this.lastDimension.toString());
 		
@@ -115,7 +116,11 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	
 	public void serverTick()
 	{
-		if(!this.canEnlighten)
+		Identifier dimension = theMob.getWorld().getDimensionKey().getValue();
+		if(!theMob.hasPortalCooldown() && !dimension.equals(this.lastDimension))
+			this.lastDimension = dimension;
+		
+		if(!this.canEnlighten || !hasPeriapt())
 			return;
 		
 		// Accomplishments checked every tick
@@ -145,17 +150,22 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 			isDrowning = false;
 		}
 		
-		Identifier dimension = theMob.getWorld().getDimensionKey().getValue();
-		if(hasPeriapt() && this.accomplishments.size() > 1)
+		if(isEnlightening())
 		{
-			theMob.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION));
-			if(!theMob.hasPortalCooldown())
+			if(enlightening > 0)
+				--enlightening;
+			else if(enlightening == 0)
 				enlighten();
 		}
-		
-		if(!theMob.hasPortalCooldown() && !dimension.equals(this.lastDimension))
-			this.lastDimension = dimension;
+		else if(TFEnlightenmentPaths.getPath(theMob.getType()).conditionsMet(accomplishments))
+		{
+			theMob.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 300, 0));
+			if(!theMob.hasPortalCooldown())
+				enlightening = 300;
+		}
 	}
+	
+	public boolean isEnlightening() { return enlightening >= 0; }
 	
 	private boolean enlighten()
 	{
@@ -166,21 +176,16 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 		tricksy.copyPositionAndRotation(theMob);
 		tricksy.setPose(EntityPose.STANDING);
 		
+		// FIXME Implement proper bounding box check before enlightening
 		World world = theMob.getWorld();
-		if(Dismounting.canPlaceEntityAt(world, tricksy, tricksy.getBoundingBox(EntityPose.STANDING)))
+		if(!world.isClient())
 		{
-			if(!world.isClient())
-			{
-				// TODO Add particles to enlightenment event
-				world.playSound(null, theMob.getBlockPos(), TFSoundEvents.TRICKSY_ENLIGHTENED, SoundCategory.NEUTRAL, 1F, 0.75F + theMob.getRandom().nextFloat());
-				world.spawnEntity(tricksy);
-				theMob.discard();
-			}
-			
-			return true;
+			// TODO Add particles to enlightenment event
+			world.playSound(null, theMob.getBlockPos(), TFSoundEvents.TRICKSY_ENLIGHTENED, SoundCategory.NEUTRAL, 1F, 0.75F + theMob.getRandom().nextFloat());
+			world.spawnEntity(tricksy);
+			theMob.discard();
 		}
-		else
-			return false;
+		return true;
 	}
 	
 	public boolean hasAchieved(Accomplishment acc)
