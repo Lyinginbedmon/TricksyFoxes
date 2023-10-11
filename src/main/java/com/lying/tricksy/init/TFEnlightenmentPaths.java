@@ -20,6 +20,8 @@ public class TFEnlightenmentPaths
 	/** Map of entity types to functions that convert mobs of that type to their enlightened equivalents */
 	private static final Map<EntityType<? extends MobEntity>, EnlightenmentPath<?,?>> ENLIGHTEN_MAP = new HashMap<>();
 	
+	// TODO Allow server config of accomplishments per mob
+	
 	public static final EnlightenmentPath<FoxEntity, EntityTricksyFox> FOX	= addEnlightenment(EntityType.FOX, new EnlightenmentPath<FoxEntity, EntityTricksyFox>() 
 		{
 			public EntityTricksyFox enlighten(FoxEntity fox)
