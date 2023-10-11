@@ -1,29 +1,22 @@
 package com.lying.tricksy.component;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.collect.Lists;
-import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
-import com.lying.tricksy.init.TFEntityTypes;
+import com.lying.tricksy.init.TFEnlightenmentPaths;
 import com.lying.tricksy.init.TFSoundEvents;
 
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import net.minecraft.entity.Dismounting;
 import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -41,9 +34,6 @@ import net.minecraft.world.World;
  */
 public final class TricksyComponent implements ServerTickingComponent, AutoSyncedComponent
 {
-	/** Map of entity types to functions that convert mobs of that type to their enlightened equivalents */
-	private static final Map<EntityType<? extends MobEntity>, EnlightenmentPath<?,?>> ENLIGHTEN_MAP = new HashMap<>();
-	
 	/** The mob this component is monitoring */
 	private final MobEntity theMob;
 	
@@ -62,7 +52,7 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	public TricksyComponent(MobEntity entityIn)
 	{
 		theMob = entityIn;
-		canEnlighten = !(entityIn instanceof ITricksyMob) && isEnlightenable(entityIn);
+		canEnlighten = !(entityIn instanceof ITricksyMob) && TFEnlightenmentPaths.isEnlightenable(entityIn);
 	}
 	
 	public void readFromNbt(NbtCompound tag)
@@ -110,8 +100,6 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	}
 	
 	public boolean canBeEnlightened() { return this.canEnlighten; }
-	
-	public static boolean isEnlightenable(MobEntity entity) { return ENLIGHTEN_MAP.containsKey(entity.getType()); }
 	
 	public boolean hasPeriapt() { return this.hasPeriapt; }
 	
@@ -171,7 +159,7 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	
 	private boolean enlighten()
 	{
-		PathAwareEntity tricksy = ENLIGHTEN_MAP.get(theMob.getType()).giveEnlightenment(theMob);
+		PathAwareEntity tricksy = TFEnlightenmentPaths.getPath(theMob.getType()).giveEnlightenment(theMob);
 		theMob.getActiveStatusEffects().forEach((effect,instance) -> tricksy.addStatusEffect(instance));
 		if(theMob.hasCustomName())
 			tricksy.setCustomName(theMob.getCustomName());
@@ -228,31 +216,5 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 			}
 		}
 		markDirty();
-	}
-	
-	private static void addEnlightenment(EntityType<? extends MobEntity> type, EnlightenmentPath<?,?> path)
-	{
-		ENLIGHTEN_MAP.put(type, path);
-	}
-	
-	static
-	{
-		addEnlightenment(EntityType.FOX, new EnlightenmentPath<FoxEntity, EntityTricksyFox>() 
-		{
-			public EntityTricksyFox enlighten(FoxEntity fox)
-			{
-				EntityTricksyFox tricksy = TFEntityTypes.TRICKSY_FOX.create(fox.getEntityWorld());
-				tricksy.setVariant(fox.getVariant());
-				tricksy.equipStack(EquipmentSlot.MAINHAND, fox.getEquippedStack(EquipmentSlot.MAINHAND));
-				return tricksy;
-			}
-			
-			public boolean conditionsMet(Collection<Accomplishment> accomplishments)
-			{
-				return 
-						accomplishments.contains(TFAccomplishments.VISIT_NETHER) &&
-						accomplishments.contains(TFAccomplishments.VISIT_OVERWORLD);
-			}
-		});
 	}
 }

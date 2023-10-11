@@ -19,35 +19,43 @@ import com.lying.tricksy.init.TFScreenHandlerTypes;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Pair;
 
-public class TreeScreenHandler extends ScreenHandler
+public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksySyncable
 {
+	/** The mob's current behaviour tree */
 	private BehaviourTree tricksyTree = new BehaviourTree();
+	/** All references available to the mob, categorised by their whiteboard type */
 	private Map<BoardType, Map<WhiteboardRef, IWhiteboardObject<?>>> references = new HashMap<>();
+	
+	/** The specific mob being interacted with */
 	private ITricksyMob<?> tricksy = null;
 	private PathAwareEntity tricksyMob = null;
 	private UUID tricksyID;
 	
+	/** Current size of the behaviour tree, cached */
 	private int treeSize;
+	/** Server-set limit of how large the behaviour tree can get */
 	private int treeSizeCap;
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> TreeScreenHandler(int syncId, T tricksyIn)
+	public <T extends PathAwareEntity & ITricksyMob<?>> TricksyTreeScreenHandler(int syncId, PlayerInventory playerInventory, T tricksyIn)
 	{
-		this(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, syncId, tricksyIn, 25);
+		this(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, syncId, playerInventory, tricksyIn, 25);
 	}
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> TreeScreenHandler(ScreenHandlerType<?> type, int syncId, @NotNull T tricksyIn, int sizeCap)
+	public <T extends PathAwareEntity & ITricksyMob<?>> TricksyTreeScreenHandler(ScreenHandlerType<?> type, int syncId, PlayerInventory playerInventory, @NotNull T tricksyIn, int sizeCap)
 	{
 		super(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, syncId);
 		if(tricksyIn != null)
 		{
 			tricksy = tricksyIn;
 			tricksyMob = tricksyIn;
-			sync(tricksyIn, tricksyIn.getUuid(), sizeCap);
+			sync(tricksyIn, tricksyIn);
+			setUUID(tricksyIn.getUuid());
 		}
 	}
 	
@@ -74,19 +82,22 @@ public class TreeScreenHandler extends ScreenHandler
 	
 	public void setTricksy(ITricksyMob<?> mobIn) { this.tricksy = mobIn; }
 	
-	public void setTree(BehaviourTree treeIn)
-	{
-		this.tricksyTree = treeIn;
-	}
+	public void setTree(BehaviourTree treeIn) { this.tricksyTree = treeIn; }
 	
 	public BehaviourTree getTree() { return tricksyTree; }
 	
-	public void sync(@NotNull ITricksyMob<?> tricksyIn, UUID mobID, int capIn)
+	public void sync(ITricksyMob<?> tricksyIn, PathAwareEntity mobIn)
 	{
 		this.tricksy = tricksyIn;
-		this.tricksyID = mobID;
-		this.treeSizeCap = capIn;
+		this.tricksyMob = mobIn;
 		resetTree();
+	}
+	
+	public void setUUID(UUID idIn) { this.tricksyID = idIn; }
+	
+	public void setCap(int capIn)
+	{
+		this.treeSizeCap = capIn;
 	}
 	
 	public void setAvailableReferences(List<Pair<WhiteboardRef, IWhiteboardObject<?>>> refsIn)

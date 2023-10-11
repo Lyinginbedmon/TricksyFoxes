@@ -13,13 +13,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-public class CloseTreeReceiver implements PlayChannelHandler
+public class OpenTreeScreenReceiver implements PlayChannelHandler
 {
 	public void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender)
 	{
 		UUID tricksyID = buf.readUuid();
 		List<PathAwareEntity> entities = player.getWorld().getEntitiesByClass(PathAwareEntity.class, player.getBoundingBox().expand(16D), (mob) -> mob instanceof ITricksyMob && mob.getUuid().equals(tricksyID));
 		if(!entities.isEmpty())
-			((ITricksyMob<?>)entities.get(0)).removeUser();
+			ITricksyMob.openTreeScreen(player, entities.get(0));
 	}
 }

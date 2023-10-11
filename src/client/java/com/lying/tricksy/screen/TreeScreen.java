@@ -45,7 +45,7 @@ public class TreeScreen extends TricksyScreenBase
 	
 	private int ticksOpen = 0;
 	
-	public TreeScreen(TreeScreenHandler handler, PlayerInventory playerInventory, Text title)
+	public TreeScreen(TricksyTreeScreenHandler handler, PlayerInventory playerInventory, Text title)
 	{
 		super(handler, playerInventory, title);
 	}

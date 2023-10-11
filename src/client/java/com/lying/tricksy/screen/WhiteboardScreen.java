@@ -17,6 +17,7 @@ public class WhiteboardScreen extends TricksyScreenBase
 {
 	// Button to view behaviour tree
 	public ButtonWidget tree;
+	
 	// Whiteboard tabs
 	public Map<BoardType, ButtonWidget> boardMap = new HashMap<>();
 	
@@ -24,7 +25,7 @@ public class WhiteboardScreen extends TricksyScreenBase
 	
 	private WhiteboardList list;
 	
-	public WhiteboardScreen(TreeScreenHandler handler, PlayerInventory inventory, Text title)
+	public WhiteboardScreen(TricksyTreeScreenHandler handler, PlayerInventory inventory, Text title)
 	{
 		super(handler, inventory, title);
 	}

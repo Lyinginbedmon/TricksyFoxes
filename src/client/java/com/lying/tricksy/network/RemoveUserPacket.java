@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 
-public class CloseTreePacket
+public class RemoveUserPacket
 {
 	public static void send(PlayerEntity player, UUID tricksyID)
 	{
@@ -15,6 +15,6 @@ public class CloseTreePacket
 			return;
 		PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
 		buffer.writeUuid(tricksyID);
-		ClientPlayNetworking.send(TFPacketHandler.CLOSE_TREE_ID, buffer);
+		ClientPlayNetworking.send(TFPacketHandler.REMOVE_USER_ID, buffer);
 	}
 }

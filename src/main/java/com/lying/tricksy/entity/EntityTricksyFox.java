@@ -13,9 +13,7 @@ import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.item.ITreeItem;
-import com.lying.tricksy.network.SyncTreeScreenPacket;
 import com.lying.tricksy.reference.Reference;
-import com.lying.tricksy.screen.TreeScreenHandler;
 import com.lying.tricksy.utility.ServerWhiteboards;
 
 import net.minecraft.entity.EntityDimensions;
@@ -34,13 +32,13 @@ import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.entity.passive.FoxEntity.Type;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.DyeItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.predicate.entity.EntityPredicates;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -66,10 +64,14 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	
 	private int barkTicks = 0;
 	
+	private SimpleInventory inventory;
+	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
 		super(TFEntityTypes.TRICKSY_FOX, world);
 		this.lookControl = new TricksyLookControl(this);
+		this.inventory = new SimpleInventory(6);
+		this.inventory.addListener(this);
 	}
 	
 	public void initDataTracker()
@@ -104,6 +106,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		if(data.contains("MasterID", NbtElement.INT_ARRAY_TYPE))
 			setSage(data.getUuid("MasterID"));
 		setVariant(Type.byName(data.getString("Type")));
+		readInventory(data);
+		updateEquippedItems();
 		
 		boardLocal.readFromNbt(data.getCompound("Whiteboard"));
 		setBehaviourTree(data.getCompound("BehaviourTree"));
@@ -115,6 +119,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		getDataTracker().get(COLOR).ifPresent((val) -> data.putInt("Color", val));
 		getDataTracker().get(OWNER_UUID).ifPresent((uuid) -> data.putUuid("MasterID", uuid));
 		data.putString("Type", this.getVariant().asString());
+		writeInventory(data);
 		
 		data.put("Whiteboard", boardLocal.writeToNbt(new NbtCompound()));
 		data.put("BehaviourTree", this.behaviourTree.storeInNbt());
@@ -158,11 +163,12 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 			}
 			else if(heldStack.getItem() instanceof ITreeItem)
 				return ((ITreeItem)heldStack.getItem()).useOnTricksy(heldStack, this, player);
-			else if(!player.isSneaking() && activeUsers() == 0)
+			else if(!player.isSneaking() && activeUsers() == 0 && isSage(player))
 			{
 				if(!player.getWorld().isClient())
 					addUser();
-				player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new TreeScreenHandler(id, this), getDisplayName())).ifPresent(syncId -> SyncTreeScreenPacket.send(player, this, syncId));
+				
+				ITricksyMob.openInventoryScreen(player, this);
 				return ActionResult.success(isClient);
 			}
 		}
@@ -323,4 +329,13 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	}
 	
 	public ItemStack getProjectileType(ItemStack stack) { return ITricksyMob.getRangedProjectile(stack, this); }
+	
+	public SimpleInventory getInventory()
+	{
+		for(int i=0; i<ITricksyMob.SLOT_ORDER.length; i++)
+			this.inventory.setStack(i, getEquippedStack(ITricksyMob.SLOT_ORDER[i]));
+		return this.inventory;
+	}
+	
+	public boolean canPlayerUse(PlayerEntity player) { return isSage(player) && player.distanceTo(this) < 4; }
 }

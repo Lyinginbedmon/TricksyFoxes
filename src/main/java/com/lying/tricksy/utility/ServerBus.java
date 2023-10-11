@@ -4,6 +4,7 @@ import com.lying.tricksy.component.Accomplishment;
 import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
+import com.lying.tricksy.init.TFEnlightenmentPaths;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemPrescientNote;
 
@@ -25,7 +26,7 @@ public class ServerBus
 	{
 		ServerEntityWorldChangeEvents.AFTER_ENTITY_CHANGE_WORLD.register((originalEntity, newEntity, origin, destination) -> 
 		{
-			if(!(newEntity instanceof MobEntity) || !TricksyComponent.isEnlightenable((MobEntity)newEntity))
+			if(!(newEntity instanceof MobEntity) || !TFEnlightenmentPaths.isEnlightenable((MobEntity)newEntity))
 				return;
 			
 			TricksyComponent compNew = TFComponents.TRICKSY_TRACKING.get(newEntity);
@@ -51,7 +52,7 @@ public class ServerBus
 			if(entity.getType() != EntityType.ENDER_DRAGON)
 				return;
 			
-			entity.getWorld().getEntitiesByClass(MobEntity.class, entity.getBoundingBox().expand(64), (mob) -> mob.isAlive() && TricksyComponent.isEnlightenable(mob)).forEach((mob) -> 
+			entity.getWorld().getEntitiesByClass(MobEntity.class, entity.getBoundingBox().expand(64), (mob) -> mob.isAlive() && TFEnlightenmentPaths.isEnlightenable(mob)).forEach((mob) -> 
 			{
 				TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(mob);
 				comp.addAccomplishment(TFAccomplishments.SQUIRE);

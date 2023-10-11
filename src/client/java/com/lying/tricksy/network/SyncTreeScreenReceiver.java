@@ -8,7 +8,7 @@ import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBase;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
-import com.lying.tricksy.screen.TreeScreenHandler;
+import com.lying.tricksy.screen.TricksyTreeScreenHandler;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -42,15 +42,16 @@ public class SyncTreeScreenReceiver implements ClientPlayNetworking.PlayChannelH
 			
 			PlayerEntity player = client.player;
 			ScreenHandler screenHandler = client.player.currentScreenHandler;
-			if(syncId == screenHandler.syncId && screenHandler instanceof TreeScreenHandler)
+			if(syncId == screenHandler.syncId && screenHandler instanceof TricksyTreeScreenHandler)
 			{
+				TricksyTreeScreenHandler screen = (TricksyTreeScreenHandler)screenHandler;
+				screen.setUUID(tricksyID);
+				screen.setCap(sizeCap);
+				screen.setAvailableReferences(references);
+				
 				List<PathAwareEntity> entities = player.getWorld().getEntitiesByClass(PathAwareEntity.class, player.getBoundingBox().expand(16D), (mob) -> mob.getUuid().equals(tricksyID));
 				if(!entities.isEmpty())
-				{
-					TreeScreenHandler screen = (TreeScreenHandler)screenHandler;
-					screen.sync((ITricksyMob<?>)entities.get(0), entities.get(0).getUuid(), sizeCap);
-					screen.setAvailableReferences(references);
-				}
+					screen.sync((ITricksyMob<?>)entities.get(0), entities.get(0));
 			}
 		});
 	}

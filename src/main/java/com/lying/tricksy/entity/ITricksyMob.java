@@ -11,17 +11,27 @@ import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemSageHat;
+import com.lying.tricksy.network.SyncInventoryScreenPacket;
+import com.lying.tricksy.network.SyncTreeScreenPacket;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.screen.TricksyInventoryScreenHandler;
+import com.lying.tricksy.screen.TricksyTreeScreenHandler;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.InventoryOwner;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.InventoryChangedListener;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
@@ -30,8 +40,10 @@ import net.minecraft.util.StringIdentifiable;
  * Interface defining common features and functions of all Tricksy mobs
  * @author Lying
  */
-public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
+public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends InventoryOwner, InventoryChangedListener
 {
+	public static final EquipmentSlot[] SLOT_ORDER = new EquipmentSlot[] {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD, EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND};
+	
 	/** Returns true if this mob has a sage */
 	public default boolean hasSage() { return getSage().isPresent(); }
 	
@@ -123,6 +135,73 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>>
             return ammo.isEmpty() ? new ItemStack(Items.ARROW) : ammo;
         }
         return ItemStack.EMPTY;
+	}
+	
+	/**	## Inventory methods ##	*/
+	
+	public default void onInventoryChanged(Inventory inv)
+	{
+		updateEquippedItems(inv);
+	}
+	
+	public default void updateEquippedItems() { updateEquippedItems(getInventory()); }
+	
+	public default void updateEquippedItems(Inventory inv)
+	{
+		for(int i=0; i<SLOT_ORDER.length; i++)
+		{
+			EquipmentSlot slot = SLOT_ORDER[i];
+			equipStack(slot, inv.getStack(i));
+		}
+	}
+	
+	public default void writeInventory(NbtCompound nbt)
+	{
+		Inventory inv = getInventory();
+		NbtList list = new NbtList();
+		for(int i=0; i<inv.size(); i++)
+		{
+			NbtCompound data = new NbtCompound();
+			ItemStack stack = inv.getStack(i);
+			if(stack.isEmpty())
+				continue;
+			
+			data.putInt("Slot", i);
+			data.put("Item", stack.writeNbt(new NbtCompound()));
+			list.add(data);
+		}
+		nbt.put(INVENTORY_KEY, list);
+	}
+	
+	public default void readInventory(NbtCompound nbt)
+	{
+		Inventory inv = getInventory();
+		if(nbt.contains(INVENTORY_KEY, NbtElement.LIST_TYPE))
+		{
+			inv.clear();
+			NbtList list = nbt.getList(INVENTORY_KEY, NbtElement.COMPOUND_TYPE);
+			for(int i=0; i<list.size(); i++)
+			{
+				NbtCompound data = list.getCompound(i);
+				int slot = data.getInt("Slot");
+				ItemStack stack = ItemStack.fromNbt(data.getCompound("Item"));
+				inv.setStack(slot, stack);
+			}
+		}
+	}
+	
+	public void equipStack(EquipmentSlot slot, ItemStack stack);
+	
+	@SuppressWarnings("unchecked")
+	public static <T extends PathAwareEntity & ITricksyMob<?>> void openTreeScreen(PlayerEntity player, PathAwareEntity tricksy)
+	{
+		player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new TricksyTreeScreenHandler(id, playerInventory, (T)tricksy), tricksy.getDisplayName())).ifPresent(syncId -> SyncTreeScreenPacket.send(player, (T)tricksy, syncId));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T extends PathAwareEntity & ITricksyMob<?>> void openInventoryScreen(PlayerEntity player, PathAwareEntity tricksy)
+	{
+		player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new TricksyInventoryScreenHandler(id, playerInventory, ((T)tricksy).getInventory(), (T)tricksy), tricksy.getDisplayName())).ifPresent(syncId -> SyncInventoryScreenPacket.send(player, (T)tricksy, syncId));
 	}
 	
 	public static enum Bark implements StringIdentifiable

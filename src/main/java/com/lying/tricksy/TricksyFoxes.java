@@ -14,8 +14,9 @@ import com.lying.tricksy.init.TFParticles;
 import com.lying.tricksy.init.TFSoundEvents;
 import com.lying.tricksy.init.TFSpecialRecipes;
 import com.lying.tricksy.network.AddGlobalRefReceiver;
-import com.lying.tricksy.network.CloseTreeReceiver;
 import com.lying.tricksy.network.DeleteReferenceReceiver;
+import com.lying.tricksy.network.OpenTreeScreenReceiver;
+import com.lying.tricksy.network.RemoveUserReceiver;
 import com.lying.tricksy.network.SaveTreeReceiver;
 import com.lying.tricksy.network.TFPacketHandler;
 import com.lying.tricksy.reference.Reference;
@@ -50,8 +51,9 @@ public class TricksyFoxes implements ModInitializer
 		TFSoundEvents.init();
 		
 		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.ADD_GLOBAL_REF_ID, new AddGlobalRefReceiver());
-		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.CLOSE_TREE_ID, new CloseTreeReceiver());
+		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.REMOVE_USER_ID, new RemoveUserReceiver());
 		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.DELETE_REF_ID, new DeleteReferenceReceiver());
+		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.OPEN_TREE_ID, new OpenTreeScreenReceiver());
 		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.SAVE_TREE_ID, new SaveTreeReceiver());
 	}
 }
