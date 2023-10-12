@@ -86,6 +86,8 @@ public class NodeType<M extends TreeNode<?>>
 	
 	public final M create(UUID uuidIn) { return create(uuidIn, new NbtCompound()); }
 	
+	public final TreeNode<?> create(UUID uuidIn, Identifier subType) { return create(uuidIn).setSubType(subType); }
+	
 	public final M create(UUID uuidIn, NbtCompound data) { return factory.apply(uuidIn, data); }
 	
 	public final Identifier baseSubType() { return baseSubType; }

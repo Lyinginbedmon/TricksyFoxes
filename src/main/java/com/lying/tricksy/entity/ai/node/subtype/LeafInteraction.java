@@ -12,13 +12,18 @@ import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
+import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
 
+import net.minecraft.block.BlockState;
+import net.minecraft.block.FluidBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -30,21 +35,57 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameRules;
+import net.minecraft.world.World;
 
 public class LeafInteraction implements ISubtypeGroup<LeafNode>
 {
 	public static final Identifier VARIANT_ACTIVATE = ISubtypeGroup.variant("activate");
 	public static final Identifier VARIANT_USE_ITEM_ON = ISubtypeGroup.variant("use_item_on");
+	public static final Identifier VARIANT_BREAK_BLOCK = ISubtypeGroup.variant("break_block");
+	public static final Identifier VARIANT_USE_ITEM = ISubtypeGroup.variant("use_item");
 	
 	public void addActions(Collection<NodeSubType<LeafNode>> set)
 	{
+		add(set, VARIANT_USE_ITEM, new NodeTickHandler<LeafNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(false), ConstantsWhiteboard.BOOL_FALSE.displayName()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				IWhiteboardObject<Boolean> stopUsing = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BOOL);
+				if(stopUsing.get())
+				{
+					if(tricksy.getItemUseTime() > 0)
+					{
+						tricksy.clearActiveItem();
+						return Result.SUCCESS;
+					}
+					else
+						return Result.FAILURE;
+				}
+				else
+				{
+					if(tricksy.getItemUseTime() == 0)
+					{
+						tricksy.setCurrentHand(Hand.MAIN_HAND);
+						return Result.SUCCESS;
+					}
+					else
+						return Result.FAILURE;
+				}
+			}
+		});
 		add(set, VARIANT_ACTIVATE, new NodeTickHandler<LeafNode>()
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_activate");
 			
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK)));
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -106,6 +147,55 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 				}
 				tricksy.swingHand(Hand.MAIN_HAND);
 				return result != ActionResult.FAIL ? Result.SUCCESS : Result.FAILURE;
+			}
+		});
+		add(set, VARIANT_BREAK_BLOCK, new NodeTickHandler<LeafNode>()
+		{
+			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_break");
+			
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				IWhiteboardObject<BlockPos> blockPos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
+				if(!NodeTickHandler.canInteractWithBlock(tricksy, blockPos.get()) || blockPos.isEmpty())
+					return Result.FAILURE;
+				
+				World world = tricksy.getWorld();
+				if(!world.getGameRules().get(GameRules.DO_MOB_GRIEFING).get())
+					return Result.FAILURE;
+				
+				BlockPos pos = blockPos.get();
+				BlockState state = world.getBlockState(pos);
+				if(state.isAir() || state.getHardness(world, pos) < 0F || state.getBlock() instanceof FluidBlock)
+					return Result.FAILURE;
+				
+				ServerFakePlayer player = ServerFakePlayer.makeForMob(tricksy, BUILDER_ID);
+				if(!player.getMainHandStack().getItem().canMine(state, world, pos, player))
+					return Result.FAILURE;
+				
+				tricksy.getLookControl().lookAt(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
+				tricksy.swingHand(Hand.MAIN_HAND);
+				if(state.hasBlockBreakParticles())
+					world.addBlockBreakParticles(pos, state);
+				if(!parent.isRunning())
+				{
+					parent.ticks = 0F;
+					return Result.RUNNING;
+				}
+				else if((parent.ticks += state.calcBlockBreakingDelta(player, world, pos)) >= 1F)
+				{
+					// FIXME Ensure tool is appropriately damaged
+					player.interactionManager.tryBreakBlock(pos);
+					NodeTickHandler.updateFromPlayer(tricksy, player);
+					return Result.SUCCESS;
+				}
+				player.discard();
+				
+				return Result.RUNNING;
 			}
 		});
 	}

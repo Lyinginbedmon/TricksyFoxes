@@ -7,8 +7,8 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.GameMode;
 
 public class ServerFakePlayer extends ServerPlayerEntity
 {
@@ -33,12 +33,9 @@ public class ServerFakePlayer extends ServerPlayerEntity
 	{
 		FakePlayerBuilder builder = new FakePlayerBuilder(builderID);
 		ServerFakePlayer player = builder.create(entity.getServer(), (ServerWorld)entity.getWorld(), entity.getName().getString());
-		
+		player.changeGameMode(GameMode.SURVIVAL);
 		player.copyPositionAndRotation(entity);
-		
 		player.setCurrentHand(entity.getActiveHand());
-		player.setStackInHand(Hand.MAIN_HAND, entity.getMainHandStack().copy());
-		player.setStackInHand(Hand.OFF_HAND, entity.getOffHandStack().copy());
 		for(EquipmentSlot slot : EquipmentSlot.values())
 			player.equipStack(slot, entity.getEquippedStack(slot).copy());
 		

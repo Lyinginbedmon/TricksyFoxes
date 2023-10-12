@@ -25,6 +25,7 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
@@ -138,6 +139,8 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 	}
 	
 	/**	## Inventory methods ##	*/
+	
+	public static SimpleInventory createInventory() { return new SimpleInventory(6); }
 	
 	public default void onInventoryChanged(Inventory inv)
 	{

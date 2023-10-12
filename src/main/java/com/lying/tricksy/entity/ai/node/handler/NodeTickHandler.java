@@ -24,6 +24,7 @@ import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -43,7 +44,7 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	public static final double INTERACT_RANGE = 4D;
 	
 	/** Accept only values of the given type */
-	public static Predicate<WhiteboardRef> ofType(TFObjType<?> typeIn) { return (ref) -> ref.type().castableTo(typeIn); }
+	public static Predicate<WhiteboardRef> ofType(TFObjType<?> typeIn, boolean filterAllowed) { return (ref) -> ref.type().castableTo(typeIn) && (filterAllowed || !ref.isFilter()); }
 	/** Accept any value from anywhere */
 	public static Predicate<WhiteboardRef> any() { return Predicates.alwaysTrue(); }
 	/** Accept any value from the local whiteboard */
@@ -137,11 +138,11 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 		return result;
 	}
 	
-	private static <T extends PathAwareEntity & ITricksyMob<?>> void updateFromPlayer(T tricksy, PlayerEntity player)
+	public static <T extends PathAwareEntity & ITricksyMob<?>> void updateFromPlayer(T tricksy, PlayerEntity player)
 	{
 		ItemStack stack = tricksy.getMainHandStack().copy();
-		tricksy.setStackInHand(Hand.MAIN_HAND, player.getMainHandStack().copy());
-		tricksy.setStackInHand(Hand.OFF_HAND, player.getOffHandStack().copy());
+		for(EquipmentSlot slot : EquipmentSlot.values())
+			tricksy.equipStack(slot, player.getEquippedStack(slot));
 		tricksy.getLocalWhiteboard().setItemCooldown(stack.getItem(), (int)player.getItemCooldownManager().getCooldownProgress(stack.getItem(), 0));
 	}
 	

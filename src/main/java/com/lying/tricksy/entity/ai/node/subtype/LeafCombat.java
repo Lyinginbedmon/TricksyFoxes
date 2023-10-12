@@ -19,6 +19,7 @@ import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
@@ -45,6 +46,8 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Direction.Axis;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -57,6 +60,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_ATTACK_TRIDENT = ISubtypeGroup.variant("trident_attack");
 	public static final Identifier VARIANT_ATTACK_CROSSBOW = ISubtypeGroup.variant("crossbow_attack");
 	public static final Identifier VARIANT_ATTACK_POTION = ISubtypeGroup.variant("potion_attack");
+	public static final Identifier VARIANT_SHIELD = ISubtypeGroup.variant("shield_against");
 	
 	public void addActions(Collection<NodeSubType<LeafNode>> set)
 	{
@@ -66,6 +70,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		add(set, VARIANT_ATTACK_TRIDENT, tridentAttack());
 		add(set, VARIANT_ATTACK_CROSSBOW, crossbowAttack());
 		add(set, VARIANT_ATTACK_POTION, potionAttack());
+		add(set, VARIANT_SHIELD, shieldAgainst());
 	}
 	
 	private static NodeTickHandler<LeafNode> setAttackTarget()
@@ -74,7 +79,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT), new WhiteboardObjEntity()));
+				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT, false), new WhiteboardObjEntity()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -176,7 +181,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 			
 			protected void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(DRAW, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT), new WhiteboardObj.Int(1), ConstantsWhiteboard.NUM_1.displayName()));
+				set.put(DRAW, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, true), new WhiteboardObj.Int(1), ConstantsWhiteboard.NUM_1.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -316,6 +321,59 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 				UNCHARGED,
 				CHARGING,
 				CHARGED;
+			}
+		};
+	}
+	
+	// FIXME Ensure that tricksy shield actually works properly
+	private static NodeTickHandler<LeafNode> shieldAgainst()
+	{
+		return new NodeTickHandler<LeafNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(
+						(var) -> !var.isSameRef(LocalWhiteboard.SELF) && (var.type() == TFObjType.BLOCK || (var.type() == TFObjType.ENT && !var.isFilter())), 
+						new WhiteboardObjEntity(), 
+						LocalWhiteboard.ATTACK_TARGET.displayName()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				if(!tricksy.getMainHandStack().isOf(Items.SHIELD))
+					return Result.FAILURE;
+				
+				tricksy.setCurrentHand(Hand.MAIN_HAND);
+				IWhiteboardObject<?> target = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global);
+				if(target.size() > 0)
+					if(target.type() == TFObjType.BLOCK)
+					{
+						Direction face = ((WhiteboardObjBlock)target.as(TFObjType.BLOCK)).direction();
+						
+						float yaw = tricksy.bodyYaw;
+						float pitch = 0F;
+						if(face.getAxis() == Axis.Y)
+							pitch = face == Direction.UP ? 90F : -90F;
+						else
+							yaw = face.asRotation();
+						
+						Vec3d pos = tricksy.getPos();
+						tricksy.refreshPositionAndAngles(pos.x, pos.y, pos.z, yaw, pitch);
+						tricksy.setHeadYaw(yaw);
+					}
+					else if(target.type() == TFObjType.ENT)
+					{
+						Entity ent = target.as(TFObjType.ENT).size() == 0 ? tricksy.getAttacking() : target.as(TFObjType.ENT).get();
+						if(ent != null)
+							tricksy.getLookControl().lookAt(ent);
+					}
+				
+				return Result.RUNNING;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
+			{
+				tricksy.stopUsingItem();
 			}
 		};
 	}

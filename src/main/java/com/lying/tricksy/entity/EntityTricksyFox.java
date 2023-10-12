@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.BehaviourTree;
-import com.lying.tricksy.entity.ai.TricksyLookAroundGoal;
 import com.lying.tricksy.entity.ai.TricksyLookControl;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
@@ -20,7 +19,6 @@ import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.VariantHolder;
-import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -70,7 +68,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	{
 		super(TFEntityTypes.TRICKSY_FOX, world);
 		this.lookControl = new TricksyLookControl(this);
-		this.inventory = new SimpleInventory(6);
+		this.inventory = ITricksyMob.createInventory();
 		this.inventory.addListener(this);
 	}
 	
@@ -89,8 +87,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	
 	protected void initGoals()
 	{
-		this.goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 6.0f));
-		this.goalSelector.add(8, new TricksyLookAroundGoal(this));
+//		this.goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 6.0f));
+//		this.goalSelector.add(8, new LookAroundGoal(this));
 	}
 	
 	public static DefaultAttributeContainer.Builder createMobAttributes()
@@ -255,6 +253,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	
 	public void setBehaviourTree(NbtCompound data)
 	{
+		behaviourTree.root().stop(this);
 		getDataTracker().set(TREE_NBT, data);
 		behaviourTree = BehaviourTree.create(data);
 	}
@@ -290,7 +289,6 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	public void logStatus(Text message)
 	{
 		this.getDataTracker().set(LOG, message);
-//		System.out.println("Logged: "+message.getString());	// FIXME Remove this before publishing
 	}
 	
 	public Text latestLog() { return this.getDataTracker().get(LOG); }

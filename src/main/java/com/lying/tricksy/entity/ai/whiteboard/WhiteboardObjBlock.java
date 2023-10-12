@@ -26,6 +26,11 @@ public class WhiteboardObjBlock extends WhiteboardObjBase<BlockPos, com.lying.tr
 		value.add(new BlockData(pos, face));
 	}
 	
+	public WhiteboardObjBlock(@NotNull BlockPos pos)
+	{
+		this(pos, Direction.UP);
+	}
+	
 	public Text describeValue(WhiteboardObjBlock.BlockData value)
 	{
 		if(value.face != Direction.UP)

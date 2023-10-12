@@ -26,7 +26,6 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 	public static final Identifier VARIANT_VALUE_EXISTS = ISubtypeGroup.variant("value_exists");
 	public static final Identifier VARIANT_VALUE_EQUALS = ISubtypeGroup.variant("value_equals");
 	public static final Identifier VARIANT_LESS_THAN = ISubtypeGroup.variant("less_than");
-	public static final Identifier VARIANT_INV_HAS = ISubtypeGroup.variant("inv_has");
 	
 	public void addActions(Collection<NodeSubType<ConditionNode>> set)
 	{
@@ -79,8 +78,8 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						CommonVariables.VAR_A, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT)), 
-						CommonVariables.VAR_B, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT)));
+						CommonVariables.VAR_A, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, true)), 
+						CommonVariables.VAR_B, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, true)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)

@@ -60,6 +60,9 @@ public class WhiteboardRef
 	/** True if this reference should never be cached */
 	private boolean noCache = false;
 	
+	/** True if this reference only holds information used for filtering */
+	private boolean isFilter = false;
+	
 	private Text displayName = null;
 	
 	public WhiteboardRef(String nameIn, TFObjType<?> typeIn) { this(nameIn, typeIn, BoardType.CONSTANT); }
@@ -112,6 +115,10 @@ public class WhiteboardRef
 	 */
 	public WhiteboardRef noCache() { this.noCache = true; return this; }
 	
+	public WhiteboardRef filter() { this.isFilter = true; return this; }
+	
+	public boolean isFilter() { return this.isFilter; }
+	
 	public NbtCompound writeToNbt(NbtCompound data)
 	{
 		data.putString("Name", name);
@@ -119,6 +126,8 @@ public class WhiteboardRef
 		data.putString("Type", varType.registryName().toString());
 		if(noCache)
 			data.putBoolean("Live", noCache);
+		if(isFilter)
+			data.putBoolean("Filter", isFilter);
 		if(displayName != null)
 			data.putString("DisplayName", Text.Serializer.toJson(displayName));
 		return data;
@@ -132,6 +141,8 @@ public class WhiteboardRef
 		WhiteboardRef ref = new WhiteboardRef(name, type, board);
 		if(data.contains("Live") && data.getBoolean("Live"))
 			ref.noCache();
+		if(data.contains("Filter") && data.getBoolean("Filter"))
+			ref.filter();
 		if(data.contains("DisplayName", NbtElement.STRING_TYPE))
 		{
 			String string = data.getString("DisplayName");

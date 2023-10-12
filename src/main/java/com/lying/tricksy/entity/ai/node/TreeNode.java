@@ -54,6 +54,9 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** Map of input variable references to corresponding whiteboard references */
 	private Map<WhiteboardRef, Optional<WhiteboardRef>> variableSet = new HashMap<>();
 	
+	/** Temporary storage for tick handler use */
+	public NbtCompound nodeRAM = new NbtCompound();
+	
 	// Client-side values used for visualisation
 	public int screenX, screenY;
 	public int width, height;

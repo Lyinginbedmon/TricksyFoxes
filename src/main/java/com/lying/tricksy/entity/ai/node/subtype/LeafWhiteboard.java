@@ -18,10 +18,12 @@ import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFSoundEvents;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
@@ -33,7 +35,6 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_CYCLE = ISubtypeGroup.variant("cycle_value");
 	public static final Identifier VARIANT_SORT_NEAREST = ISubtypeGroup.variant("sort_nearest");
 	public static final Identifier VARIANT_COPY = ISubtypeGroup.variant("set_value");
-	public static final Identifier VARIANT_ADD = ISubtypeGroup.variant("addition");	// TODO Make in/decrement node
 	
 	public void addActions(Collection<NodeSubType<LeafNode>> set)
 	{
@@ -64,14 +65,14 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						VAR_A, INodeInput.makeInput((ref) -> ref.type().castableTo(TFObjType.BLOCK) && ref.boardType() == BoardType.LOCAL),
-						CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
+						VAR_A, INodeInput.makeInput((ref) -> (ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ENT) && ref.boardType() == BoardType.LOCAL && !ref.isFilter()),
+						CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				WhiteboardRef reference = parent.variable(VAR_A);
-				IWhiteboardObject<BlockPos> value = getOrDefault(VAR_A, parent, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<?> value = getOrDefault(VAR_A, parent, local, global);
 				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 				
 				position = null;
@@ -83,20 +84,42 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				if(value.isEmpty() || !value.isList())
 					return Result.FAILURE;
 				
-				List<BlockPos> points = value.getAll();
-				points.sort(new Comparator<BlockPos>() 
+				IWhiteboardObject<?> sorted;
+				if(value.type() == TFObjType.BLOCK)
 				{
-					public int compare(BlockPos o1, BlockPos o2)
+					List<BlockPos> points = value.as(TFObjType.BLOCK).getAll();
+					points.sort(new Comparator<BlockPos>() 
 					{
-						double dist1 = o1.getSquaredDistance(position);
-						double dist2 = o2.getSquaredDistance(position);
-						return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
-					}
-				});
+						public int compare(BlockPos o1, BlockPos o2)
+						{
+							double dist1 = o1.getSquaredDistance(position);
+							double dist2 = o2.getSquaredDistance(position);
+							return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+						}
+					});
+					
+					tricksy.logStatus(Text.literal("Closest position was "+points.get(0).toShortString()));
+					sorted = new WhiteboardObjBlock();
+					points.forEach((point) -> ((WhiteboardObjBlock)sorted).add(point));
+				}
+				else
+				{
+					List<Entity> points = value.as(TFObjType.ENT).getAll();
+					points.sort(new Comparator<Entity>() 
+					{
+						public int compare(Entity o1, Entity o2)
+						{
+							double dist1 = o1.squaredDistanceTo(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
+							double dist2 = o2.squaredDistanceTo(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
+							return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+						}
+					});
+					
+					tricksy.logStatus(Text.literal("Closest entity was "+points.get(0).getDisplayName().getString()));
+					sorted = new WhiteboardObjEntity();
+					points.forEach((point) -> ((WhiteboardObjEntity)sorted).add(point));
+				}
 				
-				tricksy.logStatus(Text.literal("Closest position was "+points.get(0).toShortString()));
-				WhiteboardObjBlock sorted = new WhiteboardObjBlock();
-				points.forEach((point) -> sorted.add(point));
 				local.setValue(reference, sorted);
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;

@@ -17,6 +17,7 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 	public static final WhiteboardRef SELF = makeSystemRef("self", TFObjType.ENT, BoardType.LOCAL);
 	public static final WhiteboardRef HP = makeSystemRef("health", TFObjType.INT, BoardType.LOCAL);
 	public static final WhiteboardRef ARMOUR = makeSystemRef("armor", TFObjType.INT, BoardType.LOCAL);
+	public static final WhiteboardRef USING = makeSystemRef("ticks_using", TFObjType.INT, BoardType.LOCAL);
 	public static final WhiteboardRef HANDS_FULL = makeSystemRef("hands_full", TFObjType.BOOL, BoardType.LOCAL);
 	public static final WhiteboardRef MAIN_ITEM = makeSystemRef("mainhand_item", TFObjType.ITEM, BoardType.LOCAL);
 	public static final WhiteboardRef OFF_ITEM = makeSystemRef("offhand_item", TFObjType.ITEM, BoardType.LOCAL);
@@ -45,6 +46,7 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 		register(HANDS_FULL, (tricksy) -> new WhiteboardObj.Bool(!tricksy.getMainHandStack().isEmpty() && !tricksy.getOffHandStack().isEmpty()));
 		register(MAIN_ITEM, (tricksy) -> new WhiteboardObj.Item(tricksy.getMainHandStack()));
 		register(OFF_ITEM, (tricksy) -> new WhiteboardObj.Item(tricksy.getOffHandStack()));
+		register(USING, (tricksy) -> new WhiteboardObj.Int(tricksy.getItemUseTime()));
 		register(HOME, (tricksy) -> tricksy.hasPositionTarget() ? new WhiteboardObjBlock(tricksy.getPositionTarget(), Direction.UP) : TFObjType.BLOCK.blank());
 		register(HAS_SAGE, (tricksy) -> new WhiteboardObj.Bool(tricksy.hasSage()));
 		register(NEAREST_SAGE, (tricksy) -> 

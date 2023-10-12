@@ -42,7 +42,7 @@ public abstract class CombatHandler implements NodeTickHandler<LeafNode>
 	public Map<WhiteboardRef, INodeInput> variableSet()
 	{
 		Map<WhiteboardRef, INodeInput> set = new HashMap<>();
-		set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput((var) -> var.type() == TFObjType.ENT && var != LocalWhiteboard.SELF, new WhiteboardObjEntity(), LocalWhiteboard.ATTACK_TARGET.displayName()));
+		set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput((var) -> var.type() == TFObjType.ENT && !var.isSameRef(LocalWhiteboard.SELF), new WhiteboardObjEntity(), LocalWhiteboard.ATTACK_TARGET.displayName()));
 		addVariables(set);
 		return set;
 	}
