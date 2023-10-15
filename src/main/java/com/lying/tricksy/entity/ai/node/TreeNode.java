@@ -24,6 +24,7 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 /**
@@ -35,6 +36,9 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** A unique identifier, stored by behaviour trees to reduce unnecessary ticking in large trees by only ticking the running node */
 	@NotNull
 	private final UUID nodeID;
+	
+	private Text customName = null;
+	private boolean hideChildren = false;
 	
 	/** The primary node type */
 	private final NodeType<N> nodeType;
@@ -112,6 +116,20 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	/** Returns the unique ID of this node */
 	public final UUID getID() { return this.nodeID; }
+	
+	public final Text getDisplayName()
+	{
+		return !hasCustomName() ? getType().translatedName() : this.customName;
+	}
+	
+	public final boolean hasCustomName() { return this.customName != null && this.customName.getString().length() > 0; }
+	
+	public final TreeNode<N> setCustomName(Text nameIn) { this.customName = nameIn; return this; }
+	
+	public final TreeNode<N> setDiscrete(boolean val) { this.hideChildren = val; return this; }
+	
+	/** Returns true if discretion is permitted and this node should not display its children */
+	public final boolean isDiscrete(boolean permitted) { return permitted && (this.hideChildren && hasChildren() && !isRoot()); }
 	
 	public final NodeType<?> getType() { return this.nodeType; }
 	
@@ -226,6 +244,9 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	public final void replaceChild(UUID childID, TreeNode<?> replacement)
 	{
+		if(!hasChildren())
+			return;
+		
 		int index = -1;
 		for(int i=0; i<this.children.size(); i++)
 			if(children.get(i).nodeID.equals(childID))
@@ -243,6 +264,9 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	public final boolean removeChild(UUID uuidIn)
 	{
+		if(!hasChildren())
+			return false;
+		
 		if(children.removeIf((node) -> node.getID().equals(uuidIn)))
 			return true;
 		else
@@ -254,6 +278,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			return false;
 		}
 	}
+	
+	public final boolean hasChildren() { return !children().isEmpty(); }
 	
 	public List<TreeNode<?>> children() { return children; }
 	
@@ -320,6 +346,20 @@ public abstract class TreeNode<N extends TreeNode<?>>
 				}
 			}
 			
+			if(data.contains("CustomName", NbtElement.STRING_TYPE))
+			{
+				String string = data.getString("CustomName");
+				try
+				{
+					parent.customName = Text.Serializer.fromJson(string);
+				}
+				catch(Exception e)
+				{
+					TricksyFoxes.LOGGER.warn("Failed to parse tree node custom name {}", (Object)string, (Object)e);
+				}
+			}
+			parent.hideChildren = data.getBoolean("Discrete");
+			
 			NbtList children = data.contains("Children", NbtElement.LIST_TYPE) ? data.getList("Children", NbtElement.COMPOUND_TYPE) : new NbtList();
 			for(int i=0; i<children.size(); i++)
 			{
@@ -362,6 +402,11 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			children().forEach((child) -> children.add(child.write(new NbtCompound())));
 			data.put("Children", children);
 		}
+		
+		if(hasCustomName())
+			data.putString("CustomName", Text.Serializer.toJson(this.customName));
+		
+		data.putBoolean("Discrete", this.hideChildren);
 		
 		NbtCompound storage = writeToNbt(new NbtCompound());
 		if(!storage.isEmpty())

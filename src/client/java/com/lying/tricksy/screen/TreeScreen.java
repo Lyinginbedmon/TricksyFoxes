@@ -2,15 +2,17 @@ package com.lying.tricksy.screen;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
+import java.util.function.Predicate;
 
+import com.google.common.base.Predicates;
 import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.network.SaveTreePacket;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.screen.NodeRenderUtils.NodeDisplay;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -40,10 +42,9 @@ public class TreeScreen extends TricksyScreenBase
 	// Button to view whiteboards
 	public ButtonWidget whiteboards;
 	
-	private Vec2f position = Vec2f.ZERO;
+	private Vec2f position = null;
 	private Vec2f moveStart = null;
-	
-	private int ticksOpen = 0;
+	private NodeDisplay showVariables = TricksyFoxesClient.config.nodeDisplayStyle();
 	
 	public TreeScreen(TricksyTreeScreenHandler handler, PlayerInventory playerInventory, Text title)
 	{
@@ -67,7 +68,7 @@ public class TreeScreen extends TricksyScreenBase
 		addDrawableChild(reset = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.reset"), (button) -> 
 		{
 			handler.resetTree();
-			position = new Vec2f(-this.width / 4, -this.height / 4);
+			setPosition(-this.width / 4, -this.height / 4);
 		}).dimensions(midPoint - 70 - 20, 7, 40, 16).build());
 		addDrawableChild(save = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.save"), (button) -> 
 		{
@@ -79,22 +80,38 @@ public class TreeScreen extends TricksyScreenBase
 			client.setScreen(new WhiteboardScreen(getScreenHandler(), this.playerInv, this.title));
 		}));
 		
-		position = new Vec2f(-this.width / 4, -this.height / 4);
+		if(position == null)
+			setPosition(-this.width / 4, -this.height / 4);
+	}
+	
+	public void setPosition(int x, int y)
+	{
+		this.position = new Vec2f(x, y);
+	}
+	
+	public Vec2f position()
+	{
+		return this.position == null ? Vec2f.ZERO : this.position; 
 	}
 	
 	public boolean mouseClicked(double x, double y, int mouseKey)
 	{
 		if(mouseKey == 0)
 		{
-			for(Element widget : children())
+			if(hoveredNode == null)
 			{
-				if(!widget.isMouseOver(x, y) || !(widget instanceof ClickableWidget))
-					continue;
-				return widget.mouseClicked(x, y, mouseKey);
+				for(Element widget : children())
+				{
+					if(!widget.isMouseOver(x, y) || !(widget instanceof ClickableWidget))
+						continue;
+					return widget.mouseClicked(x, y, mouseKey);
+				}
+				
+				this.setDragging(true);
+				this.moveStart = new Vec2f((float)x, (float)y);
 			}
-			
-			this.setDragging(true);
-			this.moveStart = new Vec2f((float)x, (float)y);
+			else
+				client.setScreen(new NodeScreen(getScreenHandler(), this.playerInv, this.title, hoveredNode));
 			return true;
 		}
 		return super.mouseClicked(x, y, mouseKey);
@@ -183,7 +200,8 @@ public class TreeScreen extends TricksyScreenBase
 		{
 			float xOff = (float)x - moveStart.x;
 			float yOff = (float)y - moveStart.y;
-			position = position.add(new Vec2f(xOff, yOff));
+			
+			position = position().add(new Vec2f(xOff, yOff));
 			
 			this.setDragging(false);
 			this.moveStart = null;
@@ -191,11 +209,6 @@ public class TreeScreen extends TricksyScreenBase
 			return true;
 		}
 		return super.mouseReleased(mouseKey, mouseKey, mouseKey);
-	}
-	
-	public void handledScreenTick()
-	{
-		this.ticksOpen++;
 	}
 	
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)
@@ -247,20 +260,6 @@ public class TreeScreen extends TricksyScreenBase
 		}
 	}
 	
-	/** Recursively positions and scales all nodes */
-	private void scaleAndPositionNode(TreeNode<?> node, int x, int y)
-	{
-		node.setPositionAndWidth(x, y, 150, NodeRenderUtils.nodeDisplayHeight(node));
-		int childY = node.screenY + node.height + NodeRenderUtils.NODE_SPACING;
-		for(TreeNode<?> child : node.children())
-		{
-			Random childRNG = child.getRNG();
-			int xOffset = TricksyFoxesClient.config.fancyTrees() ? childRNG.nextInt(2, 8) * 5 : 10;
-			scaleAndPositionNode(child, node.screenX + NodeRenderUtils.CONNECTOR_OFFSET + xOffset, childY);
-			childY += NodeRenderUtils.nodeDisplayHeightRecursive(child) + NodeRenderUtils.NODE_SPACING;
-		}
-	}
-	
 	private HoveredElement hoveredNodePart(int mouseX, int mouseY)
 	{
 		if(hoveredNode == null)
@@ -284,8 +283,8 @@ public class TreeScreen extends TricksyScreenBase
 			return;
 		
 		TreeNode<?> root = handler.getTree().root();
-		int renderX = this.width / 2 + (int)position.x;
-		int renderY = this.height / 2 + (int)position.y;
+		int renderX = this.width / 2 + (int)position().x;
+		int renderY = this.height / 2 + (int)position().y;
 		if(isDragging())
 		{
 			int offsetX = mouseX - (int)moveStart.x;
@@ -295,8 +294,26 @@ public class TreeScreen extends TricksyScreenBase
 			renderY += offsetY;
 		}
 		
-		scaleAndPositionNode(root, renderX, renderY);
-		NodeRenderUtils.renderTree(root, context, this.textRenderer, this.ticksOpen);
+		Predicate<TreeNode<?>> variableShow = null;
+		switch(showVariables)
+		{
+			case ALWAYS:
+				variableShow = Predicates.alwaysTrue();
+				break;
+			case HOVERED:
+				if(this.hoveredNode != null)
+					variableShow = (node) -> node.getID().equals(this.hoveredNode.getID());
+				else
+					variableShow = Predicates.alwaysFalse();
+				break;
+			default:
+			case NEVER:
+				variableShow = Predicates.alwaysFalse();
+				break;
+		}
+		
+		NodeRenderUtils.scaleAndPositionNode(root, renderX, renderY, variableShow, true);
+		NodeRenderUtils.renderTree(root, context, this.textRenderer, this.ticksOpen, variableShow, true);
 	}
 	
 	public static enum HoveredElement

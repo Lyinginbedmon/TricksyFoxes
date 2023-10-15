@@ -16,6 +16,8 @@ public abstract class TricksyScreenBase extends HandledScreen<TricksyTreeScreenH
 	
 	protected final PlayerEntity player;
 	protected final PlayerInventory playerInv;
+	
+	protected int ticksOpen = 0;
 
 	public TricksyScreenBase(TricksyTreeScreenHandler handler, PlayerInventory inventory, Text title)
 	{
@@ -25,6 +27,11 @@ public abstract class TricksyScreenBase extends HandledScreen<TricksyTreeScreenH
 	}
 	
 	public boolean shouldPause() { return true; }
+	
+	public void handledScreenTick()
+	{
+		this.ticksOpen++;
+	}
 	
 	public void close()
 	{

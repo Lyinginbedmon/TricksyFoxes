@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.function.Predicate;
 
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 import com.google.common.collect.Lists;
@@ -30,6 +32,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
+import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 
@@ -42,18 +45,25 @@ public class NodeRenderUtils
 	public static final int CONNECTOR_OFFSET = 20;
 	public static final int NODE_WIDTH = 150;
 	
-	public static void renderTree(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen)
+	public static void renderTree(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen, Predicate<TreeNode<?>> showVariables, boolean allowDiscretion)
 	{
-		NodeRenderUtils.drawNodeConnections(context, node, node.getType().color());
-		NodeRenderUtils.renderNode(node, context, textRenderer, ticksOpen);
+		NodeRenderUtils.drawNodeConnections(context, node, node.getType().color(), allowDiscretion);
+		NodeRenderUtils.renderNodeRecursive(node, context, textRenderer, ticksOpen, showVariables, allowDiscretion);
 	}
 	
-	public static void renderNode(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen)
+	public static void renderNodeRecursive(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen, Predicate<TreeNode<?>> showVariables, boolean allowDiscretion)
 	{
-		drawNodeBackground(context, node, node.getType().color(), node.screenX, node.screenY);
+		renderNode(node, context, textRenderer, ticksOpen, showVariables.test(node));
+		if(!node.isDiscrete(allowDiscretion))
+			node.children().forEach((child) -> renderNodeRecursive(child, context, textRenderer, ticksOpen, showVariables, allowDiscretion));
+	}
+	
+	public static void renderNode(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen, boolean showVariables)
+	{
+		drawNodeBackground(context, node, node.getType().color(), node.screenX, node.screenY, showVariables);
 		
 		int drawY = node.screenY + 4;
-		Text typeName = node.getType().translatedName();
+		Text typeName = node.getDisplayName();
 		context.drawText(textRenderer, typeName, node.screenX + (NODE_WIDTH - textRenderer.getWidth(typeName)) / 2, drawY, -1, false);
 		drawY += 11;
 		
@@ -78,6 +88,8 @@ public class NodeRenderUtils
 			subName = Text.literal(subName.getString().substring(start - 1, end + 1));
 		}
 		context.drawText(textRenderer, subName, node.screenX + (NODE_WIDTH - textRenderer.getWidth(subName)) / 2, drawY + 1, 0x404040, false);
+		if(!showVariables)
+			return;
 		drawY += 11;
 		
 		Map<WhiteboardRef, INodeInput> variableSet = subType.variableSet();
@@ -93,9 +105,6 @@ public class NodeRenderUtils
 			}
 			drawY += 11;
 		}
-		
-		for(TreeNode<?> child : node.children())
-			renderNode(child, context, textRenderer, ticksOpen);
 	}
 	
 	public static void renderReference(WhiteboardRef reference, DrawContext context, TextRenderer textRenderer, int x, int y, int maxWidth, boolean iconRight, boolean isOptional)
@@ -125,7 +134,7 @@ public class NodeRenderUtils
 		context.drawTexture(TREE_TEXTURES, iconX, y, texX, texY, 8, 8);
 	}
 	
-	private static void drawNodeBackground(DrawContext context, TreeNode<?> node, int colour, int x, int y)
+	private static void drawNodeBackground(DrawContext context, TreeNode<?> node, int colour, int x, int y, boolean showVariables)
 	{
         int r = ((colour & 0xFF0000) >> 16);
         int g = ((colour & 0xFF00) >> 8);
@@ -138,7 +147,7 @@ public class NodeRenderUtils
 		drawY += 13;
 		
 		/* Subtype */
-		int variables = node.getSubType().variableSet().size();
+		int variables = showVariables ? node.getSubType().variableSet().size() : 0;
 		drawTextures(context, x - 25, drawY, 0, variables == 0 ? 32 : 20, 200, variables == 0 ? 19 : 11, r, g, b);
 		drawTextures(context, x + 25, drawY, 0, 145, 100, 11, r, g, b);
 		
@@ -155,13 +164,13 @@ public class NodeRenderUtils
 		}
 		
 		/* Child node connector */
-		if(!node.children().isEmpty())
+		if(node.hasChildren())
 			drawTextures(context, node.screenX + CONNECTOR_OFFSET - 8, node.screenY + node.height - 8, 100, 145, 16, 16, r, g, b);
 	}
 	
-	public static void drawNodeConnections(DrawContext context, TreeNode<?> node, int colour)
+	public static void drawNodeConnections(DrawContext context, TreeNode<?> node, int colour, boolean allowDiscretion)
 	{
-		if(node.children().isEmpty())
+		if(!node.hasChildren() || node.isDiscrete(allowDiscretion))
 			return;
 		
 		Random rand = node.getRNG();
@@ -181,7 +190,7 @@ public class NodeRenderUtils
 			{
 				int y = child.screenY + child.height / 2;
 				context.fill(startX, y - 1, child.screenX, y + 1, col);
-				drawNodeConnections(context, child, child.getType().color());
+				drawNodeConnections(context, child, child.getType().color(), allowDiscretion);
 			});
 			
 			return;
@@ -253,22 +262,41 @@ public class NodeRenderUtils
 			
 	        (new BranchLine(offshootPoints, rand, flowerTex)).render(context);
 			
-			drawNodeConnections(context, child, child.getType().color());
+			drawNodeConnections(context, child, child.getType().color(), allowDiscretion);
 		}
 		
 		mainLine.renderBushes(context);
 	}
 	
-	public static int nodeDisplayHeightRecursive(TreeNode<?> nodeIn)
+	/** Recursively positions and scales all nodes */
+	public static void scaleAndPositionNode(TreeNode<?> node, int x, int y, Predicate<TreeNode<?>> includeVariables, boolean allowDiscretion)
 	{
-		int height = nodeDisplayHeight(nodeIn);
-		List<TreeNode<?>> children = nodeIn.children();
-		if(!children.isEmpty())
+		node.setPositionAndWidth(x, y, 150, NodeRenderUtils.nodeDisplayHeight(node, includeVariables.test(node)));
+		int childY = node.screenY + node.height + NodeRenderUtils.NODE_SPACING;
+		for(TreeNode<?> child : node.children())
 		{
+			if(node.isDiscrete(allowDiscretion))
+			{
+				scaleAndPositionNode(child, Integer.MAX_VALUE, Integer.MAX_VALUE, includeVariables, allowDiscretion);
+				continue;
+			}
+			Random childRNG = child.getRNG();
+			int xOffset = TricksyFoxesClient.config.fancyTrees() ? childRNG.nextInt(2, 8) * 5 : 10;
+			scaleAndPositionNode(child, node.screenX + NodeRenderUtils.CONNECTOR_OFFSET + xOffset, childY, includeVariables, allowDiscretion);
+			childY += NodeRenderUtils.nodeDisplayHeightRecursive(child, includeVariables, allowDiscretion) + NodeRenderUtils.NODE_SPACING;
+		}
+	}
+	
+	public static int nodeDisplayHeightRecursive(TreeNode<?> nodeIn, Predicate<TreeNode<?>> includeVariables, boolean allowDiscretion)
+	{
+		int height = nodeDisplayHeight(nodeIn, includeVariables.test(nodeIn));
+		if(nodeIn.hasChildren() && !nodeIn.isDiscrete(allowDiscretion))
+		{
+			List<TreeNode<?>> children = nodeIn.children();
 			height += NODE_SPACING;
 			for(int i=0; i<children.size(); i++)
 			{
-				height += nodeDisplayHeightRecursive(children.get(i));
+				height += nodeDisplayHeightRecursive(children.get(i), includeVariables, allowDiscretion);
 				if(i != (children.size() - 1))
 					height += NODE_SPACING;
 			}
@@ -277,7 +305,7 @@ public class NodeRenderUtils
 		return height;
 	}
 	
-	public static int nodeDisplayHeight(TreeNode<?> nodeIn)
+	public static int nodeDisplayHeight(TreeNode<?> nodeIn, boolean includeVariables)
 	{
 		int variables = nodeIn.getSubType().variableSet().size();
 		
@@ -288,7 +316,7 @@ public class NodeRenderUtils
 		height += (variables == 0 ? 15 : 11);
 		
 		// Variables
-		if(variables > 0)
+		if(variables > 0 && includeVariables)
 		{
 			height += 11 * (variables - 1);
 			height += 14;
@@ -390,5 +418,23 @@ public class NodeRenderUtils
 			}
 		});
 		return variablesToDisplay;
+	}
+	
+	public static enum NodeDisplay implements StringIdentifiable
+	{
+		NEVER,
+		HOVERED,
+		ALWAYS;
+		
+		public String asString() { return name().toLowerCase(); }
+		
+		@Nullable
+		public static NodeDisplay fromString(String nameIn)
+		{
+			for(NodeDisplay type : values())
+				if(nameIn.equals(type.asString()))
+					return type;
+			return null;
+		}
 	}
 }

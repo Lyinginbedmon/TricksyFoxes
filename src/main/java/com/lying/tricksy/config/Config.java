@@ -108,4 +108,22 @@ public abstract class Config
 		}
 		catch(NumberFormatException e) { return val; }
 	}
+	
+	protected static void writeString(FileWriter writer, String name, String value)
+	{
+		try
+		{
+			writer.write(name+"="+value);
+		}
+		catch(Exception e) { }
+	}
+	
+	protected static String parseStringOr(String name, String val)
+	{
+		try
+		{
+			return name;
+		}
+		catch(Exception e) { return val; }
+	}
 }

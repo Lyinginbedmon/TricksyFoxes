@@ -1,8 +1,6 @@
 package com.lying.tricksy.screen;
 
-import java.util.Random;
-
-import com.lying.tricksy.TricksyFoxesClient;
+import com.google.common.base.Predicates;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.screen.TreeScreen.HoveredElement;
 
@@ -95,20 +93,6 @@ public class ScriptureScreen extends HandledScreen<ScriptureScreenHandler>
 		}
 	}
 	
-	/** Recursively positions and scales all nodes */
-	private void scaleAndPositionNode(TreeNode<?> node, int x, int y)
-	{
-		node.setPositionAndWidth(x, y, 150, NodeRenderUtils.nodeDisplayHeight(node));
-		int childY = node.screenY + node.height + NodeRenderUtils.NODE_SPACING;
-		for(TreeNode<?> child : node.children())
-		{
-			Random childRNG = child.getRNG();
-			int xOffset = TricksyFoxesClient.config.fancyTrees() ? childRNG.nextInt(2, 8) * 5 : 10;
-			scaleAndPositionNode(child, node.screenX + NodeRenderUtils.CONNECTOR_OFFSET + xOffset, childY);
-			childY += NodeRenderUtils.nodeDisplayHeightRecursive(child) + NodeRenderUtils.NODE_SPACING;
-		}
-	}
-	
 	private HoveredElement hoveredNodePart(int mouseX, int mouseY)
 	{
 		if(hoveredNode == null)
@@ -137,8 +121,8 @@ public class ScriptureScreen extends HandledScreen<ScriptureScreenHandler>
 			renderY += offsetY;
 		}
 		
-		scaleAndPositionNode(getScreenHandler().getRoot(), renderX, renderY);
-		NodeRenderUtils.renderTree(getScreenHandler().getRoot(), context, this.textRenderer, ticksOpen);
+		NodeRenderUtils.scaleAndPositionNode(getScreenHandler().getRoot(), renderX, renderY, Predicates.alwaysTrue(), false);
+		NodeRenderUtils.renderTree(getScreenHandler().getRoot(), context, this.textRenderer, this.ticksOpen, Predicates.alwaysTrue(), false);
 		
 		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
 	}
