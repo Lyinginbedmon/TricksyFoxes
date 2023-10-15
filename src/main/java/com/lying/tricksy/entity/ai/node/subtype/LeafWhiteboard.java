@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
@@ -22,6 +23,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFSoundEvents;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -36,8 +38,11 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_SORT_NEAREST = ISubtypeGroup.variant("sort_nearest");
 	public static final Identifier VARIANT_COPY = ISubtypeGroup.variant("set_value");
 	
-	public void addActions(Collection<NodeSubType<LeafNode>> set)
+	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".leaf_whiteboard"); }
+	
+	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
+		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
 		add(set, VARIANT_CYCLE, new NodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BOOL).displayName(CommonVariables.translate("to_cycle"));
@@ -156,5 +161,6 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				return Result.SUCCESS;
 			}
 		});
+		return set;
 	}
 }

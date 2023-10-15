@@ -2,12 +2,10 @@ package com.lying.tricksy.entity.ai.node;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,6 +15,7 @@ import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
+import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
@@ -44,28 +43,24 @@ public class NodeType<M extends TreeNode<?>>
 	private final int displayColor;
 	private final Identifier flowerTexture;
 	
-	private Map<Identifier, NodeSubType<M>> subTypes = new HashMap<>();
+	private List<ISubtypeGroup<M>> subTypeGroups = Lists.newArrayList();
 	private Identifier baseSubType;
 	
 	private final BiFunction<UUID,NbtCompound, M> factory;
 	
-	public NodeType(int colorIn, BiFunction<UUID,NbtCompound, M> factoryIn, Consumer<Collection<NodeSubType<M>>> subTypeBuilder)
+	public NodeType(int colorIn, BiFunction<UUID,NbtCompound, M> factoryIn, Supplier<Collection<ISubtypeGroup<M>>> subTypeBuilder)
 	{
 		this(colorIn, null, factoryIn, subTypeBuilder);
 	}
 	
-	public NodeType(int colorIn, Identifier tex, BiFunction<UUID,NbtCompound, M> factoryIn, Consumer<Collection<NodeSubType<M>>> subTypeBuilder)
+	public NodeType(int colorIn, Identifier tex, BiFunction<UUID,NbtCompound, M> factoryIn, Supplier<Collection<ISubtypeGroup<M>>> subTypeBuilder)
 	{
 		displayColor = colorIn;
 		flowerTexture = tex;
 		factory = factoryIn;
 		
-		List<NodeSubType<M>> subTypeList = Lists.newArrayList();
-		subTypeBuilder.accept(subTypeList);
-		for(NodeSubType<M> subType : subTypeList)
-			subTypes.put(subType.getRegistryName(), subType);
-		
-		baseSubType = subTypes.isEmpty() ? DUMMY_ID : getAvailableSubTypes().get(0);
+		subTypeGroups.addAll(subTypeBuilder.get());
+		baseSubType = subTypeGroups.isEmpty() ? DUMMY_ID : subTypes().get(0);
 	}
 	
 	public final void setRegistryName(Identifier idIn)
@@ -94,28 +89,24 @@ public class NodeType<M extends TreeNode<?>>
 	
 	public NodeType<M> setBaseSubType(Identifier nameIn) { this.baseSubType = nameIn; return this; }
 	
-	protected void addSubType(String nameIn, NodeSubType<M> typeIn)
-	{
-		subTypes.put(new Identifier(Reference.ModInfo.MOD_ID, nameIn), typeIn);
-	}
-	
 	public final NodeSubType<M> getSubType(Identifier typeIn)
 	{
-		return subTypes.getOrDefault(typeIn, dummy);
+		for(ISubtypeGroup<M> group : subTypeGroups)
+			for(NodeSubType<M> subType : group.getSubtypes())
+				if(subType.getRegistryName().equals(typeIn))
+					return subType;
+		return dummy;
 	}
+	
+	public final List<ISubtypeGroup<M>> groups() { return this.subTypeGroups; }
 	
 	public final List<Identifier> subTypes()
 	{
 		List<Identifier> subtypes = Lists.newArrayList();
-		subtypes.addAll(this.subTypes.keySet());
+		for(ISubtypeGroup<M> group : subTypeGroups)
+			for(NodeSubType<M> subType : group.getSubtypes())
+				subtypes.add(subType.getRegistryName());
 		subtypes.sort(subTypeSort);
 		return subtypes;
-	}
-	
-	public final List<Identifier> getAvailableSubTypes()
-	{
-		List<Identifier> types = Lists.newArrayList();
-		types.addAll(subTypes.keySet());
-		return types;
 	}
 }

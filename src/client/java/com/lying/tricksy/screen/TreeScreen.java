@@ -237,7 +237,7 @@ public class TreeScreen extends TricksyScreenBase
 			delNode.setPosition(hoveredNode.screenX + 7, hoveredNode.screenY + 6);
 			
 			if(hoveredElement(mouseX, mouseY).isEmpty())
-				switch(hoveredPart = hoveredNodePart(mouseX, mouseY))
+				switch(hoveredPart = hoveredNodePart(mouseX, mouseY, hoveredNode))
 				{
 					case SUBTYPE:
 						int relativeX = (hoveredNode.screenX + hoveredNode.width / 2) - mouseX;
@@ -258,20 +258,6 @@ public class TreeScreen extends TricksyScreenBase
 			addNode.visible = addNode.active = false;
 			delNode.visible = delNode.active = false;
 		}
-	}
-	
-	private HoveredElement hoveredNodePart(int mouseX, int mouseY)
-	{
-		if(hoveredNode == null)
-			return null;
-		
-		int yOffset = mouseY - hoveredNode.screenY;
-		if(yOffset < 13)
-			return HoveredElement.TYPE;
-		else if(yOffset < 24)
-			return HoveredElement.SUBTYPE;
-		else
-			return HoveredElement.VARIABLES;
 	}
 	
 	protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY)

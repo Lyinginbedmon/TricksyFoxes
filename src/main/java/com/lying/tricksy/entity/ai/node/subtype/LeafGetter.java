@@ -25,6 +25,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -32,6 +33,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -60,8 +62,11 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_ADD = ISubtypeGroup.variant("addition");
 	public static final Identifier VARIANT_OFFSET = ISubtypeGroup.variant("offset");
 	
-	public void addActions(Collection<NodeSubType<LeafNode>> set)
+	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".leaf_getter"); }
+
+	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
+		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
 		add(set, VARIANT_GET_ITEM, new GetterHandler<Entity>(TFObjType.ENT)
 		{
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
@@ -364,6 +369,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				return result;
 			}
 		});
+		return set;
 	}
 	
 	@Nullable

@@ -5,13 +5,13 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.node.ConditionNode;
-import com.lying.tricksy.entity.ai.node.ControlFlowNode;
-import com.lying.tricksy.entity.ai.node.DecoratorNode;
-import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
+import com.lying.tricksy.entity.ai.node.subtype.ConditionMisc;
 import com.lying.tricksy.entity.ai.node.subtype.ConditionWhiteboard;
+import com.lying.tricksy.entity.ai.node.subtype.ControlFlowMisc;
+import com.lying.tricksy.entity.ai.node.subtype.DecoratorMisc;
+import com.lying.tricksy.entity.ai.node.subtype.LeafMisc;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
@@ -32,24 +32,24 @@ public class BehaviourTree
 {
 	/** Default behaviour tree applied on tricksy mob startup before being overridden by NBT */
 	public static final TreeNode<?> INITIAL_TREE = 
-			TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowNode.VARIANT_SELECTOR).setCustomName(Text.translatable("node."+Reference.ModInfo.MOD_ID+".root"))
-			.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID(), DecoratorNode.VARIANT_DO_ONCE)
-				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafNode.VARIANT_SET_HOME)
+			TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SELECTOR).setCustomName(Text.translatable("node."+Reference.ModInfo.MOD_ID+".root"))
+			.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID(), DecoratorMisc.VARIANT_DO_ONCE)
+				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_SET_HOME)
 					.assign(CommonVariables.VAR_POS, LocalWhiteboard.SELF)))
-			.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowNode.VARIANT_SEQUENCE).setCustomName(Text.translatable("node."+Reference.ModInfo.MOD_ID+".meander")).setDiscrete(true)
+			.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SEQUENCE).setCustomName(Text.translatable("node."+Reference.ModInfo.MOD_ID+".meander")).setDiscrete(true)
 				.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID(), ConditionWhiteboard.VARIANT_VALUE_EQUALS)
 					.assign(CommonVariables.VAR_A, LocalWhiteboard.HAS_SAGE)
 					.assign(CommonVariables.VAR_B, ConstantsWhiteboard.BOOL_FALSE))
-				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafNode.VARIANT_BARK)
+				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_BARK)
 					.assign(CommonVariables.VAR_NUM, ConstantsWhiteboard.NUM_3))
-				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafNode.VARIANT_WANDER))
-				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafNode.VARIANT_LOOK_AROUND)))
-			.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowNode.VARIANT_SEQUENCE).setCustomName(Text.translatable("node."+Reference.ModInfo.MOD_ID+".follow_sage"))
-				.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID(), DecoratorNode.VARIANT_INVERTER)
-					.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID(), ConditionNode.VARIANT_CLOSER_THAN)
+				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_WANDER))
+				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_LOOK_AROUND)))
+			.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SEQUENCE).setCustomName(Text.translatable("node."+Reference.ModInfo.MOD_ID+".follow_sage"))
+				.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID(), DecoratorMisc.VARIANT_INVERTER)
+					.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID(), ConditionMisc.VARIANT_CLOSER_THAN)
 						.assign(CommonVariables.VAR_POS_A, LocalWhiteboard.NEAREST_SAGE)
 						.assign(CommonVariables.VAR_DIS, ConstantsWhiteboard.NUM_4)))
-				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafNode.VARIANT_GOTO)
+				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_GOTO)
 					.assign(CommonVariables.VAR_POS, LocalWhiteboard.NEAREST_SAGE)));
 	
 	private TreeNode<?> root;

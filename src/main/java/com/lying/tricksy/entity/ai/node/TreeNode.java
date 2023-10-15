@@ -228,6 +228,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** Returns true if this node is in a runnable condition */
 	public boolean isRunnable() { return true; }
 	
+	public int ticksRunning() { return this.ticksRunning; }
+	
 	/** Returns true if this node can accept the given child node */
 	public boolean canAddChild() { return true; }
 	

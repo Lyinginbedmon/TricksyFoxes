@@ -1,10 +1,12 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
@@ -55,8 +57,11 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_INSERT_ITEM = ISubtypeGroup.variant("insert_item");
 	public static final Identifier VARIANT_EXTRACT_ITEM = ISubtypeGroup.variant("extract_item");
 	
-	public void addActions(Collection<NodeSubType<LeafNode>> set)
+	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".leaf_inventory"); }
+	
+	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
+		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
 		add(set, VARIANT_DROP, new NodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
@@ -353,5 +358,6 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				return Result.SUCCESS;
 			}
 		});
+		return set;
 	}
 }

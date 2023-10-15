@@ -1,8 +1,6 @@
 package com.lying.tricksy.screen;
 
 import com.google.common.base.Predicates;
-import com.lying.tricksy.entity.ai.node.TreeNode;
-import com.lying.tricksy.screen.TreeScreen.HoveredElement;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -12,8 +10,6 @@ import net.minecraft.util.math.Vec2f;
 
 public class ScriptureScreen extends HandledScreen<ScriptureScreenHandler>
 {
-	private TreeNode<?> hoveredNode = null;
-	
 	private Vec2f position = Vec2f.ZERO;
 	private Vec2f moveStart = null;
 	
@@ -72,39 +68,6 @@ public class ScriptureScreen extends HandledScreen<ScriptureScreenHandler>
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)
 	{
 		context.drawText(textRenderer, this.title, (this.width - this.textRenderer.getWidth(this.title)) / 2, 2 + (26 - this.textRenderer.fontHeight) / 2, 0x404040, false);
-		if(mouseY < 28 && Math.abs((this.width / 2) - mouseX) < 100)
-			hoveredNode = null;
-		else
-			hoveredNode = isDragging() ? null : getScreenHandler().getRoot().findNodeAt(mouseX, mouseY);
-		
-		if(hoveredNode != null)
-		{
-			if(hoveredElement(mouseX, mouseY).isEmpty())
-				switch(hoveredNodePart(mouseX, mouseY))
-				{
-					case SUBTYPE:
-						int relativeX = (hoveredNode.screenX + hoveredNode.width / 2) - mouseX;
-						if(relativeX > -50 && relativeX < 50)
-							context.drawTooltip(textRenderer, hoveredNode.getSubType().description(), mouseX, mouseY);
-						break;
-					default:
-						break;
-				}
-		}
-	}
-	
-	private HoveredElement hoveredNodePart(int mouseX, int mouseY)
-	{
-		if(hoveredNode == null)
-			return null;
-		
-		int yOffset = mouseY - hoveredNode.screenY;
-		if(yOffset < 13)
-			return HoveredElement.TYPE;
-		else if(yOffset < 24)
-			return HoveredElement.SUBTYPE;
-		else
-			return HoveredElement.VARIABLES;
 	}
 	
 	protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY)

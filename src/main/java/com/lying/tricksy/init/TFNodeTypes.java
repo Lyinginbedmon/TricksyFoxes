@@ -14,6 +14,9 @@ import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.NodeType;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.subtype.ConditionWhiteboard;
+import com.lying.tricksy.entity.ai.node.subtype.ControlFlowMisc;
+import com.lying.tricksy.entity.ai.node.subtype.DecoratorMisc;
+import com.lying.tricksy.entity.ai.node.subtype.LeafMisc;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.util.Identifier;
@@ -35,10 +38,10 @@ public class TFNodeTypes
 	 */
 	private static final Map<Identifier, NodeType<?>> TYPES = new HashMap<>();
 	
-	public static final NodeType<ControlFlowNode> CONTROL_FLOW = register("control_flow", new NodeType<ControlFlowNode>(12596790, ROSE_FLOWER, ControlFlowNode::fromData, ControlFlowNode::populateSubTypes).setBaseSubType(ControlFlowNode.VARIANT_SEQUENCE));
-	public static final NodeType<DecoratorNode> DECORATOR = register("decorator", new NodeType<DecoratorNode>(3555008, GRAPE_FLOWER, DecoratorNode::fromData, DecoratorNode::populateSubTypes).setBaseSubType(DecoratorNode.VARIANT_INVERTER));
-	public static final NodeType<ConditionNode> CONDITION = register("condition", new NodeType<ConditionNode>(12630070, ConditionNode::fromData, ConditionNode::populateSubTypes).setBaseSubType(ConditionWhiteboard.VARIANT_VALUE_TRUE));
-	public static final NodeType<LeafNode> LEAF = register("leaf", new NodeType<LeafNode>(3588150, LeafNode::fromData, LeafNode::populateSubTypes).setBaseSubType(LeafNode.VARIANT_GOTO));
+	public static final NodeType<ControlFlowNode> CONTROL_FLOW = register("control_flow", new NodeType<ControlFlowNode>(12596790, ROSE_FLOWER, ControlFlowNode::fromData, ControlFlowNode::getSubtypeGroups).setBaseSubType(ControlFlowMisc.VARIANT_SEQUENCE));
+	public static final NodeType<DecoratorNode> DECORATOR = register("decorator", new NodeType<DecoratorNode>(3555008, GRAPE_FLOWER, DecoratorNode::fromData, DecoratorNode::getSubtypeGroups).setBaseSubType(DecoratorMisc.VARIANT_INVERTER));
+	public static final NodeType<ConditionNode> CONDITION = register("condition", new NodeType<ConditionNode>(12630070, ConditionNode::fromData, ConditionNode::getSubtypeGroups).setBaseSubType(ConditionWhiteboard.VARIANT_VALUE_TRUE));
+	public static final NodeType<LeafNode> LEAF = register("leaf", new NodeType<LeafNode>(3588150, LeafNode::fromData, LeafNode::getSubtypeGroups).setBaseSubType(LeafMisc.VARIANT_GOTO));
 	
 	public static final List<NodeType<?>> NODE_TYPES = List.of(LEAF, CONTROL_FLOW, DECORATOR, CONDITION);
 	
@@ -66,8 +69,8 @@ public class TFNodeTypes
 		
 		TYPES.forEach((name,type) -> 
 		{
-			TricksyFoxes.LOGGER.info(" # "+name.toString()+" ("+type.subTypes().size()+")");
-			type.subTypes().forEach((sub) -> TricksyFoxes.LOGGER.info(" # - "+sub.toString()));
+			TricksyFoxes.LOGGER.info(" # "+name.toString()+" ("+type.subTypes().size()+" subtypes in "+type.groups().size()+" groups)");
+			type.subTypes().forEach((sub) -> TricksyFoxes.LOGGER.info(" # - "+sub.getPath()));
 		});
 	}
 }

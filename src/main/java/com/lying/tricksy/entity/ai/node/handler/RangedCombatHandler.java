@@ -1,4 +1,4 @@
-package com.lying.tricksy.entity.ai.node.subtype;
+package com.lying.tricksy.entity.ai.node.handler;
 
 import java.util.function.Predicate;
 
@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.node.handler.CombatHandler;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.reference.Reference;
 

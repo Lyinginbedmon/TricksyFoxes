@@ -7,12 +7,14 @@ import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
+import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.CombatHandler;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
+import com.lying.tricksy.entity.ai.node.handler.RangedCombatHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
@@ -62,15 +64,19 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_ATTACK_POTION = ISubtypeGroup.variant("potion_attack");
 	public static final Identifier VARIANT_SHIELD = ISubtypeGroup.variant("shield_against");
 	
-	public void addActions(Collection<NodeSubType<LeafNode>> set)
+	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".leaf_combat"); }
+	
+	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
-		add(set, VARIANT_SET_ATTACK, setAttackTarget());
-		add(set, VARIANT_ATTACK_MELEE, meleeAttack());
-		add(set, VARIANT_ATTACK_BOW, bowAttack());
-		add(set, VARIANT_ATTACK_TRIDENT, tridentAttack());
-		add(set, VARIANT_ATTACK_CROSSBOW, crossbowAttack());
-		add(set, VARIANT_ATTACK_POTION, potionAttack());
-		add(set, VARIANT_SHIELD, shieldAgainst());
+		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
+		set.add(new NodeSubType<LeafNode>(VARIANT_SET_ATTACK, setAttackTarget()));
+		set.add(new NodeSubType<LeafNode>(VARIANT_ATTACK_MELEE, meleeAttack()));
+		set.add(new NodeSubType<LeafNode>(VARIANT_ATTACK_BOW, bowAttack()));
+		set.add(new NodeSubType<LeafNode>(VARIANT_ATTACK_TRIDENT, tridentAttack()));
+		set.add(new NodeSubType<LeafNode>(VARIANT_ATTACK_CROSSBOW, crossbowAttack()));
+		set.add(new NodeSubType<LeafNode>(VARIANT_ATTACK_POTION, potionAttack()));
+		set.add(new NodeSubType<LeafNode>(VARIANT_SHIELD, shieldAgainst()));
+		return set;
 	}
 	
 	private static NodeTickHandler<LeafNode> setAttackTarget()

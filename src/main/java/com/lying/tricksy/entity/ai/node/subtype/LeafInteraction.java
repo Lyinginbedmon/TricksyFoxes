@@ -1,11 +1,13 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
@@ -45,8 +47,11 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_BREAK_BLOCK = ISubtypeGroup.variant("break_block");
 	public static final Identifier VARIANT_USE_ITEM = ISubtypeGroup.variant("use_item");
 	
-	public void addActions(Collection<NodeSubType<LeafNode>> set)
+	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".leaf_interaction"); }
+	
+	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
+		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
 		add(set, VARIANT_USE_ITEM, new NodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
@@ -198,6 +203,6 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 				return Result.RUNNING;
 			}
 		});
+		return set;
 	}
-
 }

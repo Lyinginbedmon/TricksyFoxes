@@ -1,10 +1,12 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.ConditionNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
@@ -20,6 +22,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -36,9 +39,12 @@ public class ConditionInventory implements ISubtypeGroup<ConditionNode>
 {
 	public static final Identifier VARIANT_INV_HAS = ISubtypeGroup.variant("inv_has");
 	
-	public void addActions(Collection<NodeSubType<ConditionNode>> set)
+	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".condition_inventory"); }
+	
+	public Collection<NodeSubType<ConditionNode>> getSubtypes()
 	{
-		add(set, VARIANT_INV_HAS, new NodeTickHandler<ConditionNode>()
+		List<NodeSubType<ConditionNode>> set = Lists.newArrayList();
+		set.add(new NodeSubType<ConditionNode>(VARIANT_INV_HAS, new NodeTickHandler<ConditionNode>()
 		{
 			public static final WhiteboardRef TILE = CommonVariables.VAR_POS;
 			public static final WhiteboardRef FACE = InventoryHandler.FACE;
@@ -105,6 +111,7 @@ public class ConditionInventory implements ISubtypeGroup<ConditionNode>
 				else
 					return Result.FAILURE;
 			}
-		});
+		}));
+		return set;
 	}
 }
