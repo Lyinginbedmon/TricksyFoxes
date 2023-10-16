@@ -32,6 +32,8 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	/** All references available to the mob, categorised by their whiteboard type */
 	private Map<BoardType, Map<WhiteboardRef, IWhiteboardObject<?>>> references = new HashMap<>();
 	
+	private List<WhiteboardRef> markedForDeletion = Lists.newArrayList();
+	
 	/** The specific mob being interacted with */
 	private ITricksyMob<?> tricksy = null;
 	private PathAwareEntity tricksyMob = null;
@@ -115,6 +117,7 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 			this.tricksyTree = tricksy.getBehaviourTree().copy();
 		else
 			this.tricksyTree = new BehaviourTree();
+		markedForDeletion.clear();
 		countNodes();
 	}
 	
@@ -125,8 +128,21 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	
 	public UUID tricksyUUID() { return this.tricksyID; }
 	
-	public void removeRef(WhiteboardRef reference)
+	public void markForDeletion(WhiteboardRef reference)
 	{
-		references.get(reference.boardType()).remove(reference);
+		if(!isMarkedForDeletion(reference))
+			markedForDeletion.add(reference);
+		else
+			markedForDeletion.removeIf((marked) -> marked.isSameRef(reference));
 	}
+	
+	public boolean isMarkedForDeletion(WhiteboardRef ref)
+	{
+		for(WhiteboardRef marked : markedForDeletion)
+			if(marked.isSameRef(ref))
+				return true;
+		return false;
+	}
+	
+	public Iterable<WhiteboardRef> markedForDeletion() { return this.markedForDeletion; }
 }

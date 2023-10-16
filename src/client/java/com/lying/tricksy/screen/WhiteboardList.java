@@ -11,8 +11,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
-import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.reference.Reference;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -120,29 +120,34 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 		{
 			this.reference = referenceIn;
 			this.valueSnapshot = valueIn;
-			this.deleteButton = TreeScreen.makeTexturedWidget(0, 0, 16, 184, button -> 
-			{
-				WhiteboardList.this.parent.deleteReference(referenceIn);
-				parent.removeEntry(this);
-			});
-			this.deleteButton.active = this.deleteButton.visible = reference.boardType() != BoardType.CONSTANT && !reference.uncached();
+			
+			if(reference.boardType() != BoardType.CONSTANT && !reference.uncached())
+				this.deleteButton = TreeScreen.makeTexturedWidget(0, 0, 16, 184, button -> 
+				{
+					WhiteboardList.this.parent.deleteReference(referenceIn);
+				});
+			else
+				this.deleteButton = null;
 		}
 		
 		public List<? extends Element> children()
 		{
-			return ImmutableList.of(deleteButton);
+			return this.deleteButton == null ? ImmutableList.of() : ImmutableList.of(deleteButton);
 		}
 		
 		public List<? extends Selectable> selectableChildren()
 		{
-			return ImmutableList.of(deleteButton);
+			return ImmutableList.of();
 		}
 		
 		public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta)
 		{
 			context.drawTexture(BOARD_TEXTURES, x, y, 0, 0, 180, 25);
-			
+			boolean flagged = parent.getScreenHandler().isMarkedForDeletion(reference);
 			NodeRenderUtils.renderReference(reference, context, mc.textRenderer, x, y + 3, 150, true, false);
+			if(flagged)
+				strike(x, y + 3, context);
+			
 			if(reference.boardType() == BoardType.CONSTANT)
 				return;
 			
@@ -150,21 +155,32 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 			{
 				List<Text> description = valueSnapshot.describe();
 				
-				if(hovered && description.size() > 1)
+				if(hovered && description.size() > 1 && !flagged)
 					ticksHovered++;
 				else
 					ticksHovered = 0;
 				
 				Text draw = description.get(Math.floorDiv(ticksHovered, Reference.Values.TICKS_PER_SECOND)%description.size());
 				context.drawText(mc.textRenderer, draw, x + (150 - 8 - mc.textRenderer.getWidth(draw)) / 2, y + 15, 0x808080, false);
+				
+				if(flagged)
+					strike(x, y + 15, context);
 			}
 			
-			if(this.deleteButton.visible)
+			if(this.deleteButton != null)
 			{
 				this.deleteButton.setX(x + 180 - deleteButton.getWidth() - 2);
 				this.deleteButton.setY(y + 2 + (entryHeight - deleteButton.getHeight()) / 2);
 				this.deleteButton.render(context, mouseX, mouseY, tickDelta);
+				
+				if(!this.deleteButton.isMouseOver(mouseX, mouseY))
+					this.deleteButton.setFocused(false);
 			}
+		}
+		
+		private void strike(int x, int y, DrawContext context)
+		{
+			context.fill(x + 10, y + 3, x + 150, y + 4, 0xff000000);
 		}
 	}
 }

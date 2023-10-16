@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
-import com.lying.tricksy.network.DeleteReferencePacket;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -82,12 +81,10 @@ public class WhiteboardScreen extends TricksyScreenBase
 	
 	public void deleteReference(WhiteboardRef targetRef)
 	{
-		if(targetRef == null)
+		if(targetRef == null || targetRef.boardType() == BoardType.CONSTANT)
 			return;
 		
-		this.handler.removeRef(targetRef);
-		DeleteReferencePacket.send(player, this.handler.tricksyUUID(), targetRef);
-		targetRef = null;
+		this.handler.markForDeletion(targetRef);
 	}
 	
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)

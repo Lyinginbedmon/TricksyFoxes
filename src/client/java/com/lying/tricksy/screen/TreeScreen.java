@@ -10,6 +10,7 @@ import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
+import com.lying.tricksy.network.DeleteReferencePacket;
 import com.lying.tricksy.network.SaveTreePacket;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.NodeRenderUtils.NodeDisplay;
@@ -72,6 +73,7 @@ public class TreeScreen extends TricksyScreenBase
 		}).dimensions(midPoint - 70 - 20, 7, 40, 16).build());
 		addDrawableChild(save = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.save"), (button) -> 
 		{
+			handler.markedForDeletion().forEach((ref) -> DeleteReferencePacket.send(player, handler.tricksyUUID(), ref));
 			SaveTreePacket.send(player, handler.tricksyUUID(), handler.getTree());
 			client.currentScreen.close();
 		}).dimensions(midPoint + 70 - 20, 7, 40, 16).build());
