@@ -1,6 +1,7 @@
 package com.lying.tricksy.screen;
 
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,63 +48,76 @@ public class NodeRenderUtils
 	
 	public static void renderTree(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen, Predicate<TreeNode<?>> showVariables, boolean allowDiscretion)
 	{
+		EnumSet<NodeRenderFlags> flags = EnumSet.allOf(NodeRenderFlags.class);
+		if(allowDiscretion)
+			flags.remove(NodeRenderFlags.CHILDREN);
 		NodeRenderUtils.drawNodeConnections(context, node, node.getType().color(), allowDiscretion);
-		NodeRenderUtils.renderNodeRecursive(node, context, textRenderer, ticksOpen, showVariables, allowDiscretion);
+		NodeRenderUtils.renderNodeRecursive(node, context, textRenderer, ticksOpen, showVariables, flags);
 	}
 	
-	public static void renderNodeRecursive(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen, Predicate<TreeNode<?>> showVariables, boolean allowDiscretion)
+	public static void renderNodeRecursive(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen, Predicate<TreeNode<?>> showVariables, EnumSet<NodeRenderFlags> flags)
 	{
-		renderNode(node, context, textRenderer, ticksOpen, showVariables.test(node));
-		if(!node.isDiscrete(allowDiscretion))
-			node.children().forEach((child) -> renderNodeRecursive(child, context, textRenderer, ticksOpen, showVariables, allowDiscretion));
+		if(showVariables.test(node))
+			flags.add(NodeRenderFlags.VARIABLES);
+		else
+			flags.remove(NodeRenderFlags.VARIABLES);
+		renderNode(node, context, textRenderer, ticksOpen, flags);
+		if(!node.isDiscrete(!flags.contains(NodeRenderFlags.CHILDREN)))
+			node.children().forEach((child) -> renderNodeRecursive(child, context, textRenderer, ticksOpen, showVariables, flags));
 	}
 	
-	public static void renderNode(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen, boolean showVariables)
+	public static void renderNode(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen, EnumSet<NodeRenderFlags> flags)
 	{
-		drawNodeBackground(context, node, node.getType().color(), node.screenX, node.screenY, showVariables);
+		drawNodeBackground(context, node, node.getType().color(), node.screenX, node.screenY, flags.contains(NodeRenderFlags.VARIABLES));
 		
 		int drawY = node.screenY + 4;
-		Text typeName = node.getDisplayName();
-		context.drawText(textRenderer, typeName, node.screenX + (NODE_WIDTH - textRenderer.getWidth(typeName)) / 2, drawY, -1, false);
+		if(flags.contains(NodeRenderFlags.TYPE))
+		{
+			Text typeName = node.getDisplayName();
+			context.drawText(textRenderer, typeName, node.screenX + (NODE_WIDTH - textRenderer.getWidth(typeName)) / 2, drawY, -1, false);
+		}
 		drawY += 11;
 		
 		NodeSubType<?> subType = node.getSubType();
-		Text subName = subType.translatedName();
-		if(textRenderer.getWidth(subName) > 80)
+		if(flags.contains(NodeRenderFlags.SUBTYPE))
 		{
-			// Original width
-			int width = textRenderer.getWidth(subName);
-			
-			// Original number of characters
-			int length = subName.getString().length();
-			
-			int trimAmount = (int)((1F - 75F / (float)width) * length);
-			if(trimAmount%2 > 0)
-				trimAmount++;
-			
-			int offset = trimAmount / 2;
-			
-			int start = offset + (int)(Math.sin((double)ticksOpen * 0.15D) * offset);
-			int end = start + (length - trimAmount);
-			subName = Text.literal(subName.getString().substring(start - 1, end + 1));
-		}
-		context.drawText(textRenderer, subName, node.screenX + (NODE_WIDTH - textRenderer.getWidth(subName)) / 2, drawY + 1, 0x404040, false);
-		if(!showVariables)
-			return;
-		drawY += 11;
-		
-		Map<WhiteboardRef, INodeInput> variableSet = subType.variableSet();
-		for(Pair<WhiteboardRef, Optional<WhiteboardRef>> line : getSortedVariables(node))
-		{
-			renderReference(line.getLeft(), context, textRenderer, node.screenX + 4, drawY, 45, true, variableSet.get(line.getLeft()).isOptional());
-			if(line.getRight().isPresent())
-				renderReference(line.getRight().get(), context, textRenderer, node.screenX + 52, drawY, 94, false, false);
-			else
+			Text subName = subType.translatedName();
+			if(textRenderer.getWidth(subName) > 80)
 			{
-				Text defaultName = variableSet.get(line.getLeft()).describeValue();
-				context.drawText(textRenderer, defaultName, node.screenX + 52 + (94 - textRenderer.getWidth(defaultName)) / 2, drawY, 0x808080, false);
+				// Original width
+				int width = textRenderer.getWidth(subName);
+				
+				// Original number of characters
+				int length = subName.getString().length();
+				
+				int trimAmount = (int)((1F - 75F / (float)width) * length);
+				if(trimAmount%2 > 0)
+					trimAmount++;
+				
+				int offset = trimAmount / 2;
+				
+				int start = offset + (int)(Math.sin((double)ticksOpen * 0.15D) * offset);
+				int end = start + (length - trimAmount);
+				subName = Text.literal(subName.getString().substring(start - 1, end + 1));
 			}
-			drawY += 11;
+			context.drawText(textRenderer, subName, node.screenX + (NODE_WIDTH - textRenderer.getWidth(subName)) / 2, drawY + 1, 0x404040, false);
+		}
+		drawY += 11;
+		if(flags.contains(NodeRenderFlags.VARIABLES))
+		{
+			Map<WhiteboardRef, INodeInput> variableSet = subType.variableSet();
+			for(Pair<WhiteboardRef, Optional<WhiteboardRef>> line : getSortedVariables(node))
+			{
+				renderReference(line.getLeft(), context, textRenderer, node.screenX + 4, drawY, 45, true, variableSet.get(line.getLeft()).isOptional());
+				if(line.getRight().isPresent())
+					renderReference(line.getRight().get(), context, textRenderer, node.screenX + 52, drawY, 94, false, false);
+				else
+				{
+					Text defaultName = variableSet.get(line.getLeft()).describeValue();
+					context.drawText(textRenderer, defaultName, node.screenX + 52 + (94 - textRenderer.getWidth(defaultName)) / 2, drawY, 0x808080, false);
+				}
+				drawY += 11;
+			}
 		}
 	}
 	
@@ -436,5 +450,16 @@ public class NodeRenderUtils
 					return type;
 			return null;
 		}
+	}
+	
+	public static enum NodeRenderFlags
+	{
+		TYPE,
+		SUBTYPE,
+		VARIABLES,
+		CHILDREN;
+		
+		public static final EnumSet<NodeRenderFlags> ALL = EnumSet.allOf(NodeRenderFlags.class);
+		public static final EnumSet<NodeRenderFlags> SOLO = EnumSet.of(TYPE, SUBTYPE, VARIABLES);
 	}
 }

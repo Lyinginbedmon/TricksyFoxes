@@ -36,6 +36,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
@@ -109,6 +110,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		
 		boardLocal.readFromNbt(data.getCompound("Whiteboard"));
 		setBehaviourTree(data.getCompound("BehaviourTree"));
+		if(data.contains("Home", NbtElement.COMPOUND_TYPE))
+			setPositionTarget(NbtHelper.toBlockPos(data.getCompound("Home")), 6);
 	}
 	
 	public void writeCustomDataToNbt(NbtCompound data)
@@ -121,6 +124,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		
 		data.put("Whiteboard", boardLocal.writeToNbt(new NbtCompound()));
 		data.put("BehaviourTree", this.behaviourTree.storeInNbt());
+		if(hasPositionTarget())
+			data.put("Home", NbtHelper.fromBlockPos(getPositionTarget()));
 	}
 	
 	public boolean isPersistent() { return true; }

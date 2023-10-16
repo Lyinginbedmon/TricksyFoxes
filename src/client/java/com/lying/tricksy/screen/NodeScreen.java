@@ -1,5 +1,6 @@
 package com.lying.tricksy.screen;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -12,9 +13,12 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.screen.NodeRenderUtils.NodeRenderFlags;
 import com.lying.tricksy.screen.TreeScreen.HoveredElement;
 
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.tooltip.TooltipBackgroundRenderer;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.Vector2f;
@@ -59,17 +63,20 @@ public class NodeScreen	extends TricksyScreenBase
 		int midWidth = this.width / 2;
 		generateParts();
 		
-		this.nameField = new TextFieldWidget(this.textRenderer, midWidth - 52, currentNode.screenY - 50, 104, 12, Text.translatable("container.repair"));
+		this.nameField = new TextFieldWidget(this.textRenderer, midWidth - 52, 0, 104, 12, Text.translatable("container.repair"));
 		this.nameField.setFocusUnlocked(false);
 		this.nameField.setEditableColor(-1);
 		this.nameField.setUneditableColor(-1);
 		this.nameField.setDrawsBackground(true);
 		this.nameField.setMaxLength(50);
+		this.nameField.setFocusUnlocked(true);
 		this.nameField.setChangedListener(this::onRenamed);
+		this.nameField.setPlaceholder(currentNode.getType().translatedName());
 		this.nameField.setText(currentNode.hasCustomName() ? currentNode.getDisplayName().getString() : "");
 		this.nameField.setEditable(!currentNode.isRoot());
 		this.addSelectableChild(this.nameField);
 		
+		this.nameField.setPosition(this.nameField.getX(), Math.max(30, currentNode.screenY - 20 - this.nameField.getHeight()));
 		addDrawableChild(discreteButton = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.hide"), (button) -> 
 		{
 			this.currentNode.setDiscrete(!this.currentNode.isDiscrete(true));
@@ -132,23 +139,38 @@ public class NodeScreen	extends TricksyScreenBase
 	{
 		if(mouseKey == 0)
 		{
-			if(!this.nameField.isHovered())
+			if(!this.nameField.isMouseOver(x, y))
 				this.setFocused(null);
 			
-			if(currentNode.containsPoint((int)x, (int)y))
+			if(!childrenMouseClicked(x, y, mouseKey))
 			{
-				this.targetPart = this.hoveredPart;
-				return true;
+				if(this.hoveredPart != null)
+				{
+					this.targetPart = this.hoveredPart;
+					return true;
+				}
+				else
+					this.targetPart = null;
 			}
 			else
-				this.targetPart = null;
-			
-			if(this.discreteButton.isHovered())
-				return this.discreteButton.mouseClicked(x, y, mouseKey);
-			else if(this.nameField.isHovered())
-				return this.nameField.mouseClicked(x, y, mouseKey);
+				return true;
 		}
 		return super.mouseClicked(mouseKey, mouseKey, mouseKey);
+	}
+	
+	private boolean childrenMouseClicked(double x, double y, int mouseKey)
+	{
+		if(this.nameField.isMouseOver(x, y))
+		{
+			this.setFocused(this.nameField);
+			return true;
+		}
+		
+		for(Element element : this.children())
+			if(element.mouseClicked(x, y, mouseKey))
+				return true;
+		
+		return false;
 	}
 	
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)
@@ -162,7 +184,36 @@ public class NodeScreen	extends TricksyScreenBase
 		if(this.hoveredPart != null && this.hoveredPart != this.targetPart)
 			this.hoveredPart.render(context, -12303292);
 		if(this.targetPart != null)
+		{
 			this.targetPart.render(context, -1);
+			
+			switch(this.targetPart.type)
+			{
+				case TYPE:
+					renderPartTooltip(currentNode.getType().description(), context, currentNode.screenY + currentNode.height + 20);
+					break;
+				case SUBTYPE:
+					renderPartTooltip(currentNode.getSubType().description(), context, currentNode.screenY + currentNode.height + 20);
+					break;
+				case VARIABLES:
+					break;
+			}
+		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	private void renderPartTooltip(Text desc, DrawContext context, final int y)
+	{
+		int padding = 4;
+		
+		int tooltipHeight = textRenderer.fontHeight + padding;
+		int drawY = Math.min(this.height - tooltipHeight - 2, y);
+		
+		int width = textRenderer.getWidth(desc);
+		int tooltipWidth = width + padding;
+		
+		context.draw(() -> TooltipBackgroundRenderer.render(context, (this.width - tooltipWidth) / 2, drawY - (padding / 2), tooltipWidth, tooltipHeight, 0));
+		context.drawText(textRenderer, desc, (this.width - width) / 2, drawY, -1, false);
 	}
 	
 	protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY)
@@ -171,12 +222,17 @@ public class NodeScreen	extends TricksyScreenBase
 		TreeNode<?> root = handler.getTree().root();
 		NodeRenderUtils.renderTree(root, context, textRenderer, this.ticksOpen, this.displayPredicate, true);
 		renderBackground(context);
-		NodeRenderUtils.renderNode(currentNode, context, textRenderer, this.ticksOpen, true);
+		
+		EnumSet<NodeRenderFlags> flags = EnumSet.noneOf(NodeRenderFlags.class);
+		flags.addAll(NodeRenderFlags.SOLO);
+		if(this.nameField.isFocused())
+			flags.remove(NodeRenderFlags.TYPE);
+		NodeRenderUtils.renderNode(currentNode, context, textRenderer, this.ticksOpen, flags);
 	}
 	
 	private void onRenamed(String name)
 	{
-		this.currentNode.setCustomName(Text.literal(name));
+		this.currentNode.setCustomName(name.isEmpty() ? null : Text.literal(name));
 	}
 	
 	/** Generates all available component parts of the current node */
