@@ -5,6 +5,7 @@ import com.lying.tricksy.network.RemoveUserPacket;
 import com.lying.tricksy.screen.TreeScreen.HoveredElement;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
@@ -58,5 +59,14 @@ public abstract class TricksyScreenBase extends HandledScreen<TricksyTreeScreenH
 			return HoveredElement.SUBTYPE;
 		else
 			return HoveredElement.VARIABLES;
+	}
+	
+	protected boolean childrenMouseClicked(double x, double y, int mouseKey)
+	{
+		for(Element element : this.children())
+			if(element.mouseClicked(x, y, mouseKey))
+				return true;
+		
+		return false;
 	}
 }

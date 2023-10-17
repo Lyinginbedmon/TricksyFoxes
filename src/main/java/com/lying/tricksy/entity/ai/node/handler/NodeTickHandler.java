@@ -30,6 +30,8 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
+import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -149,5 +151,14 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	public static boolean matchesEntityFilter(Entity entity, @Nullable IWhiteboardObject<Entity> filter)
 	{
 		return filter == null ? true : ((WhiteboardObjEntity)filter).matches(entity);
+	}
+	
+	public static void swingHand(LivingEntity entity, Hand hand)
+	{
+		entity.swingHand(hand);
+		// FIXME Ensure swing animation actually plays
+		EntityAnimationS2CPacket packet = new EntityAnimationS2CPacket(entity, hand == Hand.MAIN_HAND ? EntityAnimationS2CPacket.SWING_MAIN_HAND : EntityAnimationS2CPacket.SWING_OFF_HAND);
+		ServerChunkManager manager = ((ServerWorld)entity.getWorld()).getChunkManager();
+		manager.sendToOtherNearbyPlayers(entity, packet);
 	}
 }

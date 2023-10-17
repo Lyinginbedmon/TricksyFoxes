@@ -158,7 +158,7 @@ public class NodeScreen	extends TricksyScreenBase
 		return super.mouseClicked(mouseKey, mouseKey, mouseKey);
 	}
 	
-	private boolean childrenMouseClicked(double x, double y, int mouseKey)
+	protected boolean childrenMouseClicked(double x, double y, int mouseKey)
 	{
 		if(this.nameField.isMouseOver(x, y))
 		{
@@ -166,11 +166,7 @@ public class NodeScreen	extends TricksyScreenBase
 			return true;
 		}
 		
-		for(Element element : this.children())
-			if(element.mouseClicked(x, y, mouseKey))
-				return true;
-		
-		return false;
+		return super.childrenMouseClicked(x, y, mouseKey);
 	}
 	
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)

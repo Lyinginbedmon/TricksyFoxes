@@ -117,7 +117,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 			{
 				if(tricksy.isInAttackRange(target) && !target.isInvulnerable())
 				{
-					tricksy.swingHand(Hand.MAIN_HAND);
+					NodeTickHandler.swingHand(tricksy, Hand.MAIN_HAND);
 					tricksy.logStatus(Text.literal("Have at you!"));
 					return tricksy.tryAttack(target) ? Result.SUCCESS : Result.FAILURE;
 				}

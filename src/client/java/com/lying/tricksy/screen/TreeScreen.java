@@ -112,7 +112,7 @@ public class TreeScreen extends TricksyScreenBase
 				this.setDragging(true);
 				this.moveStart = new Vec2f((float)x, (float)y);
 			}
-			else
+			else if(!super.childrenMouseClicked(x, y, mouseKey))
 				client.setScreen(new NodeScreen(getScreenHandler(), this.playerInv, this.title, hoveredNode));
 			return true;
 		}

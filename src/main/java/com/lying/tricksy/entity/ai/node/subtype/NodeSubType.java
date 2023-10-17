@@ -1,6 +1,9 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
 import java.util.Map;
+import java.util.Map.Entry;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.TreeNode;
@@ -50,5 +53,14 @@ public class NodeSubType<M extends TreeNode<?>>
 	public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, M parent)
 	{
 		tickFunc.onEnd(tricksy, parent);
+	}
+	
+	@Nullable
+	public INodeInput getInput(WhiteboardRef reference)
+	{
+		for(Entry<WhiteboardRef, INodeInput> entry : tickFunc.variableSet().entrySet())
+			if(entry.getKey().isSameRef(reference))
+				return entry.getValue();
+		return null;
 	}
 }

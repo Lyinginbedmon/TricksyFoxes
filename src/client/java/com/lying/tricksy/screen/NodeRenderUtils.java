@@ -105,15 +105,18 @@ public class NodeRenderUtils
 		drawY += 11;
 		if(flags.contains(NodeRenderFlags.VARIABLES))
 		{
-			Map<WhiteboardRef, INodeInput> variableSet = subType.variableSet();
 			for(Pair<WhiteboardRef, Optional<WhiteboardRef>> line : getSortedVariables(node))
 			{
-				renderReference(line.getLeft(), context, textRenderer, node.screenX + 4, drawY, 45, true, variableSet.get(line.getLeft()).isOptional());
+				INodeInput input = subType.getInput(line.getLeft());
+				if(input == null)
+					continue;
+				
+				renderReference(line.getLeft(), context, textRenderer, node.screenX + 4, drawY, 45, true, input.isOptional());
 				if(line.getRight().isPresent())
 					renderReference(line.getRight().get(), context, textRenderer, node.screenX + 52, drawY, 94, false, false);
 				else
 				{
-					Text defaultName = variableSet.get(line.getLeft()).describeValue();
+					Text defaultName = input.describeValue();
 					context.drawText(textRenderer, defaultName, node.screenX + 52 + (94 - textRenderer.getWidth(defaultName)) / 2, drawY, 0x808080, false);
 				}
 				drawY += 11;
