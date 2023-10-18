@@ -47,7 +47,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_BREAK_BLOCK = ISubtypeGroup.variant("break_block");
 	public static final Identifier VARIANT_USE_ITEM = ISubtypeGroup.variant("use_item");
 	
-	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".leaf_interaction"); }
+	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_interaction"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{

@@ -21,7 +21,6 @@ import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
@@ -31,7 +30,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 	public static final Identifier VARIANT_VALUE_EQUALS = ISubtypeGroup.variant("value_equals");
 	public static final Identifier VARIANT_LESS_THAN = ISubtypeGroup.variant("less_than");
 	
-	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".condition_whiteboard"); }
+	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_whiteboard"); }
 	
 	public Collection<NodeSubType<ConditionNode>> getSubtypes()
 	{

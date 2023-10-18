@@ -1,13 +1,14 @@
 package com.lying.tricksy.screen;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
 
 import com.google.common.base.Predicates;
 import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.entity.ai.node.TreeNode;
+import com.lying.tricksy.entity.ai.node.handler.INodeInput;
+import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.network.DeleteReferencePacket;
@@ -23,14 +24,12 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec2f;
 
 @Environment(EnvType.CLIENT)
 public class TreeScreen extends TricksyScreenBase
 {
 	private TreeNode<?> hoveredNode = null;
-	private HoveredElement hoveredPart = null;
 	
 	// Button to add a new node
 	public ButtonWidget addNode;
@@ -119,81 +118,9 @@ public class TreeScreen extends TricksyScreenBase
 		return super.mouseClicked(x, y, mouseKey);
 	}
 	
-	public boolean mouseScrolled(double mouseX, double mouseY, double amount)
+	public Map<WhiteboardRef, IWhiteboardObject<?>> getOptionsMatching(INodeInput input)
 	{
-		if(hoveredNode != null)
-		{
-			switch(hoveredPart)
-			{
-				case SUBTYPE:
-					hoveredNode.changeSubType((int)amount);
-					return true;
-				case TYPE:
-					if(hoveredNode.isRoot())	// Cannot replace the root node
-						return false;
-					
-					int typeCount = TFNodeTypes.NODE_TYPES.size();
-					int typeIndex = -1;
-					for(int i=0; i<typeCount; i++)
-						if(TFNodeTypes.NODE_TYPES.get(i) == hoveredNode.getType())
-						{
-							typeIndex = i;
-							break;
-						}
-					
-					if(typeIndex >= 0)
-					{
-						typeIndex += (int)amount;
-						if(typeIndex < 0)
-							typeIndex = typeCount - 1;
-						else
-							typeIndex %= typeCount;
-						
-						hoveredNode.parent().replaceChild(hoveredNode.getID(), TFNodeTypes.NODE_TYPES.get(typeIndex).create(hoveredNode.getID()));
-						
-						return true;
-					}
-					
-					return true;
-				case VARIABLES:
-					int index = Math.floorDiv((int)mouseY - hoveredNode.screenY - 24, 11);
-					List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> sortedVariables = NodeRenderUtils.getSortedVariables(hoveredNode);
-					if(index >= sortedVariables.size())
-						return false;
-					WhiteboardRef input = sortedVariables.get(index).getLeft();
-					hoveredNode.assign(input, incrementOption(hoveredNode, input, (int)Math.signum(amount)));
-					return true;
-			}
-		}
-		return super.mouseScrolled(mouseX, mouseY, amount);
-	}
-	
-	private WhiteboardRef incrementOption(TreeNode<?> node, WhiteboardRef inputRef, int scroll)
-	{
-		WhiteboardRef valueRef = node.variable(inputRef);
-		if(scroll == 0)
-			return valueRef;
-		
-		List<WhiteboardRef> options = this.handler.getMatches(node.getSubType().variableSet().get(inputRef).predicate(), null);
-		if(options.isEmpty())
-			return null;
-		else if(valueRef == null)
-			return scroll > 0 ? options.get(0) : null;
-		else
-		{
-			options.sort(WhiteboardRef.REF_SORT);
-			
-			int optionIndex = 0;
-			for(int i=0; i<options.size(); i++)
-				if(options.get(i).isSameRef(valueRef))
-				{
-					optionIndex = i;
-					break;
-				}
-			
-			optionIndex += Math.signum(scroll);
-			return optionIndex < 0 ? null : options.get(optionIndex % options.size());
-		}
+		return this.handler.getMatches(input.predicate(), null);
 	}
 	
 	public boolean mouseReleased(double x, double y, int mouseKey)
@@ -237,26 +164,9 @@ public class TreeScreen extends TricksyScreenBase
 			delNode.active = hoveredNode != root;
 			addNode.setPosition(hoveredNode.screenX + hoveredNode.width - 7 - addNode.getWidth(), hoveredNode.screenY + 6);
 			delNode.setPosition(hoveredNode.screenX + 7, hoveredNode.screenY + 6);
-			
-			if(hoveredElement(mouseX, mouseY).isEmpty())
-				switch(hoveredPart = hoveredNodePart(mouseX, mouseY, hoveredNode))
-				{
-					case SUBTYPE:
-						int relativeX = (hoveredNode.screenX + hoveredNode.width / 2) - mouseX;
-						if(relativeX > -50 && relativeX < 50)
-							context.drawTooltip(textRenderer, hoveredNode.getSubType().description(), mouseX, mouseY);
-						break;
-					case TYPE:
-						break;
-					case VARIABLES:
-						break;
-					default:
-						break;
-				}
 		}
 		else
 		{
-			hoveredPart = null;
 			addNode.visible = addNode.active = false;
 			delNode.visible = delNode.active = false;
 		}

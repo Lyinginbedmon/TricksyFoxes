@@ -13,7 +13,9 @@ public interface ISubtypeGroup<T extends TreeNode<?>>
 {
 	public static Identifier variant(String nameIn) { return new Identifier(Reference.ModInfo.MOD_ID, nameIn); }
 	
-	public Text displayName();
+	public Identifier getRegistryName();
+	
+	public default Text displayName() { return Text.translatable("subtype."+getRegistryName().getNamespace()+"."+getRegistryName().getPath()); }
 	
 	public Collection<NodeSubType<T>> getSubtypes();
 	

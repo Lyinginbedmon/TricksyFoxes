@@ -23,7 +23,7 @@ public class ControlFlowMisc implements ISubtypeGroup<ControlFlowNode>
 	public static final Identifier VARIANT_SELECTOR = ISubtypeGroup.variant("selector");
 	public static final Identifier VARIANT_REACTIVE = ISubtypeGroup.variant("reactive");
 	
-	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".control_flow_misc"); }
+	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "control_flow_misc"); }
 	
 	public Collection<NodeSubType<ControlFlowNode>> getSubtypes()
 	{

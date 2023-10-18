@@ -30,7 +30,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -45,7 +44,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 	public static final Identifier VARIANT_IS_ITEM = ISubtypeGroup.variant("is_item");
 	public static final Identifier VARIANT_CAN_MINE = ISubtypeGroup.variant("can_mine");
 	
-	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".condition_misc"); }
+	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_misc"); }
 	
 	public Collection<NodeSubType<ConditionNode>> getSubtypes()
 	{

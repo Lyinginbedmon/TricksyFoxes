@@ -36,7 +36,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 	public static final Identifier VARIANT_FOR_EACH = ISubtypeGroup.variant("for_each");
 	public static final Identifier VARIANT_DO_ONCE = ISubtypeGroup.variant("do_once");
 	
-	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".decorator_misc"); }
+	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "decorator_misc"); }
 
 	@Override
 	public Collection<NodeSubType<DecoratorNode>> getSubtypes()

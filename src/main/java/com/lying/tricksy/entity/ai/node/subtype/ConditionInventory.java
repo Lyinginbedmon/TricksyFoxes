@@ -39,7 +39,7 @@ public class ConditionInventory implements ISubtypeGroup<ConditionNode>
 {
 	public static final Identifier VARIANT_INV_HAS = ISubtypeGroup.variant("inv_has");
 	
-	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".condition_inventory"); }
+	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_inventory"); }
 	
 	public Collection<NodeSubType<ConditionNode>> getSubtypes()
 	{

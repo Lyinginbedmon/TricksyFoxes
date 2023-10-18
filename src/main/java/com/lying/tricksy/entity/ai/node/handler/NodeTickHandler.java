@@ -31,7 +31,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
-import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -157,8 +157,10 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	{
 		entity.swingHand(hand);
 		// FIXME Ensure swing animation actually plays
-		EntityAnimationS2CPacket packet = new EntityAnimationS2CPacket(entity, hand == Hand.MAIN_HAND ? EntityAnimationS2CPacket.SWING_MAIN_HAND : EntityAnimationS2CPacket.SWING_OFF_HAND);
-		ServerChunkManager manager = ((ServerWorld)entity.getWorld()).getChunkManager();
-		manager.sendToOtherNearbyPlayers(entity, packet);
+		if(!entity.getWorld().isClient())
+		{
+			EntityAnimationS2CPacket packet = new EntityAnimationS2CPacket(entity, hand == Hand.MAIN_HAND ? EntityAnimationS2CPacket.SWING_MAIN_HAND : EntityAnimationS2CPacket.SWING_OFF_HAND);
+			entity.getWorld().getEntitiesByClass(ServerPlayerEntity.class, entity.getBoundingBox().expand(16D), Predicates.alwaysTrue()).forEach((player) ->  player.networkHandler.sendPacket(packet));
+		}
 	}
 }

@@ -14,14 +14,13 @@ import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.reference.Reference;
 
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class LeafSubTree implements ISubtypeGroup<LeafNode>
 {
 	public static final Identifier VARIANT_COMBAT = ISubtypeGroup.variant("generic_combat");
 	
-	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".leaf_subtree"); }
+	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_subtree"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{

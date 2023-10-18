@@ -1,7 +1,9 @@
 package com.lying.tricksy.screen;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -15,9 +17,12 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.NodeRenderUtils.NodeRenderFlags;
 import com.lying.tricksy.screen.TreeScreen.HoveredElement;
+import com.lying.tricksy.screen.subscreen.NodeSubScreen;
+import com.lying.tricksy.screen.subscreen.ReferencesScreen;
+import com.lying.tricksy.screen.subscreen.SubTypeScreen;
+import com.lying.tricksy.screen.subscreen.TypeScreen;
 
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.tooltip.TooltipBackgroundRenderer;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -37,7 +42,7 @@ public class NodeScreen	extends TricksyScreenBase
 	public final PlayerEntity player;
 	
 	/** The node being edited */
-	private TreeNode<?> currentNode;
+	public TreeNode<?> currentNode;
 	private final Predicate<TreeNode<?>> displayPredicate;
 	private Vec2f treeOffset;
 	
@@ -47,6 +52,8 @@ public class NodeScreen	extends TricksyScreenBase
 	private final List<EditablePart> parts = Lists.newArrayList();
 	private EditablePart hoveredPart = null;
 	private EditablePart targetPart = null;
+	
+	private Map<HoveredElement, NodeSubScreen> editorMap = new HashMap<>();
 	
 	public NodeScreen(TricksyTreeScreenHandler handler, PlayerInventory inventory, Text title, @NotNull TreeNode<?> node)
 	{
@@ -81,20 +88,30 @@ public class NodeScreen	extends TricksyScreenBase
 		{
 			this.currentNode.setDiscrete(!this.currentNode.isDiscrete(true));
 			updateTreeRender();
+			generateParts();
+			this.targetPart = parts.get(0);
 		}).dimensions(midWidth + 60, nameField.getY() - 4, 20, 20).build());
+		this.discreteButton.active = !currentNode.isRoot() && currentNode.hasChildren();
 		
 		/**
 		 * TODO Add more editing tools to node screen
-		 * Change node type
-		 * Change node subtype
-		 *  - Categorised list of available subtypes
 		 * Assign input variables
-		 *  - Categorised list of whiteboard references
 		 *  - Option to create a static value
 		 */
+		
+		// Changing supertype
+		editorMap.put(HoveredElement.TYPE, new TypeScreen(this));
+		// Changing subtype
+		editorMap.put(HoveredElement.SUBTYPE, new SubTypeScreen(this));
+		// Assigning input variables
+		editorMap.put(HoveredElement.VARIABLES, new ReferencesScreen(this));
+		
+		editorMap.values().forEach((sub) -> sub.init(client, width, height));
 	}
 	
-	private void updateTreeRender()
+	public Optional<NodeSubScreen> getSubScreen() { return this.targetPart == null || !editorMap.containsKey(this.targetPart.type) ? Optional.empty() : Optional.of(editorMap.get(this.targetPart.type)); }
+	
+	public void updateTreeRender()
 	{
 		NodeRenderUtils.scaleAndPositionNode(handler.getTree().root(), 0, 0, this.displayPredicate, true);
 		this.treeOffset = new Vec2f(currentNode.screenX + (currentNode.width / 2), currentNode.screenY + (currentNode.height / 2)).negate();
@@ -110,7 +127,14 @@ public class NodeScreen	extends TricksyScreenBase
 	{
 		super.handledScreenTick();
 		this.nameField.tick();
-		discreteButton.active = !currentNode.isRoot() && currentNode.hasChildren();
+		if(this.targetPart != null)
+			editorMap.get(this.targetPart.type).tick();
+	}
+	
+	public void setTargetPart(EditablePart part)
+	{
+		this.targetPart = part;
+		getSubScreen().ifPresent((screen) -> screen.init(client, width, height));
 	}
 	
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers)
@@ -146,11 +170,11 @@ public class NodeScreen	extends TricksyScreenBase
 			{
 				if(this.hoveredPart != null)
 				{
-					this.targetPart = this.hoveredPart;
+					setTargetPart(this.hoveredPart);
 					return true;
 				}
 				else
-					this.targetPart = null;
+					setTargetPart(null);
 			}
 			else
 				return true;
@@ -165,6 +189,9 @@ public class NodeScreen	extends TricksyScreenBase
 			this.setFocused(this.nameField);
 			return true;
 		}
+		
+		if(getSubScreen().isPresent() && getSubScreen().get().mouseClicked(x, y, mouseKey))
+			return true;
 		
 		return super.childrenMouseClicked(x, y, mouseKey);
 	}
@@ -224,6 +251,8 @@ public class NodeScreen	extends TricksyScreenBase
 		if(this.nameField.isFocused())
 			flags.remove(NodeRenderFlags.TYPE);
 		NodeRenderUtils.renderNode(currentNode, context, textRenderer, this.ticksOpen, flags);
+		
+		getSubScreen().ifPresent(screen -> screen.render(context, mouseX, mouseY, delta));
 	}
 	
 	private void onRenamed(String name)
@@ -272,6 +301,12 @@ public class NodeScreen	extends TricksyScreenBase
 		}
 		return null;
 	}
+	
+	@Nullable
+	public WhiteboardRef targetInputRef() { return this.targetPart != null ? this.targetPart.inputRef : null; }
+	
+	@Nullable
+	public Predicate<WhiteboardRef> targetInputPred() { return this.targetPart != null ? currentNode.getSubType().getInput(this.targetPart.inputRef).predicate() : null; }
 	
 	private static class EditablePart
 	{

@@ -70,7 +70,11 @@ public class TFNodeTypes
 		TYPES.forEach((name,type) -> 
 		{
 			TricksyFoxes.LOGGER.info(" # "+name.toString()+" ("+type.subTypes().size()+" subtypes in "+type.groups().size()+" groups)");
-			type.subTypes().forEach((sub) -> TricksyFoxes.LOGGER.info(" # - "+sub.getPath()));
+			type.groups().forEach((group) -> 
+			{
+				TricksyFoxes.LOGGER.info(" # # "+group.getRegistryName().getPath());
+				group.getSubtypes().forEach((sub) -> TricksyFoxes.LOGGER.info(" # # - "+sub.getRegistryName().getPath()));
+			});
 		});
 	}
 }

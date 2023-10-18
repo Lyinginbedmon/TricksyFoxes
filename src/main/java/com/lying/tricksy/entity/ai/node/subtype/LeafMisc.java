@@ -46,7 +46,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_LOOK_AT = ISubtypeGroup.variant("look_at");
 	public static final Identifier VARIANT_WANDER = ISubtypeGroup.variant("wander");
 	
-	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".leaf_misc"); }
+	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_misc"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{

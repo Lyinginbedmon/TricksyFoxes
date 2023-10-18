@@ -64,7 +64,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_ATTACK_POTION = ISubtypeGroup.variant("potion_attack");
 	public static final Identifier VARIANT_SHIELD = ISubtypeGroup.variant("shield_against");
 	
-	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".leaf_combat"); }
+	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_combat"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{

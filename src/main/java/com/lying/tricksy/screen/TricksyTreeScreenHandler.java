@@ -3,12 +3,14 @@ package com.lying.tricksy.screen;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Predicate;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
@@ -67,13 +69,25 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	
 	public boolean canAddNode() { return this.treeSize < this.treeSizeCap; }
 	
-	public List<WhiteboardRef> getMatches(Predicate<WhiteboardRef> predicate, @Nullable BoardType board)
+	public Map<WhiteboardRef, IWhiteboardObject<?>> getMatches(Predicate<WhiteboardRef> predicate, @Nullable BoardType board)
 	{
-		List<WhiteboardRef> options = Lists.newArrayList();
+		Map<WhiteboardRef, IWhiteboardObject<?>> options = new HashMap<>();
+		if(predicate == null)
+			predicate = Predicates.alwaysTrue();
+		
 		if(board != null)
-			getEntriesOnBoard(board).keySet().forEach((ref) -> { if(predicate.test(ref)) options.add(ref); });
+			for(Entry<WhiteboardRef, IWhiteboardObject<?>> entry : getEntriesOnBoard(board).entrySet())
+			{
+				if(predicate.test(entry.getKey()))
+					options.put(entry.getKey(), entry.getValue());
+			}
 		else
-			references.values().forEach((boardSet) -> boardSet.keySet().forEach((ref) -> { if(predicate.test(ref)) options.add(ref); }));
+			for(BoardType bd : BoardType.values())
+				for(Entry<WhiteboardRef, IWhiteboardObject<?>> entry : getEntriesOnBoard(bd).entrySet())
+				{
+					if(predicate.test(entry.getKey()))
+						options.put(entry.getKey(), entry.getValue());
+				}
 		return options;
 	}
 	

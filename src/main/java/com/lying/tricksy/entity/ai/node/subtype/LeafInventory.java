@@ -57,7 +57,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_INSERT_ITEM = ISubtypeGroup.variant("insert_item");
 	public static final Identifier VARIANT_EXTRACT_ITEM = ISubtypeGroup.variant("extract_item");
 	
-	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".leaf_inventory"); }
+	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_inventory"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{

@@ -38,7 +38,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_SORT_NEAREST = ISubtypeGroup.variant("sort_nearest");
 	public static final Identifier VARIANT_COPY = ISubtypeGroup.variant("set_value");
 	
-	public Text displayName() { return Text.translatable("subtype."+Reference.ModInfo.MOD_ID+".leaf_whiteboard"); }
+	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_whiteboard"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{

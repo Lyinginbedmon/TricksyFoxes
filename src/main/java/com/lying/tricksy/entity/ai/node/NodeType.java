@@ -102,6 +102,15 @@ public class NodeType<M extends TreeNode<?>>
 	
 	public final List<ISubtypeGroup<M>> groups() { return this.subTypeGroups; }
 	
+	public final Identifier getGroupOf(Identifier subtype)
+	{
+		for(ISubtypeGroup<M> group : groups())
+			for(NodeSubType<M> sub : group.getSubtypes())
+				if(sub.getRegistryName().equals(subtype))
+					return group.getRegistryName();
+		return null;
+	}
+	
 	public final List<Identifier> subTypes()
 	{
 		List<Identifier> subtypes = Lists.newArrayList();
