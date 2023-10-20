@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "b": {
+      "item": "minecraft:writable_book"
+    },
+    "p": {
+      "item": "tricksy:prescient_note"
+    }
+  },
+  "pattern": [
+    "ppp",
+    "pbp",
+    "ppp"
+  ],
+  "result": {
+    "item": "tricksy:scripture"
+  },
+  "show_notification": true
+}
