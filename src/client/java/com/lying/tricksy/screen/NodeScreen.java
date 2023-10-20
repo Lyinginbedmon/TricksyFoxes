@@ -42,6 +42,7 @@ import net.minecraft.util.math.Vec2f;
 public class NodeScreen	extends TricksyScreenBase
 {
 	public static final Identifier EDITOR_TEXTURES = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree_editor.png");
+	private static final int MAIN_BAR_Y = 82;
 	public final PlayerEntity player;
 	
 	/** The node being edited */
@@ -73,12 +74,12 @@ public class NodeScreen	extends TricksyScreenBase
 		int midWidth = this.width / 2;
 		generateParts();
 		
-		this.nameField = new TextFieldWidget(this.textRenderer, midWidth - 52, 0, 104, 12, Text.translatable("container.repair"));
+		this.nameField = new TextFieldWidget(this.textRenderer, midWidth - 52, MAIN_BAR_Y, 104, 12, Text.translatable("container.repair"));
 		this.nameField.setFocusUnlocked(false);
 		this.nameField.setEditableColor(-1);
 		this.nameField.setUneditableColor(-1);
-		this.nameField.setDrawsBackground(true);
-		this.nameField.setMaxLength(50);
+		this.nameField.setDrawsBackground(false);
+		this.nameField.setMaxLength(18);
 		this.nameField.setFocusUnlocked(true);
 		this.nameField.setChangedListener(this::onRenamed);
 		this.nameField.setPlaceholder(currentNode.getType().translatedName());
@@ -86,8 +87,7 @@ public class NodeScreen	extends TricksyScreenBase
 		this.nameField.setEditable(!currentNode.isRoot());
 		this.addSelectableChild(this.nameField);
 		
-		this.nameField.setPosition(this.nameField.getX(), Math.max(30, currentNode.screenY - 20 - this.nameField.getHeight()));
-		addDrawableChild(discreteButton = new DiscretionButton(midWidth + 60, nameField.getY() - 4, (button) -> 
+		addDrawableChild(discreteButton = new DiscretionButton(midWidth + 60, MAIN_BAR_Y - 6, (button) -> 
 		{
 			this.currentNode.setDiscrete(!this.currentNode.isDiscrete(true));
 			updateTreeRender();
@@ -259,6 +259,8 @@ public class NodeScreen	extends TricksyScreenBase
 		if(this.nameField.isFocused())
 			flags.remove(NodeRenderFlags.TYPE);
 		NodeRenderUtils.renderNode(currentNode, context, textRenderer, this.ticksOpen, flags);
+		
+		context.drawTexture(EDITOR_TEXTURES, (this.width / 2) - 94, MAIN_BAR_Y - 13, 0, 0, 60, 188, 31, 256, 256);
 		
 		getSubScreen().ifPresent(screen -> screen.render(context, mouseX, mouseY, delta));
 	}
