@@ -24,24 +24,37 @@ public class ReferencesScreen extends NodeSubScreen
 	
 	protected void init()
 	{
+		clearChildren();
+		addDrawableChild(referenceList = new ReferenceList(150, this.height, 0, this.height));
+		referenceList.setLeftPos(this.width - 150);
+		
+		addDrawableChild(boardList = new BoardList(70, this.height, 0, this.height, 20, this));
+		boardList.setLeftPos(referenceList.getRowLeft() - 67);
+		
+		setBoard(BoardType.LOCAL);
+	}
+	
+	private void populateReferences()
+	{
+		availableValues.clear();
 		for(BoardType type : BoardType.values())
 			availableValues.put(type, parent.getScreenHandler().getMatches(parent.targetInputPred(), type));
 		
-		addDrawableChild(referenceList = new ReferenceList(150, this.height, 0, this.height, 20));
-		referenceList.setLeftPos(this.width - 150);
-		setBoard(BoardType.LOCAL);
-		
-		addDrawableChild(boardList = new BoardList(60, this.height, 0, this.height, 20, this));
-		boardList.setLeftPos(referenceList.getRowLeft() - 60);
+		this.boardList.refreshEntries();
 	}
 	
 	public void setBoard(BoardType board)
 	{
+		populateReferences();
+		// If we've somehow tried to display a board we don't have any values for, reset
+		if(!hasValuesFor(board))
+			board = availableValues.keySet().toArray(new BoardType[0])[0];
+		
 		this.boardDisplayed = board;
 		this.referenceList.setEntries(availableValues.get(board), parent);
 	}
 	
-	public boolean hasValuesFor(BoardType board) { return !availableValues.get(board).isEmpty(); }
+	public boolean hasValuesFor(BoardType board) { return !availableValues.getOrDefault(board, new HashMap<>()).isEmpty(); }
 	
 	public boolean isDisplaying(BoardType board) { return board == this.boardDisplayed; }
 }

@@ -2,7 +2,7 @@ package com.lying.tricksy.screen;
 
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.network.RemoveUserPacket;
-import com.lying.tricksy.screen.TreeScreen.HoveredElement;
+import com.lying.tricksy.screen.TreeScreen.NodeElement;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
@@ -47,18 +47,18 @@ public abstract class TricksyScreenBase extends HandledScreen<TricksyTreeScreenH
 		return new TexturedButtonWidget(posX, posY, 16, 16, texX, texY, 16, NodeRenderUtils.TREE_TEXTURES, 256, 256, action);
 	}
 	
-	public static HoveredElement hoveredNodePart(int mouseX, int mouseY, TreeNode<?> hoveredNode)
+	public static NodeElement hoveredElement(int mouseX, int mouseY, TreeNode<?> hoveredNode)
 	{
 		if(hoveredNode == null)
 			return null;
 		
 		int yOffset = mouseY - hoveredNode.screenY;
 		if(yOffset < 13)
-			return HoveredElement.TYPE;
+			return NodeElement.TYPE;
 		else if(yOffset < 24)
-			return HoveredElement.SUBTYPE;
+			return NodeElement.SUBTYPE;
 		else
-			return HoveredElement.VARIABLES;
+			return NodeElement.VARIABLES;
 	}
 	
 	protected boolean childrenMouseClicked(double x, double y, int mouseKey)

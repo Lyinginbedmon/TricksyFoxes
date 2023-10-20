@@ -214,7 +214,7 @@ public class TreeScreen extends TricksyScreenBase
 		NodeRenderUtils.renderTree(root, context, this.textRenderer, this.ticksOpen, variableShow, true);
 	}
 	
-	public static enum HoveredElement
+	public static enum NodeElement
 	{
 		TYPE,
 		SUBTYPE,

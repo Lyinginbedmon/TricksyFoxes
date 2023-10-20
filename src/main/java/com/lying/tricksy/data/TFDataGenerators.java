@@ -8,6 +8,7 @@ public class TFDataGenerators implements DataGeneratorEntrypoint
 	public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator)
 	{
 		FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
+		pack.addProvider(TFBlockLootTables::new);
 		pack.addProvider(TFRecipeProvider::new);
 		pack.addProvider(TFItemTags::new);
 	}

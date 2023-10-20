@@ -52,6 +52,7 @@ public class TFRecipeProvider extends FabricRecipeProvider
 			.pattern("ppp")
 			.pattern("pbp")
 			.pattern("ppp")
+			.input('p', TFItems.NOTE).input('b', Items.WRITABLE_BOOK)
 			.criterion(FabricRecipeProvider.hasItem(TFItems.NOTE), FabricRecipeProvider.conditionsFromItem(TFItems.NOTE))
 			.criterion(FabricRecipeProvider.hasItem(Items.WRITABLE_BOOK), FabricRecipeProvider.conditionsFromItem(Items.WRITABLE_BOOK)).offerTo(exporter);
 	}

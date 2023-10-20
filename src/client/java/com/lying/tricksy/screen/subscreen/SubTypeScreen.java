@@ -23,8 +23,8 @@ public class SubTypeScreen extends NodeSubScreen
 		addDrawableChild(subTypeList = new SubTypeList(150, this.height, 0, this.height, 20));
 		subTypeList.setLeftPos(this.width - 150);
 		
-		addDrawableChild(groupList = new SubTypeGroupList(50, this.height, 0, this.height, 22));
-		groupList.setLeftPos(subTypeList.getRowLeft() - 50);
+		addDrawableChild(groupList = new SubTypeGroupList(70, this.height, 0, this.height, 20));
+		groupList.setLeftPos(subTypeList.getRowLeft() - 65);
 		
 		NodeType<?> type = parent.currentNode.getType();
 		groupList.setEntries(type, this);

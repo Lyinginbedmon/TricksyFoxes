@@ -11,12 +11,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ai.node.TreeNode;
+import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.NodeRenderUtils.NodeRenderFlags;
-import com.lying.tricksy.screen.TreeScreen.HoveredElement;
+import com.lying.tricksy.screen.TreeScreen.NodeElement;
 import com.lying.tricksy.screen.subscreen.NodeSubScreen;
 import com.lying.tricksy.screen.subscreen.ReferencesScreen;
 import com.lying.tricksy.screen.subscreen.SubTypeScreen;
@@ -26,10 +28,10 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.tooltip.TooltipBackgroundRenderer;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.util.math.Vector2f;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec2f;
 
@@ -39,6 +41,7 @@ import net.minecraft.util.math.Vec2f;
  */
 public class NodeScreen	extends TricksyScreenBase
 {
+	public static final Identifier EDITOR_TEXTURES = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree_editor.png");
 	public final PlayerEntity player;
 	
 	/** The node being edited */
@@ -53,7 +56,7 @@ public class NodeScreen	extends TricksyScreenBase
 	private EditablePart hoveredPart = null;
 	private EditablePart targetPart = null;
 	
-	private Map<HoveredElement, NodeSubScreen> editorMap = new HashMap<>();
+	private Map<NodeElement, NodeSubScreen> editorMap = new HashMap<>();
 	
 	public NodeScreen(TricksyTreeScreenHandler handler, PlayerInventory inventory, Text title, @NotNull TreeNode<?> node)
 	{
@@ -84,13 +87,12 @@ public class NodeScreen	extends TricksyScreenBase
 		this.addSelectableChild(this.nameField);
 		
 		this.nameField.setPosition(this.nameField.getX(), Math.max(30, currentNode.screenY - 20 - this.nameField.getHeight()));
-		addDrawableChild(discreteButton = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.hide"), (button) -> 
+		addDrawableChild(discreteButton = new DiscretionButton(midWidth + 60, nameField.getY() - 4, (button) -> 
 		{
 			this.currentNode.setDiscrete(!this.currentNode.isDiscrete(true));
 			updateTreeRender();
 			generateParts();
-			this.targetPart = parts.get(0);
-		}).dimensions(midWidth + 60, nameField.getY() - 4, 20, 20).build());
+		}, this));
 		this.discreteButton.active = !currentNode.isRoot() && currentNode.hasChildren();
 		
 		/**
@@ -100,11 +102,11 @@ public class NodeScreen	extends TricksyScreenBase
 		 */
 		
 		// Changing supertype
-		editorMap.put(HoveredElement.TYPE, new TypeScreen(this));
+		editorMap.put(NodeElement.TYPE, new TypeScreen(this));
 		// Changing subtype
-		editorMap.put(HoveredElement.SUBTYPE, new SubTypeScreen(this));
+		editorMap.put(NodeElement.SUBTYPE, new SubTypeScreen(this));
 		// Assigning input variables
-		editorMap.put(HoveredElement.VARIABLES, new ReferencesScreen(this));
+		editorMap.put(NodeElement.VARIABLES, new ReferencesScreen(this));
 		
 		editorMap.values().forEach((sub) -> sub.init(client, width, height));
 	}
@@ -127,8 +129,7 @@ public class NodeScreen	extends TricksyScreenBase
 	{
 		super.handledScreenTick();
 		this.nameField.tick();
-		if(this.targetPart != null)
-			editorMap.get(this.targetPart.type).tick();
+		getSubScreen().ifPresent((screen) -> screen.tick());
 	}
 	
 	public void setTargetPart(EditablePart part)
@@ -157,6 +158,13 @@ public class NodeScreen	extends TricksyScreenBase
 			return true;
 		}
 		return super.keyPressed(keyCode, scanCode, modifiers);
+	}
+	
+	public boolean mouseScrolled(double mouseX, double mouseY, double amount)
+	{
+		if(getSubScreen().isPresent() && getSubScreen().get().mouseScrolled(mouseX, mouseY, amount))
+			return true;
+		return super.mouseScrolled(mouseX, mouseY, amount);
 	}
 	
 	public boolean mouseClicked(double x, double y, int mouseKey)
@@ -205,10 +213,10 @@ public class NodeScreen	extends TricksyScreenBase
 		
 		this.hoveredPart = hoveredPart(mouseX, mouseY);
 		if(this.hoveredPart != null && this.hoveredPart != this.targetPart)
-			this.hoveredPart.render(context, -12303292);
+			this.hoveredPart.render(context, false);
 		if(this.targetPart != null)
 		{
-			this.targetPart.render(context, -1);
+			this.targetPart.render(context, true);
 			
 			switch(this.targetPart.type)
 			{
@@ -266,8 +274,8 @@ public class NodeScreen	extends TricksyScreenBase
 		parts.clear();
 		
 		int width = currentNode.width;
-		parts.add(new EditablePart(HoveredElement.TYPE).setBounds(10, 1, width - 10, 14));
-		parts.add(new EditablePart(HoveredElement.SUBTYPE).setBounds(30, 13, width - 30, 25));
+		parts.add(new EditablePart(NodeElement.TYPE).setBounds(10, 1, width - 10, 14));
+		parts.add(new EditablePart(NodeElement.SUBTYPE).setBounds(30, 13, width - 30, 25));
 		
 		List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> sortedVariables = NodeRenderUtils.getSortedVariables(currentNode);
 		if(sortedVariables.isEmpty())
@@ -292,7 +300,7 @@ public class NodeScreen	extends TricksyScreenBase
 	@Nullable
 	public EditablePart hoveredPart(int mouseX, int mouseY)
 	{
-		Vector2f currentPos = new Vector2f(currentNode.screenX, currentNode.screenY);
+		Vec2f currentPos = new Vec2f(currentNode.screenX, currentNode.screenY);
 		for(EditablePart part : parts)
 		{
 			part.move(currentPos);
@@ -306,27 +314,33 @@ public class NodeScreen	extends TricksyScreenBase
 	public WhiteboardRef targetInputRef() { return this.targetPart != null ? this.targetPart.inputRef : null; }
 	
 	@Nullable
-	public Predicate<WhiteboardRef> targetInputPred() { return this.targetPart != null ? currentNode.getSubType().getInput(this.targetPart.inputRef).predicate() : null; }
+	public Predicate<WhiteboardRef> targetInputPred()
+	{
+		if(this.targetPart == null || this.targetPart.type != NodeElement.VARIABLES)
+			return Predicates.alwaysTrue();
+		INodeInput input = currentNode.getSubType().getInput(this.targetPart.inputRef);
+		return input != null ? input.predicate() : Predicates.alwaysTrue();
+	}
 	
 	private static class EditablePart
 	{
 		/** The type of this part, used for option handling */
-		public final HoveredElement type;
+		public final NodeElement type;
 		
 		/** The input reference of this part, used for variable assignment */
 		public final WhiteboardRef inputRef;
 		
-		private Vector2f min;
+		private Vec2f min;
 		private int width, height;
-		private Vector2f pos = new Vector2f(0F, 0F);
+		private Vec2f pos = Vec2f.ZERO;
 		
 		public EditablePart(WhiteboardRef refIn)
 		{
-			this.type = HoveredElement.VARIABLES;
+			this.type = NodeElement.VARIABLES;
 			this.inputRef = refIn;
 		}
 		
-		public EditablePart(HoveredElement typeIn)
+		public EditablePart(NodeElement typeIn)
 		{
 			this.type = typeIn;
 			this.inputRef = null;
@@ -334,7 +348,7 @@ public class NodeScreen	extends TricksyScreenBase
 		
 		public EditablePart setBounds(int x1, int y1, int x2, int y2)
 		{
-			this.min = new Vector2f(Math.min(x1, x2), Math.min(y1, y2));
+			this.min = new Vec2f(Math.min(x1, x2), Math.min(y1, y2));
 			this.width = x2 - x1;
 			this.height = y2 - y1;
 			return this;
@@ -342,18 +356,44 @@ public class NodeScreen	extends TricksyScreenBase
 		
 		public boolean contains(int x, int y)
 		{
-			int x1 = (int)(min.getX() + pos.getX());
+			int x1 = (int)(min.x + pos.x);
 			int x2 = x1 + width;
-			int y1 = (int)(min.getY() + pos.getY());
+			int y1 = (int)(min.y + pos.y);
 			int y2 = y1 + height;
 			return x >= x1 && x <= x2 && y >= y1 && y <= y2;
 		}
 		
-		public void render(DrawContext context, int color)
+		public void render(DrawContext context, boolean selected)
 		{
-			context.drawBorder((int)(min.getX() + pos.getX()), (int)(min.getY() + pos.getY()), width, height, color);
+			Vec2f topLeft = min.add(pos);
+			if(selected)
+				for(int i=0; i<3; i++)
+				{
+					int col = i%2 == 1 ? 0xFFFFF3CA : 0xFFF0D299;
+					context.drawBorder((int)topLeft.x - i, (int)topLeft.y - i, width + i*2, height + i*2, col);
+				}
+			else
+				context.drawBorder((int)topLeft.x, (int)topLeft.y, width, height, 0xFF707070);
 		}
 		
-		public void move(Vector2f posIn) { this.pos = posIn; }
+		public void move(Vec2f posIn) { this.pos = posIn; }
+	}
+	
+	private static class DiscretionButton extends ButtonWidget
+	{
+		private final NodeScreen parent;
+		
+		public DiscretionButton(int x, int y, PressAction onPress, NodeScreen parentIn)
+		{
+			super(x, y, 20, 20, Text.empty(), onPress, DEFAULT_NARRATION_SUPPLIER);
+			this.parent = parentIn;
+		}
+		
+		public void renderButton(DrawContext context, int mouseX, int mouseY, float delta)
+		{
+			super.renderButton(context, mouseX, mouseY, delta);
+			int texY = parent.currentNode.isDiscrete(true) ? 20 : 0;
+			context.drawTexture(EDITOR_TEXTURES, this.getX(), this.getY(), 0, 0, texY, 20, 20, 256, 256);
+		}
 	}
 }

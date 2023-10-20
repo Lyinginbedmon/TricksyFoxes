@@ -50,15 +50,10 @@ public class WhiteboardScreen extends TricksyScreenBase
 	
 	private ButtonWidget makeBoardButton(BoardType board, int y)
 	{
-		return ButtonWidget.builder(board.translate(), (button) -> 
-		{
-			WhiteboardScreen screen = (WhiteboardScreen)mc.currentScreen;
-			screen.setBoard(board);
-			screen.manageBoardButtons();
-		}).dimensions((this.width - 200) / 2 - 60, 60 + y, 60, 20).build();
+		return new BoardButton((this.width - 200) / 2 - 53, 30 + y, board);
 	}
 	
-	private void manageBoardButtons()
+	void manageBoardButtons()
 	{
 		for(Entry<BoardType, ButtonWidget> entry : boardMap.entrySet())
 			entry.getValue().active = entry.getKey() != currentBoard;
@@ -98,6 +93,5 @@ public class WhiteboardScreen extends TricksyScreenBase
 	{
 		renderBackground(context);
 		this.list.render(context, mouseX, mouseY, delta);
-		
 	}
 }

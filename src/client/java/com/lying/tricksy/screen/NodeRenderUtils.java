@@ -322,8 +322,11 @@ public class NodeRenderUtils
 		return height;
 	}
 	
-	public static int nodeDisplayHeight(TreeNode<?> nodeIn, boolean includeVariables)
+	public static int nodeDisplayHeight(@Nullable TreeNode<?> nodeIn, boolean includeVariables)
 	{
+		if(nodeIn == null)
+			return 13 + 11;
+		
 		int variables = nodeIn.getSubType().variableSet().size();
 		
 		// Type

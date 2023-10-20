@@ -38,7 +38,6 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 	public static final Identifier SLICE_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/whiteboard_slice.png");
 	private final WhiteboardScreen parent;
 	
-	private Random rand;
 	private BranchLine leftLine, rightLine;
 	
 	public WhiteboardList(WhiteboardScreen screen, int width, int height, int top, int bottom)
@@ -51,8 +50,7 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 	
 	public void setRandSeed(long seedIn)
 	{
-		rand = new Random(seedIn);
-        
+		Random rand = new Random(seedIn);
 		leftLine = BranchLine.between(new Vec2f(this.left, 0), new Vec2f(this.left, this.height), rand, rand.nextBoolean() ? TFNodeTypes.ROSE_FLOWER : TFNodeTypes.GRAPE_FLOWER);
 		rightLine = BranchLine.between(new Vec2f(this.right, 0), new Vec2f(this.right, this.height), rand, rand.nextBoolean() ? TFNodeTypes.ROSE_FLOWER : TFNodeTypes.GRAPE_FLOWER);
 	}
@@ -85,7 +83,7 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 		float v2 = (float)this.height / 16F;
 		
 		int x1 = this.left - 25;
-		int x2 = this.right + 25;
+		int x2 = x1 + 250;
 		
 		RenderSystem.setShaderTexture(0, SLICE_TEXTURE);
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
@@ -99,11 +97,14 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 	        bufferBuilder.vertex(matrix4f, x2, 0, 0).texture(1F, 0F).next();
         BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
         RenderSystem.disableBlend();
-        
-		leftLine.render(context);
-		rightLine.render(context);
 		
 		super.render(context, mouseX, mouseY, delta);
+	}
+	
+	protected void renderDecorations(DrawContext context, int mouseX, int mouseY)
+	{
+		leftLine.render(context);
+		rightLine.render(context);
 	}
 	
 	public class ReferenceEntry extends ElementListWidget.Entry<ReferenceEntry>
@@ -154,12 +155,7 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 			if(valueSnapshot != null && valueSnapshot.size() > 0)
 			{
 				List<Text> description = valueSnapshot.describe();
-				
-				if(hovered && description.size() > 1 && !flagged)
-					ticksHovered++;
-				else
-					ticksHovered = 0;
-				
+				ticksHovered = (hovered && description.size() > 1) ? ticksHovered + 1 : 0;
 				Text draw = description.get(Math.floorDiv(ticksHovered, Reference.Values.TICKS_PER_SECOND)%description.size());
 				context.drawText(mc.textRenderer, draw, x + (150 - 8 - mc.textRenderer.getWidth(draw)) / 2, y + 15, 0x808080, false);
 				
