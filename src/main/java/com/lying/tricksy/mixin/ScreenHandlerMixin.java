@@ -55,10 +55,10 @@ public class ScreenHandlerMixin
 				slot.setStack(converted);
 				ci.cancel();
 			}
-			else if(TFItems.NOTES.contains(stack.getItem()))
+			else if(TFItems.NOTES_CYCLE.contains(stack.getItem()))
 			{
-				int index = TFItems.NOTES.indexOf(stack.getItem()) + 1;
-				Item nextItem = TFItems.NOTES.get(index % TFItems.NOTES.size());
+				int index = TFItems.NOTES_CYCLE.indexOf(stack.getItem()) + 1;
+				Item nextItem = TFItems.NOTES_CYCLE.get(index % TFItems.NOTES.size());
 				ItemStack converted = convertTo(stack, nextItem);
 				TFObjType<?> type = ((ItemPrescientNote.Typed<?>)nextItem).getType();
 				ItemPrescientNote.setVariable(type.create(new NbtCompound()), converted);

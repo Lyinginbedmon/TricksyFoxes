@@ -12,6 +12,7 @@ import com.lying.tricksy.item.ItemPrescientNote;
 import com.lying.tricksy.item.ItemSageHat;
 import com.lying.tricksy.item.ItemScripture;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.utility.Region;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -42,12 +43,14 @@ public class TFItems
     public static final Item NOTE = register("prescient_note", new ItemPrescientNote(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
     public static final Item NOTE_POS = register("prescient_note_block", new ItemPrescientNote.Block(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
     public static final Item NOTE_ENT = register("prescient_note_entity", new ItemPrescientNote.Ent(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
-    public static final Item NOTE_INT = register("prescient_note_number", new ItemPrescientNote.Int(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
-    public static final Item NOTE_BOOL = register("prescient_note_boolean", new ItemPrescientNote.Bool(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
-    public static final Item NOTE_ITEM = register("prescient_note_item", new ItemPrescientNote.Items(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
+    public static final Item NOTE_REG = register("prescient_note_region", new ItemPrescientNote.Crafting<Region>(TFObjType.REGION, new FabricItemSettings().rarity(Rarity.UNCOMMON)));
+    public static final Item NOTE_INT = register("prescient_note_number", new ItemPrescientNote.Crafting<Integer>(TFObjType.INT, new FabricItemSettings().rarity(Rarity.UNCOMMON)));
+    public static final Item NOTE_BOOL = register("prescient_note_boolean", new ItemPrescientNote.Crafting<Boolean>(TFObjType.BOOL, new FabricItemSettings().rarity(Rarity.UNCOMMON)));
+    public static final Item NOTE_ITEM = register("prescient_note_item", new ItemPrescientNote.Crafting<ItemStack>(TFObjType.ITEM, new FabricItemSettings().rarity(Rarity.UNCOMMON)));
     public static final Item SCRIPTURE = register("scripture", new ItemScripture(new FabricItemSettings().maxCount(1).rarity(Rarity.UNCOMMON)));
     
-    public static final List<Item> NOTES = List.of(TFItems.NOTE_POS, TFItems.NOTE_ENT, TFItems.NOTE_ITEM, TFItems.NOTE_INT, TFItems.NOTE_BOOL);
+    public static final List<Item> NOTES = List.of(TFItems.NOTE_POS, TFItems.NOTE_REG, TFItems.NOTE_ENT, TFItems.NOTE_ITEM, TFItems.NOTE_INT, TFItems.NOTE_BOOL);
+    public static final List<Item> NOTES_CYCLE = List.of(TFItems.NOTE_POS, TFItems.NOTE_ENT, TFItems.NOTE_ITEM, TFItems.NOTE_INT, TFItems.NOTE_BOOL);
     
     public static final ItemGroup TRICKSY_GROUP = FabricItemGroup.builder().icon(() -> new ItemStack(SAGE_HAT)).displayName(Text.translatable("itemGroup."+Reference.ModInfo.MOD_ID+".item_group")).entries((ctx,entries) -> 
 	    {

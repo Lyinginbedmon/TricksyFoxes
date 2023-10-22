@@ -1,7 +1,7 @@
 package com.lying.tricksy.data.recipe;
 
 import com.lying.tricksy.data.TFItemTags;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFSpecialRecipes;
 import com.lying.tricksy.item.ISealableItem;

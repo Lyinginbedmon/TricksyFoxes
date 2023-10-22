@@ -6,6 +6,8 @@ import java.util.Map;
 import com.lying.tricksy.data.recipe.RecipeNoteBool;
 import com.lying.tricksy.data.recipe.RecipeNoteInteger;
 import com.lying.tricksy.data.recipe.RecipeNoteItem;
+import com.lying.tricksy.data.recipe.RecipeNoteRegion1;
+import com.lying.tricksy.data.recipe.RecipeNoteRegion2;
 import com.lying.tricksy.data.recipe.RecipeNoteSeal;
 import com.lying.tricksy.data.recipe.SerializerSimple;
 import com.lying.tricksy.reference.Reference;
@@ -25,6 +27,8 @@ public class TFSpecialRecipes
 	public static final RecipeSerializer<RecipeNoteInteger> NOTE_INTEGER_SERIALIZER = makeSerializer("note_integer", new SerializerSimple<RecipeNoteInteger>(RecipeNoteInteger::new));
 	public static final RecipeSerializer<RecipeNoteBool> NOTE_BOOLEAN_SERIALIZER = makeSerializer("note_boolean", new SerializerSimple<RecipeNoteBool>(RecipeNoteBool::new));
 	public static final RecipeSerializer<RecipeNoteItem> NOTE_ITEM_SERIALIZER = makeSerializer("note_item", new SerializerSimple<RecipeNoteItem>(RecipeNoteItem::new));
+	public static final RecipeSerializer<RecipeNoteRegion1> NOTE_MAKE_REGION_SERIALIZER = makeSerializer("note_create_region", new SerializerSimple<RecipeNoteRegion1>(RecipeNoteRegion1::new));
+	public static final RecipeSerializer<RecipeNoteRegion2> NOTE_REGION_SERIALIZER = makeSerializer("note_region", new SerializerSimple<RecipeNoteRegion2>(RecipeNoteRegion2::new));
 	public static final RecipeSerializer<RecipeNoteSeal> NOTE_SEALING_SERIALIZER = makeSerializer("note_sealing", new SerializerSimple<RecipeNoteSeal>(RecipeNoteSeal::new));
 	
 	static <T extends Recipe<?>> RecipeSerializer<T> makeSerializer(String name, RecipeSerializer<T> serializer)

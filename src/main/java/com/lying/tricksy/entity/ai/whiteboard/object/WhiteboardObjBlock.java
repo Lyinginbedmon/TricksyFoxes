@@ -1,4 +1,4 @@
-package com.lying.tricksy.entity.ai.whiteboard;
+package com.lying.tricksy.entity.ai.whiteboard.object;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +12,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-public class WhiteboardObjBlock extends WhiteboardObjBase<BlockPos, com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock.BlockData, NbtCompound>
+public class WhiteboardObjBlock extends WhiteboardObjBase<BlockPos, com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock.BlockData, NbtCompound>
 {
 	public WhiteboardObjBlock()
 	{

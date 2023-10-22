@@ -1,4 +1,4 @@
-package com.lying.tricksy.entity.ai.whiteboard;
+package com.lying.tricksy.entity.ai.whiteboard.object;
 
 import java.util.List;
 

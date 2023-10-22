@@ -16,14 +16,16 @@ import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.utility.Region;
+import com.lying.tricksy.utility.RegionSphere;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
@@ -161,21 +163,28 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.HOME.displayName()),
+						CommonVariables.VAR_POS, INodeInput.makeInput((ref) -> !ref.isFilter() && (ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.REGION), new WhiteboardObjBlock(), LocalWhiteboard.HOME.displayName()),
 						CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), ConstantsWhiteboard.NUM_4.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
-				int range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT).get();
 				IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
-				BlockPos origin;
-				if(!targetObj.isEmpty())
-					origin = targetObj.as(TFObjType.BLOCK).get();
-				else if(tricksy.hasPositionTarget())
-					origin = tricksy.getPositionTarget();
+				Region area;
+				if(targetObj.type() == TFObjType.REGION)
+					area = targetObj.as(TFObjType.REGION).get();
 				else
-					origin = tricksy.getBlockPos();
+				{
+					BlockPos origin;
+					if(!targetObj.isEmpty())
+						origin = targetObj.as(TFObjType.BLOCK).get();
+					else if(tricksy.hasPositionTarget())
+						origin = tricksy.getPositionTarget();
+					else
+						origin = tricksy.getBlockPos();
+					
+					area = new RegionSphere(origin, getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT).get());
+				}
 				
 				EntityNavigation navigator = tricksy.getNavigation();
 				if(!parent.isRunning())
@@ -187,7 +196,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 					Path path;
 					do
 					{
-						dest = getWanderTarget(origin, range, rand, tricksy.getWorld().getBottomY());
+						dest = getWanderTarget(area, rand, tricksy.getWorld().getBottomY());
 						path = navigator.findPathTo(dest, 20);
 					}
 					while(--attempts > 0 && path == null);
@@ -205,12 +214,9 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
 			}
 			
-			private BlockPos getWanderTarget(BlockPos origin, int range, Random rand, int bottomY)
+			private BlockPos getWanderTarget(Region area, Random rand, int bottomY)
 			{
-				int offX = rand.nextInt(range * 2) - range;
-				int offY = rand.nextInt(range) - (range / 2);
-				int offZ = rand.nextInt(range * 2) - range;
-				BlockPos dest = origin.add(offX, offY, offZ);
+				BlockPos dest = area.findRandomWithin(rand);
 				if(dest.getY() < bottomY)
 					dest = new BlockPos(dest.getX(), bottomY, dest.getZ());
 				return dest;

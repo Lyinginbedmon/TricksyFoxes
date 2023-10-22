@@ -2,6 +2,8 @@ package com.lying.tricksy.entity.ai.whiteboard;
 
 import java.util.function.Supplier;
 
+import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.init.TFObjType;
 
 import net.minecraft.util.math.Direction;

@@ -1,4 +1,4 @@
-package com.lying.tricksy.entity.ai.whiteboard;
+package com.lying.tricksy.entity.ai.whiteboard.object;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -22,7 +22,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity.EntityData, NbtCompound>
+public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity.EntityData, NbtCompound>
 {
 	public WhiteboardObjEntity()
 	{

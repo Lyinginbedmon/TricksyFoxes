@@ -7,14 +7,16 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj.Bool;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj.Int;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObj.Item;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
+import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj.Bool;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj.Int;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj.Item;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjRegion;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.utility.Region;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
@@ -43,6 +45,9 @@ public class TFObjType<T>
 			.emptyIf((obj) -> obj.get() <= 0));
 	/** Block position with optional direction for addressing specific sides of containers */
 	public static final TFObjType<BlockPos> BLOCK = register(new TFObjType<>("block", () -> new WhiteboardObjBlock()));
+	/** Pair of block positions representing opposite corners of a cuboid area */
+	public static final TFObjType<Region> REGION = register(new TFObjType<>("region", () -> new WhiteboardObjRegion()))
+			.castTo(TFObjType.BLOCK, (obj) -> new WhiteboardObjBlock(obj.get().center()));
 	/** Entity value, the only object type that must be recached after loading to restore its value */
 	public static final TFObjType<Entity> ENT = register(new TFObjType<>("entity", () -> new WhiteboardObjEntity())
 			.castTo(TFObjType.BLOCK, (obj) -> new WhiteboardObjBlock(obj.get().getBlockPos(), Direction.UP))

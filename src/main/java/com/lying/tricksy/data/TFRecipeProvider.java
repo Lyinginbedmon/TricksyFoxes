@@ -28,6 +28,8 @@ public class TFRecipeProvider extends FabricRecipeProvider
 		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_INTEGER_SERIALIZER).offerTo(exporter, "note_integer");
 		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_BOOLEAN_SERIALIZER).offerTo(exporter, "note_boolean");
 		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_ITEM_SERIALIZER).offerTo(exporter, "note_item");
+		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_REGION_SERIALIZER).offerTo(exporter, "note_region");
+		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_MAKE_REGION_SERIALIZER).offerTo(exporter, "note_create_region");
 		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_SEALING_SERIALIZER).offerTo(exporter, "note_sealing");
 		
 		ShapedRecipeJsonBuilder.create(RecipeCategory.COMBAT, TFItems.SAGE_HAT)

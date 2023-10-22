@@ -5,12 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBase;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBlock;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjEntity;
+import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBase;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFObjType;
@@ -115,6 +115,11 @@ public class ItemPrescientNote extends Item
 		public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
 		{
 			IWhiteboardObject<?> variable = getVariable(stack);
+			if(variable == null)
+			{
+				tooltip.add(Text.literal("Malformed NBT!"));
+				return;
+			}
 			tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.type", variable.type().translated()));
 			if(variable.size() > 0)
 				tooltip.addAll(variable.describe());
@@ -144,6 +149,27 @@ public class ItemPrescientNote extends Item
 		}
 	}
 	
+	public static class Crafting<T> extends Typed<T>
+	{
+		public Crafting(TFObjType<T> typeIn, Settings settings)
+		{
+			super(typeIn, settings);
+		}
+		
+		public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
+		{
+			super.appendTooltip(stack, world, tooltip, context);
+			if(!ISealableItem.isSealed(stack))
+			{
+				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_craft").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
+				tooltip.add(Text.empty());
+				if(TFItems.NOTES_CYCLE.contains(stack.getItem()))
+					tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_cycle").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
+				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_clear").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
+			}
+		}
+	}
+	
 	public static class Block extends Typed<BlockPos>
 	{
 		public Block(Settings settings)
@@ -158,7 +184,8 @@ public class ItemPrescientNote extends Item
 			{
 				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
 				tooltip.add(Text.empty());
-				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_cycle").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
+				if(TFItems.NOTES_CYCLE.contains(stack.getItem()))
+					tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_cycle").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
 				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_clear").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
 			}
 		}
@@ -198,7 +225,8 @@ public class ItemPrescientNote extends Item
 			{
 				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
 				tooltip.add(Text.empty());
-				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_cycle").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
+				if(TFItems.NOTES_CYCLE.contains(stack.getItem()))
+					tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_cycle").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
 				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_clear").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
 			}
 		}
@@ -208,66 +236,6 @@ public class ItemPrescientNote extends Item
 			WhiteboardObjEntity value = (WhiteboardObjEntity)getVariable(stack).as(TFObjType.ENT);
 			value.add(entity);
 			setVariable(value, stack);
-		}
-	}
-	
-	public static class Int extends Typed<Integer>
-	{
-		public Int(Settings settings)
-		{
-			super(TFObjType.INT, settings);
-		}
-		
-		public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
-		{
-			super.appendTooltip(stack, world, tooltip, context);
-			if(!ISealableItem.isSealed(stack))
-			{
-				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_craft").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
-				tooltip.add(Text.empty());
-				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_cycle").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
-				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_clear").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
-			}
-		}
-	}
-	
-	public static class Bool extends Typed<Boolean>
-	{
-		public Bool(Settings settings)
-		{
-			super(TFObjType.BOOL, settings);
-		}
-		
-		public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
-		{
-			super.appendTooltip(stack, world, tooltip, context);
-			if(!ISealableItem.isSealed(stack))
-			{
-				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_craft").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
-				tooltip.add(Text.empty());
-				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_cycle").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
-				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_clear").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
-			}
-		}
-	}
-	
-	public static class Items extends Typed<ItemStack>
-	{
-		public Items(Settings settings)
-		{
-			super(TFObjType.ITEM, settings);
-		}
-		
-		public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
-		{
-			super.appendTooltip(stack, world, tooltip, context);
-			if(!ISealableItem.isSealed(stack))
-			{
-				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_craft").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
-				tooltip.add(Text.empty());
-				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_cycle").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
-				tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.tooltip_clear").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
-			}
 		}
 	}
 }

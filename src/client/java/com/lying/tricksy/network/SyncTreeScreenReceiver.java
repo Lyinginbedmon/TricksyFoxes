@@ -5,9 +5,9 @@ import java.util.UUID;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardObjBase;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBase;
 import com.lying.tricksy.screen.TricksyTreeScreenHandler;
 
 import net.fabricmc.api.EnvType;

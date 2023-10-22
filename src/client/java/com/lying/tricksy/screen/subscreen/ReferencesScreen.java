@@ -3,8 +3,8 @@ package com.lying.tricksy.screen.subscreen;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.lying.tricksy.entity.ai.whiteboard.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
+import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.screen.NodeScreen;
 

@@ -1,4 +1,4 @@
-package com.lying.tricksy.entity.ai.whiteboard;
+package com.lying.tricksy.entity.ai.whiteboard.object;
 
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
