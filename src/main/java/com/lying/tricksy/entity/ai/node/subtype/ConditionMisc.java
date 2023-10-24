@@ -26,6 +26,7 @@ import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.CropBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -43,6 +44,8 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 	public static final Identifier VARIANT_IS_ENTITY = ISubtypeGroup.variant("is_type");
 	public static final Identifier VARIANT_IS_ITEM = ISubtypeGroup.variant("is_item");
 	public static final Identifier VARIANT_CAN_MINE = ISubtypeGroup.variant("can_mine");
+	public static final Identifier VARIANT_IS_CROP = ISubtypeGroup.variant("is_crop");
+	public static final Identifier VARIANT_IS_MATURE = ISubtypeGroup.variant("is_mature_crop");
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_misc"); }
 	
@@ -55,9 +58,9 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						CommonVariables.VAR_POS_A, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false)), 
-						CommonVariables.VAR_POS_B, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()), 
-						CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, true), new WhiteboardObj.Int(8)));
+						CommonVariables.VAR_POS_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)), 
+						CommonVariables.VAR_POS_B, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()), 
+						CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(8)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
@@ -102,7 +105,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT, false), TFObjType.ENT.blank(), LocalWhiteboard.SELF.displayName()));
+				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), TFObjType.ENT.blank(), LocalWhiteboard.SELF.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
@@ -123,8 +126,8 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false)),
-						CommonVariables.VAR_ITEM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item(), LocalWhiteboard.MAIN_ITEM.displayName()));
+						CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)),
+						CommonVariables.VAR_ITEM, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item(), LocalWhiteboard.MAIN_ITEM.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
@@ -151,8 +154,8 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						CommonVariables.VAR_ITEM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ITEM, false), new WhiteboardObj.Item(), LocalWhiteboard.MAIN_ITEM.displayName()),
-						InventoryHandler.FILTER, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
+						CommonVariables.VAR_ITEM, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, false), new WhiteboardObj.Item(), LocalWhiteboard.MAIN_ITEM.displayName()),
+						InventoryHandler.FILTER, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
@@ -171,8 +174,8 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()),
-						FILTER, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT, true), new WhiteboardObjEntity()));
+						CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()),
+						FILTER, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, true), new WhiteboardObjEntity()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
@@ -181,6 +184,33 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 				IWhiteboardObject<Entity> filter = getOrDefault(FILTER, parent, local, global).as(TFObjType.ENT);
 				Entity ent = entity.size() == 0 ? tricksy : entity.get();
 				return NodeTickHandler.matchesEntityFilter(ent, filter) ? Result.SUCCESS : Result.FAILURE;
+			}
+		}));
+		set.add(new NodeSubType<ConditionNode>(VARIANT_IS_CROP, new NodeTickHandler<ConditionNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
+			{
+				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
+				return tricksy.getWorld().getBlockState(pos.get()).getBlock() instanceof CropBlock ? Result.SUCCESS : Result.FAILURE;
+			}
+		}));
+		set.add(new NodeSubType<ConditionNode>(VARIANT_IS_MATURE, new NodeTickHandler<ConditionNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
+			{
+				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
+				BlockState state = tricksy.getWorld().getBlockState(pos.get());
+				return state.getBlock() instanceof CropBlock && ((CropBlock)state.getBlock()).isMature(state) ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 		return set;

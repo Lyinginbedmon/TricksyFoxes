@@ -4,9 +4,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
-
-import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
@@ -26,6 +23,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.utility.Region;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -35,9 +33,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 public class LeafGetter implements ISubtypeGroup<LeafNode>
@@ -62,7 +58,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_OFFSET = ISubtypeGroup.variant("offset");
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_getter"); }
-
+	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
@@ -70,22 +66,33 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		{
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName())); 
-				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
-				set.put(CommonVariables.VAR_ITEM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
+				set.put(CommonVariables.VAR_POS, INodeInput.makeInput((ref) -> !ref.isFilter() && (ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.REGION), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
+				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
+				set.put(CommonVariables.VAR_ITEM, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
 			
-			public <N extends PathAwareEntity & ITricksyMob<?>> com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject<Entity> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
+			public <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
 			{
-				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
 				IWhiteboardObject<ItemStack> filter = getOrDefault(CommonVariables.VAR_ITEM, parent, local, global).as(TFObjType.ITEM);
 				
-				BlockPos point = pos.size() == 0 ? tricksy.getBlockPos() : pos.get();
+				Region searchArea = GetterHandler.getSearchArea(pos, range, tricksy);
 				World world = tricksy.getWorld();
-				List<ItemEntity> items = getEntitiesWithin(ItemEntity.class, point, range.get(), world, tricksy, (item) -> InventoryHandler.matchesItemFilter(item.getStack(), filter));
+				List<ItemEntity> items = searchArea.getEntitiesByClass(ItemEntity.class, world, (item) -> InventoryHandler.matchesItemFilter(item.getStack(), filter));
 				if(items.isEmpty())
 					return null;
+				else
+					items.sort(new Comparator<ItemEntity>()
+							{
+								public int compare(ItemEntity o1, ItemEntity o2)
+								{
+									BlockPos center = searchArea.center();
+									double dist1 = o1.squaredDistanceTo(center.getX() + 0.5D, center.getY() + 0.5D, center.getZ() + 0.5D);
+									double dist2 = o2.squaredDistanceTo(center.getX() + 0.5D, center.getY() + 0.5D, center.getZ() + 0.5D);
+									return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+								}
+							});
 				
 				return new WhiteboardObjEntity(items.get(0));
 			}
@@ -94,22 +101,33 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		{
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName())); 
-				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
-				set.put(CommonVariables.VAR_ITEM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
+				set.put(CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION);
+				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
+				set.put(CommonVariables.VAR_ITEM, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
 			
-			public <N extends PathAwareEntity & ITricksyMob<?>> com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject<Entity> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
+			public <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
 			{
-				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
 				IWhiteboardObject<ItemStack> filter = getOrDefault(CommonVariables.VAR_ITEM, parent, local, global).as(TFObjType.ITEM);
 				
-				BlockPos point = pos.size() == 0 ? tricksy.getBlockPos() : pos.get();
+				Region searchArea = GetterHandler.getSearchArea(pos, range, tricksy);
 				World world = tricksy.getWorld();
-				List<ItemEntity> items = getEntitiesWithin(ItemEntity.class, point, range.get(), world, tricksy, (item) -> InventoryHandler.matchesItemFilter(item.getStack(), filter));
+				List<ItemEntity> items = searchArea.getEntitiesByClass(ItemEntity.class, world, (item) -> InventoryHandler.matchesItemFilter(item.getStack(), filter));
 				if(items.isEmpty())
 					return null;
+				else
+					items.sort(new Comparator<ItemEntity>()
+							{
+								public int compare(ItemEntity o1, ItemEntity o2)
+								{
+									BlockPos center = searchArea.center();
+									double dist1 = o1.squaredDistanceTo(center.getX() + 0.5D, center.getY() + 0.5D, center.getZ() + 0.5D);
+									double dist2 = o2.squaredDistanceTo(center.getX() + 0.5D, center.getY() + 0.5D, center.getZ() + 0.5D);
+									return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+								}
+							});
 				
 				WhiteboardObjEntity result = new WhiteboardObjEntity();
 				items.forEach((mob) -> result.add(mob));
@@ -122,22 +140,33 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 			
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName())); 
-				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
-				set.put(FILTER, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT, true), ConstantsWhiteboard.FILTER_MONSTER.copy(), ConstantsWhiteboard.ENT_MONSTERS.displayName()));
+				set.put(CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION);
+				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
+				set.put(FILTER, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, true), ConstantsWhiteboard.FILTER_MONSTER.copy(), ConstantsWhiteboard.ENT_MONSTERS.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
+				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
-				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
 				IWhiteboardObject<Entity> filter = getOrDefault(FILTER, parent, local, global).as(TFObjType.ENT);
 				
-				BlockPos point = pos.size() == 0 ? tricksy.getBlockPos() : pos.get();
+				Region searchArea = GetterHandler.getSearchArea(pos, range, tricksy);
 				World world = tricksy.getWorld();
-				List<LivingEntity> mobs = getEntitiesWithin(LivingEntity.class, point, range.get(), world, tricksy, (ent) -> NodeTickHandler.matchesEntityFilter(ent, filter));
-				if(mobs == null)
+				List<LivingEntity> mobs = searchArea.getEntitiesByClass(LivingEntity.class, world, (ent) -> NodeTickHandler.matchesEntityFilter(ent, filter));
+				if(mobs.isEmpty())
 					return null;
+				else
+					mobs.sort(new Comparator<LivingEntity>()
+							{
+								public int compare(LivingEntity o1, LivingEntity o2)
+								{
+									BlockPos center = searchArea.center();
+									double dist1 = o1.squaredDistanceTo(center.getX() + 0.5D, center.getY() + 0.5D, center.getZ() + 0.5D);
+									double dist2 = o2.squaredDistanceTo(center.getX() + 0.5D, center.getY() + 0.5D, center.getZ() + 0.5D);
+									return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+								}
+							});
 				return new WhiteboardObjEntity(mobs.get(0));
 			}
 		});
@@ -147,22 +176,33 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 			
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName())); 
-				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
-				set.put(FILTER, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT, true), ConstantsWhiteboard.FILTER_MONSTER.copy(), ConstantsWhiteboard.ENT_MONSTERS.displayName()));
+				set.put(CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION);
+				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
+				set.put(FILTER, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, true), ConstantsWhiteboard.FILTER_MONSTER.copy(), ConstantsWhiteboard.ENT_MONSTERS.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
+				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
-				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
 				IWhiteboardObject<Entity> filter = getOrDefault(FILTER, parent, local, global).as(TFObjType.ENT);
 				
-				BlockPos point = pos.size() == 0 ? tricksy.getBlockPos() : pos.get();
+				Region searchArea = GetterHandler.getSearchArea(pos, range, tricksy);
 				World world = tricksy.getWorld();
-				List<LivingEntity> mobs = getEntitiesWithin(LivingEntity.class, point, range.get(), world, tricksy, (ent) -> NodeTickHandler.matchesEntityFilter(ent, filter));
-				if(mobs == null)
+				List<LivingEntity> mobs = searchArea.getEntitiesByClass(LivingEntity.class, world, (ent) -> NodeTickHandler.matchesEntityFilter(ent, filter));
+				if(mobs.isEmpty())
 					return null;
+				else
+					mobs.sort(new Comparator<LivingEntity>()
+							{
+								public int compare(LivingEntity o1, LivingEntity o2)
+								{
+									BlockPos center = searchArea.center();
+									double dist1 = o1.squaredDistanceTo(center.getX() + 0.5D, center.getY() + 0.5D, center.getZ() + 0.5D);
+									double dist2 = o2.squaredDistanceTo(center.getX() + 0.5D, center.getY() + 0.5D, center.getZ() + 0.5D);
+									return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+								}
+							});
 				
 				WhiteboardObjEntity result = new WhiteboardObjEntity();
 				mobs.forEach((mob) -> result.add(mob));
@@ -173,7 +213,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		{
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
+				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -194,8 +234,8 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 			
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
-				set.put(MAX, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(false)));
+				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
+				set.put(MAX, INodeInput.makeInput(INodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(false)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -217,8 +257,8 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 			
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
-				set.put(OFF, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(false)));
+				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
+				set.put(OFF, INodeInput.makeInput(INodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(false)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<ItemStack> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -238,8 +278,8 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		{
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.VAR_POS_A, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false)));
-				set.put(CommonVariables.VAR_POS_B, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
+				set.put(CommonVariables.VAR_POS_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
+				set.put(CommonVariables.VAR_POS_B, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -270,7 +310,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		{
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
+				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -291,9 +331,9 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 			
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.VAR_A, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, false)));
-				set.put(CommonVariables.VAR_B, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1), ConstantsWhiteboard.NUM_1.displayName()));
-				set.put(SUB, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), ConstantsWhiteboard.BOOL_FALSE.displayName()));
+				set.put(CommonVariables.VAR_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false)));
+				set.put(CommonVariables.VAR_B, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1), ConstantsWhiteboard.NUM_1.displayName()));
+				set.put(SUB, INodeInput.makeInput(INodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), ConstantsWhiteboard.BOOL_FALSE.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -308,8 +348,8 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		{
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.VAR_A, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false)));
-				set.put(CommonVariables.VAR_B, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, true), new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.NORTH), ConstantsWhiteboard.DIRECTIONS.get(Direction.NORTH).displayName()));
+				set.put(CommonVariables.VAR_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
+				set.put(CommonVariables.VAR_B, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, true), new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.NORTH), ConstantsWhiteboard.DIRECTIONS.get(Direction.NORTH).displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -326,42 +366,37 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		{
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName())); 
-				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
+				set.put(CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION);
+				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
+				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
-				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
 				
-				BlockPos point = pos.size() == 0 ? tricksy.getBlockPos() : pos.get();
+				Region searchArea = GetterHandler.getSearchArea(pos, range, tricksy);
 				World world = tricksy.getWorld();
-				List<BlockPos> chests = getInventoriesWithin(point, range.get(), world);
-				if(chests == null)
-					return null;
-				
-				return new WhiteboardObjBlock(chests.get(0));
+				List<BlockPos> chests = getInventoriesWithin(searchArea, world);
+				return chests.isEmpty() ? null : new WhiteboardObjBlock(chests.get(0));
 			}
 		});
 		add(set, VARIANT_GET_INVENTORIES, new GetterHandler<BlockPos>(TFObjType.BLOCK)
 		{
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName())); 
-				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
+				set.put(CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION);
+				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
+				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
-				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
 				
-				BlockPos point = pos.size() == 0 ? tricksy.getBlockPos() : pos.get();
+				Region searchArea = GetterHandler.getSearchArea(pos, range, tricksy);
 				World world = tricksy.getWorld();
-				List<BlockPos> chests = getInventoriesWithin(point, range.get(), world);
-				if(chests == null)
-					return null;
+				List<BlockPos> chests = getInventoriesWithin(searchArea, world);
 				
 				WhiteboardObjBlock result = new WhiteboardObjBlock();
 				chests.forEach((mob) -> result.add(mob));
@@ -371,65 +406,19 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		return set;
 	}
 	
-	@Nullable
-	private static <T extends Entity> List<T> getEntitiesWithin(Class<T> classIn, BlockPos point, int distance, World world, Entity tricksy, Predicate<T> predicate)
+	private static List<BlockPos> getInventoriesWithin(Region area, World world)
 	{
-		int searchRange = MathHelper.clamp(distance, 0, 16);
-		if(searchRange == 0)
-			return null;
-		
-		Box search = new Box(point).expand(searchRange);
-		if(search.minY < world.getBottomY())
-			search = search.withMinY(world.getBottomY());
-		
-		List<T> mobs = world.getEntitiesByClass(classIn, search, (ent) -> ent.isAlive() && ent != tricksy && !ent.isSpectator() && predicate.test(ent));
-		if(mobs.isEmpty())
-			return null;
-		
-		if(mobs.size() > 1)
-			mobs.sort(new Comparator<T>()
-			{
-				public int compare(T o1, T o2)
-				{
-					double dist1 = o1.getBlockPos().getSquaredDistance(point);
-					double dist2 = o2.getBlockPos().getSquaredDistance(point);
-					return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
-				}
-			});
-		return mobs;
-	}
-	
-	@Nullable
-	private static List<BlockPos> getInventoriesWithin(BlockPos point, int distance, World world)
-	{
-		int searchRange = MathHelper.clamp(distance, 0, 4);
-		if(searchRange == 0)
-			return null;
-		
-		Box search = new Box(point).expand(searchRange);
-		if(search.minY < world.getBottomY())
-			search = search.withMinY(world.getBottomY());
-		
-		List<BlockPos> inventories = Lists.newArrayList();
-		for(int y=(int)search.minY; y < search.maxY; y++)
-			for(int x=(int)search.minX; x < search.maxX; x++)
-				for(int z=(int)search.minZ; z< search.maxZ; z++)
-				{
-					BlockPos offset = new BlockPos(x, y, z);
-					if(world.getBlockEntity(offset) instanceof Inventory)
-						inventories.add(offset);
-				}
-		
+		List<BlockPos> inventories = area.getBlocks(world, (pos,state) -> state.hasBlockEntity() && world.getBlockEntity(pos) instanceof Inventory);
 		if(inventories.isEmpty())
-			return null;
+			return inventories;
 		
 		if(inventories.size() > 1)
 			inventories.sort(new Comparator<BlockPos>()
 			{
 				public int compare(BlockPos o1, BlockPos o2)
 				{
-					double dist1 = o1.getSquaredDistance(point);
-					double dist2 = o2.getSquaredDistance(point);
+					double dist1 = o1.getSquaredDistance(area.center());
+					double dist2 = o2.getSquaredDistance(area.center());
 					return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
 				}
 			});

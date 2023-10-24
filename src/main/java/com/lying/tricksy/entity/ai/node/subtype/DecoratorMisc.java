@@ -76,7 +76,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(NodeTickHandler.any(), new WhiteboardObj.Int(1)));
+				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.any(), new WhiteboardObj.Int(1)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
@@ -96,7 +96,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 			
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(LIST, INodeInput.makeInput(NodeTickHandler.any()));
+				return Map.of(LIST, INodeInput.makeInput(INodeInput.any()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
@@ -121,7 +121,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4)));
+				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
@@ -147,7 +147,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 		{
 			public @NotNull Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4)));
+				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)

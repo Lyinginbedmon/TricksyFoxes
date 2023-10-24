@@ -2,6 +2,7 @@ package com.lying.tricksy.entity.ai.node.handler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -13,13 +14,19 @@ import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.utility.Region;
+import com.lying.tricksy.utility.RegionSphere;
 
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.util.math.BlockPos;
 
 public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 {
+	public static final INodeInput POS_OR_REGION = INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName());
+	
 	private final WhiteboardRef entry;
 	private final TFObjType<T> type;
 	
@@ -54,4 +61,22 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 	
 	@Nullable
 	public abstract <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<T> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent);
+	
+	/** Returns a provided Region or generates one around a provided position */
+	public static <N extends PathAwareEntity & ITricksyMob<?>> Region getSearchArea(IWhiteboardObject<?> pos, IWhiteboardObject<Integer> range, N tricksy)
+	{
+		return getSearchArea(pos, range, tricksy, (mob) -> mob.getBlockPos());
+	}
+	
+	/** Returns a provided Region or generates one around a provided position or calculated fallback */
+	@Nullable
+	public static <N extends PathAwareEntity & ITricksyMob<?>> Region getSearchArea(IWhiteboardObject<?> pos, IWhiteboardObject<Integer> range, N tricksy, Function<N,BlockPos> fallback)
+	{
+		if(pos.type() == TFObjType.REGION)
+			return pos.as(TFObjType.REGION).get();
+		
+		BlockPos point = pos.size() == 0 ? fallback.apply(tricksy) : pos.as(TFObjType.BLOCK).get();
+		return point == null ? null : new RegionSphere(point, range.get());
+		
+	}
 }

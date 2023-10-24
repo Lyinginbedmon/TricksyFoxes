@@ -49,7 +49,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(VAR_A, INodeInput.makeInput(NodeTickHandler.anyLocal()));
+				return Map.of(VAR_A, INodeInput.makeInput(INodeInput.anyLocal()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -71,7 +71,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			{
 				return Map.of(
 						VAR_A, INodeInput.makeInput((ref) -> (ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ENT) && ref.boardType() == BoardType.LOCAL && !ref.isFilter()),
-						CommonVariables.VAR_POS, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
+						CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -138,7 +138,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						COPY, INodeInput.makeInput(NodeTickHandler.any(), TFObjType.EMPTY.blank(), Text.literal("")),
+						COPY, INodeInput.makeInput(INodeInput.any(), TFObjType.EMPTY.blank(), Text.literal("")),
 						DEST, INodeInput.makeInput((var) -> !var.uncached() && var.boardType() == BoardType.LOCAL));
 			}
 			

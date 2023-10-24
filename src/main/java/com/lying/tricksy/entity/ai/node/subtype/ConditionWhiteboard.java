@@ -40,7 +40,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR, INodeInput.makeInput(NodeTickHandler.any()));
+				return Map.of(CommonVariables.VAR, INodeInput.makeInput(INodeInput.any()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
@@ -53,7 +53,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR, INodeInput.makeInput(NodeTickHandler.any()));
+				return Map.of(CommonVariables.VAR, INodeInput.makeInput(INodeInput.any()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
@@ -68,8 +68,8 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						CommonVariables.VAR_A, INodeInput.makeInput(NodeTickHandler.any()), 
-						CommonVariables.VAR_B, INodeInput.makeInput(NodeTickHandler.any()));
+						CommonVariables.VAR_A, INodeInput.makeInput(INodeInput.any()), 
+						CommonVariables.VAR_B, INodeInput.makeInput(INodeInput.any()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
@@ -84,8 +84,8 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
-						CommonVariables.VAR_A, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, true)), 
-						CommonVariables.VAR_B, INodeInput.makeInput(NodeTickHandler.ofType(TFObjType.INT, true)));
+						CommonVariables.VAR_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true)), 
+						CommonVariables.VAR_B, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)

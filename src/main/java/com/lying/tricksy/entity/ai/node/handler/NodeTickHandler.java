@@ -3,7 +3,6 @@ package com.lying.tricksy.entity.ai.node.handler;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Predicate;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,11 +14,9 @@ import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
-import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
 
 import net.minecraft.block.BlockState;
@@ -44,13 +41,6 @@ import net.minecraft.util.math.Vec3d;
 public interface NodeTickHandler<M extends TreeNode<?>>
 {
 	public static final double INTERACT_RANGE = 4D;
-	
-	/** Accept only values of the given type */
-	public static Predicate<WhiteboardRef> ofType(TFObjType<?> typeIn, boolean filterAllowed) { return (ref) -> ref.type().castableTo(typeIn) && (filterAllowed || !ref.isFilter()); }
-	/** Accept any value from anywhere */
-	public static Predicate<WhiteboardRef> any() { return Predicates.alwaysTrue(); }
-	/** Accept any value from the local whiteboard */
-	public static Predicate<WhiteboardRef> anyLocal() { return (ref) -> ref.boardType() == BoardType.LOCAL; }
 	
 	/** Returns a map containing all necessary variables of this behaviour and predicates defining their needs */
 	@NotNull

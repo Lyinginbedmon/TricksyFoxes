@@ -1,13 +1,22 @@
 package com.lying.tricksy.utility;
 
+import java.util.List;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
+
+import com.google.common.collect.Lists;
 import com.lying.tricksy.reference.Reference;
 
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.World;
 
 public class RegionCuboid extends Region
 {
@@ -78,5 +87,31 @@ public class RegionCuboid extends Region
 		int offY = size.getY() > 0 ? rand.nextInt(size.getY()) : 0;
 		int offZ = size.getZ() > 0 ? rand.nextInt(size.getZ()) : 0;
 		return min.add(offX, offY, offZ);
+	}
+	
+	protected Box asBox()
+	{
+		return new Box(min.getX(), min.getY(), min.getZ(), max.getX() + 1D, max.getY() + 1D, max.getZ() + 1D);
+	}
+	
+	public <T extends Entity> List<T> getEntitiesByClass(Class<T> type, World world, Predicate<T> filter)
+	{
+		return world.getEntitiesByClass(type, asBox(), filter);
+	}
+	
+	public List<BlockPos> getBlocks(World world, BiPredicate<BlockPos, BlockState> filter)
+	{
+		int minY = Math.max(world.getBottomY(), min.getY());
+		int maxY = minY + size().getY();
+		List<BlockPos> matches = Lists.newArrayList();
+		for(int y=minY; y < maxY; y++)
+			for(int x=(int)min.getX(); x < max.getX(); x++)
+				for(int z=(int)min.getZ(); z< max.getZ(); z++)
+				{
+					BlockPos offset = new BlockPos(x, y, z);
+					if(filter.test(offset, world.getBlockState(offset)))
+						matches.add(offset);
+				}
+		return matches;
 	}
 }
