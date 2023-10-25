@@ -5,7 +5,6 @@ import java.util.UUID;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
-import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBase;
 import com.lying.tricksy.utility.ServerWhiteboards;
 
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -25,7 +24,7 @@ public class AddGlobalRefReceiver implements PlayChannelHandler
 		NbtCompound valNbt = buf.readNbt();
 		
 		WhiteboardRef ref = WhiteboardRef.fromNbt(refNbt);
-		IWhiteboardObject<?> val = WhiteboardObjBase.createFromNbt(valNbt);
+		IWhiteboardObject<?> val = IWhiteboardObject.createFromNbt(valNbt);
 		
 		ServerWhiteboards boards = ServerWhiteboards.getServerWhiteboards(player.getServer());
 		GlobalWhiteboard whiteboard = boards.getWhiteboardFor(sageID);

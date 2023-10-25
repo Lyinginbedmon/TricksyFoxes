@@ -8,7 +8,6 @@ import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
-import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBase;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
@@ -51,7 +50,7 @@ public class ItemPrescientNote extends Item
 	
 	public static IWhiteboardObject<?> getVariable(ItemStack stack)
 	{
-		return WhiteboardObjBase.createFromNbt(stack.getNbt().getCompound("Variable"));
+		return IWhiteboardObject.createFromNbt(stack.getNbt().getCompound("Variable"));
 	}
 	
 	public static void setVariable(IWhiteboardObject<?> obj, ItemStack stack)

@@ -2,11 +2,14 @@ package com.lying.tricksy.entity.ai.whiteboard.object;
 
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.collect.Lists;
 import com.lying.tricksy.init.TFObjType;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
 /**
@@ -72,5 +75,14 @@ public interface IWhiteboardObject<T>
 	public default IWhiteboardObject<T> copy()
 	{
 		return type().create(writeToNbt(new NbtCompound()));
+	}
+
+	@Nullable
+	static IWhiteboardObject<?> createFromNbt(NbtCompound compound)
+	{
+		TFObjType<?> type = TFObjType.getType(new Identifier(compound.getString("Type")));
+		if(type != null)
+			return type.create(compound);
+		return null;
 	}
 }

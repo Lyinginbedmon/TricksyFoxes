@@ -1,6 +1,8 @@
 package com.lying.tricksy.init;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -122,6 +124,8 @@ public class TFObjType<T>
 	public IWhiteboardObject<T> blank() { return supplier.get(); }
 	
 	public boolean isEmpty(IWhiteboardObject<T> obj) { return isEmpty.test(obj); }
+	
+	public static Collection<TFObjType<?>> types() { return List.of(BOOL, INT, BLOCK, REGION, ENT, ITEM); }
 	
 	private static <N> TFObjType<N> register(TFObjType<N> typeIn)
 	{

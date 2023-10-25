@@ -81,7 +81,7 @@ public abstract class Whiteboard<T>
 				TricksyFoxes.LOGGER.warn("Attempted to load reference value in wrong whiteboard: "+ref.name());
 				continue;
 			}
-			IWhiteboardObject<?> obj = WhiteboardObj.createFromNbt(data.getCompound("Value"));
+			IWhiteboardObject<?> obj = IWhiteboardObject.createFromNbt(data.getCompound("Value"));
 			values.put(ref, objectToSupplier(obj));
 		}
 	}

@@ -44,7 +44,7 @@ public class LeafSubTree implements ISubtypeGroup<LeafNode>
 						.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID(), DecoratorMisc.VARIANT_FORCE_SUCCESS)
 							.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_MELEE)))
 						.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_GOTO)
-							.assign(CommonVariables.VAR_POS, LocalWhiteboard.ATTACK_TARGET)));
+							.assignRef(CommonVariables.VAR_POS, LocalWhiteboard.ATTACK_TARGET)));
 			}
 		};
 	}

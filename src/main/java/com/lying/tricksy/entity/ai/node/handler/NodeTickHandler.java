@@ -9,14 +9,15 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicates;
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.node.INodeValue;
+import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
 
 import net.minecraft.block.BlockState;
@@ -60,8 +61,22 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 		for(Entry<WhiteboardRef, INodeInput> entry : variableSet().entrySet())
 			if(entry.getValue().isOptional())
 				continue;
-			else if(!parent.variableAssigned(entry.getKey()) || !entry.getValue().predicate().test(parent.variable(entry.getKey())))
+			else if(!parent.variableAssigned(entry.getKey()))
 				return true;
+			else
+			{
+				INodeValue assigned = parent.variable(entry.getKey());
+				switch(assigned.type())
+				{
+					case WHITEBOARD:
+						if(!entry.getValue().predicate().test(((WhiteboardValue)assigned).assignment()))
+							return true;
+						break;
+					case STATIC:
+						// Static values are presumed to be appropriate at input
+						return true;
+				}
+			}
 		
 		return false;
 	}
@@ -73,7 +88,7 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 		if(!parent.variableAssigned(input))
 			return variableSet().get(input).isOptional() ? variableSet().get(input).defaultValue().get() : null;
 		else
-			return Whiteboard.get(parent.variable(input), local, global);
+			return parent.variable(input).get(local, global);
 	}
 	
 	/** Performs a single tick of this node */

@@ -7,15 +7,18 @@ import java.util.function.Function;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.node.INodeValue;
+import com.lying.tricksy.entity.ai.node.INodeValue.Type;
+import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.utility.Region;
 import com.lying.tricksy.utility.RegionSphere;
@@ -45,7 +48,11 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 	
 	public <N extends PathAwareEntity & ITricksyMob<?>> Result doTick(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
 	{
-		WhiteboardRef dest = parent.variable(entry);
+		INodeValue target = parent.variable(entry);
+		WhiteboardRef dest = target.type() == Type.WHITEBOARD ? ((WhiteboardValue)target).assignment() : null;
+		if(dest == null)
+			return Result.FAILURE;
+		
 		IWhiteboardObject<T> result = getResult(tricksy, local, global, parent);
 		if(result == null || result.isEmpty())
 		{

@@ -2,8 +2,6 @@ package com.lying.tricksy.entity.ai.whiteboard.object;
 
 import java.util.List;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.google.common.collect.Lists;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
@@ -13,7 +11,6 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
 /** A whiteboard object which stores its values in a form different from how they are retreived */
@@ -111,15 +108,6 @@ public abstract class WhiteboardObjBase<T, N, G extends NbtElement> implements I
 	}
 	
 	public int size() { return this.value.size(); }
-	
-	@Nullable
-	public static IWhiteboardObject<?> createFromNbt(NbtCompound compound)
-	{
-		TFObjType<?> type = TFObjType.getType(new Identifier(compound.getString("Type")));
-		if(type != null)
-			return type.create(compound);
-		return null;
-	}
 	
 	public final NbtCompound writeToNbt(NbtCompound compound)
 	{

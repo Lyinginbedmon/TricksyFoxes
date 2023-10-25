@@ -7,7 +7,6 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
-import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBase;
 import com.lying.tricksy.screen.TricksyTreeScreenHandler;
 
 import net.fabricmc.api.EnvType;
@@ -63,7 +62,7 @@ public class SyncTreeScreenReceiver implements ClientPlayNetworking.PlayChannelH
 		{
 			NbtCompound data = refList.getCompound(i);
 			WhiteboardRef ref = WhiteboardRef.fromNbt(data.getCompound("Ref"));
-			IWhiteboardObject<?> val = data.contains("Val", NbtElement.COMPOUND_TYPE) ? WhiteboardObjBase.createFromNbt(data.getCompound("Val")) : null;
+			IWhiteboardObject<?> val = data.contains("Val", NbtElement.COMPOUND_TYPE) ? IWhiteboardObject.createFromNbt(data.getCompound("Val")) : null;
 			references.add(new Pair<>(ref, val));
 		}
 		return references;

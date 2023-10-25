@@ -2,6 +2,7 @@ package com.lying.tricksy.screen.subscreen;
 
 import com.lying.tricksy.screen.NodeScreen;
 
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
@@ -14,4 +15,6 @@ public abstract class NodeSubScreen extends Screen
 		super(Text.empty());
 		parent = parentIn;
 	}
+	
+	public void doForegroundRendering(DrawContext context, int mouseX, int mouseY) { }
 }

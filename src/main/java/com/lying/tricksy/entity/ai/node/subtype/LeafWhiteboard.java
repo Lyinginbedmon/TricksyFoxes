@@ -9,6 +9,9 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.node.INodeValue;
+import com.lying.tricksy.entity.ai.node.INodeValue.Type;
+import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
@@ -17,10 +20,10 @@ import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFSoundEvents;
 import com.lying.tricksy.reference.Reference;
@@ -76,7 +79,10 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
-				WhiteboardRef reference = parent.variable(VAR_A);
+				INodeValue reference = parent.variable(VAR_A);
+				if(reference.type() != Type.WHITEBOARD)
+					return Result.FAILURE;
+				
 				IWhiteboardObject<?> value = getOrDefault(VAR_A, parent, local, global);
 				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 				
@@ -125,7 +131,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 					points.forEach((point) -> ((WhiteboardObjEntity)sorted).add(point));
 				}
 				
-				local.setValue(reference, sorted);
+				local.setValue(((WhiteboardValue)reference).assignment(), sorted);
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
@@ -145,7 +151,10 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				IWhiteboardObject<?> value = getOrDefault(COPY, parent, local, global);
-				WhiteboardRef target = parent.variable(DEST);
+				INodeValue targetVal = parent.variable(DEST);
+				WhiteboardRef target = targetVal.type() == Type.WHITEBOARD ? ((WhiteboardValue)targetVal).assignment() : null;
+				if(target == null)
+					return Result.FAILURE;
 				
 				if(value.type() != TFObjType.EMPTY)
 				{

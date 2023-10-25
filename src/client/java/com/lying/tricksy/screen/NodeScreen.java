@@ -13,6 +13,7 @@ import org.lwjgl.glfw.GLFW;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
+import com.lying.tricksy.entity.ai.node.INodeValue;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
@@ -95,12 +96,6 @@ public class NodeScreen	extends TricksyScreenBase
 		}, this));
 		this.discreteButton.active = !currentNode.isRoot() && currentNode.hasChildren();
 		
-		/**
-		 * TODO Add more editing tools to node screen
-		 * Assign input variables
-		 *  - Option to create a static value
-		 */
-		
 		// Changing supertype
 		editorMap.put(NodeElement.TYPE, new TypeScreen(this));
 		// Changing subtype
@@ -140,6 +135,9 @@ public class NodeScreen	extends TricksyScreenBase
 	
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers)
 	{
+		if(getSubScreen().isPresent() && getSubScreen().get().keyPressed(keyCode, scanCode, modifiers))
+			return true;
+		
 		if(getFocused() == this.nameField)
 		{
 			if(keyCode == GLFW.GLFW_KEY_ESCAPE)
@@ -206,11 +204,6 @@ public class NodeScreen	extends TricksyScreenBase
 	
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)
 	{
-		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
-		context.drawText(textRenderer, this.title, (this.width - this.textRenderer.getWidth(this.title)) / 2, 2 + (26 - this.textRenderer.fontHeight) / 2, 0x404040, false);
-		
-		this.nameField.render(context, mouseY, mouseX, 0F);
-		
 		this.hoveredPart = hoveredPart(mouseX, mouseY);
 		if(this.hoveredPart != null && this.hoveredPart != this.targetPart)
 			this.hoveredPart.render(context, false);
@@ -230,6 +223,13 @@ public class NodeScreen	extends TricksyScreenBase
 					break;
 			}
 		}
+		
+		getSubScreen().ifPresent((screen) -> screen.doForegroundRendering(context, mouseX, mouseY));
+		
+		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
+		context.drawText(textRenderer, this.title, (this.width - this.textRenderer.getWidth(this.title)) / 2, 2 + (26 - this.textRenderer.fontHeight) / 2, 0x404040, false);
+		
+		this.nameField.render(context, mouseY, mouseX, 0F);
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -279,7 +279,7 @@ public class NodeScreen	extends TricksyScreenBase
 		parts.add(new EditablePart(NodeElement.TYPE).setBounds(10, 1, width - 10, 14));
 		parts.add(new EditablePart(NodeElement.SUBTYPE).setBounds(30, 13, width - 30, 25));
 		
-		List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> sortedVariables = NodeRenderUtils.getSortedVariables(currentNode);
+		List<Pair<WhiteboardRef, Optional<INodeValue>>> sortedVariables = NodeRenderUtils.getSortedVariables(currentNode);
 		if(sortedVariables.isEmpty())
 			return;
 		for(int i=0; i<sortedVariables.size(); i++)

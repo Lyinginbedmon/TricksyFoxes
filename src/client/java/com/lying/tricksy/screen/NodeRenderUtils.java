@@ -13,6 +13,8 @@ import org.joml.Matrix4f;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxesClient;
+import com.lying.tricksy.entity.ai.node.INodeValue;
+import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
@@ -105,7 +107,7 @@ public class NodeRenderUtils
 		drawY += 11;
 		if(flags.contains(NodeRenderFlags.VARIABLES))
 		{
-			for(Pair<WhiteboardRef, Optional<WhiteboardRef>> line : getSortedVariables(node))
+			for(Pair<WhiteboardRef, Optional<INodeValue>> line : getSortedVariables(node))
 			{
 				INodeInput input = subType.getInput(line.getLeft());
 				if(input == null)
@@ -113,7 +115,17 @@ public class NodeRenderUtils
 				
 				renderReference(line.getLeft(), context, textRenderer, node.screenX + 4, drawY, 45, true, input.isOptional());
 				if(line.getRight().isPresent())
-					renderReference(line.getRight().get(), context, textRenderer, node.screenX + 52, drawY, 94, false, false);
+				{
+					switch(line.getRight().get().type())
+					{
+						case WHITEBOARD:
+							renderReference(((WhiteboardValue)line.getRight().get()).assignment(), context, textRenderer, node.screenX + 52, drawY, 94, false, false);
+							break;
+						case STATIC:
+							renderStatic(line.getRight().get(), context, textRenderer, node.screenX + 52, drawY);
+							break;
+					}
+				}
 				else
 				{
 					Text defaultName = input.describeValue();
@@ -122,6 +134,12 @@ public class NodeRenderUtils
 				drawY += 11;
 			}
 		}
+	}
+	
+	public static void renderStatic(INodeValue reference, DrawContext context, TextRenderer textRenderer, int x, int y)
+	{
+		Text defaultName = reference.displayName();
+		context.drawText(textRenderer, defaultName, x + (94 - textRenderer.getWidth(defaultName)) / 2, y, 0x808080, false);
 	}
 	
 	public static void renderReference(WhiteboardRef reference, DrawContext context, TextRenderer textRenderer, int x, int y, int maxWidth, boolean iconRight, boolean isOptional)
@@ -415,20 +433,20 @@ public class NodeRenderUtils
         RenderSystem.disableBlend();
 	}
 	
-	public static List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> getSortedVariables(TreeNode<?> node)
+	public static List<Pair<WhiteboardRef, Optional<INodeValue>>> getSortedVariables(TreeNode<?> node)
 	{
-		List<Pair<WhiteboardRef, Optional<WhiteboardRef>>> variablesToDisplay = Lists.newArrayList();
+		List<Pair<WhiteboardRef, Optional<INodeValue>>> variablesToDisplay = Lists.newArrayList();
 		Map<WhiteboardRef, INodeInput> variableSet = node.getSubType().variableSet();
 		for(WhiteboardRef input : variableSet.keySet())
 		{
-			WhiteboardRef value = node.variable(input);
+			INodeValue value = node.variable(input);
 			variablesToDisplay.add(new Pair<>(input, value == null ? Optional.empty() : Optional.of(value)));
 		}
 		
 		// Sort variables by input name
 		variablesToDisplay.sort(new Comparator<>()
 		{
-			public int compare(Pair<WhiteboardRef, Optional<WhiteboardRef>> o1, Pair<WhiteboardRef, Optional<WhiteboardRef>> o2)
+			public int compare(Pair<WhiteboardRef, Optional<INodeValue>> o1, Pair<WhiteboardRef, Optional<INodeValue>> o2)
 			{
 				boolean optional1 = variableSet.get(o1.getLeft()).isOptional();
 				boolean optional2 = variableSet.get(o2.getLeft()).isOptional();
