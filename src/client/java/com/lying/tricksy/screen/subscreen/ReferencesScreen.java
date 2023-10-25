@@ -45,7 +45,7 @@ public class ReferencesScreen extends NodeSubScreen
 			CreateStaticScreen screen = new CreateStaticScreen(this.parent, this);
 			screen.init(this.client, this.width, this.height);
 			this.staticScreen = Optional.of(screen);
-		}).dimensions(this.width / 2 - 10, this.height - 30, 40, 20).build());
+		}).dimensions(this.width / 2 - 20, this.height - 30, 40, 20).build());
 		
 		setBoard(BoardType.LOCAL);
 	}
@@ -80,6 +80,15 @@ public class ReferencesScreen extends NodeSubScreen
 	{
 		super.tick();
 		this.staticScreen.ifPresent(screen -> screen.tick());
+	}
+	
+	@Override
+	public boolean charTyped(char chr, int modifiers)
+	{
+		if(staticScreen.isPresent())
+			return staticScreen.get().charTyped(chr, modifiers);
+		
+		return super.charTyped(chr, modifiers);
 	}
 	
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers)

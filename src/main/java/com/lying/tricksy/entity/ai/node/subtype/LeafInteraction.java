@@ -14,7 +14,6 @@ import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
@@ -65,7 +64,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(false), ConstantsWhiteboard.BOOL_FALSE.displayName()));
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(false), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)

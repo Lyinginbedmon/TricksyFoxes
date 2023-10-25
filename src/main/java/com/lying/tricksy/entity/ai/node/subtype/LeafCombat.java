@@ -16,7 +16,6 @@ import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.node.handler.RangedCombatHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
@@ -187,7 +186,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 			
 			protected void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(DRAW, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(1), ConstantsWhiteboard.NUM_1.displayName()));
+				set.put(DRAW, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)

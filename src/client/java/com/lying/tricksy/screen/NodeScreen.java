@@ -63,7 +63,7 @@ public class NodeScreen	extends TricksyScreenBase
 	public NodeScreen(TricksyTreeScreenHandler handler, PlayerInventory inventory, Text title, @NotNull TreeNode<?> node)
 	{
 		super(handler, inventory, title);
-		player = inventory.player;
+		this.player = inventory.player;
 		this.currentNode = node;
 		
 		this.displayPredicate = (child) -> child.getID().equals(this.currentNode.getID());
@@ -76,7 +76,6 @@ public class NodeScreen	extends TricksyScreenBase
 		generateParts();
 		
 		this.nameField = new TextFieldWidget(this.textRenderer, midWidth - 52, MAIN_BAR_Y, 104, 12, Text.translatable("container.repair"));
-		this.nameField.setFocusUnlocked(false);
 		this.nameField.setEditableColor(-1);
 		this.nameField.setUneditableColor(-1);
 		this.nameField.setDrawsBackground(false);
@@ -131,6 +130,15 @@ public class NodeScreen	extends TricksyScreenBase
 	{
 		this.targetPart = part;
 		getSubScreen().ifPresent((screen) -> screen.init(client, width, height));
+	}
+	
+	@Override
+	public boolean charTyped(char chr, int modifiers)
+	{
+		if(getSubScreen().isPresent())
+			return getSubScreen().get().charTyped(chr, modifiers);
+		
+		return super.charTyped(chr, modifiers);
 	}
 	
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers)

@@ -19,6 +19,8 @@ import net.minecraft.util.Identifier;
 
 public class WhiteboardRef
 {
+	public static final String BOARD_KEY = "Board";
+	
 	public static final Comparator<WhiteboardRef> REF_SORT = new Comparator<>()
 	{
 		public int compare(WhiteboardRef o1, WhiteboardRef o2)
@@ -122,7 +124,7 @@ public class WhiteboardRef
 	public NbtCompound writeToNbt(NbtCompound data)
 	{
 		data.putString("Name", name);
-		data.putString("Board", onBoard.asString());
+		data.putString(BOARD_KEY, onBoard.asString());
 		data.putString("Type", varType.registryName().toString());
 		if(noCache)
 			data.putBoolean("Live", noCache);
@@ -136,7 +138,7 @@ public class WhiteboardRef
 	public static WhiteboardRef fromNbt(NbtCompound data)
 	{
 		String name = data.getString("Name");
-		BoardType board = BoardType.fromString(data.getString("Board"));
+		BoardType board = BoardType.fromString(data.getString(BOARD_KEY));
 		TFObjType<?> type = TFObjType.getType(new Identifier(data.getString("Type")));
 		WhiteboardRef ref = new WhiteboardRef(name, type, board);
 		if(data.contains("Live") && data.getBoolean("Live"))

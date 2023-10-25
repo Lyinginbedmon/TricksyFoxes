@@ -29,23 +29,25 @@ public interface INodeValue
 	@Nullable
 	public static INodeValue readFromNbt(NbtCompound compound)
 	{
-		if(!compound.contains("Type", NbtElement.STRING_TYPE))
+		/** Only earlier versions save variables as whiteboard references */
+		if(compound.contains(WhiteboardRef.BOARD_KEY, NbtElement.STRING_TYPE))
 			return WhiteboardValue.fromNbt(compound);
 		
 		Type type = Type.fromString(compound.getString("Type"));
-		if(type == null)
-			return WhiteboardValue.fromNbt(compound);
-		
-		NbtCompound nbt = compound.getCompound("Data");
-		switch(type)
+		if(type != null)
 		{
-			case WHITEBOARD:
-				return WhiteboardValue.fromNbt(nbt);
-			case STATIC:
-				return StaticValue.fromNbt(nbt);
-			default:
-				return null;
+			NbtCompound nbt = compound.getCompound("Data");
+			switch(type)
+			{
+				case WHITEBOARD:
+					return WhiteboardValue.fromNbt(nbt);
+				case STATIC:
+					return StaticValue.fromNbt(nbt);
+				default:
+					return null;
+			}
 		}
+		return null;
 	}
 	
 	public NbtCompound write(NbtCompound compound);

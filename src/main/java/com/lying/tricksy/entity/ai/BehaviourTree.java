@@ -13,10 +13,10 @@ import com.lying.tricksy.entity.ai.node.subtype.ControlFlowMisc;
 import com.lying.tricksy.entity.ai.node.subtype.DecoratorMisc;
 import com.lying.tricksy.entity.ai.node.subtype.LeafMisc;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.reference.Reference;
 
@@ -39,16 +39,16 @@ public class BehaviourTree
 			.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SEQUENCE).setCustomName(Text.translatable("node."+Reference.ModInfo.MOD_ID+".meander")).setDiscrete(true)
 				.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID(), ConditionWhiteboard.VARIANT_VALUE_EQUALS)
 					.assignRef(CommonVariables.VAR_A, LocalWhiteboard.HAS_SAGE)
-					.assignRef(CommonVariables.VAR_B, ConstantsWhiteboard.BOOL_FALSE))
+					.assignObj(CommonVariables.VAR_B, new WhiteboardObj.Bool(false)))
 				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_BARK)
-					.assignRef(CommonVariables.VAR_NUM, ConstantsWhiteboard.NUM_3))
+					.assignObj(CommonVariables.VAR_NUM, new WhiteboardObj.Int(3)))
 				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_WANDER))
 				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_LOOK_AROUND)))
 			.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SEQUENCE).setCustomName(Text.translatable("node."+Reference.ModInfo.MOD_ID+".follow_sage"))
 				.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID(), DecoratorMisc.VARIANT_INVERTER)
 					.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID(), ConditionMisc.VARIANT_CLOSER_THAN)
 						.assignRef(CommonVariables.VAR_POS_A, LocalWhiteboard.NEAREST_SAGE)
-						.assignRef(CommonVariables.VAR_DIS, ConstantsWhiteboard.NUM_4)))
+						.assignObj(CommonVariables.VAR_DIS, new WhiteboardObj.Int(4))))
 				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_GOTO)
 					.assignRef(CommonVariables.VAR_POS, LocalWhiteboard.NEAREST_SAGE)));
 	

@@ -1,6 +1,5 @@
 package com.lying.tricksy.screen.subscreen;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -38,7 +37,6 @@ public class CreateStaticScreen extends NodeSubScreen
 	private ObjTypeList typeList;
 	private ButtonWidget saveButton;
 	
-	private Map<TFObjType<?>, ValueDialog<?>> dialogMap = new HashMap<>();
 	public TFObjType<?> currentType;
 	private ValueDialog<?> currentDialog;
 	
@@ -63,20 +61,15 @@ public class CreateStaticScreen extends NodeSubScreen
 			this.refParent.closeStatic();
 		}).dimensions(this.width / 2 - 20, this.height - 40, 40, 20).build());
 		
-		dialogMap.clear();
-		DIALOGS.forEach((type,supplier) -> dialogMap.put(type, supplier.get()));
 		openDialog(objType);
 	}
 	
 	public void openDialog(TFObjType<?> type)
 	{
 		this.currentType = type;
-		ValueDialog<?> dialog = dialogMap.getOrDefault(type, null);
-		if(dialog == null)
-			return;
-		
-		dialog.init(client, width, height);
-		this.currentDialog = dialog;
+		this.currentDialog = DIALOGS.getOrDefault(type, () -> null).get();
+		if(this.currentDialog != null)
+			this.currentDialog.init(client, width, height);
 	}
 	
 	public Optional<ValueDialog<?>> dialogOpen() { return this.currentDialog == null ? Optional.empty() : Optional.of(this.currentDialog); }
@@ -84,7 +77,8 @@ public class CreateStaticScreen extends NodeSubScreen
 	public void render(DrawContext context, int mouseX, int mouseY, float delta)
 	{
 		renderBackground(context);
-		typeList.render(context, mouseX, mouseY, delta);
+		if(typeList.children().size() > 1)
+			typeList.render(context, mouseX, mouseY, delta);
 		saveButton.render(context, mouseX, mouseY, delta);
 		
 		dialogOpen().ifPresent(dialog -> dialog.render(context, mouseX, mouseY, delta));
@@ -104,6 +98,15 @@ public class CreateStaticScreen extends NodeSubScreen
 		dialogOpen().ifPresent(dialog -> dialog.tick());
 	}
 	
+	@Override
+	public boolean charTyped(char chr, int modifiers)
+	{
+		if(dialogOpen().isPresent())
+			return dialogOpen().get().charTyped(chr, modifiers);
+		
+		return super.charTyped(chr, modifiers);
+	}
+	
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers)
 	{
 		if(keyCode == GLFW.GLFW_KEY_ESCAPE)
@@ -112,7 +115,6 @@ public class CreateStaticScreen extends NodeSubScreen
 			return true;
 		}
 		
-		// FIXME Ensure keyboard input is actually applied to dialog text fields
 		if(dialogOpen().isPresent() && dialogOpen().get().keyPressed(keyCode, scanCode, modifiers))
 			return true;
 		return super.keyPressed(keyCode, scanCode, modifiers);

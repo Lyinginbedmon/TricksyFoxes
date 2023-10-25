@@ -15,7 +15,6 @@ import com.lying.tricksy.entity.ai.node.handler.GetterHandler;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
@@ -88,7 +87,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), ConstantsWhiteboard.NUM_4.displayName()));
+				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal(String.valueOf(4))));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -116,7 +115,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 			
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
-				return Map.of(BARK, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1), ConstantsWhiteboard.NUM_1.displayName()));
+				return Map.of(BARK, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -164,7 +163,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 			{
 				return Map.of(
 						CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION,
-						CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), ConstantsWhiteboard.NUM_4.displayName()));
+						CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal(String.valueOf(4))));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)

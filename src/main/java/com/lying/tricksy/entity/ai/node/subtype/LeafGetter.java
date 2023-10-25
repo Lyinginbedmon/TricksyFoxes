@@ -31,6 +31,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -332,8 +333,8 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 			public void addVariables(Map<WhiteboardRef, INodeInput> set)
 			{
 				set.put(CommonVariables.VAR_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false)));
-				set.put(CommonVariables.VAR_B, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1), ConstantsWhiteboard.NUM_1.displayName()));
-				set.put(SUB, INodeInput.makeInput(INodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), ConstantsWhiteboard.BOOL_FALSE.displayName()));
+				set.put(CommonVariables.VAR_B, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
+				set.put(SUB, INodeInput.makeInput(INodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)

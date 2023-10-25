@@ -126,12 +126,12 @@ public abstract class Whiteboard<T>
 	{
 		if(reference.boardType() != this.type)
 		{
-			TricksyFoxes.LOGGER.warn("Attempted to add reference value in wrong whiteboard: "+reference.name());
+			// TricksyFoxes.LOGGER.warn("Attempted to add reference value in wrong whiteboard: "+reference.name());
 			return;
 		}
 		else if(reference.type() != supplierToValue(object).type())
 		{
-			TricksyFoxes.LOGGER.warn("Attempted to add reference value with non-matching object: "+reference.name());
+			// TricksyFoxes.LOGGER.warn("Attempted to add reference value with non-matching object: "+reference.name());
 			return;
 		}
 		
@@ -144,7 +144,7 @@ public abstract class Whiteboard<T>
 			}
 		if(exists)
 		{
-			TricksyFoxes.LOGGER.warn("Overwrote existing value in "+this.type.asString()+" whiteboard: "+reference.name());
+			TricksyFoxes.LOGGER.info("Overwrote existing value in "+this.type.asString()+" whiteboard: "+reference.name());
 			delete(reference);
 		}
 		
@@ -155,12 +155,12 @@ public abstract class Whiteboard<T>
 	{
 		if(nameIn.boardType() != this.type)
 		{
-			TricksyFoxes.LOGGER.warn("Attempted to retrieve value "+nameIn.name()+" from "+type.asString()+" but reference is for "+nameIn.boardType().asString());
+			// TricksyFoxes.LOGGER.warn("Attempted to retrieve value "+nameIn.name()+" from "+type.asString()+" but reference is for "+nameIn.boardType().asString());
 			return WhiteboardObj.EMPTY;
 		}
 		else if(!hasReference(nameIn))
 		{
-			TricksyFoxes.LOGGER.warn("Attempted to retrieve value "+nameIn.name()+" from "+type.asString()+" but it does not exist there");
+			// TricksyFoxes.LOGGER.warn("Attempted to retrieve value "+nameIn.name()+" from "+type.asString()+" but it does not exist there");
 			return WhiteboardObj.EMPTY;
 		}
 		else if(!nameIn.uncached() && cached(nameIn))
