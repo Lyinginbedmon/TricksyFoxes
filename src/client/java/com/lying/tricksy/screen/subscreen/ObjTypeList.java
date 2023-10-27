@@ -23,24 +23,14 @@ import net.minecraft.client.gui.widget.ElementListWidget;
 public class ObjTypeList extends ElementListWidget<ObjTypeList.ObjTypeEntry>
 {
 	private static final List<TFObjType<?>> STATIC_TYPES = List.of(TFObjType.BOOL, TFObjType.INT, TFObjType.BLOCK);
-	public static final MinecraftClient mc = MinecraftClient.getInstance();
-//	private BranchLine leftLine;
 	
 	public ObjTypeList(int width, int height, int top, int bottom)
 	{
 		super(MinecraftClient.getInstance(), width, height, top, bottom, 25);
-//		this.setRenderHeader(false, 0);
-//		this.setRenderHorizontalShadows(false);
-//		this.setRenderSelection(false);
-//		this.setRenderBackground(false);
-	}
-	
-	public void setLeftPos(int left)
-	{
-		super.setLeftPos(left);
-//		Random rand = new Random(mc.player.getUuid().getLeastSignificantBits());
-//		int leftPos = left - 8;
-//		leftLine = BranchLine.between(new Vec2f(leftPos, 0), new Vec2f(leftPos, this.height), rand, rand.nextBoolean() ? TFNodeTypes.ROSE_FLOWER : TFNodeTypes.GRAPE_FLOWER);
+		this.setRenderHeader(false, 0);
+		this.setRenderHorizontalShadows(false);
+		this.setRenderSelection(false);
+		this.setRenderBackground(false);
 	}
 	
 	public void setEntries(Predicate<WhiteboardRef> condition, CreateStaticScreen parent)
@@ -50,6 +40,7 @@ public class ObjTypeList extends ElementListWidget<ObjTypeList.ObjTypeEntry>
 		Map<String, TFObjType<?>> subtypeMap = new HashMap<>();
 		List<String> names = Lists.newArrayList();
 		
+		// Test all available types to see which can fulfill the given conditions
 		STATIC_TYPES.forEach((type) -> 
 		{
 			boolean pass = false;
@@ -75,36 +66,6 @@ public class ObjTypeList extends ElementListWidget<ObjTypeList.ObjTypeEntry>
 	}
 	
 	public int getRowWidth() { return this.width; }
-	
-//	protected int getScrollbarPositionX() { return this.left + this.width - 4; }
-	
-//	public void render(DrawContext context, int mouseX, int mouseY, float delta)
-//	{
-//		float v2 = (float)this.height / 16F;
-//		
-//		int x1 = this.left - 33;
-//		int x2 = x1 + 250;
-//		
-//		RenderSystem.setShaderTexture(0, WhiteboardList.SLICE_TEXTURE);
-//        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-//        RenderSystem.enableBlend();
-//        Matrix4f matrix4f = context.getMatrices().peek().getPositionMatrix();
-//        BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-//        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-//	        bufferBuilder.vertex(matrix4f, x1, 0, 0).texture(0F, 0F).next();
-//	        bufferBuilder.vertex(matrix4f, x1, this.bottom, 0).texture(0F, v2).next();
-//	        bufferBuilder.vertex(matrix4f, x2, this.bottom, 0).texture(1F, v2).next();
-//	        bufferBuilder.vertex(matrix4f, x2, 0, 0).texture(1F, 0F).next();
-//        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-//        RenderSystem.disableBlend();
-//        
-//		super.render(context, mouseX, mouseY, delta);
-//	}
-	
-	protected void renderDecorations(DrawContext context, int mouseX, int mouseY)
-	{
-//		leftLine.render(context);
-	}
 	
 	public class ObjTypeEntry extends ElementListWidget.Entry<ObjTypeEntry>
 	{

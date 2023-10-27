@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:chicken",
+    "minecraft:cod",
+    "minecraft:cow",
+    "minecraft:goat",
+    "minecraft:mooshroom",
+    "minecraft:pig",
+    "minecraft:pufferfish",
+    "minecraft:rabbit",
+    "minecraft:salmon",
+    "minecraft:sheep",
+    "minecraft:tropical_fish",
+    "minecraft:turtle"
+  ]
+}

@@ -2,11 +2,13 @@ package com.lying.tricksy.screen.subscreen.dialog;
 
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
+import com.lying.tricksy.init.TFObjType;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.MathHelper;
 
 public class IntegerDialog extends ValueDialog<Integer>
 {
@@ -15,7 +17,7 @@ public class IntegerDialog extends ValueDialog<Integer>
 	
 	protected void init()
 	{
-		addSelectableChild(input = makeCentredIntInput(this.width / 2, this.height / 2 - 10, 70, 4, false));
+		addSelectableChild(input = makeCentredIntInput(this.width / 2, this.height / 2 - 4, 4, false));
 		setInitialFocus(input);
 		
 		int y = (this.height / 2) + 30;
@@ -30,7 +32,7 @@ public class IntegerDialog extends ValueDialog<Integer>
 	public void incVal(int amount)
 	{
 		int val = Integer.valueOf(input.getText());
-		val = Math.max(0, val + amount);
+		val = MathHelper.clamp(val + amount, 0, 30000000);
 		input.setText(String.valueOf(val));
 	}
 	
@@ -70,6 +72,8 @@ public class IntegerDialog extends ValueDialog<Integer>
 	
 	public void render(DrawContext context, int mouseX, int mouseY, float delta)
 	{
+		context.drawNineSlicedTexture(DIALOG_TEXTURES, (this.width / 2) - 95, (this.height / 2) - 35, 185, 97, 10, 200, 26, 0, 0);
+		renderTitle(TFObjType.INT.translated(), context, (this.height / 2) - 25);
 		super.render(context, mouseX, mouseY, delta);
 		input.render(context, mouseX, mouseY, delta);
 	}

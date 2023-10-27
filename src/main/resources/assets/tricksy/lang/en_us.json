@@ -1,4 +1,10 @@
 {
+	"enum.tricksy.direction.up": "Up",
+	"enum.tricksy.direction.down": "Down",
+	"enum.tricksy.direction.north": "North",
+	"enum.tricksy.direction.east": "East",
+	"enum.tricksy.direction.south": "South",
+	"enum.tricksy.direction.west": "West",
 	"itemGroup.tricksy.item_group": "Tricksy Foxes",
 	"item.tricksy.sage_hat": "Sage Hat",
 	"item.tricksy.sage_hat.tooltip": "Use on a suitable mob to apprentice them",

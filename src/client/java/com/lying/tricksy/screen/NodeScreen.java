@@ -234,7 +234,7 @@ public class NodeScreen	extends TricksyScreenBase
 		
 		getSubScreen().ifPresent((screen) -> screen.doForegroundRendering(context, mouseX, mouseY));
 		
-		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
+		context.drawTexture(NodeRenderUtils.TREE_TEXTURES, (this.width - 200) / 2, 2, 0, 68, 200, 26);
 		context.drawText(textRenderer, this.title, (this.width - this.textRenderer.getWidth(this.title)) / 2, 2 + (26 - this.textRenderer.fontHeight) / 2, 0x404040, false);
 		
 		this.nameField.render(context, mouseY, mouseX, 0F);

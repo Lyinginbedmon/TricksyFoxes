@@ -1,16 +1,24 @@
 package com.lying.tricksy.entity.ai.whiteboard;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Supplier;
 
+import com.google.common.collect.Lists;
+import com.lying.tricksy.data.TFEntityTags;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.utility.TricksyUtils;
 
 import net.minecraft.entity.EntityType;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -21,48 +29,8 @@ public class ConstantsWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?
 	public static final WhiteboardRef ENT_ANIMALS = new WhiteboardRef("entity_animal", TFObjType.ENT).filter().displayName(Text.translatable("constant."+Reference.ModInfo.MOD_ID+".entity_animal"));
 	public static final WhiteboardRef ENT_PLAYERS = new WhiteboardRef("entity_player", TFObjType.ENT).filter().displayName(Text.translatable("constant."+Reference.ModInfo.MOD_ID+".entity_player"));
 	
-	public static WhiteboardObjEntity FILTER_MONSTER = WhiteboardObjEntity.ofTypes(
-			EntityType.BLAZE, 
-			EntityType.CAVE_SPIDER, 
-			EntityType.CREEPER, 
-			EntityType.DROWNED, 
-			EntityType.ELDER_GUARDIAN,
-			EntityType.ENDER_DRAGON,
-			EntityType.ENDERMAN,
-			EntityType.ENDERMITE,
-			EntityType.EVOKER,
-			EntityType.GHAST,
-			EntityType.GIANT,
-			EntityType.GUARDIAN,
-			EntityType.HOGLIN,
-			EntityType.HUSK,
-			EntityType.ILLUSIONER,
-			EntityType.MAGMA_CUBE,
-			EntityType.PHANTOM,
-			EntityType.PIGLIN_BRUTE,
-			EntityType.PILLAGER,
-			EntityType.RAVAGER,
-			EntityType.SHULKER,
-			EntityType.SILVERFISH,
-			EntityType.SKELETON,
-			EntityType.SLIME,
-			EntityType.SPIDER,
-			EntityType.STRAY,
-			EntityType.VEX,
-			EntityType.VINDICATOR,
-			EntityType.WARDEN,
-			EntityType.WITCH,
-			EntityType.WITHER,
-			EntityType.WITHER_SKELETON,
-			EntityType.ZOGLIN,
-			EntityType.ZOMBIE,
-			EntityType.ZOMBIE_VILLAGER);
-	public static WhiteboardObjEntity FILTER_ANIMAL = WhiteboardObjEntity.ofTypes(
-			EntityType.CHICKEN,
-			EntityType.COW,
-			EntityType.PIG,
-			EntityType.MOOSHROOM,
-			EntityType.SHEEP);
+	public static WhiteboardObjEntity FILTER_MONSTER = new WhiteboardObjEntity();
+	public static WhiteboardObjEntity FILTER_ANIMAL = new WhiteboardObjEntity();
 	
 	public static final Map<Direction, WhiteboardRef> DIRECTIONS = new HashMap<>();
 	
@@ -72,7 +40,7 @@ public class ConstantsWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?
 	{
 		for(Direction dir : Direction.values())
 		{
-			WhiteboardRef ref = new WhiteboardRef("dir_"+dir.asString(), TFObjType.BLOCK, BoardType.CONSTANT).filter().displayName(Text.literal(dir.name()));
+			WhiteboardRef ref = new WhiteboardRef("dir_"+dir.asString(), TFObjType.BLOCK, BoardType.CONSTANT).filter().displayName(TricksyUtils.translateDirection(dir));
 			DIRECTIONS.put(dir, ref);
 			register(ref, () -> new WhiteboardObjBlock(BlockPos.ORIGIN, dir));
 		}
@@ -86,4 +54,20 @@ public class ConstantsWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?
 	protected Supplier<IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return () -> object; }
 	
 	protected IWhiteboardObject<?> supplierToValue(Supplier<IWhiteboardObject<?>> supplier) { return supplier.get(); }
+	
+	/** Called by the server when the server starts or the data pack finishes reloading */
+	public static void populateTagFilters()
+	{
+		FILTER_MONSTER = WhiteboardObjEntity.ofTypes(getOfTag(TFEntityTags.MONSTER));
+		FILTER_ANIMAL = WhiteboardObjEntity.ofTypes(getOfTag(TFEntityTags.ANIMAL));
+	}
+	
+	public static EntityType<?>[] getOfTag(TagKey<EntityType<?>> tagIn)
+	{
+		List<EntityType<?>> matches = Lists.newArrayList();
+		for(Entry<RegistryKey<EntityType<?>>, EntityType<?>> type : Registries.ENTITY_TYPE.getEntrySet())
+			if(type.getValue().isIn(tagIn))
+				matches.add(type.getValue());
+		return matches.toArray(new EntityType<?>[0]);
+	}
 }

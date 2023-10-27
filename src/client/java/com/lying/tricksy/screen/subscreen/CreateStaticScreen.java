@@ -10,6 +10,7 @@ import org.lwjgl.glfw.GLFW;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.NodeScreen;
 import com.lying.tricksy.screen.subscreen.dialog.BlockPosDialog;
 import com.lying.tricksy.screen.subscreen.dialog.BooleanDialog;
@@ -55,11 +56,11 @@ public class CreateStaticScreen extends NodeSubScreen
 		typeList.setEntries(objPredicate, this);
 		typeList.setLeftPos(0);
 		
-		addDrawableChild(saveButton = ButtonWidget.builder(Text.literal("Save"), (button) -> 
+		addDrawableChild(saveButton = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.save"), (button) -> 
 		{
 			this.parent.currentNode.assignObj(parent.targetInputRef(), getCurrentValue()); 
 			this.refParent.closeStatic();
-		}).dimensions(this.width / 2 - 20, this.height - 40, 40, 20).build());
+		}).dimensions(this.width / 2 - 20, (this.height / 2) + 60, 40, 20).build());
 		
 		openDialog(objType);
 	}

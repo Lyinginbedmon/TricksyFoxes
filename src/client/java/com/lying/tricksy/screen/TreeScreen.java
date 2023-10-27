@@ -1,15 +1,11 @@
 package com.lying.tricksy.screen;
 
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
 
 import com.google.common.base.Predicates;
 import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.entity.ai.node.TreeNode;
-import com.lying.tricksy.entity.ai.node.handler.INodeInput;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
-import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.network.DeleteReferencePacket;
 import com.lying.tricksy.network.SaveTreePacket;
@@ -116,11 +112,6 @@ public class TreeScreen extends TricksyScreenBase
 			return true;
 		}
 		return super.mouseClicked(x, y, mouseKey);
-	}
-	
-	public Map<WhiteboardRef, IWhiteboardObject<?>> getOptionsMatching(INodeInput input)
-	{
-		return this.handler.getMatches(input.predicate(), null);
 	}
 	
 	public boolean mouseReleased(double x, double y, int mouseKey)

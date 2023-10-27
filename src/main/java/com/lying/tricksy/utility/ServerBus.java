@@ -2,6 +2,7 @@ package com.lying.tricksy.utility;
 
 import com.lying.tricksy.component.Accomplishment;
 import com.lying.tricksy.component.TricksyComponent;
+import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
 import com.lying.tricksy.init.TFEnlightenmentPaths;
@@ -10,6 +11,7 @@ import com.lying.tricksy.item.ItemPrescientNote;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -24,6 +26,9 @@ public class ServerBus
 {
 	public static void registerEventCallbacks()
 	{
+		ServerLifecycleEvents.SERVER_STARTED.register((server) -> ConstantsWhiteboard.populateTagFilters());
+		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, serverResourceManager, success) -> ConstantsWhiteboard.populateTagFilters());
+		
 		ServerEntityWorldChangeEvents.AFTER_ENTITY_CHANGE_WORLD.register((originalEntity, newEntity, origin, destination) -> 
 		{
 			if(!(newEntity instanceof MobEntity) || !TFEnlightenmentPaths.isEnlightenable((MobEntity)newEntity))

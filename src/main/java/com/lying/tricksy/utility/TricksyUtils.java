@@ -4,6 +4,10 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import com.lying.tricksy.reference.Reference;
+
+import net.minecraft.text.Text;
+import net.minecraft.util.math.Direction;
 
 public class TricksyUtils
 {
@@ -14,5 +18,10 @@ public class TricksyUtils
 		int ind1 = names.indexOf(name1);
 		int ind2 = names.indexOf(name2);
 		return ind1 > ind2 ? 1 : ind1 < ind2 ? -1 : 0;
+	}
+	
+	public static Text translateDirection(Direction dir)
+	{
+		return Text.translatable("enum."+Reference.ModInfo.MOD_ID+".direction."+dir.asString());
 	}
 }

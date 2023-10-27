@@ -38,6 +38,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.predicate.entity.EntityPredicates;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -53,7 +54,6 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	private static final TrackedData<OptionalInt> COLOR = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.OPTIONAL_INT);
 	public static final TrackedData<Optional<UUID>> OWNER_UUID = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
-	private static final TrackedData<Integer> USERS = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
 	public static final TrackedData<Text> LOG = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.TEXT_COMPONENT);
 	private static final TrackedData<Integer> BARK = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
 	
@@ -63,6 +63,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	
 	private int barkTicks = 0;
 	
+	private PlayerEntity customer = null;
 	private SimpleInventory inventory;
 	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
@@ -82,7 +83,6 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		this.getDataTracker().startTracking(COLOR, OptionalInt.empty());
 		this.getDataTracker().startTracking(TREE_NBT, BehaviourTree.INITIAL_TREE.write(new NbtCompound()));
 		this.getDataTracker().startTracking(LOG, Text.empty());
-		this.getDataTracker().startTracking(USERS, 0);
 		this.getDataTracker().startTracking(BARK, 0);
 	}
 	
@@ -166,10 +166,10 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 			}
 			else if(heldStack.getItem() instanceof ITreeItem)
 				return ((ITreeItem)heldStack.getItem()).useOnTricksy(heldStack, this, player);
-			else if(!player.isSneaking() && activeUsers() == 0 && isSage(player))
+			else if(!player.isSneaking() && !hasCustomer() && isSage(player))
 			{
-				if(!player.getWorld().isClient())
-					addUser();
+				if(player instanceof ServerPlayerEntity)
+					setCustomer(player);
 				
 				ITricksyMob.openInventoryScreen(player, this);
 				return ActionResult.success(isClient);
@@ -182,7 +182,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	public void tick()
 	{
 		super.tick();
-		if(activeUsers() <= 0 && !isAiDisabled())
+		if(!hasCustomer() && !isAiDisabled())
 			ITricksyMob.updateBehaviourTree(this);
 		
 		if(this.barkTicks > 0 && --this.barkTicks == 0)
@@ -285,11 +285,9 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	@Nullable
 	protected SoundEvent getDeathSound() { return SoundEvents.ENTITY_FOX_DEATH; }
 	
-	public int activeUsers() { return this.getDataTracker().get(USERS).intValue(); }
+	public boolean hasCustomer() { return this.customer != null; }
 	
-	public void addUser() { this.getDataTracker().set(USERS, activeUsers() + 1); }
-	
-	public void removeUser() { this.getDataTracker().set(USERS, Math.max(0, activeUsers() - 1)); }
+	public void setCustomer(@Nullable PlayerEntity player) { this.customer = player; }
 	
 	public void logStatus(Text message)
 	{

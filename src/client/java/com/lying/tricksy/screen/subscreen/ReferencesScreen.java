@@ -102,7 +102,10 @@ public class ReferencesScreen extends NodeSubScreen
 	public boolean mouseClicked(double x, double y, int mouseKey)
 	{
 		if(this.staticScreen.isPresent())
-			return this.staticScreen.get().mouseClicked(x, y, mouseKey);
+		{
+			this.staticScreen.get().mouseClicked(x, y, mouseKey);
+			return true;
+		}
 		return super.mouseClicked(x, y, mouseKey);
 	}
 	

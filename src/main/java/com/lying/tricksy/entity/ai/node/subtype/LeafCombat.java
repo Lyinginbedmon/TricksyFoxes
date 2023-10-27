@@ -330,7 +330,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		};
 	}
 	
-	// FIXME Ensure that tricksy shield actually works properly
+	// FIXME Ensure that tricksy shield actually reduces knockback and speed
 	private static NodeTickHandler<LeafNode> shieldAgainst()
 	{
 		return new NodeTickHandler<LeafNode>()

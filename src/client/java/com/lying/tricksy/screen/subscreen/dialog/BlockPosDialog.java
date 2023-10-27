@@ -2,16 +2,21 @@ package com.lying.tricksy.screen.subscreen.dialog;
 
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
+import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.utility.TricksyUtils;
 import com.mojang.datafixers.util.Pair;
 
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 
 public class BlockPosDialog extends ValueDialog<BlockPos>
 {
 	private final TextFieldWidget[] inputs = new TextFieldWidget[3];
+	private Direction face = Direction.UP;
 	
 	protected void init()
 	{
@@ -19,11 +24,18 @@ public class BlockPosDialog extends ValueDialog<BlockPos>
 		Integer[] coords = new Integer[] {initialPos.getX(), initialPos.getY(), initialPos.getZ()};
 		for(int i=0; i<3; i++)
 		{
-			inputs[i] = makeCentredIntInput(this.width / 2, (this.height - (3 * 25)) / 2 + (i * 25), 70, 0, true);
+			inputs[i] = makeCentredIntInput(this.width / 2 - 40, (this.height) / 2 - 29 + (i * 25), 0, true);
 			inputs[i].setText(String.valueOf(coords[i]));
 			addSelectableChild(inputs[i]);
 		}
 		setInitialFocus(inputs[0]);
+		
+		addDrawableChild(ButtonWidget.builder(TricksyUtils.translateDirection(Direction.UP), (button) -> 
+		{
+			Direction[] options = Direction.values();
+			face = options[(face.ordinal() + 1) % options.length];
+			button.setMessage(TricksyUtils.translateDirection(face));
+		}).dimensions(this.width / 2 + 25, this.height / 2 - 20, 40, 40).build());
 	}
 	
 	public void incVal(int amount, TextFieldWidget input, Pair<Integer, Integer> limits)
@@ -61,7 +73,7 @@ public class BlockPosDialog extends ValueDialog<BlockPos>
 			pos = new BlockPos(x, y, z);
 		}
 		catch(NumberFormatException e) { }
-		return new WhiteboardObjBlock(pos);
+		return new WhiteboardObjBlock(pos, face);
 	}
 	
 	public boolean mouseScrolled(double mouseX, double mouseY, double amount)
@@ -88,6 +100,8 @@ public class BlockPosDialog extends ValueDialog<BlockPos>
 	
 	public void render(DrawContext context, int mouseX, int mouseY, float delta)
 	{
+		context.drawNineSlicedTexture(DIALOG_TEXTURES, (this.width / 2) - 95, (this.height / 2) - 60, 185, 115, 10, 200, 26, 0, 0);
+		renderTitle(TFObjType.BLOCK.translated(), context, (this.height / 2) - 50);
 		super.render(context, mouseX, mouseY, delta);
 		for(TextFieldWidget input : inputs)
 			input.render(context, mouseX, mouseY, delta);

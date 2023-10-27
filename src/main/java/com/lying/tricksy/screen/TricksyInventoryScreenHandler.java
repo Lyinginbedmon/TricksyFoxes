@@ -139,4 +139,11 @@ public class TricksyInventoryScreenHandler extends ScreenHandler implements ITri
 	}
 	
 	public boolean canUse(PlayerEntity player) { return tricksy != null && tricksyMob.isAlive() && tricksy.isSage(player) && tricksyMob.distanceTo(player) < 6D; }
+	
+	public void onClosed(PlayerEntity player)
+	{
+		super.onClosed(player);
+		if(tricksy != null)
+			tricksy.setCustomer(null);
+	}
 }

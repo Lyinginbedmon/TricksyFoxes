@@ -159,4 +159,11 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	}
 	
 	public Iterable<WhiteboardRef> markedForDeletion() { return this.markedForDeletion; }
+	
+	public void onClosed(PlayerEntity player)
+	{
+		super.onClosed(player);
+		if(tricksy != null)
+			tricksy.setCustomer(null);
+	}
 }

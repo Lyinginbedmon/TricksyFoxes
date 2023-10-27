@@ -20,6 +20,6 @@ public class RemoveUserReceiver implements PlayChannelHandler
 		UUID tricksyID = buf.readUuid();
 		List<PathAwareEntity> entities = player.getWorld().getEntitiesByClass(PathAwareEntity.class, player.getBoundingBox().expand(16D), (mob) -> mob instanceof ITricksyMob && mob.getUuid().equals(tricksyID));
 		if(!entities.isEmpty())
-			((ITricksyMob<?>)entities.get(0)).removeUser();
+			((ITricksyMob<?>)entities.get(0)).setCustomer(null);
 	}
 }

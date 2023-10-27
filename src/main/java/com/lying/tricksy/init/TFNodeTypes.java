@@ -61,11 +61,13 @@ public class TFNodeTypes
 	
 	public static void init()
 	{
-		TricksyFoxes.LOGGER.info("Registered "+TYPES.size()+" behaviour tree node types");
 		int tally = 0;
 		for(NodeType<?> type : TYPES.values())
 			tally += Math.max(1, type.subTypes().size());
-		TricksyFoxes.LOGGER.info(" "+tally+" available node behaviours");
+		TricksyFoxes.LOGGER.info("Registered "+TYPES.size()+" behaviour tree node types with "+tally+" available behaviours");
+		
+		if(!TricksyFoxes.config.verboseLogging())
+			return;
 		
 		TYPES.forEach((name,type) -> 
 		{
