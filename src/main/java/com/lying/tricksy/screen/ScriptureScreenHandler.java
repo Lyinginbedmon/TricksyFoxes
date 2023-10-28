@@ -1,9 +1,11 @@
 package com.lying.tricksy.screen;
 
+import java.util.UUID;
+
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.node.TreeNode;
+import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFScreenHandlerTypes;
 import com.lying.tricksy.item.ItemScripture;
 
@@ -26,8 +28,7 @@ public class ScriptureScreenHandler extends ScreenHandler
 	
 	public boolean canUse(PlayerEntity var1) { return true; }
 	
-	@Nullable
-	public TreeNode<?> getRoot() { return root; }
+	public TreeNode<?> getRoot() { return this.root == null ? TFNodeTypes.LEAF.create(UUID.randomUUID()).setSubType(null) : this.root; }
 	
 	public void setScripture(@NotNull ItemStack stack)
 	{

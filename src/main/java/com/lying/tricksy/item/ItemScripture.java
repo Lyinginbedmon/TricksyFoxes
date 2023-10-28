@@ -99,7 +99,20 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 		return displayName;
 	}
 	
-	public static boolean hasTree(ItemStack stack) { return stack.getNbt().contains("Tree", NbtElement.COMPOUND_TYPE); }
+	public static boolean hasTree(ItemStack stack)
+	{
+		if(stack.getNbt().contains("HasCopied", NbtElement.BYTE_TYPE))
+			return stack.getNbt().getBoolean("HasCopied");
+		
+		if(!stack.getNbt().contains("Tree", NbtElement.COMPOUND_TYPE))
+			return false;
+		
+		BehaviourTree tree = getTree(stack);
+		if(tree == null || tree.root() == null)
+			return false;
+		
+		return true;
+	}
 	
 	@Nullable
 	public static BehaviourTree getTree(ItemStack stack)
@@ -112,6 +125,7 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 		NbtCompound nbt = stack.getOrCreateNbt();
 		nbt.putInt("Size", obj.size());
 		nbt.put("Tree", obj.storeInNbt());
+		nbt.putBoolean("HasCopied", obj != null && obj.root() != null);
 		stack.setNbt(nbt);
 	}
 }
