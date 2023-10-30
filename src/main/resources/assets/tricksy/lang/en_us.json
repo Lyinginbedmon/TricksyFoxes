@@ -22,6 +22,7 @@
 	"item.tricksy.scripture.tooltip_paste": "Sneak + Right-click on a mob to paste this behaviour",
 	"item.tricksy.sealed_item": "Sealed %s",
 	"block.tricksy.bottle_prescience": "Bottle O' Prescience",
+	"block.tricksy.work_table": "Work Table",
 	"board.tricksy.constant": "Constants",
 	"board.tricksy.global": "Sage",
 	"board.tricksy.local": "Personal",

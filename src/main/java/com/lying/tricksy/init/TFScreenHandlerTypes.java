@@ -7,6 +7,7 @@ import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.ScriptureScreenHandler;
 import com.lying.tricksy.screen.TricksyInventoryScreenHandler;
 import com.lying.tricksy.screen.TricksyTreeScreenHandler;
+import com.lying.tricksy.screen.WorkTableScreenHandler;
 
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.registry.Registries;
@@ -23,6 +24,8 @@ public class TFScreenHandlerTypes
 	public static final ScreenHandlerType<TricksyTreeScreenHandler> TREE_SCREEN_HANDLER = register("tree_screen", new ScreenHandlerType<>((syncId, playerInventory) -> new TricksyTreeScreenHandler(syncId, playerInventory, null), FeatureFlags.VANILLA_FEATURES));
 	public static final ScreenHandlerType<TricksyInventoryScreenHandler> INVENTORY_SCREEN_HANDLER = register("inventory_screen", new ScreenHandlerType<>((syncId, playerInventory) -> new TricksyInventoryScreenHandler(syncId, playerInventory, new SimpleInventory(6), null), FeatureFlags.VANILLA_FEATURES));
 	public static final ScreenHandlerType<ScriptureScreenHandler> SCRIPTURE_SCREEN_HANDLER = register("scripture_screen", new ScreenHandlerType<>((syncId, playerInventory) -> new ScriptureScreenHandler(syncId, null), FeatureFlags.VANILLA_FEATURES));
+	
+	public static final ScreenHandlerType<WorkTableScreenHandler> WORK_TABLE_SCREEN_HANDLER = register("work_table", new ScreenHandlerType<>((syncId, playerInventory) -> new WorkTableScreenHandler(syncId, playerInventory), FeatureFlags.VANILLA_FEATURES));
 	
 	private static <T extends ScreenHandler> ScreenHandlerType<T> register(String nameIn, ScreenHandlerType<T> typeIn)
 	{

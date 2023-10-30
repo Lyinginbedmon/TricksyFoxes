@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.lying.tricksy.config.ServerConfig;
 import com.lying.tricksy.data.TFRecipeProvider;
+import com.lying.tricksy.init.TFBlockEntities;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
@@ -43,6 +44,7 @@ public class TricksyFoxes implements ModInitializer
 		TFObjType.init();
 		TFNodeTypes.init();
 		TFBlocks.init();
+		TFBlockEntities.init();
 		TFItems.init();
 		TFEntityTypes.init();
 		TFSpecialRecipes.init();

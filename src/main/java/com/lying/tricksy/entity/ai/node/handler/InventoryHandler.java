@@ -18,7 +18,15 @@ public interface InventoryHandler extends NodeTickHandler<LeafNode>
 	public static final WhiteboardRef FILTER = new WhiteboardRef("item_filter", TFObjType.ITEM).displayName(CommonVariables.translate("item_filter"));
 	public static final WhiteboardRef FACE = new WhiteboardRef("face", TFObjType.BLOCK).displayName(CommonVariables.translate("face"));
 	
-	public static ItemStack insertStackIntoTile(ItemStack insertStack, BlockEntity tile, Direction face)
+	/**
+	 * 
+	 * @param insertStack The stack to insert
+	 * @param tile The inventory block entity to insert into
+	 * @param face The face to insert through, if the inventory is sided
+	 * @param targetSlot The specific slot to insert into, or -1 if any is permitted
+	 * @return The modified insertStack
+	 */
+	public static ItemStack insertStackIntoTile(ItemStack insertStack, BlockEntity tile, Direction face, int targetSlot)
 	{
 		if(tile == null || !(tile instanceof Inventory))
 			return insertStack;
@@ -27,15 +35,38 @@ public interface InventoryHandler extends NodeTickHandler<LeafNode>
 		if(tile instanceof SidedInventory)
 		{
 			SidedInventory sidedInv = (SidedInventory)inv;
-			for(int slot : sidedInv.getAvailableSlots(face))
-				if(!insertStack.isEmpty() && sidedInv.isValid(slot, insertStack))
-					insertStack = insertStackInto(sidedInv, slot, insertStack);
+			if(targetSlot >= 0)
+			{
+				boolean found = false;
+				for(int slot : sidedInv.getAvailableSlots(face))
+					if(slot == targetSlot)
+						found = true;
+				
+				if(!found)
+					return insertStack;
+				else
+					insertStack = tryInsertInto(inv, targetSlot, insertStack);
+			}
+			else
+				for(int slot : sidedInv.getAvailableSlots(face))
+					insertStack = tryInsertInto(inv, slot, insertStack);
 		}
 		else
-			for(int slot=0; slot < inv.size(); slot++)
-				if(!insertStack.isEmpty() && inv.isValid(slot, insertStack))
-					insertStack = insertStackInto(inv, slot, insertStack);
+		{
+			if(targetSlot >= 0)
+				insertStack = tryInsertInto(inv, targetSlot, insertStack);
+			else
+				for(int slot=0; slot < inv.size(); slot++)
+					insertStack = tryInsertInto(inv, slot, insertStack);
+		}
 		
+		return insertStack;
+	}
+	
+	private static ItemStack tryInsertInto(Inventory inv, int slot, ItemStack insertStack)
+	{
+		if(!insertStack.isEmpty() && inv.isValid(slot, insertStack))
+			return insertStackInto(inv, slot, insertStack);
 		return insertStack;
 	}
 	

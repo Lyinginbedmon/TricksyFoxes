@@ -92,7 +92,17 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				return Result.SUCCESS;
 			}
 		});
-		add(set, VARIANT_INSERT_ITEM, new InventoryHandler()
+		add(set, VARIANT_INSERT_ITEM, insert());
+		add(set, VARIANT_EXTRACT_ITEM, extract());
+		add(set, VARIANT_PICK_UP, pickUp());
+		add(set, VARIANT_EQUIP, equip());
+		add(set, VARIANT_UNEQUIP, unequip());
+		return set;
+	}
+	
+	private static NodeTickHandler<LeafNode> insert()
+	{
+		return new InventoryHandler()
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_insert");
 			
@@ -100,12 +110,14 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 			public static final WhiteboardRef FACE = InventoryHandler.FACE;
 			public static final WhiteboardRef LIMIT = CommonVariables.VAR_NUM;
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
+			public static final WhiteboardRef SLOT = new WhiteboardRef("slot", TFObjType.INT);
 			
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
 				return Map.of(
 						TILE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK && !ref.isFilter()),
 						FACE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK, new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.UP), ConstantsWhiteboard.DIRECTIONS.get(Direction.UP).displayName()),
+						SLOT, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()),
 						LIMIT, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()),
 						FILTER, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
@@ -114,6 +126,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 			{
 				IWhiteboardObject<BlockPos> value = getOrDefault(TILE, parent, local, global).as(TFObjType.BLOCK);
 				IWhiteboardObject<BlockPos> face = getOrDefault(FACE, parent, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<Integer> slot = getOrDefault(SLOT, parent, local, global).as(TFObjType.INT);
 				IWhiteboardObject<?> filter = getOrDefault(FILTER, parent, local, global);
 				IWhiteboardObject<?> count = getOrDefault(LIMIT, parent, local, global);
 				
@@ -140,7 +153,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				BlockEntity tile = world.getBlockEntity(block);
 				ItemStack insertStack = heldStack.split(count.size() == 0 ? heldStack.getCount() : count.as(TFObjType.INT).get());
 				
-				insertStack = InventoryHandler.insertStackIntoTile(insertStack, tile, ((WhiteboardObjBlock)face).direction());
+				insertStack = InventoryHandler.insertStackIntoTile(insertStack, tile, ((WhiteboardObjBlock)face).direction(), slot.size() == 0 ? -1 : slot.get());
 				// Return any remaining items in insertStack to the heldStack
 				heldStack.increment(insertStack.getCount());
 				tricksy.logStatus(Text.literal(insertStack.isEmpty() ? "Item inserted successfully" : "I couldn't insert the item"));
@@ -153,8 +166,12 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				
 				return insertStack.isEmpty() ? Result.SUCCESS : Result.FAILURE;
 			}
-		});
-		add(set, VARIANT_EXTRACT_ITEM, new InventoryHandler()
+		};
+	}
+	
+	private static NodeTickHandler<LeafNode> extract()
+	{
+		return new InventoryHandler()
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_extract");
 			
@@ -243,8 +260,12 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 					return Result.SUCCESS;
 				}
 			}
-		});
-		add(set, VARIANT_PICK_UP, new NodeTickHandler<LeafNode>()
+		};
+	}
+	
+	private static NodeTickHandler<LeafNode> pickUp()
+	{
+		return new NodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
@@ -284,8 +305,12 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
-		});
-		add(set, VARIANT_EQUIP, new NodeTickHandler<LeafNode>()
+		};
+	}
+	
+	private static NodeTickHandler<LeafNode> equip()
+	{
+		return new NodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
 			
@@ -317,8 +342,12 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				tricksy.setStackInHand(Hand.MAIN_HAND, heldStack.getCount() > 0 ? heldStack : ItemStack.EMPTY);
 				return Result.SUCCESS;
 			}
-		});
-		add(set, VARIANT_UNEQUIP, new NodeTickHandler<LeafNode>()
+		};
+	}
+	
+	private static NodeTickHandler<LeafNode> unequip()
+	{
+		return new NodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeInput> variableSet()
 			{
@@ -357,7 +386,6 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				tricksy.equipStack(equip, ItemStack.EMPTY);
 				return Result.SUCCESS;
 			}
-		});
-		return set;
+		};
 	}
 }
