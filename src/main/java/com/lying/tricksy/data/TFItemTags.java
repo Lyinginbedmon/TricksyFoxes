@@ -30,5 +30,4 @@ public class TFItemTags extends ItemTagProvider
 		getOrCreateTagBuilder(DYE_WHITE).add(Items.WHITE_DYE);
 		getOrCreateTagBuilder(DYE_BLACK).add(Items.BLACK_DYE);
 	}
-	
 }

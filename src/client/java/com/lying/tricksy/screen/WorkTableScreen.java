@@ -17,6 +17,12 @@ public class WorkTableScreen extends HandledScreen<WorkTableScreenHandler>
 		super(handler, inventory, TFBlocks.WORK_TABLE.getName());
 	}
 	
+	protected void init()
+	{
+		super.init();
+		this.titleX = 29;
+	}
+	
 	protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY)
 	{
 		int i = this.x;

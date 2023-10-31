@@ -14,6 +14,7 @@ import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
@@ -50,7 +51,9 @@ public class BlockWorkTable extends BlockWithEntity
 			return;
 		
 		BlockEntity blockEntity = world.getBlockEntity(pos);
-		if (blockEntity instanceof Inventory) {
+		if(blockEntity instanceof Inventory)
+		{
+			((Inventory)blockEntity).setStack(10, ItemStack.EMPTY);
 			ItemScatterer.spawn(world, pos, (Inventory)((Object)blockEntity));
 			world.updateComparators(pos, this);
 		}

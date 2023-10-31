@@ -57,6 +57,10 @@ public class TFRecipeProvider extends FabricRecipeProvider
 			.input('p', TFItems.NOTE).input('b', Items.WRITABLE_BOOK)
 			.criterion(FabricRecipeProvider.hasItem(TFItems.NOTE), FabricRecipeProvider.conditionsFromItem(TFItems.NOTE))
 			.criterion(FabricRecipeProvider.hasItem(Items.WRITABLE_BOOK), FabricRecipeProvider.conditionsFromItem(Items.WRITABLE_BOOK)).offerTo(exporter);
+		
+		ShapelessRecipeJsonBuilder.create(RecipeCategory.DECORATIONS, TFBlocks.WORK_TABLE).input(Items.CRAFTING_TABLE).input(Items.BARREL)
+			.criterion(FabricRecipeProvider.hasItem(Items.CRAFTING_TABLE), FabricRecipeProvider.conditionsFromItem(Items.CRAFTING_TABLE))
+			.criterion(FabricRecipeProvider.hasItem(Items.BARREL), FabricRecipeProvider.conditionsFromItem(Items.BARREL)).offerTo(exporter);
 	}
 	
 	public static void addBrewingRecipes()

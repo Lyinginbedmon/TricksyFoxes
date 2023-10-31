@@ -12,8 +12,10 @@ import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DispenserBlock;
+import net.minecraft.block.MapColor;
 import net.minecraft.block.dispenser.BlockPlacementDispenserBehavior;
 import net.minecraft.block.dispenser.ItemDispenserBehavior;
+import net.minecraft.block.enums.Instrument;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -33,7 +35,7 @@ public class TFBlocks
 	private static final Map<Identifier, Block> BLOCKS = new HashMap<>();
 	
 	public static final Block PRESCIENCE = register("bottle_prescience", new BlockPrescience(FabricBlockSettings.create().luminance((state) -> 8).strength(0.3f).sounds(BlockSoundGroup.GLASS).nonOpaque().allowsSpawning(TFBlocks::never).solidBlock(TFBlocks::never).suffocates(TFBlocks::never).blockVision(TFBlocks::never)));
-	public static final Block WORK_TABLE = register("work_table", new BlockWorkTable(FabricBlockSettings.create()));
+	public static final Block WORK_TABLE = register("work_table", new BlockWorkTable(FabricBlockSettings.create().mapColor(MapColor.SPRUCE_BROWN).instrument(Instrument.BASS).strength(2.5F).sounds(BlockSoundGroup.WOOD)));
 	
 	private static Block register(String nameIn, Block blockIn)
 	{
