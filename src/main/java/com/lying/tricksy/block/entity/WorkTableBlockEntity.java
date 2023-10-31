@@ -28,8 +28,12 @@ import net.minecraft.world.World;
 
 public class WorkTableBlockEntity extends LockableContainerBlockEntity implements SidedInventory
 {
-	private DefaultedList<ItemStack> inventory = DefaultedList.ofSize(10, ItemStack.EMPTY);
-	private ItemStack nextOutput = ItemStack.EMPTY;
+	/**
+	 * Slots 0-8 = Crafting Inventory
+	 * Slot 9 = Crafted output
+	 * Slot 10 = Next craft result
+	 */
+	private DefaultedList<ItemStack> inventory = DefaultedList.ofSize(11, ItemStack.EMPTY);
 	private CraftingRecipe nextRecipe = null;
 	
 	public WorkTableBlockEntity(BlockPos pos, BlockState state)
@@ -50,13 +54,17 @@ public class WorkTableBlockEntity extends LockableContainerBlockEntity implement
 		Inventories.writeNbt(nbt, inventory);
 	}
 	
-	public int getMaxCountPerStack() { return 1; }
-	
 	public void clear() { inventory.clear(); }
 	
-	public int size() { return 10; }
+	public int size() { return 11; }
 	
-	public boolean isEmpty() { return inventory.stream().allMatch(ItemStack::isEmpty); }
+	public boolean isEmpty()
+	{
+		for(int i=0; i<10; i++)
+			if(!getStack(i).isEmpty())
+				return false;
+		return true;
+	}
 	
 	public ItemStack getStack(int slot) { return inventory.get(slot); }
 	
@@ -83,8 +91,34 @@ public class WorkTableBlockEntity extends LockableContainerBlockEntity implement
 	{
 		if(slot >= 9 || face == Direction.DOWN)
 			return false;
+		
 		ItemStack stackInSlot = getStack(slot);
-		return stackInSlot.isEmpty() || stackInSlot.getCount() < getMaxCountPerStack() && ItemStack.canCombine(stackInSlot, stack);
+		// If empty, permit insertion
+		if(stackInSlot.isEmpty())
+			return true;
+		else if(!ItemStack.canCombine(stackInSlot, stack))
+			return false;
+		
+		// Otherwise, ensure specified slot has the highest priority
+		int smallestOf = -1;
+		for(int i=0; i<9; i++)
+		{
+			ItemStack itemStack = getStack(i);
+			// Prioritise empty slots
+			if(itemStack.isEmpty())
+			{
+				smallestOf = i;
+				break;
+			}
+			// Otherwise prioritise slots of the same item but smaller count
+			else if(ItemStack.canCombine(itemStack, stackInSlot) && itemStack.getCount() < stackInSlot.getCount())
+			{
+				smallestOf = i;
+				break;
+			}
+		}
+		
+		return smallestOf < 0 || slot == smallestOf;
 	}
 	
 	public boolean canExtract(int slot, ItemStack stack, Direction face) { return slot == 9 && face == Direction.DOWN; }
@@ -127,6 +161,7 @@ public class WorkTableBlockEntity extends LockableContainerBlockEntity implement
 			
 			public List<ItemStack> getInputStacks() { return inventory; }
 		};
+		
 		for(int i=0; i<9; i++)
 			input.setStack(i, getStack(i));
 		
@@ -141,8 +176,7 @@ public class WorkTableBlockEntity extends LockableContainerBlockEntity implement
 		World world = getWorld();
 		if(world == null || world.isClient())
 		{
-			System.out.println("No world to get recipes from!");
-			nextOutput = ItemStack.EMPTY;
+			inventory.set(10, ItemStack.EMPTY);
 			return;
 		}
 		
@@ -150,34 +184,42 @@ public class WorkTableBlockEntity extends LockableContainerBlockEntity implement
 		ItemStack result = ItemStack.EMPTY;
 		if(optional.isPresent() && (result = optional.get().craft(input, world.getRegistryManager())).isItemEnabled(world.getEnabledFeatures()))
 		{
-			nextOutput = result;
+			inventory.set(10, result);
 			nextRecipe = optional.get();
-			System.out.println("Updated output to: "+result.getName().getString());
 		}
 		else
-		{
-			nextOutput = ItemStack.EMPTY;
-			System.out.println("No match from provided ingredients");
-		}
+			inventory.set(10, ItemStack.EMPTY);
 	}
 	
+	public ItemStack nextRecipeOutput() { return inventory.get(10).copy(); }
+	
 	/** Updates the next recipe output and, if possible, crafts it */
-	public void tryCraft()
+	public void tryCraft(boolean setToOutput)
 	{
-		System.out.println("Attempting to craft");
 		updateRecipeOutput();
 		if(canCraft())
 		{
-			setStack(9, nextOutput);
+			if(setToOutput)
+				setStack(9, getStack(10));
+			
+			setStack(10, ItemStack.EMPTY);
 			DefaultedList<ItemStack> remainders = nextRecipe.getRemainder(inputInventory());
 			for(int i=0; i<9; i++)
-				setStack(i, remainders.get(i));
+			{
+				ItemStack original = getStack(i);
+				ItemStack remainder = remainders.get(i);
+				if(remainder.isEmpty())
+				{
+					original.decrement(1);
+					setStack(i, original);
+				}
+				else
+					setStack(i, remainder);
+			}
 		}
-		else
-			System.out.println("Not able to craft right now");
 	}
 	
-	public boolean canCraft() { return getStack(9).isEmpty() && nextRecipe != null && !nextOutput.isEmpty(); }
+	public boolean canCraft() { return getStack(9).isEmpty() && nextRecipe != null && !getStack(10).isEmpty(); }
 	
 	protected ScreenHandler createScreenHandler(int var1, PlayerInventory var2)
 	{

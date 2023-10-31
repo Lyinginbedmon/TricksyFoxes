@@ -15,5 +15,6 @@ public class TFBlockLootTables extends FabricBlockLootTableProvider
 	public void generate()
 	{
 		addDrop(TFBlocks.PRESCIENCE, drops(TFBlocks.PRESCIENCE));
+		addDrop(TFBlocks.WORK_TABLE, drops(TFBlocks.WORK_TABLE));
 	}
 }

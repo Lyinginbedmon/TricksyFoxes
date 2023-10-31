@@ -12,6 +12,7 @@ import com.lying.tricksy.network.RefAddedReceiver;
 import com.lying.tricksy.network.SyncInventoryScreenReceiver;
 import com.lying.tricksy.network.SyncScriptureScreenReceiver;
 import com.lying.tricksy.network.SyncTreeScreenReceiver;
+import com.lying.tricksy.network.SyncWorkTableScreenReceiver;
 import com.lying.tricksy.network.TFPacketHandler;
 import com.lying.tricksy.particle.PaperParticle;
 import com.lying.tricksy.reference.Reference;
@@ -20,6 +21,7 @@ import com.lying.tricksy.renderer.layer.SageHatRenderer;
 import com.lying.tricksy.screen.ScriptureScreen;
 import com.lying.tricksy.screen.TreeScreen;
 import com.lying.tricksy.screen.TricksyInventoryScreen;
+import com.lying.tricksy.screen.WorkTableScreen;
 import com.lying.tricksy.utility.ClientBus;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -74,6 +76,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		HandledScreens.register(TFScreenHandlerTypes.SCRIPTURE_SCREEN_HANDLER, ScriptureScreen::new);
 		HandledScreens.register(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, TreeScreen::new);
 		HandledScreens.register(TFScreenHandlerTypes.INVENTORY_SCREEN_HANDLER, TricksyInventoryScreen::new);
+		HandledScreens.register(TFScreenHandlerTypes.WORK_TABLE_SCREEN_HANDLER, WorkTableScreen::new);
 	}
 	
 	private static void registerPacketReceivers()
@@ -82,5 +85,6 @@ public class TricksyFoxesClient implements ClientModInitializer
 		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_TREE_ID, new SyncTreeScreenReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_INVENTORY_ID, new SyncInventoryScreenReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.REF_ADDED_ID, new RefAddedReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_WORK_TABLE_ID, new SyncWorkTableScreenReceiver());
 	}
 }
