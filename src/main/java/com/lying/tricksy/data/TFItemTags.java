@@ -16,6 +16,7 @@ import net.minecraft.util.Identifier;
 public class TFItemTags extends ItemTagProvider
 {
 	public static final TagKey<Item> PAPER = TagKey.of(RegistryKeys.ITEM, new Identifier(Reference.ModInfo.MOD_ID, "paper"));
+	public static final TagKey<Item> SKULLS = TagKey.of(RegistryKeys.ITEM, new Identifier(Reference.ModInfo.MOD_ID, "skulls"));
 	public static final TagKey<Item> DYE_WHITE = TagKey.of(RegistryKeys.ITEM, new Identifier(Reference.ModInfo.MOD_ID, "dye_white"));
 	public static final TagKey<Item> DYE_BLACK = TagKey.of(RegistryKeys.ITEM, new Identifier(Reference.ModInfo.MOD_ID, "dye_black"));
 	
@@ -27,6 +28,7 @@ public class TFItemTags extends ItemTagProvider
 	protected void configure(WrapperLookup arg)
 	{
 		getOrCreateTagBuilder(PAPER).add(Items.PAPER);
+		getOrCreateTagBuilder(SKULLS).add(Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.CREEPER_HEAD, Items.PIGLIN_HEAD, Items.PLAYER_HEAD, Items.ZOMBIE_HEAD, Items.DRAGON_HEAD);
 		getOrCreateTagBuilder(DYE_WHITE).add(Items.WHITE_DYE);
 		getOrCreateTagBuilder(DYE_BLACK).add(Items.BLACK_DYE);
 	}

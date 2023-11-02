@@ -1,0 +1,13 @@
+{
+	"parent": "minecraft:block/cube",
+	"textures":
+	{
+		"down": "minecraft:block/spruce_planks",
+		"east": "tricksy:block/work_table_side",
+		"north": "tricksy:block/work_table_side",
+		"particle": "tricksy:block/work_table_top",
+		"south": "tricksy:block/work_table_side",
+		"up": "tricksy:block/work_table_top",
+		"west": "tricksy:block/work_table_side"
+	}
+}

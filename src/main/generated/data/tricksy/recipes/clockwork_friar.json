@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "a": {
+      "item": "minecraft:armor_stand"
+    },
+    "s": {
+      "tag": "tricksy:skulls"
+    },
+    "w": {
+      "item": "tricksy:work_table"
+    }
+  },
+  "pattern": [
+    " s",
+    "wa"
+  ],
+  "result": {
+    "item": "tricksy:clockwork_friar"
+  },
+  "show_notification": true
+}

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.lying.tricksy.init.TFBlockEntities;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.screen.WorkTableScreenHandler;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
@@ -221,8 +222,8 @@ public class WorkTableBlockEntity extends LockableContainerBlockEntity implement
 	
 	public boolean canCraft() { return getStack(9).isEmpty() && nextRecipe != null && !getStack(10).isEmpty(); }
 	
-	protected ScreenHandler createScreenHandler(int var1, PlayerInventory var2)
+	protected ScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory)
 	{
-		return null;
+		return new WorkTableScreenHandler(syncId, playerInventory, this);
 	}
 }

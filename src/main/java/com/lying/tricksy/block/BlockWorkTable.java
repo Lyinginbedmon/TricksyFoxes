@@ -97,6 +97,30 @@ public class BlockWorkTable extends BlockWithEntity
 			world.setBlockState(pos, state.with(TRIGGERED, false), Block.NO_REDRAW);
 	}
 	
+	public boolean hasComparatorOutput(BlockState state) { return true; }
+	
+	public int getComparatorOutput(BlockState state, World world, BlockPos pos)
+	{
+		BlockEntity blockEntity = world.getBlockEntity(pos);
+		if(blockEntity instanceof WorkTableBlockEntity)
+		{
+			WorkTableBlockEntity workTable = (WorkTableBlockEntity)blockEntity;
+			if(!workTable.getStack(9).isEmpty())
+				return 15;
+			else
+			{
+				int power = 0;
+				for(int i=0; i<9; i++)
+					if(!workTable.getStack(i).isEmpty())
+						power++;
+				
+				return power;
+			}
+		}
+		
+		return 0;
+	}
+	
 	protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
 	{
 		builder.add(TRIGGERED);

@@ -58,9 +58,16 @@ public class TFRecipeProvider extends FabricRecipeProvider
 			.criterion(FabricRecipeProvider.hasItem(TFItems.NOTE), FabricRecipeProvider.conditionsFromItem(TFItems.NOTE))
 			.criterion(FabricRecipeProvider.hasItem(Items.WRITABLE_BOOK), FabricRecipeProvider.conditionsFromItem(Items.WRITABLE_BOOK)).offerTo(exporter);
 		
-		ShapelessRecipeJsonBuilder.create(RecipeCategory.DECORATIONS, TFBlocks.WORK_TABLE).input(Items.CRAFTING_TABLE).input(Items.BARREL)
+		ShapelessRecipeJsonBuilder.create(RecipeCategory.REDSTONE, TFBlocks.WORK_TABLE).input(Items.CRAFTING_TABLE).input(Items.BARREL)
 			.criterion(FabricRecipeProvider.hasItem(Items.CRAFTING_TABLE), FabricRecipeProvider.conditionsFromItem(Items.CRAFTING_TABLE))
 			.criterion(FabricRecipeProvider.hasItem(Items.BARREL), FabricRecipeProvider.conditionsFromItem(Items.BARREL)).offerTo(exporter);
+		
+		ShapedRecipeJsonBuilder.create(RecipeCategory.DECORATIONS, TFBlocks.CLOCKWORK_FRIAR)
+			.pattern(" s")
+			.pattern("wa")
+			.input('s', TFItemTags.SKULLS).input('w', TFBlocks.WORK_TABLE).input('a', Items.ARMOR_STAND)
+			.criterion(FabricRecipeProvider.hasItem(TFBlocks.WORK_TABLE), FabricRecipeProvider.conditionsFromItem(TFBlocks.WORK_TABLE))
+			.criterion(FabricRecipeProvider.hasItem(Items.ARMOR_STAND), FabricRecipeProvider.conditionsFromItem(Items.ARMOR_STAND)).offerTo(exporter);
 	}
 	
 	public static void addBrewingRecipes()

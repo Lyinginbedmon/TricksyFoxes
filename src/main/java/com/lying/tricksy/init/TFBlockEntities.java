@@ -3,6 +3,7 @@ package com.lying.tricksy.init;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.lying.tricksy.block.entity.ClockworkFriarBlockEntity;
 import com.lying.tricksy.block.entity.WorkTableBlockEntity;
 import com.lying.tricksy.reference.Reference;
 
@@ -18,6 +19,7 @@ public class TFBlockEntities
 	private static final Map<BlockEntityType<?>, Identifier> BLOCK_ENTITIES = new HashMap<>();
 	
 	public static final BlockEntityType<WorkTableBlockEntity> WORK_TABLE = register("work_table", FabricBlockEntityTypeBuilder.create(WorkTableBlockEntity::new, TFBlocks.WORK_TABLE).build(null));
+	public static final BlockEntityType<ClockworkFriarBlockEntity> CLOCKWORK_FRIAR = register("clockwork_friar", FabricBlockEntityTypeBuilder.create(ClockworkFriarBlockEntity::new, TFBlocks.CLOCKWORK_FRIAR).build(null));
 	
 	private static <T extends BlockEntity> BlockEntityType<T> register(String nameIn, BlockEntityType<T> typeIn)
 	{

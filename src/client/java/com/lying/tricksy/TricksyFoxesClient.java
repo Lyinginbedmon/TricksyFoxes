@@ -1,6 +1,7 @@
 package com.lying.tricksy;
 
 import com.lying.tricksy.config.ClientConfig;
+import com.lying.tricksy.init.TFBlockEntities;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
@@ -16,6 +17,7 @@ import com.lying.tricksy.network.SyncWorkTableScreenReceiver;
 import com.lying.tricksy.network.TFPacketHandler;
 import com.lying.tricksy.particle.PaperParticle;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.renderer.block.ClockworkFriarBlockEntityRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyFoxRenderer;
 import com.lying.tricksy.renderer.layer.SageHatRenderer;
 import com.lying.tricksy.screen.ScriptureScreen;
@@ -37,6 +39,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.item.DyeableItem;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
@@ -54,12 +57,22 @@ public class TricksyFoxesClient implements ClientModInitializer
 		config.read();
 		
 		BlockRenderLayerMap.INSTANCE.putBlock(TFBlocks.PRESCIENCE, RenderLayer.getCutout());
+		BlockRenderLayerMap.INSTANCE.putBlock(TFBlocks.CLOCKWORK_FRIAR, RenderLayer.getCutout());
 		
 		ClientBus.registerEventCallbacks();
 		
-		ArmorRenderer.register(new SageHatRenderer(), TFItems.SAGE_HAT);
+		registerRenderers();
+		registerPacketReceivers();
+		registerScreens();
+	}
+	
+	private static void registerRenderers()
+	{
+		TFModelParts.init();
 		
+		ArmorRenderer.register(new SageHatRenderer(), TFItems.SAGE_HAT);
 		EntityRendererRegistry.register(TFEntityTypes.TRICKSY_FOX, EntityTricksyFoxRenderer::new);
+		BlockEntityRendererFactories.register(TFBlockEntities.CLOCKWORK_FRIAR, ClockworkFriarBlockEntityRenderer::new);
 		
 		ColorProviderRegistry.ITEM.register((stack, index) -> { return index == 0 ? ((DyeableItem)stack.getItem()).getColor(stack) : -1; }, TFItems.SAGE_HAT);
 		
@@ -68,11 +81,12 @@ public class TricksyFoxesClient implements ClientModInitializer
 		Identifier note_sealed = new Identifier(Reference.ModInfo.MOD_ID, "sealed");
 		for(Item scroll : TFItems.SEALABLES)
 			ModelPredicateProviderRegistry.register(scroll, note_sealed, (itemStack, clientWorld, livingEntity, seed) -> { return ISealableItem.isSealed(itemStack) ? 1F : 0F; });
-		
-		TFModelParts.init();
+	}
+	
+	private static void registerScreens()
+	{
 		TFScreenHandlerTypes.init();
 		
-		registerPacketReceivers();
 		HandledScreens.register(TFScreenHandlerTypes.SCRIPTURE_SCREEN_HANDLER, ScriptureScreen::new);
 		HandledScreens.register(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, TreeScreen::new);
 		HandledScreens.register(TFScreenHandlerTypes.INVENTORY_SCREEN_HANDLER, TricksyInventoryScreen::new);

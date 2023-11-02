@@ -152,7 +152,7 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 		for(int i=0; i<SLOT_ORDER.length; i++)
 		{
 			EquipmentSlot slot = SLOT_ORDER[i];
-			equipStack(slot, inv.getStack(i));
+			((PathAwareEntity)this).equipStack(slot, inv.getStack(i));
 		}
 	}
 	
@@ -190,8 +190,6 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 			}
 		}
 	}
-	
-	public void equipStack(EquipmentSlot slot, ItemStack stack);
 	
 	@SuppressWarnings("unchecked")
 	public static <T extends PathAwareEntity & ITricksyMob<?>> void openTreeScreen(PlayerEntity player, PathAwareEntity tricksy)

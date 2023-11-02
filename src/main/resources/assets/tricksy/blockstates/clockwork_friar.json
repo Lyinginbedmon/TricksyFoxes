@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "tricksy:block/clockwork_friar" },
+    "facing=east": { "model": "tricksy:block/clockwork_friar", "y": 90 },
+    "facing=south": { "model": "tricksy:block/clockwork_friar", "y": 180 },
+    "facing=west": { "model": "tricksy:block/clockwork_friar", "y": 270 }
+  }
+}

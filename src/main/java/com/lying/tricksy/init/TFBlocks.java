@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.lying.tricksy.block.BlockClockworkFriar;
 import com.lying.tricksy.block.BlockPrescience;
 import com.lying.tricksy.block.BlockWorkTable;
 import com.lying.tricksy.reference.Reference;
@@ -36,6 +37,7 @@ public class TFBlocks
 	
 	public static final Block PRESCIENCE = register("bottle_prescience", new BlockPrescience(FabricBlockSettings.create().luminance((state) -> 8).strength(0.3f).sounds(BlockSoundGroup.GLASS).nonOpaque().allowsSpawning(TFBlocks::never).solidBlock(TFBlocks::never).suffocates(TFBlocks::never).blockVision(TFBlocks::never)));
 	public static final Block WORK_TABLE = register("work_table", new BlockWorkTable(FabricBlockSettings.create().mapColor(MapColor.SPRUCE_BROWN).instrument(Instrument.BASS).strength(2.5F).sounds(BlockSoundGroup.WOOD)));
+	public static final Block CLOCKWORK_FRIAR = register("clockwork_friar", new BlockClockworkFriar(FabricBlockSettings.create().mapColor(MapColor.SPRUCE_BROWN).instrument(Instrument.BASS).nonOpaque().strength(2.5F).sounds(BlockSoundGroup.WOOD)));
 	
 	private static Block register(String nameIn, Block blockIn)
 	{
