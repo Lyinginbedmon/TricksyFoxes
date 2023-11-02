@@ -18,6 +18,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.enums.DoubleBlockHalf;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -56,7 +57,7 @@ public class BlockClockworkFriar extends BlockWithEntity implements Waterloggabl
 	
 	public BlockClockworkFriar(Settings settings)
 	{
-		super(settings);
+		super(settings.pistonBehavior(PistonBehavior.BLOCK));
 		setDefaultState(getDefaultState().with(FACING, Direction.NORTH).with(HALF, DoubleBlockHalf.LOWER).with(WATERLOGGED, false).with(CRAFTING, false));
 	}
 	
@@ -82,7 +83,7 @@ public class BlockClockworkFriar extends BlockWithEntity implements Waterloggabl
 	
 	public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity place, ItemStack itemStack)
 	{
-		world.setBlockState(pos.up(), state.with(HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_ALL);
+		world.setBlockState(pos.up(), state.with(HALF, DoubleBlockHalf.UPPER).with(WATERLOGGED, world.getFluidState(pos.up()).getFluid() == Fluids.WATER), Block.NOTIFY_ALL);
 	}
 	
 	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit)
@@ -95,12 +96,42 @@ public class BlockClockworkFriar extends BlockWithEntity implements Waterloggabl
 		if(blockEntity instanceof ClockworkFriarBlockEntity)
 		{
 			ClockworkFriarBlockEntity friar = (ClockworkFriarBlockEntity)blockEntity;
-			if(player.isSneaking())
-				;	// Open recipe setting window
+			if(!friar.isCrafting())
+			{
+				if(player.isSneaking())
+					;	// Open recipe setting window
+				else
+					friar.tryCraft();
+			}
 			else
-				friar.tryCraft();
+				return ActionResult.PASS;
 		}
 		return ActionResult.CONSUME;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved)
+	{
+		if (state.isOf(newState.getBlock()))
+			return;
+		
+		BlockEntity blockEntity = world.getBlockEntity(pos);
+		if(blockEntity instanceof ClockworkFriarBlockEntity)
+		{
+			((ClockworkFriarBlockEntity)blockEntity).dropHeldStacks();
+			world.updateComparators(pos, this);
+		}
+		
+		super.onStateReplaced(state, world, pos, newState, moved);
+	}
+	
+	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify)
+	{
+		if(world.isClient() || !isLowerHalf(state))
+			return;
+		
+		if(world.isReceivingRedstonePower(pos) && !world.getBlockState(pos).get(CRAFTING))
+			((ClockworkFriarBlockEntity)world.getBlockEntity(pos)).tryCraft();
 	}
 	
 	public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player)

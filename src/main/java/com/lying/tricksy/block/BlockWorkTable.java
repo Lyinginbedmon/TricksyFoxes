@@ -12,6 +12,7 @@ import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -33,7 +34,7 @@ public class BlockWorkTable extends BlockWithEntity
 	
 	public BlockWorkTable(Settings settings)
 	{
-		super(settings);
+		super(settings.pistonBehavior(PistonBehavior.BLOCK));
 		setDefaultState(this.stateManager.getDefaultState().with(TRIGGERED, false));
 	}
 	

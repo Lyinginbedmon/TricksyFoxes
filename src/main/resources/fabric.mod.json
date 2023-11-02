@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "tricksy",
-	"version": "1.6",
+	"version": "1.8",
 	"name": "Tricksy Foxes",
 	"description": "Player-configurable behaviour trees for mob-based automation",
 	"authors": [
