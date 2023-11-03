@@ -1,11 +1,11 @@
 package com.lying.tricksy.block.entity;
 
-import java.util.List;
 import java.util.Optional;
 
 import com.lying.tricksy.init.TFBlockEntities;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.WorkTableScreenHandler;
+import com.lying.tricksy.utility.TricksyUtils;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
@@ -18,7 +18,6 @@ import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.CraftingRecipe;
-import net.minecraft.recipe.RecipeMatcher;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
@@ -126,52 +125,9 @@ public class WorkTableBlockEntity extends LockableContainerBlockEntity implement
 	
 	protected Text getContainerName() { return Text.translatable("block."+Reference.ModInfo.MOD_ID+".work_table"); }
 	
-	public RecipeInputInventory inputInventory()
-	{
-		RecipeInputInventory input = new RecipeInputInventory()
-		{
-			private DefaultedList<ItemStack> inventory = DefaultedList.ofSize(9, ItemStack.EMPTY);
-			
-			public int size() { return 9; }
-			
-			public boolean isEmpty() { return inventory.stream().allMatch(ItemStack::isEmpty); }
-			
-			public ItemStack getStack(int var1) { return inventory.get(var1); }
-			
-			public ItemStack removeStack(int var1, int var2) { return Inventories.splitStack(inventory, var1, var2); }
-			
-			public ItemStack removeStack(int var1) { return Inventories.removeStack(inventory, var1); }
-			
-			public void setStack(int var1, ItemStack var2) { inventory.set(var1, var2); }
-			
-			public void markDirty() { }
-			
-			public boolean canPlayerUse(PlayerEntity var1) { return true; }
-			
-			public void clear() { inventory.clear(); }
-			
-			public void provideRecipeInputs(RecipeMatcher var1)
-			{
-				for(ItemStack stack : inventory)
-					var1.addUnenchantedInput(stack);
-			}
-			
-			public int getWidth() { return 3; }
-			
-			public int getHeight() { return 3; }
-			
-			public List<ItemStack> getInputStacks() { return inventory; }
-		};
-		
-		for(int i=0; i<9; i++)
-			input.setStack(i, getStack(i));
-		
-		return input;
-	}
-	
 	public void updateRecipeOutput()
 	{
-		RecipeInputInventory input = inputInventory();
+		RecipeInputInventory input = TricksyUtils.ingredientsFromInventory(this);
 		nextRecipe = null;
 		
 		World world = getWorld();
@@ -204,7 +160,7 @@ public class WorkTableBlockEntity extends LockableContainerBlockEntity implement
 				setStack(9, getStack(10));
 			
 			setStack(10, ItemStack.EMPTY);
-			DefaultedList<ItemStack> remainders = nextRecipe.getRemainder(inputInventory());
+			DefaultedList<ItemStack> remainders = nextRecipe.getRemainder(TricksyUtils.ingredientsFromInventory(this));
 			for(int i=0; i<9; i++)
 			{
 				ItemStack original = getStack(i);

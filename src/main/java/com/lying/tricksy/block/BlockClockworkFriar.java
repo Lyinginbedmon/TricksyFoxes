@@ -6,6 +6,8 @@ import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.block.entity.ClockworkFriarBlockEntity;
 import com.lying.tricksy.init.TFBlockEntities;
+import com.lying.tricksy.init.TFBlocks;
+import com.lying.tricksy.screen.ClockworkFriarScreenHandler;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -26,6 +28,7 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.DirectionProperty;
@@ -98,8 +101,8 @@ public class BlockClockworkFriar extends BlockWithEntity implements Waterloggabl
 			ClockworkFriarBlockEntity friar = (ClockworkFriarBlockEntity)blockEntity;
 			if(!friar.isCrafting())
 			{
-				if(player.isSneaking())
-					;	// Open recipe setting window
+				if(player.isSneaking() && friar.checkUnlocked(player))
+					player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new ClockworkFriarScreenHandler(id, playerInventory, blockPos, friar), TFBlocks.CLOCKWORK_FRIAR.getName()));
 				else
 					friar.tryCraft();
 			}

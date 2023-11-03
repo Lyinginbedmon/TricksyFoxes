@@ -1,20 +1,18 @@
 package com.lying.tricksy.screen;
 
-import com.lying.tricksy.init.TFBlocks;
-
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
-public class WorkTableScreen extends HandledScreen<WorkTableScreenHandler>
+public class ClockworkFriarScreen extends HandledScreen<ClockworkFriarScreenHandler>
 {
 	public static final Identifier TEXTURE = new Identifier("textures/gui/container/crafting_table.png");
 	
-	public WorkTableScreen(WorkTableScreenHandler handler, PlayerInventory inventory, Text titleIn)
+	public ClockworkFriarScreen(ClockworkFriarScreenHandler handler, PlayerInventory inventory, Text title)
 	{
-		super(handler, inventory, TFBlocks.WORK_TABLE.getName());
+		super(handler, inventory, title);
 	}
 	
 	protected void init()

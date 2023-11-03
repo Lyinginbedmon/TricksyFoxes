@@ -20,6 +20,7 @@ import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.renderer.block.ClockworkFriarBlockEntityRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyFoxRenderer;
 import com.lying.tricksy.renderer.layer.SageHatRenderer;
+import com.lying.tricksy.screen.ClockworkFriarScreen;
 import com.lying.tricksy.screen.ScriptureScreen;
 import com.lying.tricksy.screen.TreeScreen;
 import com.lying.tricksy.screen.TricksyInventoryScreen;
@@ -91,6 +92,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		HandledScreens.register(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, TreeScreen::new);
 		HandledScreens.register(TFScreenHandlerTypes.INVENTORY_SCREEN_HANDLER, TricksyInventoryScreen::new);
 		HandledScreens.register(TFScreenHandlerTypes.WORK_TABLE_SCREEN_HANDLER, WorkTableScreen::new);
+		HandledScreens.register(TFScreenHandlerTypes.CLOCKWORK_FRIAR_SCREEN_HANDLER, ClockworkFriarScreen::new);
 	}
 	
 	private static void registerPacketReceivers()

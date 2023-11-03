@@ -112,24 +112,7 @@ public class WorkTableScreenHandler extends ScreenHandler
 	public boolean canUse(PlayerEntity player) { return player.squaredDistanceTo(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) < 64D; }
 	
 	public void setPos(BlockPos posIn) { this.pos = posIn; }
-	
-	private static class CraftingSlot extends Slot
-	{
-		private final WorkTableScreenHandler handler;
-		
-		public CraftingSlot(Inventory inventory, int index, int x, int y, WorkTableScreenHandler handlerIn)
-		{
-			super(inventory, index, x, y);
-			this.handler = handlerIn;
-		}
-		
-		public void markDirty()
-		{
-			super.markDirty();
-			handler.onContentChanged(inventory);
-		}
-	}
-	
+
 	private static class CraftingResultSlot extends Slot
 	{
 		private final WorkTableScreenHandler handler;

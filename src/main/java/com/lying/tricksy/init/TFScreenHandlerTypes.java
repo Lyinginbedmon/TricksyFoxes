@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.screen.ClockworkFriarScreenHandler;
 import com.lying.tricksy.screen.ScriptureScreenHandler;
 import com.lying.tricksy.screen.TricksyInventoryScreenHandler;
 import com.lying.tricksy.screen.TricksyTreeScreenHandler;
@@ -26,6 +27,7 @@ public class TFScreenHandlerTypes
 	public static final ScreenHandlerType<ScriptureScreenHandler> SCRIPTURE_SCREEN_HANDLER = register("scripture_screen", new ScreenHandlerType<>((syncId, playerInventory) -> new ScriptureScreenHandler(syncId, null), FeatureFlags.VANILLA_FEATURES));
 	
 	public static final ScreenHandlerType<WorkTableScreenHandler> WORK_TABLE_SCREEN_HANDLER = register("work_table", new ScreenHandlerType<>((syncId, playerInventory) -> new WorkTableScreenHandler(syncId, playerInventory), FeatureFlags.VANILLA_FEATURES));
+	public static final ScreenHandlerType<ClockworkFriarScreenHandler> CLOCKWORK_FRIAR_SCREEN_HANDLER = register("clockwork_friar", new ScreenHandlerType<>((syncId, playerInventory) -> new ClockworkFriarScreenHandler(syncId, playerInventory), FeatureFlags.VANILLA_FEATURES));
 	
 	private static <T extends ScreenHandler> ScreenHandlerType<T> register(String nameIn, ScreenHandlerType<T> typeIn)
 	{
