@@ -4,6 +4,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.screen.subscreen.CreateStaticScreen;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -11,6 +12,8 @@ import net.minecraft.text.Text;
 
 public class BooleanDialog extends ValueDialog<Boolean>
 {
+	public BooleanDialog(CreateStaticScreen parentIn) { super(parentIn); }
+
 	private boolean value = false;
 	
 	protected void init()

@@ -2,21 +2,22 @@ package com.lying.tricksy.screen.subscreen.dialog;
 
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.screen.subscreen.CreateStaticScreen;
+import com.lying.tricksy.screen.subscreen.NestedScreen;
 
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
-public abstract class ValueDialog<T> extends Screen
+public abstract class ValueDialog<T> extends NestedScreen<CreateStaticScreen>
 {
 	protected static final Identifier DIALOG_TEXTURES = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/dialogs.png");
 	
-	public ValueDialog()
+	public ValueDialog(CreateStaticScreen parentIn)
 	{
-		super(Text.empty());
+		super(parentIn);
 	}
 	
 	public abstract IWhiteboardObject<T> createValue();

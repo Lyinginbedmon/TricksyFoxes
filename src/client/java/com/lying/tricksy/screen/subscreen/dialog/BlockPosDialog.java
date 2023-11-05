@@ -3,6 +3,7 @@ package com.lying.tricksy.screen.subscreen.dialog;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.screen.subscreen.CreateStaticScreen;
 import com.lying.tricksy.utility.TricksyUtils;
 import com.mojang.datafixers.util.Pair;
 
@@ -15,6 +16,8 @@ import net.minecraft.util.math.MathHelper;
 
 public class BlockPosDialog extends ValueDialog<BlockPos>
 {
+	public BlockPosDialog(CreateStaticScreen parentIn) { super(parentIn); }
+
 	private final TextFieldWidget[] inputs = new TextFieldWidget[3];
 	private Direction face = Direction.UP;
 	

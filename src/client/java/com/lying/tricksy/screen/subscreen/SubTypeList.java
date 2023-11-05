@@ -117,7 +117,7 @@ public class SubTypeList extends ElementListWidget<SubTypeList.SubTypeEntry>
 			this.parent = parentIn;
 			this.subType = subTypeIn;
 			
-			this.button = new SubTypeButton(0, 0, subTypeIn.translatedName(), (button) -> parent.currentNode.setSubType(subType.getRegistryName()));
+			this.button = new SubTypeButton(0, 0, subTypeIn.translatedName(), (button) -> { parent.currentNode.setSubType(subType.getRegistryName()); parent.generateParts(); });
 			this.button.setTooltip(Tooltip.of(this.subType.description()));
 		}
 		

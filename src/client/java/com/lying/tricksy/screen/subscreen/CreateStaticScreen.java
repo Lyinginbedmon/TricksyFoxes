@@ -5,12 +5,11 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import org.lwjgl.glfw.GLFW;
-
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.screen.INestedScreenProvider;
 import com.lying.tricksy.screen.NodeScreen;
 import com.lying.tricksy.screen.subscreen.dialog.BlockPosDialog;
 import com.lying.tricksy.screen.subscreen.dialog.BooleanDialog;
@@ -21,12 +20,12 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
-public class CreateStaticScreen extends NodeSubScreen
+public class CreateStaticScreen extends NestedScreen<NodeScreen> implements INestedScreenProvider<CreateStaticScreen>
 {
-	private static final Map<TFObjType<?>, Supplier<ValueDialog<?>>> DIALOGS = Map.of(
-			TFObjType.BOOL, () -> new BooleanDialog(),
-			TFObjType.INT, () -> new IntegerDialog(),
-			TFObjType.BLOCK, () -> new BlockPosDialog());
+	private final Map<TFObjType<?>, Supplier<ValueDialog<?>>> dialogs = Map.of(
+			TFObjType.BOOL, () -> new BooleanDialog(this),
+			TFObjType.INT, () -> new IntegerDialog(this),
+			TFObjType.BLOCK, () -> new BlockPosDialog(this));
 	
 	/** The parent ReferencesScreen */
 	private final ReferencesScreen refParent;
@@ -68,12 +67,13 @@ public class CreateStaticScreen extends NodeSubScreen
 	public void openDialog(TFObjType<?> type)
 	{
 		this.currentType = type;
-		this.currentDialog = DIALOGS.getOrDefault(type, () -> null).get();
-		if(this.currentDialog != null)
-			this.currentDialog.init(client, width, height);
+		this.currentDialog = dialogs.getOrDefault(type, () -> null).get();
+		initChild(client, width, height);
 	}
 	
-	public Optional<ValueDialog<?>> dialogOpen() { return this.currentDialog == null ? Optional.empty() : Optional.of(this.currentDialog); }
+	public Optional<NestedScreen<CreateStaticScreen>> getSubScreen() { return this.currentDialog == null ? Optional.empty() : Optional.of(this.currentDialog); }
+	
+	public void closeSubScreen() { this.currentDialog = null; }
 	
 	public void render(DrawContext context, int mouseX, int mouseY, float delta)
 	{
@@ -82,56 +82,45 @@ public class CreateStaticScreen extends NodeSubScreen
 			typeList.render(context, mouseX, mouseY, delta);
 		saveButton.render(context, mouseX, mouseY, delta);
 		
-		dialogOpen().ifPresent(dialog -> dialog.render(context, mouseX, mouseY, delta));
+		renderChild(context, delta, mouseX, mouseY);
 	}
 	
 	private IWhiteboardObject<?> getCurrentValue()
 	{
-		if(dialogOpen().isPresent())
-			return dialogOpen().get().createValue();
-		
+		if(getSubScreen().isPresent())
+			return ((ValueDialog<?>)getSubScreen().get()).createValue();
 		return objType.blank();
 	}
 	
 	public void tick()
 	{
 		super.tick();
-		dialogOpen().ifPresent(dialog -> dialog.tick());
+		tickChild();
 	}
 	
-	@Override
 	public boolean charTyped(char chr, int modifiers)
 	{
-		if(dialogOpen().isPresent())
-			return dialogOpen().get().charTyped(chr, modifiers);
-		
-		return super.charTyped(chr, modifiers);
+		return childCharTyped(chr, modifiers) || super.charTyped(chr, modifiers);
 	}
 	
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers)
 	{
-		if(keyCode == GLFW.GLFW_KEY_ESCAPE)
+		if(childKeyPressed(keyCode, scanCode, modifiers) && !getSubScreen().isPresent())
 		{
-			refParent.closeStatic();
+			parent.closeSubScreen();
 			return true;
 		}
 		
-		if(dialogOpen().isPresent() && dialogOpen().get().keyPressed(keyCode, scanCode, modifiers))
-			return true;
 		return super.keyPressed(keyCode, scanCode, modifiers);
 	}
 	
 	public boolean mouseClicked(double x, double y, int mouseKey)
 	{
-		if(dialogOpen().isPresent() && dialogOpen().get().mouseClicked(x, y, mouseKey))
-			return true;
-		return super.mouseClicked(x, y, mouseKey);
+		return childMouseClicked(x, y, mouseKey) || super.mouseClicked(x, y, mouseKey);
 	}
 	
 	public boolean mouseScrolled(double mouseX, double mouseY, double amount)
 	{
-		if(dialogOpen().isPresent() && dialogOpen().get().mouseScrolled(mouseX, mouseY, amount))
-			return true;
-		return super.mouseScrolled(mouseX, mouseY, amount);
+		return childMouseScrolled(mouseX, mouseY, amount) || super.mouseScrolled(mouseX, mouseY, amount);
 	}
 }

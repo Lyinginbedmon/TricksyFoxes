@@ -3,6 +3,7 @@ package com.lying.tricksy.screen.subscreen.dialog;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.screen.subscreen.CreateStaticScreen;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -12,6 +13,8 @@ import net.minecraft.util.math.MathHelper;
 
 public class IntegerDialog extends ValueDialog<Integer>
 {
+	public IntegerDialog(CreateStaticScreen parentIn) { super(parentIn); }
+	
 	public static final int[] BUTTON_VALS = new int[]{-20, -10, -1, 1, 10, 20};
 	private TextFieldWidget input;
 	

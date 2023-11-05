@@ -13,7 +13,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
-public class ReferencesScreen extends NodeSubScreen
+public class ReferencesScreen extends NestedScreen<NodeScreen>
 {
 	private ReferenceList referenceList;
 	private BoardList boardList;

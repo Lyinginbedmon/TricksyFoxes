@@ -20,7 +20,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.NodeRenderUtils.NodeRenderFlags;
 import com.lying.tricksy.screen.TreeScreen.NodeElement;
-import com.lying.tricksy.screen.subscreen.NodeSubScreen;
+import com.lying.tricksy.screen.subscreen.NestedScreen;
 import com.lying.tricksy.screen.subscreen.ReferencesScreen;
 import com.lying.tricksy.screen.subscreen.SubTypeScreen;
 import com.lying.tricksy.screen.subscreen.TypeScreen;
@@ -40,7 +40,7 @@ import net.minecraft.util.math.Vec2f;
  * Dedicated screen for editing specific nodes more clearly
  * @author Lying
  */
-public class NodeScreen	extends TricksyScreenBase
+public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvider<NodeScreen>
 {
 	public static final Identifier EDITOR_TEXTURES = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree_editor.png");
 	private static final int MAIN_BAR_Y = 82;
@@ -58,7 +58,7 @@ public class NodeScreen	extends TricksyScreenBase
 	private EditablePart hoveredPart = null;
 	private EditablePart targetPart = null;
 	
-	private Map<NodeElement, NodeSubScreen> editorMap = new HashMap<>();
+	private Map<NodeElement, NestedScreen<NodeScreen>> editorMap = new HashMap<>();
 	
 	public NodeScreen(TricksyTreeScreenHandler handler, PlayerInventory inventory, Text title, @NotNull TreeNode<?> node)
 	{
@@ -105,7 +105,15 @@ public class NodeScreen	extends TricksyScreenBase
 		editorMap.values().forEach((sub) -> sub.init(client, width, height));
 	}
 	
-	public Optional<NodeSubScreen> getSubScreen() { return this.targetPart == null || !editorMap.containsKey(this.targetPart.type) ? Optional.empty() : Optional.of(editorMap.get(this.targetPart.type)); }
+	public Optional<NestedScreen<NodeScreen>> getSubScreen() { return this.targetPart == null || !editorMap.containsKey(this.targetPart.type) ? Optional.empty() : Optional.of(editorMap.get(this.targetPart.type)); }
+	
+	public void closeSubScreen() { this.targetPart = null; }
+	
+	public void setTargetPart(EditablePart part)
+	{
+		this.targetPart = part;
+		initChild(client, width, height);
+	}
 	
 	public void updateTreeRender()
 	{
@@ -123,27 +131,18 @@ public class NodeScreen	extends TricksyScreenBase
 	{
 		super.handledScreenTick();
 		this.nameField.tick();
-		getSubScreen().ifPresent((screen) -> screen.tick());
-	}
-	
-	public void setTargetPart(EditablePart part)
-	{
-		this.targetPart = part;
-		getSubScreen().ifPresent((screen) -> screen.init(client, width, height));
+		tickChild();
 	}
 	
 	@Override
 	public boolean charTyped(char chr, int modifiers)
 	{
-		if(getSubScreen().isPresent())
-			return getSubScreen().get().charTyped(chr, modifiers);
-		
-		return super.charTyped(chr, modifiers);
+		return childCharTyped(chr, modifiers) || super.charTyped(chr, modifiers);
 	}
 	
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers)
 	{
-		if(getSubScreen().isPresent() && getSubScreen().get().keyPressed(keyCode, scanCode, modifiers))
+		if(childKeyPressed(keyCode, scanCode, modifiers))
 			return true;
 		
 		if(getFocused() == this.nameField)
@@ -156,7 +155,7 @@ public class NodeScreen	extends TricksyScreenBase
 			else if(this.nameField.keyPressed(keyCode, scanCode, modifiers) || this.nameField.isActive())
 				return true;
 		}
-		else if(keyCode == GLFW.GLFW_KEY_ESCAPE || mc.options.inventoryKey.matchesKey(keyCode, scanCode))
+		else if(keyCode == GLFW.GLFW_KEY_ESCAPE || client.options.inventoryKey.matchesKey(keyCode, scanCode))
 		{
 			TreeScreen tree = new TreeScreen(getScreenHandler(), this.playerInv, this.title);
 			tree.setPosition((int)treeOffset.x, (int)treeOffset.y);
@@ -168,9 +167,7 @@ public class NodeScreen	extends TricksyScreenBase
 	
 	public boolean mouseScrolled(double mouseX, double mouseY, double amount)
 	{
-		if(getSubScreen().isPresent() && getSubScreen().get().mouseScrolled(mouseX, mouseY, amount))
-			return true;
-		return super.mouseScrolled(mouseX, mouseY, amount);
+		return childMouseScrolled(mouseX, mouseY, amount) || super.mouseScrolled(mouseX, mouseY, amount);
 	}
 	
 	public boolean mouseClicked(double x, double y, int mouseKey)
@@ -179,6 +176,12 @@ public class NodeScreen	extends TricksyScreenBase
 		{
 			if(!this.nameField.isMouseOver(x, y))
 				this.setFocused(null);
+			
+			if(this.nameField.isMouseOver(x, y))
+			{
+				this.setFocused(this.nameField);
+				return true;
+			}
 			
 			if(!childrenMouseClicked(x, y, mouseKey))
 			{
@@ -198,16 +201,7 @@ public class NodeScreen	extends TricksyScreenBase
 	
 	protected boolean childrenMouseClicked(double x, double y, int mouseKey)
 	{
-		if(this.nameField.isMouseOver(x, y))
-		{
-			this.setFocused(this.nameField);
-			return true;
-		}
-		
-		if(getSubScreen().isPresent() && getSubScreen().get().mouseClicked(x, y, mouseKey))
-			return true;
-		
-		return super.childrenMouseClicked(x, y, mouseKey);
+		return childMouseClicked(x, y, mouseKey) || super.childrenMouseClicked(x, y, mouseKey);
 	}
 	
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)
@@ -232,7 +226,7 @@ public class NodeScreen	extends TricksyScreenBase
 			}
 		}
 		
-		getSubScreen().ifPresent((screen) -> screen.doForegroundRendering(context, mouseX, mouseY));
+		renderChildForeground(context, mouseX, mouseY);
 		
 		context.drawTexture(NodeRenderUtils.TREE_TEXTURES, (this.width - 200) / 2, 2, 0, 68, 200, 26);
 		context.drawText(textRenderer, this.title, (this.width - this.textRenderer.getWidth(this.title)) / 2, 2 + (26 - this.textRenderer.fontHeight) / 2, 0x404040, false);
@@ -270,7 +264,7 @@ public class NodeScreen	extends TricksyScreenBase
 		
 		context.drawTexture(EDITOR_TEXTURES, (this.width / 2) - 94, MAIN_BAR_Y - 13, 0, 0, 60, 188, 31, 256, 256);
 		
-		getSubScreen().ifPresent(screen -> screen.render(context, mouseX, mouseY, delta));
+		renderChild(context, delta, mouseX, mouseY);
 	}
 	
 	private void onRenamed(String name)
@@ -279,7 +273,7 @@ public class NodeScreen	extends TricksyScreenBase
 	}
 	
 	/** Generates all available component parts of the current node */
-	private void generateParts()
+	public void generateParts()
 	{
 		parts.clear();
 		
@@ -290,6 +284,7 @@ public class NodeScreen	extends TricksyScreenBase
 		List<Pair<WhiteboardRef, Optional<INodeValue>>> sortedVariables = NodeRenderUtils.getSortedVariables(currentNode);
 		if(sortedVariables.isEmpty())
 			return;
+		
 		for(int i=0; i<sortedVariables.size(); i++)
 			parts.add(new EditablePart(sortedVariables.get(i).getLeft()).setBounds(50, 24 + (i * 11), width - 6, 25 + (i + 1) * 11));
 		

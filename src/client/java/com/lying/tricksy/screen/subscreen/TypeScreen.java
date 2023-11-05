@@ -19,7 +19,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
-public class TypeScreen extends NodeSubScreen
+public class TypeScreen extends NestedScreen<NodeScreen>
 {
 	private static final NodeType<?>[] DISPLAYED_TYPES = new NodeType<?>[] {TFNodeTypes.CONTROL_FLOW, TFNodeTypes.LEAF, TFNodeTypes.DECORATOR, TFNodeTypes.CONDITION}; 
 	private final Map<NodeType<?>, TypeButton> buttonMap = new HashMap<>();
@@ -53,6 +53,7 @@ public class TypeScreen extends NodeSubScreen
 				TreeNode<?> replacement = type.create(uuid);
 				parent.currentNode.parent().replaceChild(uuid, replacement);
 				parent.currentNode = replacement;
+				parent.generateParts();
 				parent.updateTreeRender();
 			});
 			part.setActive(this.parent.currentNode.getType() != type);

@@ -3,16 +3,19 @@ package com.lying.tricksy.screen;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.screen.subscreen.CreateRefScreen;
+import com.lying.tricksy.screen.subscreen.NestedScreen;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 
-public class WhiteboardScreen extends TricksyScreenBase
+public class WhiteboardScreen extends TricksyScreenBase implements INestedScreenProvider<WhiteboardScreen>
 {
 	// Button to view behaviour tree
 	public ButtonWidget tree;
@@ -23,6 +26,8 @@ public class WhiteboardScreen extends TricksyScreenBase
 	private BoardType currentBoard = BoardType.LOCAL;
 	
 	private WhiteboardList list;
+	
+	private CreateRefScreen createDialog = null;
 	
 	public WhiteboardScreen(TricksyTreeScreenHandler handler, PlayerInventory inventory, Text title)
 	{
@@ -48,6 +53,10 @@ public class WhiteboardScreen extends TricksyScreenBase
 		this.list.setRandSeed(this.player.getUuid().getLeastSignificantBits());
 	}
 	
+	public Optional<NestedScreen<WhiteboardScreen>> getSubScreen(){ return this.createDialog == null ? Optional.empty() : Optional.of(this.createDialog); }
+	
+	public void closeSubScreen() { this.createDialog = null; }
+	
 	private ButtonWidget makeBoardButton(BoardType board, int y)
 	{
 		return new BoardButton((this.width - 200) / 2 - 53, 30 + y, board);
@@ -68,10 +77,7 @@ public class WhiteboardScreen extends TricksyScreenBase
 	
 	public boolean mouseClicked(double mouseX, double mouseY, int button)
 	{
-		if(this.list.mouseClicked(mouseX, mouseY, button))
-			return true;
-		else
-			return super.mouseClicked(mouseX, mouseY, button);
+		return childMouseClicked(mouseX, mouseY, button) || this.list.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button);
 	}
 	
 	public void deleteReference(WhiteboardRef targetRef)

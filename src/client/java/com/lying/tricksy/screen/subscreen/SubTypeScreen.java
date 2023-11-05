@@ -6,7 +6,7 @@ import com.lying.tricksy.screen.NodeScreen;
 
 import net.minecraft.util.Identifier;
 
-public class SubTypeScreen extends NodeSubScreen
+public class SubTypeScreen extends NestedScreen<NodeScreen>
 {
 	private SubTypeList subTypeList;
 	private SubTypeGroupList groupList;
