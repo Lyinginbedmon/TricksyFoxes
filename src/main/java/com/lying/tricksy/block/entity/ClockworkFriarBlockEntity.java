@@ -252,7 +252,7 @@ public class ClockworkFriarBlockEntity extends LockableContainerBlockEntity impl
 					continue;
 				
 				tally -= tallyIngredientsInInventory((Inventory)ent, face, input, tally);
-				if(tally == 0)
+				if(tally <= 0)
 					break;
 			};
 			
@@ -266,22 +266,29 @@ public class ClockworkFriarBlockEntity extends LockableContainerBlockEntity impl
 	/** Counts matching items in the given inventory from the given face, up to a given target amount */
 	private static int tallyIngredientsInInventory(Inventory inventory, Direction face, Ingredient ingredient, int target)
 	{
+		if(inventory.isEmpty())
+			return target;
+		
 		int tally = target;
 		if(inventory instanceof SidedInventory)
 		{
 			SidedInventory inv = (SidedInventory)inventory;
-			for(int slot : inv.getAvailableSlots(face.getOpposite()))
-			{
-				ItemStack stackInSlot = inv.getStack(slot);
-				if(stackInSlot.isEmpty())
-					continue;
-				else if(ingredient.test(stackInSlot))
+			int[] slots = inv.getAvailableSlots(face.getOpposite());
+			if(slots.length == 0)
+				return target;
+			else
+				for(int slot : slots)
 				{
-					tally -= Math.min(tally, stackInSlot.getCount());
-					if(tally == 0)
-						break;
+					ItemStack stackInSlot = inv.getStack(slot);
+					if(stackInSlot.isEmpty())
+						continue;
+					else if(ingredient.test(stackInSlot))
+					{
+						tally -= Math.min(tally, stackInSlot.getCount());
+						if(tally == 0)
+							break;
+					}
 				}
-			}
 		}
 		else
 			for(int slot=0; slot<inventory.size(); slot++)
@@ -313,9 +320,13 @@ public class ClockworkFriarBlockEntity extends LockableContainerBlockEntity impl
 				if(ent == null || !(ent instanceof Inventory))
 					continue;
 				
-				if(ent instanceof SidedInventory)
+				Inventory inventory = (Inventory)ent;
+				if(inventory.isEmpty())
+					continue;
+				
+				if(inventory instanceof SidedInventory)
 				{
-					SidedInventory inv = (SidedInventory)ent;
+					SidedInventory inv = (SidedInventory)inventory;
 					for(int slot : inv.getAvailableSlots(face.getOpposite()))
 					{
 						ItemStack stackInSlot = inv.getStack(slot);
@@ -334,8 +345,6 @@ public class ClockworkFriarBlockEntity extends LockableContainerBlockEntity impl
 					}
 				}
 				else
-				{
-					Inventory inventory = (Inventory)ent;
 					for(int slot=0; slot<inventory.size(); slot++)
 					{
 						ItemStack stackInSlot = inventory.getStack(slot);
@@ -352,9 +361,8 @@ public class ClockworkFriarBlockEntity extends LockableContainerBlockEntity impl
 								break;
 						}
 					}
-				}
 				
-				if(tally == 0)
+				if(tally <= 0)
 					break;
 			};
 		}
@@ -404,7 +412,8 @@ public class ClockworkFriarBlockEntity extends LockableContainerBlockEntity impl
 		Map<Ingredient, Integer> inputCounts = new HashMap<>();
 		if(recipe != null)
 			for(Ingredient input : ingredients)
-				inputCounts.put(input, inputCounts.getOrDefault(input, 0) + 1);
+				if(!input.isEmpty())
+					inputCounts.put(input, inputCounts.getOrDefault(input, 0) + 1);
 		
 		return inputCounts;
 	}
