@@ -242,9 +242,8 @@ public class ClockworkFriarBlockEntity extends LockableContainerBlockEntity impl
 		// Ensure necessary ingredients are accounted for in neighbouring inventories
 		for(Entry<Ingredient, Integer> entry : getIngredients().entrySet())
 		{
-			int tally = entry.getValue();
 			Ingredient input = entry.getKey();
-			
+			int tally = entry.getValue();
 			for(Direction face : new Direction[] {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST})
 			{
 				BlockEntity ent = world.getBlockEntity(pos.offset(face));
@@ -267,7 +266,7 @@ public class ClockworkFriarBlockEntity extends LockableContainerBlockEntity impl
 	private static int tallyIngredientsInInventory(Inventory inventory, Direction face, Ingredient ingredient, int target)
 	{
 		if(inventory.isEmpty())
-			return target;
+			return 0;
 		
 		int tally = target;
 		if(inventory instanceof SidedInventory)
@@ -275,7 +274,7 @@ public class ClockworkFriarBlockEntity extends LockableContainerBlockEntity impl
 			SidedInventory inv = (SidedInventory)inventory;
 			int[] slots = inv.getAvailableSlots(face.getOpposite());
 			if(slots.length == 0)
-				return target;
+				return 0;
 			else
 				for(int slot : slots)
 				{
@@ -339,6 +338,7 @@ public class ClockworkFriarBlockEntity extends LockableContainerBlockEntity impl
 								heldStacks.add(consumed.getRecipeRemainder().copyWithCount(consumed.getCount()));
 							
 							tally -= Math.min(tally, consumed.getCount());
+							inv.markDirty();
 							if(tally == 0)
 								break;
 						}
@@ -357,6 +357,7 @@ public class ClockworkFriarBlockEntity extends LockableContainerBlockEntity impl
 								heldStacks.add(consumed.getRecipeRemainder().copyWithCount(consumed.getCount()));
 							
 							tally -= Math.min(tally, consumed.getCount());
+							inventory.markDirty();
 							if(tally == 0)
 								break;
 						}
