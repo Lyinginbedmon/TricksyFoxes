@@ -79,7 +79,8 @@ public class TFEnlightenmentPaths implements SimpleResourceReloadListener<List<J
 	
 	public boolean isEnlightenable(MobEntity entity) { return PATHS_MAP.containsKey(entity.getType()); }
 	
-	public EnlightenmentPath<?, ?> getPath(EntityType<?> entity) { return PATHS_MAP.get(entity); }
+	@Nullable
+	public EnlightenmentPath<?, ?> getPath(EntityType<?> entity) { return PATHS_MAP.getOrDefault(entity, null); }
 	
 	@Nullable
 	public EnlightenmentPath<?, ?> getPath(Identifier regName)

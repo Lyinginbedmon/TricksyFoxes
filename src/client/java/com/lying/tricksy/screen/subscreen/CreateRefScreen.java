@@ -96,6 +96,20 @@ public class CreateRefScreen extends NestedScreen<WhiteboardScreen>
 		return (this.nameField.keyPressed(keyCode, scanCode, modifiers) || this.nameField.isActive()) || super.keyPressed(keyCode, scanCode, modifiers);
 	}
 	
+	public boolean mouseClicked(double mouseX, double mouseY, int button)
+	{
+		boolean isNameHovered = this.nameField.isMouseOver(mouseX, mouseY);
+		if(this.nameField.isFocused())
+		{
+			if(!isNameHovered)
+				setFocused(null);
+		}
+		else if(isNameHovered)
+			setFocused(this.nameField);
+		
+		return this.nameField.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button);
+	}
+	
 	public void render(DrawContext context, int mouseX, int mouseY, float delta)
 	{
 		renderBackground(context);

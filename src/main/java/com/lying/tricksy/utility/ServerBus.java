@@ -54,14 +54,22 @@ public class ServerBus
 		});
 		ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> 
 		{
-			if(entity.getType() != EntityType.ENDER_DRAGON)
-				return;
+			Accomplishment result = null;
+			if(entity.getType() == EntityType.ENDER_DRAGON)
+				result = TFAccomplishments.SQUIRE;
+			else if(entity.getType() == EntityType.WARDEN)
+				result = TFAccomplishments.OUTLAW;
+			else if(entity.getType() == EntityType.WITHER)
+				result = TFAccomplishments.DEATH_DEFIER;
 			
-			entity.getWorld().getEntitiesByClass(MobEntity.class, entity.getBoundingBox().expand(64), (mob) -> mob.isAlive() && TFEnlightenmentPaths.INSTANCE.isEnlightenable(mob)).forEach((mob) -> 
-			{
-				TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(mob);
-				comp.addAccomplishment(TFAccomplishments.SQUIRE);
-			});
+			if(result == null)
+				return;
+			else 
+				for(MobEntity mob : entity.getWorld().getEntitiesByClass(MobEntity.class, entity.getBoundingBox().expand(16, 64, 16), (mob) -> mob.isAlive() && TFEnlightenmentPaths.INSTANCE.isEnlightenable(mob))) 
+				{
+					TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(mob);
+					comp.addAccomplishment(result);
+				};
 		});
 		
 		/** Prescient Scroll (Entity) handling */

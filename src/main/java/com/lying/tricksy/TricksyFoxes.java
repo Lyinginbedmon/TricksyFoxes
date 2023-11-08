@@ -5,8 +5,10 @@ import org.slf4j.LoggerFactory;
 
 import com.lying.tricksy.config.ServerConfig;
 import com.lying.tricksy.data.TFRecipeProvider;
+import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFBlockEntities;
 import com.lying.tricksy.init.TFBlocks;
+import com.lying.tricksy.init.TFCommands;
 import com.lying.tricksy.init.TFEnlightenmentPaths;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
@@ -42,9 +44,10 @@ public class TricksyFoxes implements ModInitializer
 		config.read();
 		
 		ServerBus.registerEventCallbacks();
-		
+		TFCommands.init();
 		TFObjType.init();
 		TFNodeTypes.init();
+		TFAccomplishments.init();
 		TFEnlightenmentPaths.init();
 		TFBlocks.init();
 		TFBlockEntities.init();

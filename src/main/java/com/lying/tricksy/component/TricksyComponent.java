@@ -124,11 +124,9 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 			return;
 		
 		// Accomplishments checked every tick
-		List.of(TFAccomplishments.CLOUDSEEKER, TFAccomplishments.OUTSIDE_THE_BOX, TFAccomplishments.FISHERMAN).forEach((acc) -> 
-		{
+		for(Accomplishment acc : TFAccomplishments.PER_TICK)
 			if(acc.achieved(theMob))
 				addAccomplishment(acc);
-		});
 		
 		// Accomplishments from taking damage
 		// XXX More flexible approach to accomplishments based on entity state change
@@ -167,8 +165,12 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	
 	public boolean isEnlightening() { return enlightening >= 0; }
 	
-	private boolean enlighten()
+	/** Immediately enlightens this mob, regardless of prerequisites */
+	public boolean enlighten()
 	{
+		if(!canBeEnlightened())
+			return false;
+		
 		PathAwareEntity tricksy = TFEnlightenmentPaths.INSTANCE.getPath(theMob.getType()).giveEnlightenment(theMob);
 		theMob.getActiveStatusEffects().forEach((effect,instance) -> tricksy.addStatusEffect(instance));
 		if(theMob.hasCustomName())
@@ -201,10 +203,14 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 		return false;
 	}
 	
-	public void addAccomplishment(Accomplishment type)
+	public List<Accomplishment> getAccomplishments() { return this.accomplishments; }
+	
+	public boolean addAccomplishment(Accomplishment type) { return addAccomplishment(type, hasPeriapt()); }
+	
+	public boolean addAccomplishment(Accomplishment type, boolean accruable)
 	{
-		if(!hasPeriapt() || hasAchieved(type))
-			return;
+		if(!accruable || hasAchieved(type))
+			return false;
 		
 		this.accomplishments.add(type);
 		if(this.theMob != null && this.theMob.isAlive())
@@ -221,5 +227,17 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 			}
 		}
 		markDirty();
+		return true;
+	}
+	
+	public boolean revokeAllAccomplishments() { this.accomplishments.clear(); markDirty(); return true; }
+	
+	public boolean revokeAccomplishment(Accomplishment type)
+	{
+		if(!hasAchieved(type))
+			return false;
+		this.accomplishments.remove(type);
+		markDirty();
+		return true;
 	}
 }
