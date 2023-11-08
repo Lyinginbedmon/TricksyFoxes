@@ -7,6 +7,7 @@ import net.minecraft.util.Identifier;
 public class TFPacketHandler
 {
 	public static final Identifier ADD_GLOBAL_REF_ID	= make("add_global_ref");
+	public static final Identifier ADD_LOCAL_REF_ID		= make("add_local_ref");
 	public static final Identifier REMOVE_USER_ID		= make("close_tree");
 	public static final Identifier DELETE_REF_ID		= make("delete_ref");
 	public static final Identifier REF_ADDED_ID			= make("ref_added");

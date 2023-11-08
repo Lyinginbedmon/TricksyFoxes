@@ -15,13 +15,6 @@ public interface INestedScreenProvider<T extends Screen & INestedScreenProvider<
 	
 	public void closeSubScreen();
 	
-	public default boolean childCharTyped(char chr, int modifiers)
-	{
-		if(getSubScreen().isPresent())
-			return getSubScreen().get().charTyped(chr, modifiers);
-		return false;
-	}
-	
 	public default void initChild(MinecraftClient client, int width, int height) { getSubScreen().ifPresent(child -> child.init(client, width, height)); }
 	
 	public default void tickChild() { getSubScreen().ifPresent(child -> child.tick()); }
@@ -29,6 +22,13 @@ public interface INestedScreenProvider<T extends Screen & INestedScreenProvider<
 	public default void renderChild(DrawContext context, float delta, int mouseX, int mouseY) { getSubScreen().ifPresent(child -> child.render(context, mouseX, mouseY, delta)); }
 	
 	public default void renderChildForeground(DrawContext context, int mouseX, int mouseY) { getSubScreen().ifPresent(child -> child.doForegroundRendering(context, mouseX, mouseY)); }
+	
+	public default boolean childCharTyped(char chr, int modifiers)
+	{
+		if(getSubScreen().isPresent())
+			return getSubScreen().get().charTyped(chr, modifiers);
+		return false;
+	}
 	
 	public default boolean childKeyPressed(int keyCode, int scanCode, int modifiers)
 	{

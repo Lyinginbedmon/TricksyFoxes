@@ -4,9 +4,9 @@
 	{
 		"down": "minecraft:block/spruce_planks",
 		"east": "tricksy:block/work_table_side",
-		"north": "tricksy:block/work_table_side",
+		"north": "tricksy:block/work_table_front",
 		"particle": "tricksy:block/work_table_top",
-		"south": "tricksy:block/work_table_side",
+		"south": "tricksy:block/work_table_front",
 		"up": "tricksy:block/work_table_top",
 		"west": "tricksy:block/work_table_side"
 	}

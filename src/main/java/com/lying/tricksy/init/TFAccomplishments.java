@@ -3,6 +3,8 @@ package com.lying.tricksy.init;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.collect.Lists;
 import com.lying.tricksy.component.Accomplishment;
 import com.lying.tricksy.reference.Reference;
@@ -40,6 +42,7 @@ public class TFAccomplishments
 		return made;
 	}
 	
+	@Nullable
 	public static Accomplishment get(Identifier nameIn)
 	{
 		for(Accomplishment acc : ACCOMPLISHMENTS)

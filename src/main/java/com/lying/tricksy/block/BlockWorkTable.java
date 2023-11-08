@@ -2,6 +2,7 @@ package com.lying.tricksy.block;
 
 import java.util.Random;
 
+import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.block.entity.WorkTableBlockEntity;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.network.SyncWorkTableScreenPacket;
@@ -15,27 +16,31 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
 public class BlockWorkTable extends BlockWithEntity
 {
+	public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
 	public static final BooleanProperty TRIGGERED = Properties.TRIGGERED;
 	
 	public BlockWorkTable(Settings settings)
 	{
 		super(settings.pistonBehavior(PistonBehavior.BLOCK));
-		setDefaultState(this.stateManager.getDefaultState().with(TRIGGERED, false));
+		setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.NORTH).with(TRIGGERED, false));
 	}
 	
 	public BlockRenderType getRenderType(BlockState state) { return BlockRenderType.MODEL; }
@@ -43,6 +48,15 @@ public class BlockWorkTable extends BlockWithEntity
 	public BlockEntity createBlockEntity(BlockPos pos, BlockState state)
 	{
 		return new WorkTableBlockEntity(pos, state);
+	}
+	
+	public BlockState getPlacementState(ItemPlacementContext ctx)
+	{
+		BlockPos pos = ctx.getBlockPos();
+		World world = ctx.getWorld();
+		if(pos.getY() < world.getTopY() - 1 && world.getBlockState(pos.up()).canReplace(ctx))
+			return super.getPlacementState(ctx).with(FACING, ctx.getHorizontalPlayerFacing().getOpposite());
+		return null;
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -76,7 +90,7 @@ public class BlockWorkTable extends BlockWithEntity
 	// FIXME Ensure this method actually fires
 	public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random)
 	{
-		System.out.println("Performing scheduled tick on work table at "+pos.toShortString());
+		TricksyFoxes.LOGGER.info("Performing scheduled tick on work table at "+pos.toShortString());
 		if(state.get(TRIGGERED))
 			((WorkTableBlockEntity)world.getBlockEntity(pos)).tryCraft(true);
 	}
@@ -124,6 +138,6 @@ public class BlockWorkTable extends BlockWithEntity
 	
 	protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
 	{
-		builder.add(TRIGGERED);
+		builder.add(TRIGGERED, FACING);
 	}
 }

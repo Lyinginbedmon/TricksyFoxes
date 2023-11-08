@@ -15,8 +15,8 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
-import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFScreenHandlerTypes;
 
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -34,7 +34,10 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	/** All references available to the mob, categorised by their whiteboard type */
 	private Map<BoardType, Map<WhiteboardRef, IWhiteboardObject<?>>> references = new HashMap<>();
 	
+	/** Set of references flagged to be deleted when the tree is saved */
 	private List<WhiteboardRef> markedForDeletion = Lists.newArrayList();
+	/** Set of references flagged to be added when the tree is saved */
+	private List<WhiteboardRef> addedReferences = Lists.newArrayList();
 	
 	/** The specific mob being interacted with */
 	private ITricksyMob<?> tricksy = null;
@@ -93,7 +96,11 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	
 	public Map<WhiteboardRef,IWhiteboardObject<?>> getEntriesOnBoard(BoardType board)
 	{
-		return references.getOrDefault(board, new HashMap<>()); 
+		Map<WhiteboardRef, IWhiteboardObject<?>> entries = new HashMap<>();
+		references.getOrDefault(board, new HashMap<>()).entrySet().forEach(entry -> entries.put(entry.getKey(), entry.getValue()));
+		if(board == BoardType.LOCAL)
+			addedReferences.forEach(ref -> entries.put(ref, ref.type().blank()));
+		return entries;
 	}
 	
 	public void setTricksy(ITricksyMob<?> mobIn) { this.tricksy = mobIn; }
@@ -131,7 +138,9 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 			this.tricksyTree = tricksy.getBehaviourTree().copy();
 		else
 			this.tricksyTree = new BehaviourTree();
+		
 		markedForDeletion.clear();
+		addedReferences.clear();
 		countNodes();
 	}
 	
@@ -144,21 +153,46 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	
 	public void markForDeletion(WhiteboardRef reference)
 	{
+		/** Only permit removing references from the global or local whiteboards */
+		if(reference.boardType() == BoardType.CONSTANT)
+			return;
+		
 		if(!isMarkedForDeletion(reference))
 			markedForDeletion.add(reference);
 		else
 			markedForDeletion.removeIf((marked) -> marked.isSameRef(reference));
 	}
 	
-	public boolean isMarkedForDeletion(WhiteboardRef ref)
+	public void addBlankReference(WhiteboardRef reference)
 	{
-		for(WhiteboardRef marked : markedForDeletion)
-			if(marked.isSameRef(ref))
-				return true;
-		return false;
+		/** Only permit adding new cachable references to the local whiteboard */
+		if(reference.boardType() != BoardType.LOCAL || reference.uncached())
+			return;
+		
+		/** If a reference matches one marked for deletion, unmark it */
+		if(markedForDeletion.removeIf(marked -> marked.isSameRef(reference)))
+			return;
+		
+		/** If a reference already exists amongst the references as a system value, ignore it */
+		for(WhiteboardRef ref : references.getOrDefault(reference.boardType(), new HashMap<>()).keySet())
+			if(ref.uncached() && ref.isSameRef(reference))
+				return;
+		
+		addedReferences.removeIf(marked -> marked.isSameRef(reference));
+		addedReferences.add(reference);
 	}
 	
-	public Iterable<WhiteboardRef> markedForDeletion() { return this.markedForDeletion; }
+	public boolean isMarkedForDeletion(WhiteboardRef ref)
+	{
+		return markedForDeletion.stream().anyMatch(marked -> marked.isSameRef(ref));
+	}
+	
+	public boolean isNew(WhiteboardRef ref)
+	{
+		return addedReferences.stream().anyMatch(marked -> marked.isSameRef(ref));
+	}
+	public List<WhiteboardRef> getAdditions() { return this.addedReferences; }
+	public List<WhiteboardRef> getDeletions() { return this.markedForDeletion; }
 	
 	public void onClosed(PlayerEntity player)
 	{

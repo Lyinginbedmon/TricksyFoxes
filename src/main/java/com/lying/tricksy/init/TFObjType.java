@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -58,6 +59,8 @@ public class TFObjType<T>
 	public static final TFObjType<ItemStack> ITEM = register(new TFObjType<>("item", () -> new Item())
 			.castTo(TFObjType.INT, (obj) -> new WhiteboardObj.Int(obj.get().getCount()))
 			.emptyIf((obj) -> obj.get() == null || obj.get().isEmpty()));
+	
+	public static final Collection<TFObjType<?>> CREATABLES = Set.of(BOOL, INT, BLOCK, REGION, ENT, ITEM);
 	
 	private final Identifier name;
 	private final Supplier<IWhiteboardObject<T>> supplier;

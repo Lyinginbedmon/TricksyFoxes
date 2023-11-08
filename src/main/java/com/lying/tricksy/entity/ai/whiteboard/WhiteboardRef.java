@@ -100,6 +100,7 @@ public class WhiteboardRef
 		return sorted;
 	}
 	
+	/** Returns true if the given reference shares the same name, type, and whiteboard as this one */
 	public boolean isSameRef(WhiteboardRef refB) { return refB.name.equals(this.name) && refB.varType == this.varType && refB.onBoard == this.onBoard; }
 	
 	public String name() { return this.name; }

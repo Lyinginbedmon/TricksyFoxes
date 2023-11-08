@@ -1,12 +1,15 @@
 package com.lying.tricksy.screen;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
 
 import com.google.common.base.Predicates;
 import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.entity.ai.node.TreeNode;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
+import com.lying.tricksy.network.AddLocalReferencePacket;
 import com.lying.tricksy.network.DeleteReferencePacket;
 import com.lying.tricksy.network.SaveTreePacket;
 import com.lying.tricksy.reference.Reference;
@@ -18,6 +21,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec2f;
@@ -68,7 +72,7 @@ public class TreeScreen extends TricksyScreenBase
 		}).dimensions(midPoint - 70 - 20, 7, 40, 16).build());
 		addDrawableChild(save = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.save"), (button) -> 
 		{
-			handler.markedForDeletion().forEach((ref) -> DeleteReferencePacket.send(player, handler.tricksyUUID(), ref));
+			issueWhiteboardPackets(player, handler);
 			SaveTreePacket.send(player, handler.tricksyUUID(), handler.getTree());
 			client.currentScreen.close();
 		}).dimensions(midPoint + 70 - 20, 7, 40, 16).build());
@@ -203,6 +207,27 @@ public class TreeScreen extends TricksyScreenBase
 		
 		NodeRenderUtils.scaleAndPositionNode(root, renderX, renderY, variableShow, true);
 		NodeRenderUtils.renderTree(root, context, this.textRenderer, this.ticksOpen, variableShow, true);
+	}
+	
+	private void issueWhiteboardPackets(PlayerEntity player, TricksyTreeScreenHandler handler)
+	{
+		List<WhiteboardRef> addedReferences = handler.getAdditions();
+		List<WhiteboardRef> deletedReferences = handler.getDeletions();
+		
+		/** Remove all new references marked for deletion, removing them from the deletion list as well */
+		addedReferences.removeIf(ref -> 
+		{
+			if(handler.isMarkedForDeletion(ref))
+			{
+				deletedReferences.removeIf(del -> del.isSameRef(ref));
+				return true;
+			}
+			return false;
+		});
+		
+		UUID tricksyID = handler.tricksyUUID();
+		deletedReferences.forEach(ref -> DeleteReferencePacket.send(player, tricksyID, ref));
+		addedReferences.forEach(ref -> AddLocalReferencePacket.send(player, tricksyID, ref));
 	}
 	
 	public static enum NodeElement

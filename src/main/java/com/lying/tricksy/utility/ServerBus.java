@@ -26,12 +26,12 @@ public class ServerBus
 {
 	public static void registerEventCallbacks()
 	{
-		ServerLifecycleEvents.SERVER_STARTED.register((server) -> ConstantsWhiteboard.populateTagFilters());
-		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, serverResourceManager, success) -> ConstantsWhiteboard.populateTagFilters());
+		ServerLifecycleEvents.SERVER_STARTED.register((server) -> reloadDataPackListeners());
+		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, serverResourceManager, success) -> reloadDataPackListeners());
 		
 		ServerEntityWorldChangeEvents.AFTER_ENTITY_CHANGE_WORLD.register((originalEntity, newEntity, origin, destination) -> 
 		{
-			if(!(newEntity instanceof MobEntity) || !TFEnlightenmentPaths.isEnlightenable((MobEntity)newEntity))
+			if(!(newEntity instanceof MobEntity) || !TFEnlightenmentPaths.INSTANCE.isEnlightenable((MobEntity)newEntity))
 				return;
 			
 			TricksyComponent compNew = TFComponents.TRICKSY_TRACKING.get(newEntity);
@@ -57,7 +57,7 @@ public class ServerBus
 			if(entity.getType() != EntityType.ENDER_DRAGON)
 				return;
 			
-			entity.getWorld().getEntitiesByClass(MobEntity.class, entity.getBoundingBox().expand(64), (mob) -> mob.isAlive() && TFEnlightenmentPaths.isEnlightenable(mob)).forEach((mob) -> 
+			entity.getWorld().getEntitiesByClass(MobEntity.class, entity.getBoundingBox().expand(64), (mob) -> mob.isAlive() && TFEnlightenmentPaths.INSTANCE.isEnlightenable(mob)).forEach((mob) -> 
 			{
 				TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(mob);
 				comp.addAccomplishment(TFAccomplishments.SQUIRE);
@@ -77,5 +77,10 @@ public class ServerBus
 			
 			return ActionResult.PASS;
 		});
+	}
+	
+	private static void reloadDataPackListeners()
+	{
+		ConstantsWhiteboard.populateTagFilters();
 	}
 }

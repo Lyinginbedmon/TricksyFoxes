@@ -53,7 +53,7 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	public TricksyComponent(MobEntity entityIn)
 	{
 		theMob = entityIn;
-		canEnlighten = !(entityIn instanceof ITricksyMob) && TFEnlightenmentPaths.isEnlightenable(entityIn);
+		canEnlighten = !(entityIn instanceof ITricksyMob) && TFEnlightenmentPaths.INSTANCE.isEnlightenable(entityIn);
 	}
 	
 	public void readFromNbt(NbtCompound tag)
@@ -157,7 +157,7 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 			else if(enlightening == 0)
 				enlighten();
 		}
-		else if(TFEnlightenmentPaths.getPath(theMob.getType()).conditionsMet(accomplishments))
+		else if(TFEnlightenmentPaths.INSTANCE.getPath(theMob.getType()).conditionsMet(accomplishments))
 		{
 			theMob.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 300, 0));
 			if(!theMob.hasPortalCooldown())
@@ -169,7 +169,7 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	
 	private boolean enlighten()
 	{
-		PathAwareEntity tricksy = TFEnlightenmentPaths.getPath(theMob.getType()).giveEnlightenment(theMob);
+		PathAwareEntity tricksy = TFEnlightenmentPaths.INSTANCE.getPath(theMob.getType()).giveEnlightenment(theMob);
 		theMob.getActiveStatusEffects().forEach((effect,instance) -> tricksy.addStatusEffect(instance));
 		if(theMob.hasCustomName())
 			tricksy.setCustomName(theMob.getCustomName());

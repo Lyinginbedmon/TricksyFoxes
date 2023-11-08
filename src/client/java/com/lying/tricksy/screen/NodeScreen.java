@@ -75,7 +75,7 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 		int midWidth = this.width / 2;
 		generateParts();
 		
-		this.nameField = new TextFieldWidget(this.textRenderer, midWidth - 52, MAIN_BAR_Y, 104, 12, Text.translatable("container.repair"));
+		this.nameField = new TextFieldWidget(this.textRenderer, midWidth - 52, MAIN_BAR_Y, 104, 12, Text.empty());
 		this.nameField.setEditableColor(-1);
 		this.nameField.setUneditableColor(-1);
 		this.nameField.setDrawsBackground(false);

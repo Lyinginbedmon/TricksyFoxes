@@ -143,6 +143,7 @@ public class ReferenceList extends ElementListWidget<ReferenceList.ReferenceEntr
 			if(reference.boardType() != BoardType.CONSTANT && valueSnapshot != null)
 			{
 				List<Text> description = valueSnapshot.describe();
+				if(description.isEmpty()) return;
 				ticksHovered = (hovered && description.size() > 1) ? ticksHovered + 1 : 0;
 				Text draw = description.get(Math.floorDiv(ticksHovered, Reference.Values.TICKS_PER_SECOND)%description.size());
 				context.drawText(mc.textRenderer, draw, x + (150 - 8 - mc.textRenderer.getWidth(draw)) / 2, y + 15, 0x808080, false);

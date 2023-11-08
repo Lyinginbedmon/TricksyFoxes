@@ -68,9 +68,7 @@ public class IntegerDialog extends ValueDialog<Integer>
 	
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers)
 	{
-		if(this.input.keyPressed(keyCode, scanCode, modifiers))
-			return true;
-		return super.keyPressed(keyCode, scanCode, modifiers);
+		return this.input.keyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);
 	}
 	
 	public void render(DrawContext context, int mouseX, int mouseY, float delta)
