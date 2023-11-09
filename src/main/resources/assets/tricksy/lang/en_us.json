@@ -288,5 +288,7 @@
 	"command.tricksy.accomplishments.grant.failed": "Failed to grant %s the %s accomplishment",
 	"command.tricksy.accomplishments.revoke.success": "Revoked the %s accomplishment from %s",
 	"command.tricksy.accomplishments.revoke.failed": "Could not revoke the %s accomplishment from %s",
-	"command.tricksy.accomplishments.revoke.all": "Revoked all accomplishments from %s"
+	"command.tricksy.accomplishments.revoke.all": "Revoked all accomplishments from %s",
+	"command.tricksy.accomplishments.test.success": "%s has achieved %s",
+	"command.tricksy.accomplishments.test.failed": "%s has not achieved %s"
 }

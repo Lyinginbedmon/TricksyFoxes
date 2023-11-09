@@ -9,6 +9,8 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.component.Accomplishment;
 import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.reference.Reference;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -24,11 +26,16 @@ public class TFCommands
 	private static final Text GENERIC_FAIL = Text.translatable("command."+Reference.ModInfo.MOD_ID+".failed");
 	private static final String ACC_SLUG = "command."+Reference.ModInfo.MOD_ID+".accomplishments";
 	
+	private static final SimpleCommandExceptionType REVOKE_FAILED = new SimpleCommandExceptionType(Text.translatable(ACC_SLUG+".revoke.failed"));
+	
+	private static final String TARGET_KEY = "target";
+	private static final String ACC_KEY = "accomplishment";
+	
 	public static void init()
 	{
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> 
 		{
-			dispatcher.register(literal(Reference.ModInfo.MOD_ID).requires(source -> source.hasPermissionLevel(4))
+			dispatcher.register(literal(Reference.ModInfo.MOD_ID).requires(source -> source.hasPermissionLevel(2))
 					.then(literal("enlighten")
 						.then(argument("targets", EntityArgumentType.entities())
 						.executes(context ->
@@ -37,28 +44,29 @@ public class TFCommands
 							for(Entity ent : EntityArgumentType.getEntities(context, "targets"))
 								if(tryToEnlighten(ent, context.getSource()))
 									tally++;
-							return tally > 0 ? 1 : 0;
+							return Math.min(15, tally);
 						})))
 					.then(literal("accomplishments")
 						.then(literal("list")
 							.executes(context -> listAccomplishments(context.getSource())))
+						.then(argument(TARGET_KEY, EntityArgumentType.entity())
 						.then(literal("get")
-							.then(argument("target", EntityArgumentType.entity())
-							.executes(context -> tryGetAccomplishments(EntityArgumentType.getEntity(context, "target"), context.getSource()))))
+							.executes(context -> tryGetAccomplishments(EntityArgumentType.getEntity(context, TARGET_KEY), context.getSource())))
 						.then(literal("grant")
-							.then(argument("target", EntityArgumentType.entity())
-							.then(argument("accomplishment", RegistryEntryArgumentType.registryEntry(registryAccess, TFAccomplishments.ACC_KEY))
-							.executes(context -> tryAddAccomplishment(EntityArgumentType.getEntity(context, "target"), RegistryEntryArgumentType.getRegistryEntry(context, "accomplishment", TFAccomplishments.ACC_KEY), context.getSource())))))
+							.then(argument(ACC_KEY, RegistryEntryArgumentType.registryEntry(registryAccess, TFAccomplishments.ACC_KEY))
+							.executes(context -> tryAddAccomplishment(EntityArgumentType.getEntity(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFAccomplishments.ACC_KEY), context.getSource()))))
+						.then(literal("test")
+								.then(argument(ACC_KEY, RegistryEntryArgumentType.registryEntry(registryAccess, TFAccomplishments.ACC_KEY))
+								.executes(context -> tryTestAccomplishment(EntityArgumentType.getEntity(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFAccomplishments.ACC_KEY), context.getSource()))))
 						.then(literal("revoke")
-							.then(argument("target", EntityArgumentType.entity())
 								.then(literal("all")
-								.executes(context -> revokeAll(EntityArgumentType.getEntity(context, "target"), context.getSource())))
-							.then(argument("accomplishment", RegistryEntryArgumentType.registryEntry(registryAccess, TFAccomplishments.ACC_KEY))
-							.executes(context -> tryRevokeAccomplishment(EntityArgumentType.getEntity(context, "target"), RegistryEntryArgumentType.getRegistryEntry(context, "accomplishment", TFAccomplishments.ACC_KEY), context.getSource())))))));
+								.executes(context -> revokeAll(EntityArgumentType.getEntity(context, TARGET_KEY), context.getSource())))
+							.then(argument(ACC_KEY, RegistryEntryArgumentType.registryEntry(registryAccess, TFAccomplishments.ACC_KEY))
+							.executes(context -> tryRevokeAccomplishment(EntityArgumentType.getEntity(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFAccomplishments.ACC_KEY), context.getSource())))))));
 		});
 	}
 	
-	private static boolean tryToEnlighten(Entity ent, ServerCommandSource source)
+	private static boolean tryToEnlighten(Entity ent, ServerCommandSource source) throws CommandSyntaxException
 	{
 		boolean result = false;
 		try
@@ -68,7 +76,9 @@ public class TFCommands
 				result = comp.enlighten();
 		}
 		catch(Exception e) { }
-		Text message = Text.translatable("command."+Reference.ModInfo.MOD_ID+".enlighten."+(result ? "success" : "failed"), ent.getDisplayName());
+		if(!result)
+			throw (new SimpleCommandExceptionType(Text.translatable(ACC_SLUG+".enlighten.failed", ent.getDisplayName()))).create();
+		Text message = Text.translatable("command."+Reference.ModInfo.MOD_ID+".enlighten.success", ent.getDisplayName());
 		source.sendFeedback(() -> message, true);
 		return result;
 	}
@@ -79,7 +89,7 @@ public class TFCommands
 		return 1;
 	}
 	
-	private static int tryGetAccomplishments(Entity ent, ServerCommandSource source)
+	private static int tryGetAccomplishments(Entity ent, ServerCommandSource source) throws CommandSyntaxException
 	{
 		List<Accomplishment> set = Lists.newArrayList();
 		try
@@ -90,14 +100,14 @@ public class TFCommands
 		catch(Exception e) { source.sendFeedback(() -> GENERIC_FAIL, true); return 0; }
 		Text message;
 		if(set.isEmpty())
-			message = Text.translatable(ACC_SLUG+".get.failed", ent.getDisplayName());
+			throw (new SimpleCommandExceptionType(Text.translatable(ACC_SLUG+".get.failed", ent.getDisplayName()))).create();
 		else
 			message = Text.translatable(ACC_SLUG+".get.success", ent.getDisplayName(), listToText(set));
 		source.sendFeedback(() -> message, true);
 		return set.isEmpty() ? 0 : 1;
 	}
 	
-	private static int tryAddAccomplishment(Entity ent, RegistryEntry.Reference<Accomplishment> acc, ServerCommandSource source)
+	private static int tryAddAccomplishment(Entity ent, RegistryEntry.Reference<Accomplishment> acc, ServerCommandSource source) throws CommandSyntaxException
 	{
 		Accomplishment accomplishment = acc.value();
 		boolean result = false;
@@ -107,12 +117,33 @@ public class TFCommands
 			result = comp.addAccomplishment(accomplishment, true);
 		}
 		catch(Exception e) { source.sendFeedback(() -> GENERIC_FAIL, true); return 0; }
-		Text message = Text.translatable(ACC_SLUG+".grant."+(result ? "success" : "failed"), ent.getDisplayName(), accomplishment.translate());
+		if(!result)
+			throw (new SimpleCommandExceptionType(Text.translatable(ACC_SLUG+".grant.failed", ent.getDisplayName(), accomplishment.translate()))).create();
+		
+		Text message = Text.translatable(ACC_SLUG+".grant.success", ent.getDisplayName(), accomplishment.translate());
 		source.sendFeedback(() -> message, true);
 		return result ? 1 : 0;
 	}
 	
-	private static int tryRevokeAccomplishment(Entity ent, RegistryEntry.Reference<Accomplishment> acc, ServerCommandSource source)
+	private static int tryTestAccomplishment(Entity ent, RegistryEntry.Reference<Accomplishment> acc, ServerCommandSource source) throws CommandSyntaxException
+	{
+		Accomplishment accomplishment = acc.value();
+		boolean result = false;
+		try
+		{
+			TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(ent);
+			result = comp.hasAchieved(accomplishment);
+		}
+		catch(Exception e) { source.sendFeedback(() -> GENERIC_FAIL, true); return 0; }
+		if(!result)
+			throw (new SimpleCommandExceptionType(Text.translatable(ACC_SLUG+".test.failed", ent.getDisplayName(), accomplishment.translate()))).create();
+		
+		Text message = Text.translatable(ACC_SLUG+".test.success", ent.getDisplayName(), accomplishment.translate());
+		source.sendFeedback(() -> message, true);
+		return result ? 1 : 0;
+	}
+	
+	private static int tryRevokeAccomplishment(Entity ent, RegistryEntry.Reference<Accomplishment> acc, ServerCommandSource source) throws CommandSyntaxException
 	{
 		Accomplishment accomplishment = acc.value();
 		boolean result = false;
@@ -122,7 +153,10 @@ public class TFCommands
 			result = comp.revokeAccomplishment(accomplishment);
 		}
 		catch(Exception e) { source.sendFeedback(() -> GENERIC_FAIL, true); return 0; }
-		Text message = Text.translatable(ACC_SLUG+".revoke."+(result ? "success" : "failed"), accomplishment.translate(), ent.getDisplayName());
+		if(!result)
+			throw REVOKE_FAILED.create();
+		
+		Text message = Text.translatable(ACC_SLUG+".revoke.success", accomplishment.translate(), ent.getDisplayName());
 		source.sendFeedback(() -> message, true);
 		return result ? 1 : 0;
 	}

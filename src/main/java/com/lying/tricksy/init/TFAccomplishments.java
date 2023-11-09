@@ -1,5 +1,6 @@
 package com.lying.tricksy.init;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -40,24 +41,30 @@ public class TFAccomplishments
 	public static final Accomplishment SQUIRE = make("squire");
 	public static final Accomplishment OUTLAW = make("outlaw");
 	public static final Accomplishment DEATH_DEFIER = make("death_defier");
-	public static final Accomplishment SCHOLAR = make("scholar").condition(mob -> LocationPredicate.feature(StructureKeys.STRONGHOLD).test((ServerWorld)mob.getWorld(), mob.getPos().getX(), mob.getPos().getY(), mob.getPos().getZ()));
-	public static final Accomplishment JAILBIRD = make("jailbird").condition(mob -> LocationPredicate.feature(StructureKeys.ANCIENT_CITY).test((ServerWorld)mob.getWorld(), mob.getPos().getX(), mob.getPos().getY(), mob.getPos().getZ()));
-	public static final Accomplishment ARCHAEOLOGIST = make("archaeologist").condition(mob -> LocationPredicate.feature(StructureKeys.TRAIL_RUINS).test((ServerWorld)mob.getWorld(), mob.getPos().getX(), mob.getPos().getY(), mob.getPos().getZ()));
-	public static final Accomplishment INCONCEIVABLE = make("inconceivable");
-	public static final Accomplishment CLOUDSEEKER = make("cloudseeker").condition(ON_GROUND).condition(IN_OVERWORLD).condition((mob) -> mob.getY() == World.MAX_Y);
-	public static final Accomplishment OUTSIDE_THE_BOX = make("outside_the_box").condition(ON_GROUND).condition(IN_NETHER).condition((mob) -> mob.getY() >= 128);
-	public static final Accomplishment FIRETOUCHED = make("firetouched").condition(LOW_HEALTH).condition((mob) -> !mob.isFireImmune() && !mob.isInvulnerableTo(mob.getWorld().getDamageSources().onFire()) && !mob.hasStatusEffect(StatusEffects.FIRE_RESISTANCE));
-	public static final Accomplishment WATERBORNE = make("waterborne").condition(LOW_HEALTH).condition((mob) -> !mob.isInvulnerableTo(mob.getWorld().getDamageSources().drown()) && !mob.hasStatusEffect(StatusEffects.FIRE_RESISTANCE));
+	public static final Accomplishment SCHOLAR = make("scholar").tick().condition(mob -> LocationPredicate.feature(StructureKeys.STRONGHOLD).test((ServerWorld)mob.getWorld(), mob.getPos().getX(), mob.getPos().getY(), mob.getPos().getZ()));
+	public static final Accomplishment JAILBIRD = make("jailbird").tick().condition(mob -> LocationPredicate.feature(StructureKeys.ANCIENT_CITY).test((ServerWorld)mob.getWorld(), mob.getPos().getX(), mob.getPos().getY(), mob.getPos().getZ()));
+	public static final Accomplishment ARCHAEOLOGIST = make("archaeologist").tick().condition(mob -> LocationPredicate.feature(StructureKeys.TRAIL_RUINS).test((ServerWorld)mob.getWorld(), mob.getPos().getX(), mob.getPos().getY(), mob.getPos().getZ()));
+	public static final Accomplishment INCONCEIVABLE = make("inconceivable").obfuscate();
+	public static final Accomplishment CLOUDSEEKER = make("cloudseeker").tick().condition(ON_GROUND).condition(IN_OVERWORLD).condition((mob) -> mob.getY() == World.MAX_Y);
+	public static final Accomplishment OUTSIDE_THE_BOX = make("outside_the_box").tick().condition(ON_GROUND).condition(IN_NETHER).condition((mob) -> mob.getY() >= 128);
+	public static final Accomplishment FIRETOUCHED = make("firetouched").precondition(mob -> mob.isOnFire()).condition(LOW_HEALTH).condition((mob) -> !mob.isFireImmune() && !mob.isInvulnerableTo(mob.getWorld().getDamageSources().onFire()) && !mob.hasStatusEffect(StatusEffects.FIRE_RESISTANCE));
+	public static final Accomplishment WATERBORNE = make("waterborne").precondition(mob -> mob.getAir() <= 0).condition(LOW_HEALTH).condition((mob) -> !mob.isInvulnerableTo(mob.getWorld().getDamageSources().drown()) && !mob.hasStatusEffect(StatusEffects.FIRE_RESISTANCE));
 	public static final Accomplishment FISHERMAN = make("fisherman").condition((mob) -> mob.getMainHandStack().isIn(ItemTags.FISHES) || mob.getOffHandStack().isIn(ItemTags.FISHES));
 	
-	public static final Accomplishment[] PER_TICK = new Accomplishment[] 
-			{
-					CLOUDSEEKER,
-					SCHOLAR,
-					JAILBIRD,
-					ARCHAEOLOGIST,
-					OUTSIDE_THE_BOX
-			};
+	/** Returns a set of all registered accomplishments that need to be checked every tick */
+	public static final Collection<Accomplishment> ticking()
+	{
+		List<Accomplishment> tickers = Lists.newArrayList();
+		getAll().stream().filter(Accomplishment::ticking).forEach(acc -> tickers.add(acc));
+		return tickers;
+	};
+	
+	public static final Collection<Accomplishment> stateChangeListeners()
+	{
+		List<Accomplishment> listeners = Lists.newArrayList();
+		getAll().stream().filter(Accomplishment::hasPrecondition).forEach(acc -> listeners.add(acc));
+		return listeners;
+	}
 	
 	private static Accomplishment make(String nameIn)
 	{

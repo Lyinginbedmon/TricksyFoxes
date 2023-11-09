@@ -46,9 +46,9 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	
 	/** List of unique accomplishments */
 	private List<Accomplishment> accomplishments = Lists.newArrayList();
+	/** List of accomplishments with preconditions being monitored */
+	private List<Accomplishment> stateAccomplishments = Lists.newArrayList();
 	private Identifier lastDimension = null;
-	
-	private boolean isBurning, isDrowning;
 	
 	public TricksyComponent(MobEntity entityIn)
 	{
@@ -124,29 +124,24 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 			return;
 		
 		// Accomplishments checked every tick
-		for(Accomplishment acc : TFAccomplishments.PER_TICK)
+		TFAccomplishments.ticking().forEach(acc -> 
+		{
 			if(acc.achieved(theMob))
 				addAccomplishment(acc);
+		});
 		
-		// Accomplishments from taking damage
-		// XXX More flexible approach to accomplishments based on entity state change
-		if(theMob.isOnFire())
-			this.isBurning = true;
-		else if(isBurning)
+		// Accomplishments that look for a state change between ticks
+		stateAccomplishments.forEach(acc -> 
 		{
-			if(TFAccomplishments.FIRETOUCHED.achieved(theMob))
-				addAccomplishment(TFAccomplishments.FIRETOUCHED);
-			isBurning = false;
-		}
-		
-		if(theMob.getAir() <= 0)
-			this.isDrowning = true;
-		else if(isDrowning)
+			if(acc.achieved(theMob))
+				addAccomplishment(acc);
+		});
+		stateAccomplishments.clear();
+		TFAccomplishments.stateChangeListeners().forEach(acc -> 
 		{
-			if(TFAccomplishments.WATERBORNE.achieved(theMob))
-				addAccomplishment(TFAccomplishments.WATERBORNE);
-			isDrowning = false;
-		}
+			if(!hasAchieved(acc) && acc.preconditionsMet(theMob))
+				stateAccomplishments.add(acc);
+		});
 		
 		if(isEnlightening())
 		{
