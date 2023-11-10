@@ -131,9 +131,7 @@ public class ReferenceList extends ElementListWidget<ReferenceList.ReferenceEntr
 		{
 			context.drawTexture(WhiteboardList.BOARD_TEXTURES, x, y, 0, 0, 180, 25);
 			
-			int texX = reference.type().texIndex() * 8;
-			int texY = 175;
-			context.drawTexture(NodeRenderUtils.TREE_TEXTURES, x + 12, y + 3, texX, texY, 8, 8);
+			NodeRenderUtils.renderRefType(reference.type(), context, x + 12, y + 3, 8, 8);
 			
 			Text name = reference.displayName();
 			int namePos = x + 10;

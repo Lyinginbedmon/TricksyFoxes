@@ -16,6 +16,8 @@ public class IntegerDialog extends ValueDialog<Integer>
 	public IntegerDialog(CreateStaticScreen parentIn) { super(parentIn); }
 	
 	public static final int[] BUTTON_VALS = new int[]{-20, -10, -1, 1, 10, 20};
+	private static final int buttonSpacing = 5;
+	private static final int buttonWidth = (BUTTON_VALS.length * 25) + ((BUTTON_VALS.length - 1) * buttonSpacing);
 	private TextFieldWidget input;
 	
 	protected void init()
@@ -23,12 +25,12 @@ public class IntegerDialog extends ValueDialog<Integer>
 		addSelectableChild(input = makeCentredIntInput(this.width / 2, this.height / 2 - 4, 4, false));
 		setInitialFocus(input);
 		
-		int y = (this.height / 2) + 30;
-		int x = (this.width - BUTTON_VALS.length * 30) / 2;
+		int y = (this.height / 2) + 16;
+		int x = (this.width - buttonWidth) / 2;
 		for(int val : BUTTON_VALS)
 		{
 			addDrawableChild(ButtonWidget.builder(Text.literal((val >= 0 ? "+" : "")+String.valueOf(val)), (button) -> incVal(val * (hasShiftDown() ? 10 : 1))).dimensions(x, y, 25, 20).build());
-			x += 30;
+			x += 25 + buttonSpacing;
 		}
 	}
 	
@@ -73,7 +75,9 @@ public class IntegerDialog extends ValueDialog<Integer>
 	
 	public void render(DrawContext context, int mouseX, int mouseY, float delta)
 	{
-		context.drawNineSlicedTexture(DIALOG_TEXTURES, (this.width / 2) - 95, (this.height / 2) - 35, 185, 97, 10, 200, 26, 0, 0);
+		int backingWidth = 185;
+		int backingHeight = 97;
+		context.drawNineSlicedTexture(DIALOG_TEXTURES, (this.width - backingWidth) / 2, (this.height - backingHeight) / 2, backingWidth, backingHeight, 10, 200, 26, 0, 0);
 		renderTitle(TFObjType.INT.translated(), context, (this.height / 2) - 25);
 		super.render(context, mouseX, mouseY, delta);
 		input.render(context, mouseX, mouseY, delta);

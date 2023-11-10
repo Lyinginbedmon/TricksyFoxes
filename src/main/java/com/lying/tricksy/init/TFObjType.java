@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -32,51 +31,53 @@ import net.minecraft.util.math.Direction;
 public class TFObjType<T>
 {
 	private static final Map<Identifier, TFObjType<?>> REGISTRY = new HashMap<>();
-	private static int iconIndex = 0;
 	
 	/** Empty value, usually obtained when the whiteboard grabs a value it doesn't have */
-	public static final TFObjType<Object> EMPTY = register(new TFObjType<>("empty", () -> WhiteboardObj.EMPTY)
+	public static final TFObjType<Object> EMPTY = register(new TFObjType<>("empty", 0, () -> WhiteboardObj.EMPTY)
 			.emptyIf((obj) -> true));
 	/** Boolean true/false value */
-	public static final TFObjType<Boolean> BOOL = register(new TFObjType<>("boolean", () -> new Bool()))
+	public static final TFObjType<Boolean> BOOL = register(new TFObjType<>("boolean", 1, () -> new Bool()))
 			.castTo(TFObjType.EMPTY, (obj) -> TFObjType.BOOL.blank())
 			.castTo(TFObjType.INT, (obj) -> new WhiteboardObj.Int(obj.get() ? 1 : 0));
 	/** Numerical value, always between zero and {@link Integer.MAX_VALUE} */
-	public static final TFObjType<Integer> INT = register(new TFObjType<>("integer", () -> new Int())
+	public static final TFObjType<Integer> INT = register(new TFObjType<>("integer", 2, () -> new Int())
 			.castTo(TFObjType.EMPTY, (obj) -> TFObjType.INT.blank())
 			.castTo(TFObjType.BOOL, (obj) -> new WhiteboardObj.Bool(obj.get() > 0))
 			.emptyIf((obj) -> obj.get() <= 0));
 	/** Block position with optional direction for addressing specific sides of containers */
-	public static final TFObjType<BlockPos> BLOCK = register(new TFObjType<>("block", () -> new WhiteboardObjBlock()));
+	public static final TFObjType<BlockPos> BLOCK = register(new TFObjType<>("block", 3, () -> new WhiteboardObjBlock())
+			.castTo(TFObjType.REGION, (obj) -> new WhiteboardObjRegion(obj.get(), obj.get())));
 	/** Pair of block positions representing opposite corners of a cuboid area */
-	public static final TFObjType<Region> REGION = register(new TFObjType<>("region", () -> new WhiteboardObjRegion()))
+	public static final TFObjType<Region> REGION = register(new TFObjType<>("region", 4, () -> new WhiteboardObjRegion()))
 			.castTo(TFObjType.BLOCK, (obj) -> new WhiteboardObjBlock(obj.get().center()));
 	/** Entity value, the only object type that must be recached after loading to restore its value */
-	public static final TFObjType<Entity> ENT = register(new TFObjType<>("entity", () -> new WhiteboardObjEntity())
+	public static final TFObjType<Entity> ENT = register(new TFObjType<>("entity", 5, () -> new WhiteboardObjEntity())
 			.castTo(TFObjType.BLOCK, (obj) -> new WhiteboardObjBlock(obj.get().getBlockPos(), Direction.UP))
 			.emptyIf((obj) -> obj.get() == null || !obj.get().isAlive() || obj.get().isSpectator()));
 	/** ItemStack value */
-	public static final TFObjType<ItemStack> ITEM = register(new TFObjType<>("item", () -> new Item())
+	public static final TFObjType<ItemStack> ITEM = register(new TFObjType<>("item", 6, () -> new Item())
 			.castTo(TFObjType.INT, (obj) -> new WhiteboardObj.Int(obj.get().getCount()))
 			.emptyIf((obj) -> obj.get() == null || obj.get().isEmpty()));
 	
-	public static final Collection<TFObjType<?>> CREATABLES = Set.of(BOOL, INT, BLOCK, REGION, ENT, ITEM);
+	/** Object types that can be created in the create-reference dialog of the whiteboard screen */
+	public static final TFObjType<?>[] CREATABLES = new TFObjType<?>[] {BOOL, INT, BLOCK, REGION, ENT, ITEM};
 	
 	private final Identifier name;
 	private final Supplier<IWhiteboardObject<T>> supplier;
-	private int texIndex;
+	private final int index;
 	
 	private Map<TFObjType<?>, Function<IWhiteboardObject<T>, ?>> castingMap = new HashMap<>();
 	private Predicate<IWhiteboardObject<T>> isEmpty = (obj) -> obj.get() == null;
 	
-	public TFObjType(String nameIn, Supplier<IWhiteboardObject<T>> supplierIn)
+	public TFObjType(String nameIn, int index, Supplier<IWhiteboardObject<T>> supplierIn)
 	{
-		this(new Identifier(Reference.ModInfo.MOD_ID, nameIn), supplierIn);
+		this(new Identifier(Reference.ModInfo.MOD_ID, nameIn.toLowerCase()), index, supplierIn);
 	}
 	
-	public TFObjType(Identifier nameIn, Supplier<IWhiteboardObject<T>> supplierIn)
+	public TFObjType(Identifier nameIn, int index, Supplier<IWhiteboardObject<T>> supplierIn)
 	{
 		this.name = nameIn;
+		this.index = index;
 		this.supplier = supplierIn;
 	}
 	
@@ -86,7 +87,9 @@ public class TFObjType<T>
 	
 	public Text translated() { return Text.translatable("type."+registryName().getNamespace()+"."+registryName().getPath().toString()); }
 	
-	public int texIndex() { return this.texIndex; }
+	public int index() { return this.index; }
+	
+	public Identifier texture() { return new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/icon_"+toString()+".png"); }
 	
 	public static void init() { }
 	
@@ -132,7 +135,6 @@ public class TFObjType<T>
 	
 	private static <N> TFObjType<N> register(TFObjType<N> typeIn)
 	{
-		typeIn.texIndex = iconIndex++;
 		REGISTRY.put(typeIn.registryName(), typeIn);
 		return typeIn;
 	}

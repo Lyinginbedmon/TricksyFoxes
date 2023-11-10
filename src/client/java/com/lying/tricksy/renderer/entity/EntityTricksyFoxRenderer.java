@@ -1,6 +1,7 @@
 package com.lying.tricksy.renderer.entity;
 
 import com.lying.tricksy.entity.EntityTricksyFox;
+import com.lying.tricksy.entity.ITricksyMob.Bark;
 import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.entity.ModelTricksyFoxBase;
 import com.lying.tricksy.model.entity.ModelTricksyFoxMain;
@@ -39,7 +40,7 @@ public class EntityTricksyFoxRenderer extends MobEntityRenderer<EntityTricksyFox
 		super(ctx, new ModelTricksyFoxMain<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX)), 0.5F);
 		this.addFeature(new TricksyFoxClothingLayer(this));
 		this.addFeature(new TricksyFoxHeldItemLayer(this, ctx.getHeldItemRenderer()));
-		this.addFeature(new TricksyBarkLayer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>(this));
+//		this.addFeature(new TricksyBarkLayer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>(this));	TODO Improve bark rendering as FeatureRenderer
 		
 		this.standing = this.model;
 		this.sleeping = new ModelTricksyFoxSleeping<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX_SLEEPING));
@@ -53,6 +54,9 @@ public class EntityTricksyFoxRenderer extends MobEntityRenderer<EntityTricksyFox
 			setModelPose(mobEntity);
 		
 		super.render(mobEntity, f, g, matrixStack, vertexConsumerProvider, i);
+		
+		if(mobEntity.currentBark() != Bark.NONE && dispatcher.getSquaredDistanceToCamera(mobEntity) <= (32 * 32))
+			TricksyBarkLayer.renderBark(mobEntity, mobEntity.currentBark(), matrixStack, vertexConsumerProvider, dispatcher, i);
 	}
 	
 	private void setModelPose(EntityTricksyFox mobEntity)

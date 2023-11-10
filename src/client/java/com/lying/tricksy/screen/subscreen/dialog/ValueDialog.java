@@ -13,7 +13,7 @@ import net.minecraft.util.Identifier;
 
 public abstract class ValueDialog<T> extends NestedScreen<CreateStaticScreen>
 {
-	protected static final Identifier DIALOG_TEXTURES = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/dialogs.png");
+	public static final Identifier DIALOG_TEXTURES = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/dialogs.png");
 	
 	public ValueDialog(CreateStaticScreen parentIn)
 	{

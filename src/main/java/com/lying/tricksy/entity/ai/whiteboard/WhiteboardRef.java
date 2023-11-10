@@ -25,8 +25,8 @@ public class WhiteboardRef
 	{
 		public int compare(WhiteboardRef o1, WhiteboardRef o2)
 		{
-			int index1 = o1.type().texIndex();
-			int index2 = o2.type().texIndex();
+			int index1 = o1.type().index();
+			int index2 = o2.type().index();
 			if(index1 != index2)
 				return index1 > index2 ? 1 : index1 < index2 ? -1 : 0;
 			

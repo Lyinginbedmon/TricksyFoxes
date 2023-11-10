@@ -19,6 +19,7 @@ import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -164,9 +165,25 @@ public class NodeRenderUtils
 			context.drawText(textRenderer, name, x + (iconRight ? 0 : 8) + (centred ? (maxWidth - textRenderer.getWidth(name)) / 2 : 0), y, 0x404040, false);
 		}
 		
-		int texX = reference.type().texIndex() * 8;
-		int texY = 175;
-		context.drawTexture(TREE_TEXTURES, iconX, y, texX, texY, 8, 8);
+		renderRefType(reference.type(), context, iconX, y, 8, 8);
+	}
+	
+	public static void renderRefType(TFObjType<?> type, DrawContext context, int x, int y, int width, int height)
+	{
+		int xMin = x;
+		int xMax = xMin + width - 1;
+		int yMin = y;
+		int yMax = yMin + height - 1;
+		RenderSystem.setShaderTexture(0, type.texture());
+		RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+		Matrix4f matrix4f = context.getMatrices().peek().getPositionMatrix();
+		BufferBuilder builder = Tessellator.getInstance().getBuffer();
+		builder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+			builder.vertex(matrix4f, xMin, yMin, 0).texture(0F, 0F).next();
+			builder.vertex(matrix4f, xMin, yMax, 0).texture(0F, 1F).next();
+			builder.vertex(matrix4f, xMax, yMax, 0).texture(1F, 1F).next();
+			builder.vertex(matrix4f, xMax, yMin, 0).texture(1F, 0F).next();
+		BufferRenderer.drawWithGlobalProgram(builder.end());
 	}
 	
 	private static void drawNodeBackground(DrawContext context, TreeNode<?> node, int colour, int x, int y, boolean showVariables)

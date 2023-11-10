@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
+import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.screen.NodeScreen;
 
@@ -40,7 +41,7 @@ public class ReferencesScreen extends NestedScreen<NodeScreen>
 		addDrawableChild(boardList = new BoardList(70, this.height, 0, this.height, 20, this));
 		boardList.setLeftPos(referenceList.getRowLeft() - 67);
 		
-		addDrawableChild(ButtonWidget.builder(Text.literal("Static"), (button) -> 
+		addDrawableChild(ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.open_create"), (button) -> 
 		{
 			CreateStaticScreen screen = new CreateStaticScreen(this.parent, this);
 			screen.init(this.client, this.width, this.height);

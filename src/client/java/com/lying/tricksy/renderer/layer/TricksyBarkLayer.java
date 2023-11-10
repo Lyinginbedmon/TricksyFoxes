@@ -1,5 +1,6 @@
 package com.lying.tricksy.renderer.layer;
 
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -10,7 +11,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.OverlayTexture;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
@@ -41,6 +45,29 @@ public class TricksyBarkLayer<T extends PathAwareEntity & ITricksyMob<?>, M exte
 		if(bark == Bark.NONE || dispatcher.getSquaredDistanceToCamera(tricksy) > (32 * 32))
 			return;
 		
+		renderBark(tricksy, bark, matrices, dispatcher, tickDelta);
+	}
+	
+	public static <T extends PathAwareEntity & ITricksyMob<?>> void renderBark(T tricksy, Bark bark, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, EntityRenderDispatcher dispatcher, int light)
+	{
+		matrices.push();
+			matrices.scale(1F, 1F, 1F);
+			matrices.translate(0D, tricksy.getNameLabelHeight(), 0D);
+			matrices.multiply(dispatcher.getRotation());
+			matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180F));
+			MatrixStack.Entry entry = matrices.peek();
+			Matrix4f positionMatrix = entry.getPositionMatrix();
+			Matrix3f normalMatrix = entry.getNormalMatrix();
+			VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getEntityCutoutNoCull(bark.textureLocation()));
+			vertexConsumer.vertex(positionMatrix, 0F - 0.5f, 0F - 0.25f, 0.0f).color(255, 255, 255, 255).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(normalMatrix, 0.0f, 1.0f, 0.0f).next();
+			vertexConsumer.vertex(positionMatrix, 1F - 0.5f, 0F - 0.25f, 0.0f).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(normalMatrix, 0.0f, 1.0f, 0.0f).next();
+			vertexConsumer.vertex(positionMatrix, 1F - 0.5f, 1F - 0.25f, 0.0f).color(255, 255, 255, 255).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(normalMatrix, 0.0f, 1.0f, 0.0f).next();
+			vertexConsumer.vertex(positionMatrix, 0F - 0.5f, 1F - 0.25f, 0.0f).color(255, 255, 255, 255).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(normalMatrix, 0.0f, 1.0f, 0.0f).next();
+		matrices.pop();
+	}
+	
+	public static <T extends PathAwareEntity & ITricksyMob<?>> void renderBark(T tricksy, Bark bark, MatrixStack matrices, EntityRenderDispatcher dispatcher, float tickDelta)
+	{
 		Identifier barkTex = bark.textureLocation();
 		matrices.push();
 			matrices.scale(-1F, -1F, 1F);

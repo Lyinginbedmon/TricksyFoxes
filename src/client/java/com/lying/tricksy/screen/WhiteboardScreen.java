@@ -53,7 +53,7 @@ public class WhiteboardScreen extends TricksyScreenBase implements INestedScreen
 		manageBoardButtons();
 		this.list.setRandSeed(this.player.getUuid().getLeastSignificantBits());
 		
-		addDrawableChild(createButton = ButtonWidget.builder(Text.literal("Create"), (button) -> openRefScreen()).dimensions((this.width - 200) / 2 - 53, this.height - 25, 60, 20).build());
+		addDrawableChild(createButton = ButtonWidget.builder(Text.literal("+"), (button) -> openRefScreen()).dimensions((this.width / 2) + 75, this.height - 25, 20, 20).build());
 	}
 	
 	public Optional<NestedScreen<WhiteboardScreen>> getSubScreen()
@@ -95,7 +95,7 @@ public class WhiteboardScreen extends TricksyScreenBase implements INestedScreen
 	public void handledScreenTick()
 	{
 		super.handledScreenTick();
-		this.createButton.active = this.currentBoard == BoardType.LOCAL;
+		this.createButton.active = this.createButton.visible = this.currentBoard == BoardType.LOCAL;
 		tickChild();
 	}
 	
