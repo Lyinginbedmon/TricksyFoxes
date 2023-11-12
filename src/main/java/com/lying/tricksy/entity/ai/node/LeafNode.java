@@ -10,6 +10,7 @@ import com.lying.tricksy.entity.ai.node.subtype.LeafGetter;
 import com.lying.tricksy.entity.ai.node.subtype.LeafInteraction;
 import com.lying.tricksy.entity.ai.node.subtype.LeafInventory;
 import com.lying.tricksy.entity.ai.node.subtype.LeafMisc;
+import com.lying.tricksy.entity.ai.node.subtype.LeafSearch;
 import com.lying.tricksy.entity.ai.node.subtype.LeafSubTree;
 import com.lying.tricksy.entity.ai.node.subtype.LeafWhiteboard;
 import com.lying.tricksy.init.TFNodeTypes;
@@ -28,6 +29,7 @@ public class LeafNode extends TreeNode<LeafNode>
 			new LeafInteraction(), 
 			new LeafCombat(), 
 			new LeafGetter(), 
+			new LeafSearch(),
 			new LeafSubTree());
 	
 	public LeafNode(UUID uuidIn)

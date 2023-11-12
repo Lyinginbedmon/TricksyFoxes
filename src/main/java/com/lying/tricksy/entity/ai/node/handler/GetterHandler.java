@@ -84,6 +84,5 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 		
 		BlockPos point = pos.size() == 0 ? fallback.apply(tricksy) : pos.as(TFObjType.BLOCK).get();
 		return point == null ? null : new RegionSphere(point, range.get());
-		
 	}
 }

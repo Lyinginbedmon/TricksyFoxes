@@ -20,7 +20,7 @@ public class Accomplishment
 	
 	private boolean hasPrecondition = false;
 	private Predicate<MobEntity> preconditions = Predicates.alwaysFalse();
-	private Predicate<MobEntity> conditions;
+	private Predicate<MobEntity> conditions = null;
 	
 	public Accomplishment(Identifier nameIn)
 	{
@@ -38,8 +38,9 @@ public class Accomplishment
 	public MutableText translate()
 	{
 		String slug = "accomplishment."+Reference.ModInfo.MOD_ID+"."+name.getPath();
-		final MutableText reg = Text.literal(name.toString()).formatted(Formatting.DARK_GRAY);
-		final MutableText desc = (isObfuscated ? Text.translatable(slug+".desc").formatted(Formatting.OBFUSCATED) : Text.translatable(slug+".desc")).append("\n").append(reg);
+		final MutableText reg = Text.literal(name.toString());
+		final MutableText desc = Text.translatable(slug+".desc").styled(style -> style.withObfuscated(isObfuscated))
+				.append("\n").append(reg.styled(style -> style.withObfuscated(false).withColor(Formatting.DARK_GRAY)));
 		MutableText name = Text.translatable(slug).styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, desc)));
 		return Text.literal("[").append(name).append("]");
 	}
@@ -66,7 +67,7 @@ public class Accomplishment
 	public final boolean hasPrecondition() { return this.hasPrecondition; }
 	
 	/** Returns true if any preconditions have no longer been met and any and all conditions have been met */
-	public final boolean achieved(MobEntity entity) { return conditions == null ? true : !preconditionsMet(entity) && conditions.test(entity); }
+	public final boolean achieved(MobEntity entity) { return (!hasPrecondition || !preconditionsMet(entity)) && (conditions == null || conditions.test(entity)); }
 	
 	public final boolean preconditionsMet(MobEntity entity) { return preconditions.test(entity); }
 }

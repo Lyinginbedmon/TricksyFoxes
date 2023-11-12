@@ -50,6 +50,8 @@ public class TFAccomplishments
 	public static final Accomplishment FIRETOUCHED = make("firetouched").precondition(mob -> mob.isOnFire()).condition(LOW_HEALTH).condition((mob) -> !mob.isFireImmune() && !mob.isInvulnerableTo(mob.getWorld().getDamageSources().onFire()) && !mob.hasStatusEffect(StatusEffects.FIRE_RESISTANCE));
 	public static final Accomplishment WATERBORNE = make("waterborne").precondition(mob -> mob.getAir() <= 0).condition(LOW_HEALTH).condition((mob) -> !mob.isInvulnerableTo(mob.getWorld().getDamageSources().drown()) && !mob.hasStatusEffect(StatusEffects.FIRE_RESISTANCE));
 	public static final Accomplishment FISHERMAN = make("fisherman").condition((mob) -> mob.getMainHandStack().isIn(ItemTags.FISHES) || mob.getOffHandStack().isIn(ItemTags.FISHES));
+	public static final Accomplishment JOURNEYMAN = make("journeyman");
+	public static final Accomplishment EYES_UNCLOUDED = make("eyes_unclouded").tick().precondition(mob -> mob.hasStatusEffect(StatusEffects.BLINDNESS));
 	
 	/** Returns a set of all registered accomplishments that need to be checked every tick */
 	public static final Collection<Accomplishment> ticking()

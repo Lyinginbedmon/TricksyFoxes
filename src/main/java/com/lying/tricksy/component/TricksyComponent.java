@@ -18,14 +18,19 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.dimension.DimensionTypes;
 
 /**
  * Capability-esque class that manages tracking of and conversion resulting from Tricksy enlightenment
@@ -49,6 +54,7 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	/** List of accomplishments with preconditions being monitored */
 	private List<Accomplishment> stateAccomplishments = Lists.newArrayList();
 	private Identifier lastDimension = null;
+	private BlockPos enteredNetherPos;
 	
 	public TricksyComponent(MobEntity entityIn)
 	{
@@ -62,6 +68,8 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 		this.enlightening = tag.getInt("Enlightening");
 		if(tag.contains("LastDimension", NbtElement.STRING_TYPE))
 			this.lastDimension = new Identifier(tag.getString("LastDimension"));
+		if(tag.contains("EnteredNetherPos", NbtElement.COMPOUND_TYPE))
+			this.enteredNetherPos = NbtHelper.toBlockPos(tag.getCompound("EnteredNetherPos"));
 		
 		if(tag.contains("Accomplishments", NbtElement.LIST_TYPE))
 		{
@@ -82,6 +90,8 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 		tag.putInt("Enlightening", enlightening);
 		if(this.lastDimension != null)
 			tag.putString("LastDimension", this.lastDimension.toString());
+		if(this.enteredNetherPos != null)
+			tag.put("EnteredNetherPos", NbtHelper.fromBlockPos(enteredNetherPos));
 		
 		if(!this.accomplishments.isEmpty())
 		{
@@ -156,6 +166,22 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 			if(!theMob.hasPortalCooldown())
 				enlightening = 300;
 		}
+	}
+	
+	public void changeFromNether(BlockPos position, RegistryKey<DimensionType> dim)
+	{
+		if(dim == DimensionTypes.THE_NETHER)
+		{
+			this.enteredNetherPos = position;
+			return;
+		}
+		else if(dim == DimensionTypes.OVERWORLD)
+		{
+			double dist = this.enteredNetherPos == null ? 0D : this.enteredNetherPos.getSquaredDistance(position);
+			if(!hasAchieved(TFAccomplishments.JOURNEYMAN) && dist >= (1600 * 1600) && TFAccomplishments.JOURNEYMAN.achieved(theMob))
+				addAccomplishment(TFAccomplishments.JOURNEYMAN);
+		}
+		this.enteredNetherPos = null;
 	}
 	
 	public boolean isEnlightening() { return enlightening >= 0; }

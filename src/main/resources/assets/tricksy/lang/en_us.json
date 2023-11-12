@@ -40,6 +40,8 @@
 	"accomplishment.tricksy.firetouched": "Firetouched",
 	"accomplishment.tricksy.waterborne": "Waterborne",
 	"accomplishment.tricksy.fisherman": "Give a man a fish...",
+	"accomplishment.tricksy.journeyman": "Journeyman",
+	"accomplishment.tricksy.eyes_unclouded": "Eyes Unclouded",
 	"accomplishment.tricksy.visit_nether.desc": "Pass through a portal to the Nether",
 	"accomplishment.tricksy.visit_overworld.desc": "Pass through a portal to the Overworld",
 	"accomplishment.tricksy.visit_end.desc": "Pass through a portal to the End",
@@ -56,6 +58,8 @@
 	"accomplishment.tricksy.firetouched.desc": "The touch of fire can clear away many illusions, if you can survive it",
 	"accomplishment.tricksy.waterborne.desc": "A baptism brings about notions as clear as the water itself",
 	"accomplishment.tricksy.fisherman.desc": "...and he'll be holding a fish",
+	"accomplishment.tricksy.journeyman.desc": "Journey beyond the Flaming Mountains",
+	"accomplishment.tricksy.eyes_unclouded.desc": "Expand your perspective by momentarily eschewing it",
 	"board.tricksy.constant": "Constants",
 	"board.tricksy.global": "Sage",
 	"board.tricksy.local": "Personal",
@@ -296,6 +300,6 @@
 	"command.tricksy.accomplishments.revoke.success": "Revoked the %s accomplishment from %s",
 	"command.tricksy.accomplishments.revoke.failed": "Could not revoke the %s accomplishment from %s",
 	"command.tricksy.accomplishments.revoke.all": "Revoked all accomplishments from %s",
-	"command.tricksy.accomplishments.test.success": "%s has achieved %s",
-	"command.tricksy.accomplishments.test.failed": "%s has not achieved %s"
+	"command.tricksy.accomplishments.test.success": "Found %s",
+	"command.tricksy.accomplishments.test.failed": "Failed to find %s"
 }

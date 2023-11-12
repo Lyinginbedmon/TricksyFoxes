@@ -19,6 +19,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.math.Box;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.dimension.DimensionTypes;
 
@@ -41,6 +42,7 @@ public class ServerBus
 				compNew.addAccomplishment(TFAccomplishments.DIMENSIONAL_TRAVEL);
 			
 			RegistryKey<DimensionType> newDim = destination.getDimensionKey();
+			compNew.changeFromNether(originalEntity.getBlockPos(), newDim);
 			Accomplishment accomplishment = null;
 			if(newDim == DimensionTypes.THE_NETHER)
 				accomplishment = TFAccomplishments.VISIT_NETHER;
@@ -49,7 +51,7 @@ public class ServerBus
 			else if(newDim == DimensionTypes.OVERWORLD)
 				accomplishment = TFAccomplishments.VISIT_OVERWORLD;
 			
-			if(accomplishment != null && !compNew.hasAchieved(accomplishment))
+			if(accomplishment != null)
 				compNew.addAccomplishment(accomplishment);
 		});
 		ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> 
@@ -62,14 +64,18 @@ public class ServerBus
 			else if(entity.getType() == EntityType.WITHER)
 				result = TFAccomplishments.DEATH_DEFIER;
 			
-			if(result == null)
-				return;
-			else 
-				for(MobEntity mob : entity.getWorld().getEntitiesByClass(MobEntity.class, entity.getBoundingBox().expand(16, 64, 16), (mob) -> mob.isAlive() && TFEnlightenmentPaths.INSTANCE.isEnlightenable(mob))) 
+			if(result != null)
+			{
+				Box bounds = entity.getBoundingBox().expand(16, 64, 16);
+				int minY = entity.getWorld().getBottomY();
+				if(bounds.minY < minY || bounds.maxY < minY)
+					bounds = new Box(bounds.minX, Math.max(minY, bounds.minY), bounds.minZ, bounds.maxX, Math.max(minY, bounds.maxY), bounds.maxZ);
+				for(MobEntity mob : entity.getWorld().getEntitiesByClass(MobEntity.class, bounds, (mob) -> mob.isAlive() && TFEnlightenmentPaths.INSTANCE.isEnlightenable(mob))) 
 				{
 					TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(mob);
 					comp.addAccomplishment(result);
 				};
+			}
 		});
 		
 		/** Prescient Scroll (Entity) handling */

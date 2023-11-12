@@ -3,12 +3,15 @@ package com.lying.tricksy.init;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.component.Accomplishment;
 import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.utility.TricksyUtils;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 
@@ -16,6 +19,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.MutableText;
@@ -57,7 +61,7 @@ public class TFCommands
 							.executes(context -> tryAddAccomplishment(EntityArgumentType.getEntity(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFAccomplishments.ACC_KEY), context.getSource()))))
 						.then(literal("test")
 								.then(argument(ACC_KEY, RegistryEntryArgumentType.registryEntry(registryAccess, TFAccomplishments.ACC_KEY))
-								.executes(context -> tryTestAccomplishment(EntityArgumentType.getEntity(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFAccomplishments.ACC_KEY), context.getSource()))))
+								.executes(context -> tryTestAccomplishment(EntityArgumentType.getEntities(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFAccomplishments.ACC_KEY), context.getSource()))))
 						.then(literal("revoke")
 								.then(literal("all")
 								.executes(context -> revokeAll(EntityArgumentType.getEntity(context, TARGET_KEY), context.getSource())))
@@ -85,7 +89,9 @@ public class TFCommands
 	
 	private static int listAccomplishments(ServerCommandSource source)
 	{
-		source.sendFeedback(() -> Text.translatable(ACC_SLUG+".list", TFAccomplishments.getAll().size(), listToText(TFAccomplishments.getAll())), true);
+		List<Accomplishment> set = TFAccomplishments.getAll();
+		Collections.sort(set, (acc1,acc2) -> TricksyUtils.stringComparator(acc1.translate().getString(), acc2.translate().getString()));
+		source.sendFeedback(() -> Text.translatable(ACC_SLUG+".list", TFAccomplishments.getAll().size(), listToText(set)), true);
 		return 1;
 	}
 	
@@ -125,20 +131,14 @@ public class TFCommands
 		return result ? 1 : 0;
 	}
 	
-	private static int tryTestAccomplishment(Entity ent, RegistryEntry.Reference<Accomplishment> acc, ServerCommandSource source) throws CommandSyntaxException
+	private static int tryTestAccomplishment(Collection<? extends Entity> ent, RegistryEntry.Reference<Accomplishment> acc, ServerCommandSource source) throws CommandSyntaxException
 	{
 		Accomplishment accomplishment = acc.value();
-		boolean result = false;
-		try
-		{
-			TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(ent);
-			result = comp.hasAchieved(accomplishment);
-		}
-		catch(Exception e) { source.sendFeedback(() -> GENERIC_FAIL, true); return 0; }
+		boolean result = ent.stream().anyMatch(entity -> entity instanceof MobEntity && TFComponents.TRICKSY_TRACKING.get((MobEntity)entity).hasAchieved(accomplishment));
 		if(!result)
-			throw (new SimpleCommandExceptionType(Text.translatable(ACC_SLUG+".test.failed", ent.getDisplayName(), accomplishment.translate()))).create();
+			throw (new SimpleCommandExceptionType(Text.translatable(ACC_SLUG+".test.failed", accomplishment.translate()))).create();
 		
-		Text message = Text.translatable(ACC_SLUG+".test.success", ent.getDisplayName(), accomplishment.translate());
+		Text message = Text.translatable(ACC_SLUG+".test.success", accomplishment.translate());
 		source.sendFeedback(() -> message, true);
 		return result ? 1 : 0;
 	}
