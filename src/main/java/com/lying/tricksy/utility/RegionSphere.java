@@ -75,22 +75,24 @@ public class RegionSphere extends Region
 	
 	public List<BlockPos> getBlocks(World world, BiPredicate<BlockPos, BlockState> filter)
 	{
-		Box search = asBox();
-		if(search.minY < world.getBottomY())
-			search = search.withMinY(world.getBottomY());
-		
 		BiPredicate<BlockPos, BlockState> rangeFunc = (pos,state) -> pos.isWithinDistance(center, radius);
 		filter = rangeFunc.and(filter);
 		
 		List<BlockPos> matches = Lists.newArrayList();
-		for(int y=(int)search.minY; y < search.maxY; y++)
-			for(int x=(int)search.minX; x < search.maxX; x++)
-				for(int z=(int)search.minZ; z< search.maxZ; z++)
+		for(int y=-radius; y < radius; y++)
+		{
+			int posY = center.getY() + y;
+			if(posY < world.getBottomY())
+				continue;
+			
+			for(int x=-radius; x < radius; x++)
+				for(int z=-radius; z < radius; z++)
 				{
-					BlockPos offset = new BlockPos(x, y, z);
+					BlockPos offset = new BlockPos(x, 0, z).add(center.getX(), posY, center.getZ());
 					if(filter.test(offset, world.getBlockState(offset)))
 						matches.add(offset);
 				}
+		}
 		return matches;
 	}
 }

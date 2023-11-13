@@ -57,16 +57,16 @@ public class TFCommands
 						.then(literal("get")
 							.executes(context -> tryGetAccomplishments(EntityArgumentType.getEntity(context, TARGET_KEY), context.getSource())))
 						.then(literal("grant")
-							.then(argument(ACC_KEY, RegistryEntryArgumentType.registryEntry(registryAccess, TFAccomplishments.ACC_KEY))
-							.executes(context -> tryAddAccomplishment(EntityArgumentType.getEntity(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFAccomplishments.ACC_KEY), context.getSource()))))
+							.then(argument(ACC_KEY, RegistryEntryArgumentType.registryEntry(registryAccess, TFRegistries.ACC_KEY))
+							.executes(context -> tryAddAccomplishment(EntityArgumentType.getEntity(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFRegistries.ACC_KEY), context.getSource()))))
 						.then(literal("test")
-								.then(argument(ACC_KEY, RegistryEntryArgumentType.registryEntry(registryAccess, TFAccomplishments.ACC_KEY))
-								.executes(context -> tryTestAccomplishment(EntityArgumentType.getEntities(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFAccomplishments.ACC_KEY), context.getSource()))))
+								.then(argument(ACC_KEY, RegistryEntryArgumentType.registryEntry(registryAccess, TFRegistries.ACC_KEY))
+								.executes(context -> tryTestAccomplishment(EntityArgumentType.getEntities(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFRegistries.ACC_KEY), context.getSource()))))
 						.then(literal("revoke")
 								.then(literal("all")
 								.executes(context -> revokeAll(EntityArgumentType.getEntity(context, TARGET_KEY), context.getSource())))
-							.then(argument(ACC_KEY, RegistryEntryArgumentType.registryEntry(registryAccess, TFAccomplishments.ACC_KEY))
-							.executes(context -> tryRevokeAccomplishment(EntityArgumentType.getEntity(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFAccomplishments.ACC_KEY), context.getSource())))))));
+							.then(argument(ACC_KEY, RegistryEntryArgumentType.registryEntry(registryAccess, TFRegistries.ACC_KEY))
+							.executes(context -> tryRevokeAccomplishment(EntityArgumentType.getEntity(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFRegistries.ACC_KEY), context.getSource())))))));
 		});
 	}
 	

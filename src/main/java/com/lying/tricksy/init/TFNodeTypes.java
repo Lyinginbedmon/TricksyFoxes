@@ -1,8 +1,8 @@
 package com.lying.tricksy.init;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +19,8 @@ import com.lying.tricksy.entity.ai.node.subtype.DecoratorMisc;
 import com.lying.tricksy.entity.ai.node.subtype.LeafMisc;
 import com.lying.tricksy.reference.Reference;
 
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 
 public class TFNodeTypes
@@ -43,8 +45,6 @@ public class TFNodeTypes
 	public static final NodeType<ConditionNode> CONDITION = register("condition", new NodeType<ConditionNode>(12630070, ConditionNode::fromData, ConditionNode::getSubtypeGroups).setBaseSubType(ConditionWhiteboard.VARIANT_VALUE_TRUE));
 	public static final NodeType<LeafNode> LEAF = register("leaf", new NodeType<LeafNode>(3588150, LeafNode::fromData, LeafNode::getSubtypeGroups).setBaseSubType(LeafMisc.VARIANT_GOTO));
 	
-	public static final List<NodeType<?>> NODE_TYPES = List.of(LEAF, CONTROL_FLOW, DECORATOR, CONDITION);
-	
 	private static <M extends TreeNode<M>> NodeType<M> register(String nameIn, NodeType<M> typeIn)
 	{
 		Identifier registryName = new Identifier(Reference.ModInfo.MOD_ID, nameIn);
@@ -56,27 +56,29 @@ public class TFNodeTypes
 	@Nullable
 	public static NodeType<?> getTypeById(Identifier idIn)
 	{
-		return TYPES.getOrDefault(idIn, null);
+		return TFRegistries.TYPE_REGISTRY.get(idIn);
 	}
 	
 	public static void init()
 	{
+		TYPES.forEach((name, type) -> Registry.register(TFRegistries.TYPE_REGISTRY, name, type));
+		
 		int tally = 0;
-		for(NodeType<?> type : TYPES.values())
-			tally += Math.max(1, type.subTypes().size());
+		for(Entry<RegistryKey<NodeType<?>>, NodeType<?>> entry : TFRegistries.TYPE_REGISTRY.getEntrySet())
+			tally += entry.getValue().subTypes().size();
 		TricksyFoxes.LOGGER.info("Registered "+TYPES.size()+" behaviour tree node types with "+tally+" available behaviours");
 		
-		if(!TricksyFoxes.config.verboseLogging())
-			return;
-		
-		TYPES.forEach((name,type) -> 
-		{
-			TricksyFoxes.LOGGER.info(" # "+name.toString()+" ("+type.subTypes().size()+" subtypes in "+type.groups().size()+" groups)");
-			type.groups().forEach((group) -> 
+		if(TricksyFoxes.config.verboseLogging())
+			TFRegistries.TYPE_REGISTRY.getEntrySet().forEach((entry) -> 
 			{
-				TricksyFoxes.LOGGER.info(" # # "+group.getRegistryName().getPath());
-				group.getSubtypes().forEach((sub) -> TricksyFoxes.LOGGER.info(" # # - "+sub.getRegistryName().getPath()));
+				Identifier name = entry.getKey().getValue();
+				NodeType<?> type = entry.getValue();
+				TricksyFoxes.LOGGER.info(" # "+name.toString()+" ("+type.subTypes().size()+" subtypes in "+type.groups().size()+" groups)");
+				type.groups().forEach((group) -> 
+				{
+					TricksyFoxes.LOGGER.info(" # # "+group.getRegistryName().getPath());
+					group.getSubtypes().forEach((sub) -> TricksyFoxes.LOGGER.info(" # # - "+sub.getRegistryName().getPath()));
+				});
 			});
-		});
 	}
 }

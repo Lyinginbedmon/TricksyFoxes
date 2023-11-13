@@ -32,17 +32,14 @@ public interface INodeInput
 	
 	/** Accept any value from the local whiteboard */
 	static Predicate<WhiteboardRef> anyLocal() { return (ref) -> ref.boardType() == BoardType.LOCAL; }
-
+	
 	/** Accept any value from anywhere */
 	static Predicate<WhiteboardRef> any() { return Predicates.alwaysTrue(); }
-
+	
 	/** Accept only values of the given type */
 	static Predicate<WhiteboardRef> ofType(TFObjType<?> typeIn, boolean filterAllowed) { return (ref) -> ref.type().castableTo(typeIn) && (filterAllowed || !ref.isFilter()); }
-
-	public static INodeInput makeInput(Predicate<WhiteboardRef> predicateIn)
-	{
-		return makeInput(predicateIn, null);
-	}
+	
+	public static INodeInput makeInput(Predicate<WhiteboardRef> predicateIn) { return makeInput(predicateIn, null); }
 	
 	public static INodeInput makeInput(Predicate<WhiteboardRef> predicateIn, @Nullable IWhiteboardObject<?> defaultVal)
 	{

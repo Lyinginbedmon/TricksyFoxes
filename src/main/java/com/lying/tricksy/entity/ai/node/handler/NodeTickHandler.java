@@ -47,6 +47,15 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	@NotNull
 	public default Map<WhiteboardRef, INodeInput> variableSet(){ return new HashMap<>(); }
 	
+	@Nullable
+	public default INodeInput variableInput(WhiteboardRef name)
+	{
+		for(Entry<WhiteboardRef, INodeInput> entry : variableSet().entrySet())
+			if(entry.getKey().isSameRef(name))
+				return entry.getValue();
+		return null;
+	}
+	
 	public default boolean variablesSufficient(M parent) { return !noVariableMissing(parent); }
 	
 	/**
@@ -86,7 +95,7 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	public default IWhiteboardObject<?> getOrDefault(WhiteboardRef input, M parent, LocalWhiteboard<?> local, GlobalWhiteboard global)
 	{
 		if(!parent.variableAssigned(input))
-			return variableSet().get(input).isOptional() ? variableSet().get(input).defaultValue().get() : null;
+			return variableInput(input).isOptional() ? variableInput(input).defaultValue().get() : null;
 		else
 			return parent.variable(input).get(local, global);
 	}

@@ -27,6 +27,7 @@ import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.Region;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.FuzzyTargeting;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -34,6 +35,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 
 public class LeafMisc implements ISubtypeGroup<LeafNode>
@@ -52,63 +54,8 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		set.add(new NodeSubType<LeafNode>(VARIANT_LOOK_AT, new NodeTickHandler<LeafNode>()
-		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
-			{
-				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(
-						(var) -> !var.isSameRef(LocalWhiteboard.SELF) && (var.type() == TFObjType.BLOCK || var.type() == TFObjType.ENT) && !var.isFilter(), 
-						new WhiteboardObjEntity(), 
-						LocalWhiteboard.ATTACK_TARGET.displayName()));
-			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
-			{
-				IWhiteboardObject<?> target = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global);
-				if(target.size() > 0)
-				{
-					if(target.type() == TFObjType.BLOCK)
-					{
-						BlockPos pos = target.as(TFObjType.BLOCK).get();
-						tricksy.getLookControl().lookAt(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
-					}
-					else if(target.type() == TFObjType.ENT)
-					{
-						Entity ent = target.as(TFObjType.ENT).size() == 0 ? tricksy.getAttacking() : target.as(TFObjType.ENT).get();
-						if(ent != null)
-							tricksy.getLookControl().lookAt(ent);
-					}
-					return Result.SUCCESS;
-				}
-				return Result.FAILURE;
-			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_LOOK_AROUND, new NodeTickHandler<LeafNode>()
-		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
-			{
-				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal(String.valueOf(4))));
-			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
-			{
-				if(!parent.isRunning())
-				{
-					int duration = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT).get();
-					parent.ticks = (duration + 1) * 20;
-					
-					Random rand = tricksy.getRandom();
-					double d = Math.PI * 2 * rand.nextDouble();
-					parent.nodeRAM.putDouble("DeltaX", Math.cos(d));
-					parent.nodeRAM.putDouble("DeltaZ", Math.sin(d));
-				}
-				else if(--parent.ticks == 0)
-					return Result.SUCCESS;
-				
-				tricksy.getLookControl().lookAt(tricksy.getX() + parent.nodeRAM.getDouble("DeltaX"), tricksy.getEyeY(), tricksy.getZ() + parent.nodeRAM.getDouble("DeltaZ"));
-				return Result.RUNNING;
-			}
-		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_LOOK_AT, leafLookAt()));
+		set.add(new NodeSubType<LeafNode>(VARIANT_LOOK_AROUND, leafLookAround()));
 		set.add(new NodeSubType<LeafNode>(VARIANT_BARK, new NodeTickHandler<LeafNode>() 
 		{
 			private static final WhiteboardRef BARK = CommonVariables.VAR_NUM;
@@ -126,95 +73,8 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				return Result.SUCCESS;
 			}
 		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_GOTO, new NodeTickHandler<LeafNode>()
-		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
-			{
-				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
-			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
-			{
-				EntityNavigation navigator = tricksy.getNavigation();
-				if(!parent.isRunning())
-				{
-					IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
-					if(targetObj.isEmpty())
-					{
-						tricksy.logStatus(Text.literal("No destination to go to"));
-						return Result.FAILURE;
-					}
-					
-					BlockPos dest = targetObj.as(TFObjType.BLOCK).get();
-					if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 1D)
-						return Result.SUCCESS;
-					
-					navigator.startMovingTo(dest.getX(), dest.getY(), dest.getZ(), 1D);
-					tricksy.logStatus(Text.literal(navigator.isFollowingPath() ? "Moving to destination" : "No path found"));
-					return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
-				}
-				else
-					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
-			}
-		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_WANDER, new NodeTickHandler<LeafNode>()
-		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
-			{
-				return Map.of(
-						CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION,
-						CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal(String.valueOf(4))));
-			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
-			{
-				IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
-				IWhiteboardObject<Integer> targetRange = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
-				Region area = GetterHandler.getSearchArea(targetObj, targetRange, tricksy, (mob) -> 
-				{
-					// Wander area based on region -> home position -> current position
-					if(mob.hasPositionTarget())
-						return mob.getPositionTarget();
-					else
-						return mob.getBlockPos();
-				});
-				
-				EntityNavigation navigator = tricksy.getNavigation();
-				if(!parent.isRunning())
-				{
-					Random rand = tricksy.getRandom();
-					
-					int attempts = 50;
-					BlockPos dest;
-					Path path;
-					do
-					{
-						dest = getWanderTarget(area, rand, tricksy.getWorld().getBottomY());
-						path = navigator.findPathTo(dest, 20);
-					}
-					while(--attempts > 0 && path == null);
-					
-					if(path == null)
-						return Result.FAILURE;
-					else if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 1D)
-						return Result.SUCCESS;
-					
-					navigator.startMovingTo(dest.getX(), dest.getY(), dest.getZ(), 1D);
-					tricksy.logStatus(Text.literal(navigator.isFollowingPath() ? "Moving to destination" : "No path found"));
-					return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
-				}
-				else
-					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
-			}
-			
-			private BlockPos getWanderTarget(Region area, Random rand, int bottomY)
-			{
-				BlockPos dest = area.findRandomWithin(rand);
-				if(dest.getY() < bottomY)
-					dest = new BlockPos(dest.getX(), bottomY, dest.getZ());
-				return dest;
-			}
-		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_GOTO, leafGoTo()));
+		set.add(new NodeSubType<LeafNode>(VARIANT_WANDER, leafWander()));
 		set.add(new NodeSubType<LeafNode>(VARIANT_SLEEP, new NodeTickHandler<LeafNode>()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -285,5 +145,175 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 			}
 		}));
 		return set;
+	}
+	
+	public static NodeTickHandler<LeafNode> leafGoTo()
+	{
+		return new NodeTickHandler<LeafNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				EntityNavigation navigator = tricksy.getNavigation();
+				if(!parent.isRunning())
+				{
+					IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
+					if(targetObj.isEmpty())
+					{
+						tricksy.logStatus(Text.literal("No destination to go to"));
+						return Result.FAILURE;
+					}
+					
+					BlockPos dest = targetObj.as(TFObjType.BLOCK).get();
+					if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 1D)
+						return Result.SUCCESS;
+					
+					Path directPath = navigator.findPathTo(dest, 1);
+					if(directPath != null)
+						navigator.startMovingAlong(directPath, 1D);
+					else
+					{
+						Vec3d destVec = FuzzyTargeting.findTo(tricksy, 4, 2, new Vec3d(dest.getX() + 0.5D, dest.getY(), dest.getZ() + 0.5D));
+						navigator.startMovingTo(destVec.x, destVec.y, destVec.z, 1D);
+					}
+					
+					tricksy.logStatus(Text.literal(navigator.isFollowingPath() ? "Moving to destination" : "No path found"));
+					return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
+				}
+				else
+					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
+			}
+		};
+	}
+	
+	public static NodeTickHandler<LeafNode> leafWander()
+	{
+		return new NodeTickHandler<LeafNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(
+						CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION,
+						CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal(String.valueOf(4))));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
+				IWhiteboardObject<Integer> targetRange = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
+				Region area = GetterHandler.getSearchArea(targetObj, targetRange, tricksy, (mob) -> 
+				{
+					// Wander area based on region -> home position -> current position
+					if(mob.hasPositionTarget())
+						return mob.getPositionTarget();
+					else
+						return mob.getBlockPos();
+				});
+				
+				EntityNavigation navigator = tricksy.getNavigation();
+				if(!parent.isRunning())
+				{
+					Random rand = tricksy.getRandom();
+					
+					int attempts = 50;
+					BlockPos dest;
+					Path path;
+					do
+					{
+						dest = getWanderTarget(area, rand, tricksy.getWorld().getBottomY());
+						path = navigator.findPathTo(dest, 20);
+					}
+					while(--attempts > 0 && path == null);
+					
+					if(path == null)
+						return Result.FAILURE;
+					else if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 1D)
+						return Result.SUCCESS;
+					
+					navigator.startMovingTo(dest.getX(), dest.getY(), dest.getZ(), 1D);
+					tricksy.logStatus(Text.literal(navigator.isFollowingPath() ? "Moving to destination" : "No path found"));
+					return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
+				}
+				else
+					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
+			}
+			
+			private BlockPos getWanderTarget(Region area, Random rand, int bottomY)
+			{
+				BlockPos dest = area.findRandomWithin(rand);
+				if(dest.getY() < bottomY)
+					dest = new BlockPos(dest.getX(), bottomY, dest.getZ());
+				return dest;
+			}
+		};
+	}
+	
+	public static NodeTickHandler<LeafNode> leafLookAt()
+	{
+		return new NodeTickHandler<LeafNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(
+						(var) -> !var.isSameRef(LocalWhiteboard.SELF) && (var.type() == TFObjType.BLOCK || var.type() == TFObjType.ENT) && !var.isFilter(), 
+						new WhiteboardObjEntity(), 
+						LocalWhiteboard.ATTACK_TARGET.displayName()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				IWhiteboardObject<?> target = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global);
+				if(target.size() > 0)
+				{
+					if(target.type() == TFObjType.BLOCK)
+					{
+						BlockPos pos = target.as(TFObjType.BLOCK).get();
+						tricksy.getLookControl().lookAt(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
+					}
+					else if(target.type() == TFObjType.ENT)
+					{
+						Entity ent = target.as(TFObjType.ENT).size() == 0 ? tricksy.getAttacking() : target.as(TFObjType.ENT).get();
+						if(ent != null)
+							tricksy.getLookControl().lookAt(ent);
+					}
+					return Result.SUCCESS;
+				}
+				return Result.FAILURE;
+			}
+		};
+	}
+	
+	public static NodeTickHandler<LeafNode> leafLookAround()
+	{
+		return new NodeTickHandler<LeafNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> variableSet()
+			{
+				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal(String.valueOf(4))));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				if(!parent.isRunning())
+				{
+					int duration = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT).get();
+					parent.ticks = (duration + 1) * 20;
+					
+					Random rand = tricksy.getRandom();
+					double d = Math.PI * 2 * rand.nextDouble();
+					parent.nodeRAM.putDouble("DeltaX", Math.cos(d));
+					parent.nodeRAM.putDouble("DeltaZ", Math.sin(d));
+				}
+				else if(--parent.ticks == 0)
+					return Result.SUCCESS;
+				
+				tricksy.getLookControl().lookAt(tricksy.getX() + parent.nodeRAM.getDouble("DeltaX"), tricksy.getEyeY(), tricksy.getZ() + parent.nodeRAM.getDouble("DeltaZ"));
+				return Result.RUNNING;
+			}
+		};
 	}
 }

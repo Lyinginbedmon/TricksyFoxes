@@ -17,7 +17,10 @@ public interface INodeValue
 {
 	public Type type();
 	
+	/** Retrieves the corresponding value in the appropriate whiteboard */
 	public IWhiteboardObject<?> get(LocalWhiteboard<?> local, GlobalWhiteboard global);
+	
+	public String asString();
 	
 	public default NbtCompound writeToNbt(NbtCompound compound)
 	{
@@ -65,6 +68,8 @@ public interface INodeValue
 		
 		public Type type() { return Type.WHITEBOARD; }
 		
+		public String asString() { return type().name() + "[" + reference.toString() + "]"; }
+		
 		public Text displayName() { return reference.displayName(); }
 		
 		public IWhiteboardObject<?> get(LocalWhiteboard<?> local, GlobalWhiteboard global)
@@ -95,6 +100,8 @@ public interface INodeValue
 		}
 		
 		public Type type() { return Type.STATIC; }
+		
+		public String asString() { return type().name() + "[" + value.type().registryName().toString() + "]"; }
 		
 		public IWhiteboardObject<?> get(LocalWhiteboard<?> local, GlobalWhiteboard global) { return value.copy(); }
 		

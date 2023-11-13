@@ -28,7 +28,7 @@ import net.minecraft.util.math.BlockPos;
 
 public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 {
-	public static final INodeInput POS_OR_REGION = INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName());
+	public static final INodeInput POS_OR_REGION = INodeInput.makeInput(ref -> (ref.type() == TFObjType.BLOCK && !ref.isFilter()) || ref.type() == TFObjType.REGION, new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName());
 	
 	private final WhiteboardRef entry;
 	private final TFObjType<T> type;
@@ -61,7 +61,7 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 		}
 		
 		local.setValue(dest, result);
-		return Result.SUCCESS;
+		return result.size() > 0 ? Result.SUCCESS : Result.FAILURE;
 	}
 	
 	public abstract void addVariables(Map<WhiteboardRef, INodeInput> set);
@@ -70,6 +70,7 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 	public abstract <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<T> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent);
 	
 	/** Returns a provided Region or generates one around a provided position */
+	@Nullable
 	public static <N extends PathAwareEntity & ITricksyMob<?>> Region getSearchArea(IWhiteboardObject<?> pos, IWhiteboardObject<Integer> range, N tricksy)
 	{
 		return getSearchArea(pos, range, tricksy, (mob) -> mob.getBlockPos());
@@ -82,7 +83,12 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 		if(pos.type() == TFObjType.REGION)
 			return pos.as(TFObjType.REGION).get();
 		
-		BlockPos point = pos.size() == 0 ? fallback.apply(tricksy) : pos.as(TFObjType.BLOCK).get();
+		BlockPos point = null;
+		if(pos.size() == 0)
+			point = fallback.apply(tricksy);
+		else
+			point = pos.as(TFObjType.BLOCK).get();
+		
 		return point == null ? null : new RegionSphere(point, range.get());
 	}
 }

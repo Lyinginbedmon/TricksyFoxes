@@ -23,6 +23,8 @@ import com.lying.tricksy.utility.Region;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -30,7 +32,7 @@ import net.minecraft.util.math.Direction;
 
 public class TFObjType<T>
 {
-	private static final Map<Identifier, TFObjType<?>> REGISTRY = new HashMap<>();
+	private static final Map<Identifier, TFObjType<?>> OBJ_TYPES = new HashMap<>();
 	
 	/** Empty value, usually obtained when the whiteboard grabs a value it doesn't have */
 	public static final TFObjType<Object> EMPTY = register(new TFObjType<>("empty", 0, () -> WhiteboardObj.EMPTY)
@@ -69,6 +71,12 @@ public class TFObjType<T>
 	private Map<TFObjType<?>, Function<IWhiteboardObject<T>, ?>> castingMap = new HashMap<>();
 	private Predicate<IWhiteboardObject<T>> isEmpty = (obj) -> obj.get() == null;
 	
+	private static <N> TFObjType<N> register(TFObjType<N> typeIn)
+	{
+		OBJ_TYPES.put(typeIn.registryName(), typeIn);
+		return typeIn;
+	}
+	
 	public TFObjType(String nameIn, int index, Supplier<IWhiteboardObject<T>> supplierIn)
 	{
 		this(new Identifier(Reference.ModInfo.MOD_ID, nameIn.toLowerCase()), index, supplierIn);
@@ -91,7 +99,10 @@ public class TFObjType<T>
 	
 	public Identifier texture() { return new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/icon_"+toString()+".png"); }
 	
-	public static void init() { }
+	public static void init()
+	{
+		OBJ_TYPES.forEach((name, type) -> Registry.register(TFRegistries.OBJ_REGISTRY, name, type));
+	}
 	
 	public IWhiteboardObject<T> create(NbtCompound data)
 	{
@@ -133,16 +144,10 @@ public class TFObjType<T>
 	
 	public static Collection<TFObjType<?>> types() { return List.of(BOOL, INT, BLOCK, REGION, ENT, ITEM); }
 	
-	private static <N> TFObjType<N> register(TFObjType<N> typeIn)
-	{
-		REGISTRY.put(typeIn.registryName(), typeIn);
-		return typeIn;
-	}
-	
 	public static TFObjType<?> getType(Identifier nameIn)
 	{
-		for(Entry<Identifier, TFObjType<?>> entry : REGISTRY.entrySet())
-			if(entry.getKey().toString().equals(nameIn.toString()))
+		for(Entry<RegistryKey<TFObjType<?>>, TFObjType<?>> entry : TFRegistries.OBJ_REGISTRY.getEntrySet())
+			if(entry.getKey().getValue().equals(nameIn))
 				return entry.getValue();
 		return null;
 	}

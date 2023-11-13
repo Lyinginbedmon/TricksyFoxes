@@ -5,16 +5,14 @@ import org.slf4j.LoggerFactory;
 
 import com.lying.tricksy.config.ServerConfig;
 import com.lying.tricksy.data.TFRecipeProvider;
-import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFBlockEntities;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFCommands;
 import com.lying.tricksy.init.TFEnlightenmentPaths;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
-import com.lying.tricksy.init.TFNodeTypes;
-import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFParticles;
+import com.lying.tricksy.init.TFRegistries;
 import com.lying.tricksy.init.TFSoundEvents;
 import com.lying.tricksy.init.TFSpecialRecipes;
 import com.lying.tricksy.network.AddGlobalRefReceiver;
@@ -44,10 +42,8 @@ public class TricksyFoxes implements ModInitializer
 		config.read();
 		
 		ServerBus.registerEventCallbacks();
+		TFRegistries.init();
 		TFCommands.init();
-		TFObjType.init();
-		TFNodeTypes.init();
-		TFAccomplishments.init();
 		TFEnlightenmentPaths.init();
 		TFBlocks.init();
 		TFBlockEntities.init();

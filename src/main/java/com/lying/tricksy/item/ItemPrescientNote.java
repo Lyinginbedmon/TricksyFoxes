@@ -72,7 +72,7 @@ public class ItemPrescientNote extends Item
 				return null;
 		}
 		catch(Exception e) { }
-		WhiteboardRef name = new WhiteboardRef(displayName.getString().replace(' ', '_'), getVariable(stack).type(), board);
+		WhiteboardRef name = new WhiteboardRef(WhiteboardRef.conformTextToName(displayName), getVariable(stack).type(), board);
 		name.displayName(displayName);
 		return name;
 	}

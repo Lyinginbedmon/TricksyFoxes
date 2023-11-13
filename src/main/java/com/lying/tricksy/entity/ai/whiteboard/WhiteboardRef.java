@@ -5,6 +5,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
@@ -17,9 +20,17 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+/**
+ * A complex reference object that denotes a value in a whiteboard of a specific type.<br>
+ * Used instead of simple string identifiers to provide some level of type guarantee.
+ * @author Lying
+ *
+ */
 public class WhiteboardRef
 {
+	public static final String NAME_KEY = "Name";
 	public static final String BOARD_KEY = "Board";
+	public static final String TYPE_KEY = "Type";
 	
 	public static final Comparator<WhiteboardRef> REF_SORT = new Comparator<>()
 	{
@@ -71,7 +82,7 @@ public class WhiteboardRef
 	
 	public WhiteboardRef(String nameIn, TFObjType<?> typeIn, BoardType global)
 	{
-		this.name = nameIn;
+		this.name = conformName(nameIn);
 		this.displayName = Text.literal(nameIn);
 		this.onBoard = global;
 		this.varType = typeIn;
@@ -124,9 +135,10 @@ public class WhiteboardRef
 	
 	public NbtCompound writeToNbt(NbtCompound data)
 	{
-		data.putString("Name", name);
+		data.putString(NAME_KEY, name);
 		data.putString(BOARD_KEY, onBoard.asString());
-		data.putString("Type", varType.registryName().toString());
+		data.putString(TYPE_KEY, varType.registryName().toString());
+		
 		if(noCache)
 			data.putBoolean("Live", noCache);
 		if(isFilter)
@@ -138,10 +150,11 @@ public class WhiteboardRef
 	
 	public static WhiteboardRef fromNbt(NbtCompound data)
 	{
-		String name = data.getString("Name");
+		String name = data.getString(NAME_KEY);
 		BoardType board = BoardType.fromString(data.getString(BOARD_KEY));
-		TFObjType<?> type = TFObjType.getType(new Identifier(data.getString("Type")));
+		TFObjType<?> type = TFObjType.getType(new Identifier(data.getString(TYPE_KEY)));
 		WhiteboardRef ref = new WhiteboardRef(name, type, board);
+		
 		if(data.contains("Live") && data.getBoolean("Live"))
 			ref.noCache();
 		if(data.contains("Filter") && data.getBoolean("Filter"))
@@ -159,5 +172,30 @@ public class WhiteboardRef
 			}
 		}
 		return ref;
+	}
+	
+	@Nullable
+	public static <T extends Object> T findInMap(Map<WhiteboardRef, T> mapIn, WhiteboardRef ref)
+	{
+		return findInMap(mapIn, ref, null);
+	}
+	
+	public static <T extends Object> T findInMap(Map<WhiteboardRef, T> mapIn, WhiteboardRef ref, T defaultValue)
+	{
+		for(Entry<WhiteboardRef, T> entry : mapIn.entrySet())
+			if(entry.getKey().isSameRef(ref))
+				return entry.getValue();
+		return defaultValue;
+	}
+	
+	/** Removes spaces and capitalisation to minimise errors */
+	public static String conformName(String text)
+	{
+		return text.toLowerCase().replace(' ', '_');
+	}
+	
+	public static String conformTextToName(Text text)
+	{
+		return conformName(text.getString());
 	}
 }

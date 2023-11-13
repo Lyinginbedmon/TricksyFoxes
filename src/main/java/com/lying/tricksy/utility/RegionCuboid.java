@@ -101,17 +101,25 @@ public class RegionCuboid extends Region
 	
 	public List<BlockPos> getBlocks(World world, BiPredicate<BlockPos, BlockState> filter)
 	{
-		int minY = Math.max(world.getBottomY(), min.getY());
-		int maxY = minY + size().getY();
 		List<BlockPos> matches = Lists.newArrayList();
-		for(int y=minY; y < maxY; y++)
-			for(int x=(int)min.getX(); x < max.getX(); x++)
-				for(int z=(int)min.getZ(); z< max.getZ(); z++)
+		Vec3i size = size();
+		int sizeX = size.getX() + 1;
+		int sizeY = size.getY() + 1;
+		int sizeZ = size.getZ() + 1;
+		for(int y=0; y < sizeY; y++)
+		{
+			int posY = min.getY() + y;
+			if(posY < world.getBottomY())
+				continue;
+			
+			for(int x=0; x < sizeX; x++)
+				for(int z=0; z < sizeZ; z++)
 				{
-					BlockPos offset = new BlockPos(x, y, z);
+					BlockPos offset = new BlockPos(x, 0, z).add(min.getX(), posY, min.getZ());
 					if(filter.test(offset, world.getBlockState(offset)))
 						matches.add(offset);
 				}
+		}
 		return matches;
 	}
 }

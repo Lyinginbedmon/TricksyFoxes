@@ -12,6 +12,7 @@ import com.lying.tricksy.entity.ai.node.handler.BlockSearchHandler;
 import com.lying.tricksy.entity.ai.node.handler.GetterHandler;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.InventoryHandler;
+import com.lying.tricksy.entity.ai.node.handler.MatchBlockSearchHandler;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
@@ -25,15 +26,11 @@ import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.Region;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -132,38 +129,7 @@ public class LeafSearch implements ISubtypeGroup<LeafNode>
 		add(set, VARIANT_GET_INVENTORIES, new BlockSearchHandler((world, pos, state) -> state.hasBlockEntity() && world.getBlockEntity(pos) instanceof Inventory));
 		add(set, VARIANT_GET_MINEABLE, new BlockSearchHandler((world, pos, state) -> state.getHardness(world, pos) >= 0 && !state.getCollisionShape(world, pos).isEmpty()));
 		add(set, VARIANT_GET_REPLACEABLE, new BlockSearchHandler((world, pos, state) -> state.isReplaceable()));
-		add(set, VARIANT_GET_MATCHES, new BlockSearchHandler()
-		{
-			private static final WhiteboardRef MATCH = new WhiteboardRef("ref", TFObjType.BLOCK).displayName(CommonVariables.translate("item_filter"));
-			private IWhiteboardObject<?> filter = null;
-			
-			public void addVariables(Map<WhiteboardRef, INodeInput> set)
-			{
-				super.addVariables(set);
-				set.put(MATCH, INodeInput.makeInput(ref -> ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ITEM, new WhiteboardObj.Item(new ItemStack(Blocks.STONE))));
-			}
-			
-			public boolean test(World world, BlockPos pos, BlockState state)
-			{
-				if(filter == null || filter.size() == 0)
-					return false;
-				else if(filter.type() == TFObjType.BLOCK)
-					return filter.getAll().stream().anyMatch(block -> world.getBlockState((BlockPos)block).getBlock() == state.getBlock());
-				else if(filter.type() == TFObjType.ITEM)
-					return filter.getAll().stream().anyMatch(stack -> 
-					{
-						Item item = ((ItemStack)stack).getItem();
-						return item instanceof BlockItem && ((BlockItem)item).getBlock() == state.getBlock();
-					});
-				return false;
-			}
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
-			{
-				filter = getOrDefault(MATCH, parent, local, global);
-				return super.getResult(tricksy, local, global, parent);
-			}
-		});
+		add(set, VARIANT_GET_MATCHES, new MatchBlockSearchHandler());
 		return set;
 	}
 	

@@ -81,8 +81,7 @@ public abstract class Whiteboard<T>
 				TricksyFoxes.LOGGER.warn("Attempted to load reference value in wrong whiteboard: "+ref.name());
 				continue;
 			}
-			IWhiteboardObject<?> obj = IWhiteboardObject.createFromNbt(data.getCompound("Value"));
-			values.put(ref, objectToSupplier(obj));
+			register(ref, objectToSupplier(IWhiteboardObject.createFromNbt(data.getCompound("Value"))));
 		}
 	}
 	
@@ -110,15 +109,7 @@ public abstract class Whiteboard<T>
 	
 	public void delete(WhiteboardRef reference)
 	{
-		Map<WhiteboardRef, T> valuesNext = new HashMap<>();
-		values.forEach((ref,val) -> 
-		{
-			if(!ref.isSameRef(reference))
-				valuesNext.put(ref, val);
-		});
-		
-		values.clear();
-		valuesNext.forEach((ref,val) -> values.put(ref, val));
+		values.entrySet().removeIf(entry -> entry.getKey().isSameRef(reference));
 		uncache(reference);
 	}
 	
@@ -135,14 +126,7 @@ public abstract class Whiteboard<T>
 			return;
 		}
 		
-		boolean exists = false;
-		for(WhiteboardRef entry : values.keySet())
-			if(entry.isSameRef(reference))
-			{
-				exists = true;
-				break;
-			}
-		if(exists)
+		if(WhiteboardRef.findInMap(values, reference) != null)
 		{
 			TricksyFoxes.LOGGER.info("Overwrote existing value in "+this.type.asString()+" whiteboard: "+reference.name());
 			delete(reference);
@@ -160,7 +144,7 @@ public abstract class Whiteboard<T>
 		}
 		else if(!hasReference(nameIn))
 		{
-			// TricksyFoxes.LOGGER.warn("Attempted to retrieve value "+nameIn.name()+" from "+type.asString()+" but it does not exist there");
+			TricksyFoxes.LOGGER.warn("Attempted to retrieve value "+nameIn.name()+" from "+type.asString()+" but it does not exist there");
 			return WhiteboardObj.EMPTY;
 		}
 		else if(!nameIn.uncached() && cached(nameIn))
@@ -178,15 +162,8 @@ public abstract class Whiteboard<T>
 	
 	public void setValue(WhiteboardRef reference, IWhiteboardObject<?> obj)
 	{
-		Map<WhiteboardRef, T> valuesNext = new HashMap<>();
-		valuesNext.put(reference, objectToSupplier(obj));
-		for(Entry<WhiteboardRef, T> value : values.entrySet())
-			if(!value.getKey().isSameRef(reference))
-				valuesNext.put(value.getKey(), value.getValue());
-		
-		values.clear();
-		valuesNext.forEach((ref,val) -> values.put(ref, val));
-		
+		values.entrySet().removeIf(entry -> entry.getKey().isSameRef(reference));
+		values.put(reference, objectToSupplier(obj));
 		uncache(reference);
 		cache.put(reference, obj);
 	}
@@ -204,39 +181,24 @@ public abstract class Whiteboard<T>
 	@Nullable
 	private T getSupplier(WhiteboardRef nameIn)
 	{
-		for(Entry<WhiteboardRef, T> entry : values.entrySet())
-			if(entry.getKey().isSameRef(nameIn))
-				return entry.getValue();
-		return null;
+		return WhiteboardRef.findInMap(values, nameIn);
 	}
 	
 	protected boolean cached(WhiteboardRef nameIn)
 	{
-		for(WhiteboardRef ref : cache.keySet())
-			if(ref.isSameRef(nameIn))
-				return true;
-		return false;
+		return WhiteboardRef.findInMap(cache, nameIn) != null;
 	}
 	
 	public IWhiteboardObject<?> fromCache(WhiteboardRef nameIn)
 	{
-		for(Entry<WhiteboardRef, IWhiteboardObject<?>> entry : cache.entrySet())
-			if(entry.getKey().isSameRef(nameIn))
-				return entry.getValue();
-		return null;
+		return WhiteboardRef.findInMap(cache, nameIn);
 	}
 	
 	protected IWhiteboardObject<?> cache(WhiteboardRef reference, WhiteboardObj<?,?> obj) { cache.put(reference, obj); return obj; }
 	
 	protected final void uncache(WhiteboardRef reference)
 	{
-		Map<WhiteboardRef, IWhiteboardObject<?>> cacheNext = new HashMap<>();
-		for(Entry<WhiteboardRef, IWhiteboardObject<?>> value : cache.entrySet())
-			if(!value.getKey().isSameRef(reference))
-				cacheNext.put(value.getKey(), value.getValue());
-		
-		cache.clear();
-		cacheNext.forEach((ref,val) -> cache.put(ref, val));
+		cache.entrySet().removeIf(entry -> entry.getKey().isSameRef(reference));
 	}
 	
 	public static enum BoardType implements StringIdentifiable
@@ -278,10 +240,7 @@ public abstract class Whiteboard<T>
 	
 	protected boolean hasReference(WhiteboardRef reference)
 	{
-		for(WhiteboardRef ref : values.keySet())
-			if(ref.isSameRef(reference))
-				return true;
-		return false;
+		return WhiteboardRef.findInMap(values, reference) != null;
 	}
 	
 	/** Returns a list of all references in this whiteboard of the given type. */

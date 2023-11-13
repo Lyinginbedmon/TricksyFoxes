@@ -10,12 +10,10 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.component.Accomplishment;
 import com.lying.tricksy.reference.Reference;
 
-import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.predicate.entity.LocationPredicate;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -24,9 +22,6 @@ import net.minecraft.world.gen.structure.StructureKeys;
 
 public class TFAccomplishments
 {
-	public static final RegistryKey<Registry<Accomplishment>> ACC_KEY = RegistryKey.ofRegistry(new Identifier(Reference.ModInfo.MOD_ID, "accomplishment"));
-	public static final Registry<Accomplishment> REGISTRY = FabricRegistryBuilder.createSimple(ACC_KEY).buildAndRegister();
-	
 	private static final List<Accomplishment> ACCOMPLISHMENTS = Lists.newArrayList();
 	
 	private static final Predicate<MobEntity> IN_NETHER = (mob) -> mob.getWorld().getDimensionEntry() == World.NETHER;
@@ -78,18 +73,18 @@ public class TFAccomplishments
 	@Nullable
 	public static Accomplishment get(Identifier nameIn)
 	{
-		return REGISTRY.get(nameIn);
+		return TFRegistries.ACC_REGISTRY.get(nameIn);
 	}
 	
 	public static List<Accomplishment> getAll()
 	{
 		List<Accomplishment> values = Lists.newArrayList();
-		REGISTRY.getEntrySet().forEach(entry -> values.add(entry.getValue()));
+		TFRegistries.ACC_REGISTRY.getEntrySet().forEach(entry -> values.add(entry.getValue()));
 		return values;
 	}
 	
 	public static void init()
 	{
-		ACCOMPLISHMENTS.forEach(acc -> Registry.register(REGISTRY, acc.registryName(), acc));
+		ACCOMPLISHMENTS.forEach(acc -> Registry.register(TFRegistries.ACC_REGISTRY, acc.registryName(), acc));
 	}
 }

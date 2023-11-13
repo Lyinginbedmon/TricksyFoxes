@@ -55,8 +55,8 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 	private ButtonWidget discreteButton;
 	
 	private final List<EditablePart> parts = Lists.newArrayList();
-	private EditablePart hoveredPart = null;
-	private EditablePart targetPart = null;
+	private int targetIndex = -1;
+	private int hoveredIndex = -1;
 	
 	private Map<NodeElement, NestedScreen<NodeScreen>> editorMap = new HashMap<>();
 	
@@ -73,6 +73,7 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 	{
 		updateTreeRender();
 		int midWidth = this.width / 2;
+		initialiseParts();
 		generateParts();
 		
 		this.nameField = new TextFieldWidget(this.textRenderer, midWidth - 52, MAIN_BAR_Y, 104, 12, Text.empty());
@@ -105,13 +106,19 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 		editorMap.values().forEach((sub) -> sub.init(client, width, height));
 	}
 	
-	public Optional<NestedScreen<NodeScreen>> getSubScreen() { return this.targetPart == null || !editorMap.containsKey(this.targetPart.type) ? Optional.empty() : Optional.of(editorMap.get(this.targetPart.type)); }
+	@Nullable
+	public EditablePart targetPart() { return this.targetIndex >= 0 ? parts.get(targetIndex) : null; }
 	
-	public void closeSubScreen() { this.targetPart = null; }
+	@Nullable
+	public EditablePart hoveredPart() { return this.hoveredIndex >= 0 ? parts.get(hoveredIndex) : null; }
 	
-	public void setTargetPart(EditablePart part)
+	public Optional<NestedScreen<NodeScreen>> getSubScreen() { return this.targetPart() == null || !editorMap.containsKey(this.targetPart().type) ? Optional.empty() : Optional.of(editorMap.get(this.targetPart().type)); }
+	
+	public void closeSubScreen() { this.targetIndex = -1; }
+	
+	private void setTargetPart(int index)
 	{
-		this.targetPart = part;
+		this.targetIndex = index;
 		initChild(client, width, height);
 	}
 	
@@ -185,13 +192,13 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 			
 			if(!childrenMouseClicked(x, y, mouseKey))
 			{
-				if(this.hoveredPart != null)
+				if(this.hoveredPart() != null)
 				{
-					setTargetPart(this.hoveredPart);
+					setTargetPart(this.hoveredIndex);
 					return true;
 				}
 				else
-					setTargetPart(null);
+					setTargetPart(-1);
 			}
 			else
 				return true;
@@ -206,14 +213,14 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 	
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)
 	{
-		this.hoveredPart = hoveredPart(mouseX, mouseY);
-		if(this.hoveredPart != null && this.hoveredPart != this.targetPart)
-			this.hoveredPart.render(context, false);
-		if(this.targetPart != null)
+		this.hoveredIndex = hoveredPart(mouseX, mouseY);
+		if(this.hoveredIndex >= 0 && this.hoveredIndex != this.targetIndex)
+			this.hoveredPart().render(context, false);
+		if(this.targetPart() != null)
 		{
-			this.targetPart.render(context, true);
+			this.targetPart().render(context, true);
 			
-			switch(this.targetPart.type)
+			switch(this.targetPart().type)
 			{
 				case TYPE:
 					renderPartTooltip(currentNode.getType().description(), context, currentNode.screenY + currentNode.height + 20);
@@ -272,58 +279,59 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 		this.currentNode.setCustomName(name.isEmpty() ? null : Text.literal(name));
 	}
 	
-	/** Generates all available component parts of the current node */
-	public void generateParts()
+	/** Generates the parts shared by all nodes, ie. the type and subtype */
+	private void initialiseParts()
 	{
-		parts.clear();
-		
 		int width = currentNode.width;
 		parts.add(new EditablePart(NodeElement.TYPE).setBounds(10, 1, width - 10, 14));
 		parts.add(new EditablePart(NodeElement.SUBTYPE).setBounds(30, 13, width - 30, 25));
-		
-		List<Pair<WhiteboardRef, Optional<INodeValue>>> sortedVariables = NodeRenderUtils.getSortedVariables(currentNode);
-		if(sortedVariables.isEmpty())
-			return;
-		
-		for(int i=0; i<sortedVariables.size(); i++)
-			parts.add(new EditablePart(sortedVariables.get(i).getLeft()).setBounds(50, 24 + (i * 11), width - 6, 25 + (i + 1) * 11));
-		
-		if(this.targetPart != null)
-			switch(targetPart.type)
-			{
-				case TYPE:
-					targetPart = parts.get(0);
-					break;
-				case SUBTYPE:
-					targetPart = parts.get(1);
-					break;
-				default:
-					targetPart = null;
-			}
 	}
 	
-	@Nullable
-	public EditablePart hoveredPart(int mouseX, int mouseY)
+	/** Recalculates variable entries in nodes, mainly variables */
+	public void generateParts()
+	{
+		// Trim parts list to just the known essentials (type and subtype)
+		List<EditablePart> typeAndSubtype = Lists.newArrayList();
+		typeAndSubtype.addAll(parts.subList(0, 2));
+		parts.clear();
+		parts.addAll(typeAndSubtype);
+		
+		// Generate parts related to variables
+		List<Pair<WhiteboardRef, Optional<INodeValue>>> sortedVariables = NodeRenderUtils.getSortedVariables(currentNode);
+		if(!sortedVariables.isEmpty())
+		{
+			int width = currentNode.width;
+			for(int i=0; i<sortedVariables.size(); i++)
+				parts.add(new EditablePart(sortedVariables.get(i).getLeft()).setBounds(50, 24 + (i * 11), width - 6, 25 + (i + 1) * 11));
+		}
+		
+		// If the target part index referred to a variable, reset it
+		if(this.targetIndex > 1)
+			this.targetIndex = -1;
+	}
+	
+	public int hoveredPart(int mouseX, int mouseY)
 	{
 		Vec2f currentPos = new Vec2f(currentNode.screenX, currentNode.screenY);
-		for(EditablePart part : parts)
+		for(int i=0; i<parts.size(); i++)
 		{
+			EditablePart part = parts.get(i);
 			part.move(currentPos);
 			if(part.contains(mouseX, mouseY))
-				return part;
+				return i;
 		}
-		return null;
+		return -1;
 	}
 	
 	@Nullable
-	public WhiteboardRef targetInputRef() { return this.targetPart != null ? this.targetPart.inputRef : null; }
+	public WhiteboardRef targetInputRef() { return this.targetPart() != null ? this.targetPart().inputRef : null; }
 	
 	@Nullable
 	public Predicate<WhiteboardRef> targetInputPred()
 	{
-		if(this.targetPart == null || this.targetPart.type != NodeElement.VARIABLES)
+		if(this.targetPart() == null || this.targetPart().type != NodeElement.VARIABLES)
 			return Predicates.alwaysTrue();
-		INodeInput input = currentNode.getSubType().getInput(this.targetPart.inputRef);
+		INodeInput input = currentNode.getSubType().getInput(this.targetPart().inputRef);
 		return input != null ? input.predicate() : Predicates.alwaysTrue();
 	}
 	
