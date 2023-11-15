@@ -85,6 +85,12 @@ public class TreeScreen extends TricksyScreenBase
 			setPosition(-this.width / 4, -this.height / 4);
 	}
 	
+	public void handledScreenTick()
+	{
+		super.handledScreenTick();
+		save.active = handler.canSyncToServer();
+	}
+	
 	public void setPosition(int x, int y)
 	{
 		this.position = new Vec2f(x, y);

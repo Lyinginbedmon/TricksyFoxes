@@ -11,15 +11,12 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.EquipmentSlot.Type;
-import net.minecraft.entity.InventoryOwner;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
@@ -29,13 +26,13 @@ public class TricksyInventoryScreenHandler extends ScreenHandler implements ITri
 {
 	public static final Identifier BLOCK_ATLAS_TEXTURE = PlayerScreenHandler.BLOCK_ATLAS_TEXTURE;
 	public static final Identifier[] EMPTY_ARMOR_SLOT_TEXTURES = new Identifier[] {PlayerScreenHandler.EMPTY_BOOTS_SLOT_TEXTURE, PlayerScreenHandler.EMPTY_LEGGINGS_SLOT_TEXTURE, PlayerScreenHandler.EMPTY_CHESTPLATE_SLOT_TEXTURE, PlayerScreenHandler.EMPTY_HELMET_SLOT_TEXTURE};
-	private final SimpleInventory inventory;
+	private final Inventory inventory;
 	
 	private PathAwareEntity tricksyMob;
 	private ITricksyMob<?> tricksy;
 	private UUID tricksyID;
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> TricksyInventoryScreenHandler(int syncId, PlayerInventory playerInventory, SimpleInventory inventory, final T entity)
+	public <T extends PathAwareEntity & ITricksyMob<?>> TricksyInventoryScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, final T entity)
 	{
 		super(TFScreenHandlerTypes.INVENTORY_SCREEN_HANDLER, syncId);
 		this.tricksyMob = entity;
@@ -82,12 +79,6 @@ public class TricksyInventoryScreenHandler extends ScreenHandler implements ITri
 	{
 		this.tricksy = tricksyIn;
 		this.tricksyMob = mobIn;
-	}
-	
-	public void loadInventory(NbtCompound nbt)
-	{
-		if(nbt.contains(InventoryOwner.INVENTORY_KEY, NbtElement.LIST_TYPE))
-			this.inventory.readNbtList(nbt.getList(InventoryOwner.INVENTORY_KEY, NbtElement.COMPOUND_TYPE));
 	}
 	
 	public UUID tricksyUUID() { return this.tricksyID; }

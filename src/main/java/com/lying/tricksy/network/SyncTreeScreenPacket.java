@@ -37,14 +37,18 @@ public class SyncTreeScreenPacket
 	
 	private static void addBoardToList(NbtList refList, Whiteboard<?> board)
 	{
-		board.allReferences().forEach((ref) -> 
+		try
 		{
-			NbtCompound data = new NbtCompound();
-			data.put("Ref", ref.writeToNbt(new NbtCompound()));
-			IWhiteboardObject<?> value = board.getValue(ref);
-			if(!value.isEmpty())
-				data.put("Val", board.getValue(ref).writeToNbt(new NbtCompound()));
-			refList.add(data);
-		});
+			board.allReferences().forEach((ref) -> 
+			{
+				NbtCompound data = new NbtCompound();
+				data.put("Ref", ref.writeToNbt(new NbtCompound()));
+				IWhiteboardObject<?> value = board.getValue(ref);
+				if(!value.isEmpty())
+					data.put("Val", board.getValue(ref).writeToNbt(new NbtCompound()));
+				refList.add(data);
+			});
+		}
+		catch(Exception e) { }
 	}
 }

@@ -48,4 +48,24 @@ public class LeafSubTree implements ISubtypeGroup<LeafNode>
 			}
 		};
 	}
+	
+//	private static NodeTickHandler<LeafNode> goPickUp()
+//	{	// TODO Implement value passing from parent to subtree
+//		return new SubTreeHandler()
+//		{
+//			public static final WhiteboardRef TARGET = CommonVariables.TARGET_ENT;
+//			
+//			public Map<WhiteboardRef, INodeInput> variableSet()
+//			{
+//				return Map.of(TARGET, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false)));
+//			}
+//			
+//			public TreeNode<?> generateSubTree()
+//			{
+//				return TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SELECTOR)
+//					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_TRIDENT))
+//					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafInventory.VARIANT_PICK_UP).assignRef(TARGET, TARGET));
+//			}
+//		};
+//	}
 }

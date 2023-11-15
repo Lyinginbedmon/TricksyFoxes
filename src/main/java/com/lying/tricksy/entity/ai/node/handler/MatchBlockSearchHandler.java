@@ -54,7 +54,7 @@ public class MatchBlockSearchHandler extends GetterHandler<BlockPos>
 		WhiteboardObjBlock result = new WhiteboardObjBlock();
 		IWhiteboardObject<?> filter = getOrDefault(MATCH, parent, local, global);
 		if(filter == null || filter.size() == 0)
-			return result;
+			return null;
 		
 		World world = tricksy.getWorld();
 		LeafSearch.sortByDistanceTo(searchArea.center(), searchArea.getBlocks(world, (blockpos, blockstate) -> checkFilter(world, blockstate, filter))).forEach((block) -> result.add(block));

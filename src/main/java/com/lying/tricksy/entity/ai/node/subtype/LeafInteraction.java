@@ -186,7 +186,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				IWhiteboardObject<BlockPos> blockPos = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
-				if(!NodeTickHandler.canInteractWithBlock(tricksy, blockPos.get()) || blockPos.isEmpty())
+				if(blockPos.isEmpty())
 					return Result.FAILURE;
 				
 				World world = tricksy.getWorld();
@@ -194,6 +194,9 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 					return Result.FAILURE;
 				
 				BlockPos pos = blockPos.get();
+				if(!NodeTickHandler.canInteractWithBlock(tricksy, pos))
+					return Result.FAILURE;
+				
 				BlockState state = world.getBlockState(pos);
 				if(state.isAir() || state.getHardness(world, pos) < 0F || state.getBlock() instanceof FluidBlock)
 					return Result.FAILURE;
@@ -206,6 +209,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 				NodeTickHandler.swingHand(tricksy, Hand.MAIN_HAND);
 				if(state.hasBlockBreakParticles())
 					world.addBlockBreakParticles(pos, state);
+				
 				if(!parent.isRunning())
 				{
 					parent.ticks = 0F;

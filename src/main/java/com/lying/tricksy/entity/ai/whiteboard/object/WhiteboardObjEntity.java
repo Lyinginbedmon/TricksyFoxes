@@ -204,9 +204,12 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 				if(value.isSpectator() || !value.isAlive())
 					value = null;
 				
-				storeName(value.getName());
-				if(!isPlayer())
-					this.lastKnownPos = value.getBlockPos();
+				if(value != null)
+				{
+					storeName(value.getName());
+					if(!isPlayer())
+						this.lastKnownPos = value.getBlockPos();
+				}
 			}
 		}
 		

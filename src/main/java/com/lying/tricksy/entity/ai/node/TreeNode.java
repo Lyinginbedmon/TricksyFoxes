@@ -188,13 +188,14 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	public final TreeNode<N> assignValue(WhiteboardRef variable, @Nullable INodeValue value)
 	{
-		for(WhiteboardRef entry : nodeType.getSubType(subType).variableSet().keySet())
-			if(entry.isSameRef(variable))
-			{
-				variableSet.put(entry, value == null ? Optional.empty() : Optional.of(value));
-				return this;
-			}
-		TricksyFoxes.LOGGER.warn("Attempted to assign a variable this node does not have! "+variable.name()+" in "+subType.toString()+" of "+nodeType.getRegistryName().toString());
+		if(WhiteboardRef.findInMap(getSubType().variableSet(), variable) == null)
+		{
+			TricksyFoxes.LOGGER.warn("Attempted to assign a variable this node does not have! "+variable.name()+" in "+subType.toString()+" of "+nodeType.getRegistryName().toString());
+			return this;
+		}
+		
+		variableSet.entrySet().removeIf(input -> input.getKey().isSameRef(variable));
+		variableSet.put(variable, value == null ? Optional.empty() : Optional.of(value));
 		return this;
 	}
 	

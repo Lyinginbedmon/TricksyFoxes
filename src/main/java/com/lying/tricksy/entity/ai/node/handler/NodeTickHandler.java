@@ -56,36 +56,42 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 		return null;
 	}
 	
-	public default boolean variablesSufficient(M parent) { return !noVariableMissing(parent); }
+	/** Returns true if the operational needs of this handler have been met */
+	public default boolean variablesSufficient(M parent) { return !anyVariableMissing(parent); }
 	
 	/**
 	 * Returns true if any variable in {@link variableSet} is unassigned in the given parent node<br>
 	 * Note: This does NOT account for whether the target value is empty or not.
 	 */
-	public default boolean noVariableMissing(M parent)
+	public default boolean anyVariableMissing(M parent)
 	{
 		if(variableSet().isEmpty())
 			return false;
 		
 		for(Entry<WhiteboardRef, INodeInput> entry : variableSet().entrySet())
-			if(entry.getValue().isOptional())
+		{
+			INodeInput qualifier = entry.getValue();
+			if(qualifier.isOptional())
 				continue;
-			else if(!parent.variableAssigned(entry.getKey()))
-				return true;
 			else
 			{
 				INodeValue assigned = parent.variable(entry.getKey());
+				if(assigned == null)
+					return true;
+				
+				// Ensure assigned value is appropriate for this input
 				switch(assigned.type())
 				{
-					case WHITEBOARD:
-						if(!entry.getValue().predicate().test(((WhiteboardValue)assigned).assignment()))
-							return true;
-						break;
 					case STATIC:
 						// Static values are presumed to be appropriate at input
-						return true;
+						break;
+					case WHITEBOARD:
+						if(!qualifier.predicate().test(((WhiteboardValue)assigned).assignment()))
+							return true;
+						break;
 				}
 			}
+		}
 		
 		return false;
 	}
@@ -109,7 +115,8 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	
 	public static <T extends PathAwareEntity & ITricksyMob<?>> boolean canInteractWithBlock(T tricksy, BlockPos pos)
 	{
-		return tricksy.getEyePos().distanceTo(new Vec3d(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D)) < INTERACT_RANGE;
+		Vec3d position = new Vec3d(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
+		return tricksy.getEyePos().distanceTo(position) <= INTERACT_RANGE || tricksy.getBlockPos().isWithinDistance(pos, INTERACT_RANGE);
 	}
 	
 	public static <T extends PathAwareEntity & ITricksyMob<?>> boolean canInteractWithEntity(T tricksy, Entity pos)

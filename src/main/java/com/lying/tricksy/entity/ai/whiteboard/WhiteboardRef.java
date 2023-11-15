@@ -191,7 +191,8 @@ public class WhiteboardRef
 	/** Removes spaces and capitalisation to minimise errors */
 	public static String conformName(String text)
 	{
-		return text.toLowerCase().replace(' ', '_');
+		// TODO Remove consecutive spaces
+		return text.toLowerCase().trim().replaceAll("[^a-zA-Z0-9 _]", "").replace(' ', '_');
 	}
 	
 	public static String conformTextToName(Text text)

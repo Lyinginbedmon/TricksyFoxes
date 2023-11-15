@@ -49,19 +49,21 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 	public <N extends PathAwareEntity & ITricksyMob<?>> Result doTick(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
 	{
 		INodeValue target = parent.variable(entry);
-		WhiteboardRef dest = target.type() == Type.WHITEBOARD ? ((WhiteboardValue)target).assignment() : null;
+		if(target.type() != Type.WHITEBOARD)
+			return Result.FAILURE;
+		WhiteboardRef dest = ((WhiteboardValue)target).assignment();
 		if(dest == null)
 			return Result.FAILURE;
 		
 		IWhiteboardObject<T> result = getResult(tricksy, local, global, parent);
-		if(result == null || result.isEmpty())
+		if(result == null || result.isEmpty() || result.size() == 0)
 		{
 			local.setValue(dest, type.blank());
 			return Result.FAILURE;
 		}
 		
 		local.setValue(dest, result);
-		return result.size() > 0 ? Result.SUCCESS : Result.FAILURE;
+		return Result.SUCCESS;
 	}
 	
 	public abstract void addVariables(Map<WhiteboardRef, INodeInput> set);

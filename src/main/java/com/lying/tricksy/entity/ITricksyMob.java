@@ -1,5 +1,6 @@
 package com.lying.tricksy.entity;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -19,19 +20,15 @@ import com.lying.tricksy.screen.TricksyTreeScreenHandler;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.InventoryOwner;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -41,9 +38,22 @@ import net.minecraft.util.StringIdentifiable;
  * Interface defining common features and functions of all Tricksy mobs
  * @author Lying
  */
-public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends InventoryOwner, InventoryChangedListener
+public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends Inventory, InventoryChangedListener
 {
-	public static final EquipmentSlot[] SLOT_ORDER = new EquipmentSlot[] {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD, EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND};
+	public static final Map<EquipmentSlot, Integer> SLOT_TO_INDEX_MAP = Map.of(
+			EquipmentSlot.FEET, 0,
+			EquipmentSlot.LEGS, 1,
+			EquipmentSlot.CHEST, 2,
+			EquipmentSlot.HEAD, 3,
+			EquipmentSlot.MAINHAND, 4,
+			EquipmentSlot.OFFHAND, 5);
+	public static final Map<Integer, EquipmentSlot> INDEX_TO_SLOT_MAP = Map.of(
+			0, EquipmentSlot.FEET,
+			1, EquipmentSlot.LEGS, 
+			2, EquipmentSlot.CHEST,
+			3, EquipmentSlot.HEAD,
+			4, EquipmentSlot.MAINHAND,
+			5, EquipmentSlot.OFFHAND);
 	
 	/** Returns true if this mob has a sage */
 	public default boolean hasSage() { return getSage().isPresent(); }
@@ -137,59 +147,60 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 	}
 	
 	/**	## Inventory methods ##	*/
+
 	
-	public static SimpleInventory createInventory() { return new SimpleInventory(6); }
+	public default void clear()
+	{
+		for(int i=0; i<size(); i++)
+			setStack(i, ItemStack.EMPTY);
+	}
+	
+	public default int size() { return EquipmentSlot.values().length; }
+	
+	public default boolean isEmpty()
+	{
+		for(int i=0; i<size(); i++)
+			if(!getStack(i).isEmpty())
+				return false;
+		return true;
+	}
+	
+	public default ItemStack removeStack(int slot, int amount)
+	{
+		if(slot < 0 || slot >= size() || getStack(slot).isEmpty() || amount <= 0)
+			return ItemStack.EMPTY;
+		ItemStack stack = getStack(slot).split(amount);
+		if(!stack.isEmpty())
+			markDirty();
+		return stack;
+	}
+	
+	public default ItemStack removeStack(int var1)
+	{
+		ItemStack stack = getStack(var1);
+		if(stack.isEmpty())
+			return ItemStack.EMPTY;
+		setStack(var1, ItemStack.EMPTY);
+		return stack;
+	}
 	
 	public default void onInventoryChanged(Inventory inv)
 	{
 		updateEquippedItems(inv);
 	}
 	
-	public default void updateEquippedItems() { updateEquippedItems(getInventory()); }
-	
 	public default void updateEquippedItems(Inventory inv)
 	{
-		for(int i=0; i<SLOT_ORDER.length; i++)
+		for(int i=0; i<INDEX_TO_SLOT_MAP.size(); i++)
 		{
-			EquipmentSlot slot = SLOT_ORDER[i];
+			EquipmentSlot slot = INDEX_TO_SLOT_MAP.get(i);
 			((PathAwareEntity)this).equipStack(slot, inv.getStack(i));
 		}
 	}
 	
-	public default void writeInventory(NbtCompound nbt)
-	{
-		Inventory inv = getInventory();
-		NbtList list = new NbtList();
-		for(int i=0; i<inv.size(); i++)
-		{
-			NbtCompound data = new NbtCompound();
-			ItemStack stack = inv.getStack(i);
-			if(stack.isEmpty())
-				continue;
-			
-			data.putInt("Slot", i);
-			data.put("Item", stack.writeNbt(new NbtCompound()));
-			list.add(data);
-		}
-		nbt.put(INVENTORY_KEY, list);
-	}
+	public default void markDirty() { }
 	
-	public default void readInventory(NbtCompound nbt)
-	{
-		Inventory inv = getInventory();
-		if(nbt.contains(INVENTORY_KEY, NbtElement.LIST_TYPE))
-		{
-			inv.clear();
-			NbtList list = nbt.getList(INVENTORY_KEY, NbtElement.COMPOUND_TYPE);
-			for(int i=0; i<list.size(); i++)
-			{
-				NbtCompound data = list.getCompound(i);
-				int slot = data.getInt("Slot");
-				ItemStack stack = ItemStack.fromNbt(data.getCompound("Item"));
-				inv.setStack(slot, stack);
-			}
-		}
-	}
+	public Inventory getMainInventory();
 	
 	@SuppressWarnings("unchecked")
 	public static <T extends PathAwareEntity & ITricksyMob<?>> void openTreeScreen(PlayerEntity player, PathAwareEntity tricksy)
@@ -200,7 +211,7 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 	@SuppressWarnings("unchecked")
 	public static <T extends PathAwareEntity & ITricksyMob<?>> void openInventoryScreen(PlayerEntity player, PathAwareEntity tricksy)
 	{
-		player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new TricksyInventoryScreenHandler(id, playerInventory, ((T)tricksy).getInventory(), (T)tricksy), tricksy.getDisplayName())).ifPresent(syncId -> SyncInventoryScreenPacket.send(player, (T)tricksy, syncId));
+		player.openHandledScreen(new SimpleNamedScreenHandlerFactory((id, playerInventory, custom) -> new TricksyInventoryScreenHandler(id, playerInventory, ((T)tricksy).getMainInventory(), (T)tricksy), tricksy.getDisplayName())).ifPresent(syncId -> SyncInventoryScreenPacket.send(player, (T)tricksy, syncId));
 	}
 	
 	public static enum Bark implements StringIdentifiable

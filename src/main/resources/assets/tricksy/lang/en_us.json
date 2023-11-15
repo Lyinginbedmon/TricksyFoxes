@@ -247,6 +247,8 @@
 	"variant.tricksy.is_crop.desc": "Returns success if the block is a type of crop",
 	"variant.tricksy.is_mature_crop": "Is Mature Crop",
 	"variant.tricksy.is_mature_crop.desc": "Returns success if the block is ready to harvest",
+	"variant.tricksy.clear_value": "Clear Value",
+	"variant.tricksy.clear_value.desc": "Clears the specified value in the whiteboard",
 	"variable.tricksy.generic_value": "Value",
 	"variable.tricksy.value_a": "Val A",
 	"variable.tricksy.value_b": "Val B",

@@ -30,7 +30,7 @@ import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.entity.passive.FoxEntity.Type;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.DyeItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -47,7 +47,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 
-public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<EntityTricksyFox>, VariantHolder<Type>
+public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<EntityTricksyFox>, VariantHolder<Type>, Inventory
 {
 	private static final TrackedData<Integer> TYPE = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<Boolean> SLEEPING = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -64,14 +64,14 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	private int barkTicks = 0;
 	
 	private PlayerEntity customer = null;
-	private SimpleInventory inventory;
+//	private SimpleInventory inventory;
 	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
 		super(TFEntityTypes.TRICKSY_FOX, world);
 		this.lookControl = new TricksyLookControl(this);
-		this.inventory = ITricksyMob.createInventory();
-		this.inventory.addListener(this);
+//		this.inventory = ITricksyMob.createInventory();
+//		this.inventory.addListener(this);
 	}
 	
 	public void initDataTracker()
@@ -105,8 +105,8 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		if(data.contains("MasterID", NbtElement.INT_ARRAY_TYPE))
 			setSage(data.getUuid("MasterID"));
 		setVariant(Type.byName(data.getString("Type")));
-		readInventory(data);
-		updateEquippedItems();
+//		readInventory(data);
+//		updateEquippedItems();
 		
 		boardLocal.readFromNbt(data.getCompound("Whiteboard"));
 		setBehaviourTree(data.getCompound("BehaviourTree"));
@@ -120,7 +120,7 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 		getDataTracker().get(COLOR).ifPresent((val) -> data.putInt("Color", val));
 		getDataTracker().get(OWNER_UUID).ifPresent((uuid) -> data.putUuid("MasterID", uuid));
 		data.putString("Type", this.getVariant().asString());
-		writeInventory(data);
+//		writeInventory(data);
 		
 		data.put("Whiteboard", boardLocal.writeToNbt(new NbtCompound()));
 		data.put("BehaviourTree", this.behaviourTree.storeInNbt());
@@ -331,12 +331,11 @@ public class EntityTricksyFox extends AnimalEntity implements ITricksyMob<Entity
 	
 	public ItemStack getProjectileType(ItemStack stack) { return ITricksyMob.getRangedProjectile(stack, this); }
 	
-	public SimpleInventory getInventory()
-	{
-		for(int i=0; i<ITricksyMob.SLOT_ORDER.length; i++)
-			this.inventory.setStack(i, getEquippedStack(ITricksyMob.SLOT_ORDER[i]));
-		return this.inventory;
-	}
+	public Inventory getMainInventory() { return this; }
 	
 	public boolean canPlayerUse(PlayerEntity player) { return isSage(player) && player.distanceTo(this) < 4; }
+	
+	public ItemStack getStack(int slot) { return getEquippedStack(ITricksyMob.INDEX_TO_SLOT_MAP.get(slot)); }
+	
+	public void setStack(int slot, ItemStack stack) { equipStack(ITricksyMob.INDEX_TO_SLOT_MAP.get(slot), stack); }
 }

@@ -66,6 +66,8 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 		}
 	}
 	
+	public boolean canSyncToServer() { return this.tricksyID != null; }
+	
 	public ItemStack quickMove(PlayerEntity var1, int var2) { return null; }
 	
 	public boolean canUse(PlayerEntity var1) { return var1.isCreative() || tricksy != null && tricksy.isSage(var1) && tricksyMob.distanceTo(var1) < 6D; }

@@ -102,6 +102,9 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
 				IWhiteboardObject<?> value = getOrDefault(LIST, parent, local, global);
+				if(value.size() == 0)
+					return Result.SUCCESS;
+				
 				if(!parent.isRunning())
 				{
 					tricksy.logStatus(Text.literal("Running "+parent.child().getSubType().translatedName().getString()+" "+value.size()+" times"));

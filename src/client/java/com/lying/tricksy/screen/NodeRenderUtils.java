@@ -279,23 +279,19 @@ public class NodeRenderUtils
 			
 			List<Vec2f> offshootPoints = Lists.newArrayList();
 			
-			Vec2f start = branchStart;
+			Vec2f start = mainPoints.get(0);
 			Vec2f dir = new Vec2f(0, 1F);
 			float targetY = lineTarget.y - (child.getRNG().nextFloat() * child.height);
-			if(targetY > branchStart.y)
+			for(int i=mainPoints.size() - 1; i > 0; i--)
 			{
-				// Find index of first branch point above the targetY
-				for(int i=1; i<mainPoints.size(); i++)
+				Vec2f pos = mainPoints.get(i);
+				if(pos.y < targetY)
 				{
-					Vec2f posA = mainPoints.get(i - 1);
-					Vec2f posB = mainPoints.get(i);
-					if(posB.y > targetY )
-					{
-						Vec2f direction = posB.add(posA.negate()).normalize();
-						start = posA.add(direction.multiply((targetY - posA.y) * direction.y));
-						dir = direction;
-						break;
-					}
+					start = pos;
+					if(i > 0)
+						dir = pos.add(mainPoints.get(i-1).negate()).normalize();
+					
+					break;
 				}
 			}
 			offshootPoints.add(start);
@@ -310,7 +306,7 @@ public class NodeRenderUtils
 				start = nextPoint;
 				offshootPoints.add(start);
 			}
-			while(!child.containsPoint((int)start.x, (int)start.y));
+			while(!child.containsPoint((int)start.x, (int)start.y) && offshootPoints.size() < 100);	// TODO Ensure offshoot reaches child without hard size limiter
 			
 	        (new BranchLine(offshootPoints, rand, flowerTex)).render(context);
 			

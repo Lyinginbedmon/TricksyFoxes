@@ -27,7 +27,6 @@ import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.Region;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.ai.FuzzyTargeting;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -35,7 +34,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 
 public class LeafMisc implements ISubtypeGroup<LeafNode>
@@ -172,16 +170,8 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 					if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 1D)
 						return Result.SUCCESS;
 					
-					Path directPath = navigator.findPathTo(dest, 1);
-					if(directPath != null)
-						navigator.startMovingAlong(directPath, 1D);
-					else
-					{
-						Vec3d destVec = FuzzyTargeting.findTo(tricksy, 4, 2, new Vec3d(dest.getX() + 0.5D, dest.getY(), dest.getZ() + 0.5D));
-						navigator.startMovingTo(destVec.x, destVec.y, destVec.z, 1D);
-					}
-					
-					tricksy.logStatus(Text.literal(navigator.isFollowingPath() ? "Moving to destination" : "No path found"));
+					navigator.startMovingTo(dest.getX() + 0.5D, dest.getY(), dest.getZ() + 0.5D, 1D);
+					tricksy.logStatus(Text.literal(navigator.isFollowingPath() ? "Moving to "+dest.toShortString() : "No path found"));
 					return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
 				}
 				else
