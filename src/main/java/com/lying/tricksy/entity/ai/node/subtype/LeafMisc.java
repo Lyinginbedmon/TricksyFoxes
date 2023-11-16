@@ -58,7 +58,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 		{
 			private static final WhiteboardRef BARK = CommonVariables.VAR_NUM;
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(BARK, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
 			}
@@ -109,7 +109,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_WAIT, new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1)));
 			}
@@ -127,7 +127,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_SET_HOME, new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock()));
 			}
@@ -149,7 +149,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 	{
 		return new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
 			}
@@ -184,7 +184,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 	{
 		return new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION,
@@ -246,7 +246,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 	{
 		return new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(
 						(var) -> !var.isSameRef(LocalWhiteboard.SELF) && (var.type() == TFObjType.BLOCK || var.type() == TFObjType.ENT) && !var.isFilter(), 
@@ -281,7 +281,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 	{
 		return new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal(String.valueOf(4))));
 			}

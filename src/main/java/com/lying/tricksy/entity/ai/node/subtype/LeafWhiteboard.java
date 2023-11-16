@@ -52,7 +52,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 		{
 			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BOOL).displayName(CommonVariables.translate("to_cycle"));
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(VAR_A, INodeInput.makeInput(INodeInput.anyLocal()));
 			}
@@ -73,7 +73,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			public static final WhiteboardRef COPY = new WhiteboardRef("value_to_copy", TFObjType.BOOL).displayName(CommonVariables.translate("to_copy"));
 			public static final WhiteboardRef DEST = new WhiteboardRef("target_reference", TFObjType.BOOL).displayName(CommonVariables.translate("ref_target"));
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						COPY, INodeInput.makeInput(INodeInput.any(), TFObjType.EMPTY.blank(), Text.literal("")),
@@ -83,7 +83,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				IWhiteboardObject<?> value = getOrDefault(COPY, parent, local, global);
-				INodeValue targetVal = parent.variable(DEST);
+				INodeValue targetVal = parent.getInput(DEST);
 				WhiteboardRef target = targetVal.type() == Type.WHITEBOARD ? ((WhiteboardValue)targetVal).assignment() : null;
 				if(target == null)
 					return Result.FAILURE;
@@ -106,7 +106,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 		{
 			public static final WhiteboardRef DEST = new WhiteboardRef("target_reference", TFObjType.BOOL).displayName(CommonVariables.translate("ref_target"));
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						DEST, INodeInput.makeInput((var) -> !var.uncached() && var.boardType() == BoardType.LOCAL));
@@ -114,7 +114,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
-				INodeValue targetVal = parent.variable(DEST);
+				INodeValue targetVal = parent.getInput(DEST);
 				if(targetVal.type() != Type.WHITEBOARD)
 					return Result.FAILURE;
 				
@@ -137,7 +137,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 		{
 			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BLOCK).displayName(CommonVariables.translate("to_cycle"));
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						VAR_A, INodeInput.makeInput((ref) -> (ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ENT) && ref.boardType() == BoardType.LOCAL && !ref.isFilter()),
@@ -146,7 +146,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
-				INodeValue reference = parent.variable(VAR_A);
+				INodeValue reference = parent.getInput(VAR_A);
 				if(reference.type() != Type.WHITEBOARD)
 					return Result.FAILURE;
 				

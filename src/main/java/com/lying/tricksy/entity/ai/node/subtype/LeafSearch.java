@@ -52,7 +52,7 @@ public class LeafSearch implements ISubtypeGroup<LeafNode>
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
 		add(set, VARIANT_GET_ITEMS, new GetterHandler<Entity>(TFObjType.ENT)
 		{
-			public void addVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
 			{
 				set.put(CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION);
 				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
@@ -91,7 +91,7 @@ public class LeafSearch implements ISubtypeGroup<LeafNode>
 		{
 			public static WhiteboardRef FILTER = new WhiteboardRef("entity_filter", TFObjType.ENT).displayName(CommonVariables.translate("item_filter"));
 			
-			public void addVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
 			{
 				set.put(CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION);
 				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));

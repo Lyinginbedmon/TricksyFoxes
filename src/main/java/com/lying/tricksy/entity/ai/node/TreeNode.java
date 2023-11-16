@@ -3,7 +3,6 @@ package com.lying.tricksy.entity.ai.node;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -59,7 +58,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	private List<TreeNode<?>> children = Lists.newArrayList();
 	
 	/** Map of input variable references to corresponding value getters */
-	private Map<WhiteboardRef, Optional<INodeValue>> variableSet = new HashMap<>();
+	private Map<WhiteboardRef, Optional<INodeValue>> assignedInputs = new HashMap<>();
 	
 	/** Temporary storage for tick handler use */
 	public NbtCompound nodeRAM = new NbtCompound();
@@ -160,53 +159,47 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	public final TreeNode<N> setSubType(Identifier typeIn)
 	{
 		this.subType = typeIn;
-		this.variableSet.clear();
-		nodeType.getSubType(typeIn).variableSet().keySet().forEach((key) -> this.variableSet.put(key, Optional.empty()));
+		this.assignedInputs.clear();
+		getSubType().inputSet().keySet().forEach((key) -> this.assignedInputs.put(key, Optional.empty()));
 		return this;
 	};
 	
 	public final NodeSubType<?> getSubType() { return getType().getSubType(this.subType); }
 	
-	public final boolean variableAssigned(WhiteboardRef reference)
+	public final boolean inputAssigned(WhiteboardRef reference)
 	{
-		for(Entry<WhiteboardRef, Optional<INodeValue>> entry : variableSet.entrySet())
-			if(entry.getKey() != null && entry.getKey().isSameRef(reference))
-				return entry.getValue().isPresent();
-		
-		return false;
+		return assignedInputs.entrySet().stream().anyMatch(entry -> entry.getKey().isSameRef(reference) && entry.getValue().isPresent());
 	}
 	
-	public final TreeNode<N> assignRef(WhiteboardRef variable, @Nullable WhiteboardRef value)
+	public final TreeNode<N> assignInputRef(WhiteboardRef variable, @Nullable WhiteboardRef value)
 	{
-		return assignValue(variable, new WhiteboardValue(value));
+		return assignInput(variable, new WhiteboardValue(value));
 	}
 	
-	public final TreeNode<N> assignObj(WhiteboardRef variable, @Nullable IWhiteboardObject<?> value)
+	public final TreeNode<N> assignInputStatic(WhiteboardRef variable, @Nullable IWhiteboardObject<?> value)
 	{
-		return assignValue(variable, new StaticValue(value));
+		return assignInput(variable, new StaticValue(value));
 	}
 	
-	public final TreeNode<N> assignValue(WhiteboardRef variable, @Nullable INodeValue value)
+	public final TreeNode<N> assignInput(WhiteboardRef variable, @Nullable INodeValue value)
 	{
-		if(WhiteboardRef.findInMap(getSubType().variableSet(), variable) == null)
+		if(WhiteboardRef.findInMap(getSubType().inputSet(), variable) == null)
 		{
 			TricksyFoxes.LOGGER.warn("Attempted to assign a variable this node does not have! "+variable.name()+" in "+subType.toString()+" of "+nodeType.getRegistryName().toString());
 			return this;
 		}
 		
-		variableSet.entrySet().removeIf(input -> input.getKey().isSameRef(variable));
-		variableSet.put(variable, value == null ? Optional.empty() : Optional.of(value));
+		assignedInputs.entrySet().removeIf(input -> input.getKey().isSameRef(variable));
+		assignedInputs.put(variable, value == null ? Optional.empty() : Optional.of(value));
 		return this;
 	}
 	
-	/** Returns the whiteboard reference assigned to the specified input variable, or null if it is unassigned */
+	/** Returns the node value assigned to the specified input variable, or null if it is unassigned */
 	@Nullable
-	public final INodeValue variable(WhiteboardRef reference)
+	public final INodeValue getInput(WhiteboardRef reference)
 	{
-		if(variableAssigned(reference))
-			for(Entry<WhiteboardRef, Optional<INodeValue>> entry : variableSet.entrySet())
-				if(entry.getKey().isSameRef(reference))
-					return entry.getValue().get();
+		if(inputAssigned(reference))
+			return assignedInputs.entrySet().stream().filter(entry -> entry.getKey().isSameRef(reference)).findFirst().get().getValue().get();
 		return null;
 	}
 	
@@ -354,7 +347,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 					NbtCompound nbt = variables.getCompound(i);
 					WhiteboardRef variable = WhiteboardRef.fromNbt(nbt.getCompound("Variable"));
 					INodeValue value = INodeValue.readFromNbt(nbt.getCompound("Value"));
-					parent.assignValue(variable, value);
+					parent.assignInput(variable, value);
 				}
 			}
 			
@@ -391,10 +384,10 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		data.putUuid("UUID", this.nodeID);
 		data.putString("Variant", this.subType.toString());
 		
-		if(!variableSet.isEmpty())
+		if(!assignedInputs.isEmpty())
 		{
 			NbtList variables = new NbtList();
-			variableSet.entrySet().forEach((entry) -> 
+			assignedInputs.entrySet().forEach((entry) -> 
 			{
 				if(!entry.getValue().isPresent() || entry.getKey() == null)
 					return;

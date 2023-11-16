@@ -55,7 +55,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 		/** Performs a simple distance check from the mob to the given position and returns SUCCESS if the distance is less than a desired value */
 		set.add(new NodeSubType<ConditionNode>(VARIANT_CLOSER_THAN, new NodeTickHandler<ConditionNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						CommonVariables.VAR_POS_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)), 
@@ -90,7 +90,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 		}));
 		set.add(new NodeSubType<ConditionNode>(VARIANT_BLOCK_POWERED, new NodeTickHandler<ConditionNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK));
 			}
@@ -103,7 +103,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 		}));
 		set.add(new NodeSubType<ConditionNode>(VARIANT_ON_FIRE, new NodeTickHandler<ConditionNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), TFObjType.ENT.blank(), LocalWhiteboard.SELF.displayName()));
 			}
@@ -123,7 +123,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "condition_mine");
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)),
@@ -151,7 +151,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 		}));
 		set.add(new NodeSubType<ConditionNode>(VARIANT_IS_ITEM, new NodeTickHandler<ConditionNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						CommonVariables.VAR_ITEM, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, false), new WhiteboardObj.Item(), LocalWhiteboard.MAIN_ITEM.displayName()),
@@ -171,7 +171,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 		{
 			public static final WhiteboardRef FILTER = new WhiteboardRef("entity_filter", TFObjType.ENT).displayName(CommonVariables.translate("item_filter"));
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()),
@@ -188,7 +188,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 		}));
 		set.add(new NodeSubType<ConditionNode>(VARIANT_IS_CROP, new NodeTickHandler<ConditionNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
 			}
@@ -201,7 +201,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 		}));
 		set.add(new NodeSubType<ConditionNode>(VARIANT_IS_MATURE, new NodeTickHandler<ConditionNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
 			}

@@ -35,22 +35,22 @@ public class BehaviourTree
 			TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SELECTOR).setCustomName(Text.translatable("node."+Reference.ModInfo.MOD_ID+".root"))
 			.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID(), DecoratorMisc.VARIANT_DO_ONCE)
 				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_SET_HOME)
-					.assignRef(CommonVariables.VAR_POS, LocalWhiteboard.SELF)))
+					.assignInputRef(CommonVariables.VAR_POS, LocalWhiteboard.SELF)))
 			.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SEQUENCE).setCustomName(Text.translatable("node."+Reference.ModInfo.MOD_ID+".meander")).setDiscrete(true)
 				.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID(), ConditionWhiteboard.VARIANT_VALUE_EQUALS)
-					.assignRef(CommonVariables.VAR_A, LocalWhiteboard.HAS_SAGE)
-					.assignObj(CommonVariables.VAR_B, new WhiteboardObj.Bool(false)))
+					.assignInputRef(CommonVariables.VAR_A, LocalWhiteboard.HAS_SAGE)
+					.assignInputStatic(CommonVariables.VAR_B, new WhiteboardObj.Bool(false)))
 				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_BARK)
-					.assignObj(CommonVariables.VAR_NUM, new WhiteboardObj.Int(3)))
+					.assignInputStatic(CommonVariables.VAR_NUM, new WhiteboardObj.Int(3)))
 				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_WANDER))
 				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_LOOK_AROUND)))
 			.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SEQUENCE).setCustomName(Text.translatable("node."+Reference.ModInfo.MOD_ID+".follow_sage"))
 				.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID(), DecoratorMisc.VARIANT_INVERTER)
 					.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID(), ConditionMisc.VARIANT_CLOSER_THAN)
-						.assignRef(CommonVariables.VAR_POS_A, LocalWhiteboard.NEAREST_SAGE)
-						.assignObj(CommonVariables.VAR_DIS, new WhiteboardObj.Int(4))))
+						.assignInputRef(CommonVariables.VAR_POS_A, LocalWhiteboard.NEAREST_SAGE)
+						.assignInputStatic(CommonVariables.VAR_DIS, new WhiteboardObj.Int(4))))
 				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_GOTO)
-					.assignRef(CommonVariables.VAR_POS, LocalWhiteboard.NEAREST_SAGE)));
+					.assignInputRef(CommonVariables.VAR_POS, LocalWhiteboard.NEAREST_SAGE)));
 	
 	private TreeNode<?> root;
 	private int waitTicks = 0;

@@ -16,10 +16,6 @@ import net.minecraft.text.Text;
 
 public interface INodeInput
 {
-	public Predicate<WhiteboardRef> predicate();
-	
-	public Optional<IWhiteboardObject<?>> defaultValue();
-	
 	public default Text describeValue()
 	{
 		if(defaultValue().isPresent())
@@ -27,17 +23,35 @@ public interface INodeInput
 		return Text.empty();
 	}
 	
+	/** Returns a predicate defining what whiteboard references are valid for this input */
+	public Predicate<WhiteboardRef> predicate();
+	
 	/** Returns true if this input has a default value */
 	public default boolean isOptional() { return defaultValue().isPresent(); }
 	
+	public default Optional<IWhiteboardObject<?>> defaultValue() { return Optional.empty(); }
+	
+	/** Returns true if this input can be assigned a static value instead of a whiteboard reference */
+	public default boolean allowStatic() { return true; }
+	
 	/** Accept any value from the local whiteboard */
-	static Predicate<WhiteboardRef> anyLocal() { return (ref) -> ref.boardType() == BoardType.LOCAL; }
+	public static Predicate<WhiteboardRef> anyLocal() { return (ref) -> ref.boardType() == BoardType.LOCAL; }
 	
 	/** Accept any value from anywhere */
-	static Predicate<WhiteboardRef> any() { return Predicates.alwaysTrue(); }
+	public static Predicate<WhiteboardRef> any() { return Predicates.alwaysTrue(); }
 	
-	/** Accept only values of the given type */
-	static Predicate<WhiteboardRef> ofType(TFObjType<?> typeIn, boolean filterAllowed) { return (ref) -> ref.type().castableTo(typeIn) && (filterAllowed || !ref.isFilter()); }
+	/** Accept only values castable as the given type */
+	public static Predicate<WhiteboardRef> ofType(TFObjType<?> typeIn, boolean filterAllowed) { return (ref) -> ref.type().castableTo(typeIn) && (filterAllowed || !ref.isFilter()); }
+	
+	public static INodeInput outputRefOnly(TFObjType<?> type)
+	{
+		return new INodeInput()
+				{
+					public Predicate<WhiteboardRef> predicate() { return (ref) -> ref.boardType() == BoardType.LOCAL && !ref.uncached() && type == ref.type(); }
+					
+					public boolean allowStatic() { return false; }
+				};
+	}
 	
 	public static INodeInput makeInput(Predicate<WhiteboardRef> predicateIn) { return makeInput(predicateIn, null); }
 	

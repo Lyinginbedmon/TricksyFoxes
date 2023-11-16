@@ -31,7 +31,7 @@ public class BlockSearchHandler extends GetterHandler<BlockPos>
 		this.func = function == null ? Optional.empty() : Optional.of(function);
 	}
 	
-	public void addVariables(Map<WhiteboardRef, INodeInput> set)
+	public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
 	{
 		set.put(CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION);
 		set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));

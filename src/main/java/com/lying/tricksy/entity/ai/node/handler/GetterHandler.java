@@ -15,7 +15,6 @@ import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
@@ -40,15 +39,16 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 		this.type = typeIn;
 		this.entry = new WhiteboardRef("target_reference", type).displayName(CommonVariables.translate("ref_target"));
 		
-		this.variableSet.put(entry, INodeInput.makeInput((var) -> var.type() == type && var.boardType() == BoardType.LOCAL && !var.uncached()));
-		addVariables(this.variableSet);
+		// TODO Formalise output values as distinct from input values
+		this.variableSet.put(entry, INodeInput.outputRefOnly(typeIn));
+		addInputVariables(this.variableSet);
 	}
 	
-	public Map<WhiteboardRef, INodeInput> variableSet() { return this.variableSet; }
+	public Map<WhiteboardRef, INodeInput> inputSet() { return this.variableSet; }
 	
 	public <N extends PathAwareEntity & ITricksyMob<?>> Result doTick(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
 	{
-		INodeValue target = parent.variable(entry);
+		INodeValue target = parent.getInput(entry);
 		if(target.type() != Type.WHITEBOARD)
 			return Result.FAILURE;
 		WhiteboardRef dest = ((WhiteboardValue)target).assignment();
@@ -66,7 +66,7 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 		return Result.SUCCESS;
 	}
 	
-	public abstract void addVariables(Map<WhiteboardRef, INodeInput> set);
+	public abstract void addInputVariables(Map<WhiteboardRef, INodeInput> set);
 	
 	@Nullable
 	public abstract <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<T> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent);

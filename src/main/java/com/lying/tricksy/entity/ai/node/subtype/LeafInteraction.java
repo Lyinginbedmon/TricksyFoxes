@@ -62,7 +62,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 	{
 		return new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(false), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
 			}
@@ -104,7 +104,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 			// Items that directly affect the player using them, hence cannot be used normally by a mob
 			private static final Set<Item> UNUSABLES = Set.of(Items.ENDER_PEARL, Items.LEAD, Items.FISHING_ROD);
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(TARGET, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ENT));
 			}
@@ -149,7 +149,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_activate");
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
 			}
@@ -178,7 +178,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_break");
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
 			}

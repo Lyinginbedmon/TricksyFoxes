@@ -110,7 +110,7 @@ public class NodeRenderUtils
 		{
 			for(Pair<WhiteboardRef, Optional<INodeValue>> line : getSortedVariables(node))
 			{
-				INodeInput input = subType.getInput(line.getLeft());
+				INodeInput input = subType.getInputCondition(line.getLeft());
 				if(input == null)
 					continue;
 				
@@ -199,7 +199,7 @@ public class NodeRenderUtils
 		drawY += 13;
 		
 		/* Subtype */
-		int variables = showVariables ? node.getSubType().variableSet().size() : 0;
+		int variables = showVariables ? node.getSubType().inputSet().size() : 0;
 		drawTextures(context, x - 25, drawY, 0, variables == 0 ? 32 : 20, 200, variables == 0 ? 19 : 11, r, g, b);
 		drawTextures(context, x + 25, drawY, 0, 145, 100, 11, r, g, b);
 		
@@ -358,7 +358,7 @@ public class NodeRenderUtils
 		if(nodeIn == null)
 			return 13 + 11;
 		
-		int variables = nodeIn.getSubType().variableSet().size();
+		int variables = nodeIn.getSubType().inputSet().size();
 		
 		// Type
 		int height = 13;
@@ -449,10 +449,10 @@ public class NodeRenderUtils
 	public static List<Pair<WhiteboardRef, Optional<INodeValue>>> getSortedVariables(TreeNode<?> node)
 	{
 		List<Pair<WhiteboardRef, Optional<INodeValue>>> variablesToDisplay = Lists.newArrayList();
-		Map<WhiteboardRef, INodeInput> variableSet = node.getSubType().variableSet();
+		Map<WhiteboardRef, INodeInput> variableSet = node.getSubType().inputSet();
 		for(WhiteboardRef input : variableSet.keySet())
 		{
-			INodeValue value = node.variable(input);
+			INodeValue value = node.getInput(input);
 			variablesToDisplay.add(new Pair<>(input, value == null ? Optional.empty() : Optional.of(value)));
 		}
 		

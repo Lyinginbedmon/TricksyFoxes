@@ -74,7 +74,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 		}));
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_DELAY, new NodeTickHandler<DecoratorNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.any(), new WhiteboardObj.Int(1)));
 			}
@@ -94,7 +94,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 		{
 			public static final WhiteboardRef LIST = new WhiteboardRef("value_to_cycle", TFObjType.BOOL).displayName(CommonVariables.translate("to_cycle"));
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(LIST, INodeInput.makeInput(INodeInput.any()));
 			}
@@ -122,7 +122,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 		}));
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_REPEAT, new NodeTickHandler<DecoratorNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4)));
 			}
@@ -148,7 +148,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 		}));
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_RETRY, new NodeTickHandler<DecoratorNode>()
 		{
-			public @NotNull Map<WhiteboardRef, INodeInput> variableSet()
+			public @NotNull Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4)));
 			}

@@ -35,11 +35,11 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public Text description() { return Text.translatable("variant."+registryName.getNamespace()+"."+registryName.getPath()+".desc"); }
 	
-	public Map<WhiteboardRef, INodeInput> variableSet(){ return tickFunc.variableSet(); }
+	public Map<WhiteboardRef, INodeInput> inputSet(){ return tickFunc.inputSet(); }
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, M parent)
 	{
-		if(!tickFunc.variablesSufficient(parent))
+		if(!tickFunc.inputsSufficient(parent))
 		{
 			tricksy.logStatus(Text.literal(registryName.toString()+" in "+tricksy.getDisplayName().getString()+" is missing one or more input variables"));
 			return Result.FAILURE;
@@ -55,8 +55,8 @@ public class NodeSubType<M extends TreeNode<?>>
 	}
 	
 	@Nullable
-	public INodeInput getInput(WhiteboardRef reference)
+	public INodeInput getInputCondition(WhiteboardRef reference)
 	{
-		return tickFunc.variableInput(reference);
+		return tickFunc.inputCondition(reference);
 	}
 }

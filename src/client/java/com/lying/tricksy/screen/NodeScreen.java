@@ -331,7 +331,7 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 	{
 		if(this.targetPart() == null || this.targetPart().type != NodeElement.VARIABLES)
 			return Predicates.alwaysTrue();
-		INodeInput input = currentNode.getSubType().getInput(this.targetPart().inputRef);
+		INodeInput input = currentNode.getSubType().getInputCondition(this.targetPart().inputRef);
 		return input != null ? input.predicate() : Predicates.alwaysTrue();
 	}
 	

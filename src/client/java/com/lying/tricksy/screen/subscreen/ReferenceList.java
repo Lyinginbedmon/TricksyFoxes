@@ -123,7 +123,7 @@ public class ReferenceList extends ElementListWidget<ReferenceList.ReferenceEntr
 		
 		public boolean mouseClicked(double mouseX, double mouseY, int button)
 		{
-			parent.currentNode.assignRef(parent.targetInputRef(), reference);
+			parent.currentNode.assignInputRef(parent.targetInputRef(), reference);
 			return true;
 		}
 		

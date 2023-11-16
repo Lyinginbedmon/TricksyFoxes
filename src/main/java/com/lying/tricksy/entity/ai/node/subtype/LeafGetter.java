@@ -51,7 +51,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
 		add(set, VARIANT_GET_ASSAILANT, new GetterHandler<Entity>(TFObjType.ENT)
 		{
-			public void addVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
 			{
 				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
 			}
@@ -72,7 +72,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		{
 			private static final WhiteboardRef MAX = new WhiteboardRef("max_health", TFObjType.BOOL).displayName(CommonVariables.translate("max_health"));
 			
-			public void addVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
 			{
 				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
 				set.put(MAX, INodeInput.makeInput(INodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(false)));
@@ -95,7 +95,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		{
 			private static final WhiteboardRef OFF = new WhiteboardRef("offhand", TFObjType.BOOL).displayName(CommonVariables.translate("offhand"));
 			
-			public void addVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
 			{
 				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
 				set.put(OFF, INodeInput.makeInput(INodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(false)));
@@ -116,7 +116,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		});
 		add(set, VARIANT_GET_DISTANCE, new GetterHandler<Integer>(TFObjType.INT)
 		{
-			public void addVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
 			{
 				set.put(CommonVariables.VAR_POS_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
 				set.put(CommonVariables.VAR_POS_B, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
@@ -148,7 +148,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		});
 		add(set, VARIANT_GET_BARK, new GetterHandler<Integer>(TFObjType.INT)
 		{
-			public void addVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
 			{
 				set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
 			}
@@ -169,7 +169,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		{
 			private static final WhiteboardRef SUB = new WhiteboardRef("subtract", TFObjType.BOOL).displayName(CommonVariables.translate("subtract"));
 			
-			public void addVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
 			{
 				set.put(CommonVariables.VAR_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false)));
 				set.put(CommonVariables.VAR_B, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
@@ -186,7 +186,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 		});
 		add(set, VARIANT_OFFSET, new GetterHandler<BlockPos>(TFObjType.BLOCK)
 		{
-			public void addVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
 			{
 				set.put(CommonVariables.VAR_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
 				set.put(CommonVariables.VAR_B, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, true), new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.NORTH), ConstantsWhiteboard.DIRECTIONS.get(Direction.NORTH).displayName()));

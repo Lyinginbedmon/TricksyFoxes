@@ -23,6 +23,7 @@ public class ReferencesScreen extends NestedScreen<NodeScreen>
 	
 	private Map<BoardType, Map<WhiteboardRef, IWhiteboardObject<?>>> availableValues = new HashMap<>();
 	
+	private ButtonWidget createStaticButton;
 	private Optional<CreateStaticScreen> staticScreen = Optional.empty();
 	
 	public ReferencesScreen(NodeScreen parentIn)
@@ -41,7 +42,7 @@ public class ReferencesScreen extends NestedScreen<NodeScreen>
 		addDrawableChild(boardList = new BoardList(70, this.height, 0, this.height, 20, this));
 		boardList.setLeftPos(referenceList.getRowLeft() - 67);
 		
-		addDrawableChild(ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.open_create"), (button) -> 
+		addDrawableChild(createStaticButton = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.open_create"), (button) -> 
 		{
 			CreateStaticScreen screen = new CreateStaticScreen(this.parent, this);
 			screen.init(this.client, this.width, this.height);
@@ -80,6 +81,7 @@ public class ReferencesScreen extends NestedScreen<NodeScreen>
 	public void tick()
 	{
 		super.tick();
+		this.createStaticButton.active = parent.currentNode.getSubType().getInputCondition(parent.targetInputRef()).allowStatic();
 		this.staticScreen.ifPresent(screen -> screen.tick());
 	}
 	

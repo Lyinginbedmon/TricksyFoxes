@@ -43,39 +43,39 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 {
 	public static final double INTERACT_RANGE = 4D;
 	
-	/** Returns a map containing all necessary variables of this behaviour and predicates defining their needs */
+	/** Returns a map containing all necessary input variables of this behaviour and predicates defining their needs */
 	@NotNull
-	public default Map<WhiteboardRef, INodeInput> variableSet(){ return new HashMap<>(); }
+	public default Map<WhiteboardRef, INodeInput> inputSet(){ return new HashMap<>(); }
 	
 	@Nullable
-	public default INodeInput variableInput(WhiteboardRef name)
+	public default INodeInput inputCondition(WhiteboardRef name)
 	{
-		for(Entry<WhiteboardRef, INodeInput> entry : variableSet().entrySet())
+		for(Entry<WhiteboardRef, INodeInput> entry : inputSet().entrySet())
 			if(entry.getKey().isSameRef(name))
 				return entry.getValue();
 		return null;
 	}
 	
 	/** Returns true if the operational needs of this handler have been met */
-	public default boolean variablesSufficient(M parent) { return !anyVariableMissing(parent); }
+	public default boolean inputsSufficient(M parent) { return !anyInputMissing(parent); }
 	
 	/**
-	 * Returns true if any variable in {@link variableSet} is unassigned in the given parent node<br>
-	 * Note: This does NOT account for whether the target value is empty or not.
+	 * Returns true if any variable in {@link inputSet} is unassigned in the given parent node<br>
+	 * Note: This does NOT account for whether a whiteboard target value is empty or not.
 	 */
-	public default boolean anyVariableMissing(M parent)
+	public default boolean anyInputMissing(M parent)
 	{
-		if(variableSet().isEmpty())
+		if(inputSet().isEmpty())
 			return false;
 		
-		for(Entry<WhiteboardRef, INodeInput> entry : variableSet().entrySet())
+		for(Entry<WhiteboardRef, INodeInput> entry : inputSet().entrySet())
 		{
 			INodeInput qualifier = entry.getValue();
 			if(qualifier.isOptional())
 				continue;
 			else
 			{
-				INodeValue assigned = parent.variable(entry.getKey());
+				INodeValue assigned = parent.getInput(entry.getKey());
 				if(assigned == null)
 					return true;
 				
@@ -100,10 +100,10 @@ public interface NodeTickHandler<M extends TreeNode<?>>
 	@Nullable
 	public default IWhiteboardObject<?> getOrDefault(WhiteboardRef input, M parent, LocalWhiteboard<?> local, GlobalWhiteboard global)
 	{
-		if(!parent.variableAssigned(input))
-			return variableInput(input).isOptional() ? variableInput(input).defaultValue().get() : null;
+		if(!parent.inputAssigned(input))
+			return inputCondition(input).isOptional() ? inputCondition(input).defaultValue().get() : null;
 		else
-			return parent.variable(input).get(local, global);
+			return parent.getInput(input).get(local, global);
 	}
 	
 	/** Performs a single tick of this node */

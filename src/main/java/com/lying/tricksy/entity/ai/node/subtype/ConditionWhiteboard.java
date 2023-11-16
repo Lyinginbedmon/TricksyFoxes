@@ -38,7 +38,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 		/** Returns SUCCESS if the boolean value of the given object is TRUE */
 		set.add(new NodeSubType<ConditionNode>(VARIANT_VALUE_TRUE, new NodeTickHandler<ConditionNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR, INodeInput.makeInput(INodeInput.any()));
 			}
@@ -51,7 +51,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 		/** Returns SUCCESS if the given object is not considered empty (this differs from VALUE_TRUE for several data types) */
 		set.add(new NodeSubType<ConditionNode>(VARIANT_VALUE_EXISTS, new NodeTickHandler<ConditionNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR, INodeInput.makeInput(INodeInput.any()));
 			}
@@ -65,7 +65,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 		/** Returns SUCCESS if the given objects match */
 		set.add(new NodeSubType<ConditionNode>(VARIANT_VALUE_EQUALS, new NodeTickHandler<ConditionNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						CommonVariables.VAR_A, INodeInput.makeInput(INodeInput.any()), 
@@ -81,7 +81,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 		}));
 		set.add(new NodeSubType<ConditionNode>(VARIANT_LESS_THAN, new NodeTickHandler<ConditionNode>() 
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						CommonVariables.VAR_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true)), 

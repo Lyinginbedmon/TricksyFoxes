@@ -82,7 +82,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 	{
 		return new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity()));
 			}
@@ -335,7 +335,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 	{
 		return new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(
 						(var) -> !var.isSameRef(LocalWhiteboard.SELF) && (var.type() == TFObjType.BLOCK || (var.type() == TFObjType.ENT && !var.isFilter())), 

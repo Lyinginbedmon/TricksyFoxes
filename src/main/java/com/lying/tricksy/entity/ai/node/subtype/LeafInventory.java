@@ -64,7 +64,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
 		add(set, VARIANT_DROP, new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()));
 			}
@@ -112,7 +112,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
 			public static final WhiteboardRef SLOT = new WhiteboardRef("slot", TFObjType.INT);
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						TILE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK && !ref.isFilter()),
@@ -179,7 +179,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 			public static final WhiteboardRef FACE = InventoryHandler.FACE;
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						TILE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK && !ref.isFilter()),
@@ -267,7 +267,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 	{
 		return new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false)));
 			}
@@ -314,7 +314,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		{
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(FILTER, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
@@ -349,7 +349,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 	{
 		return new NodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()));
 			}

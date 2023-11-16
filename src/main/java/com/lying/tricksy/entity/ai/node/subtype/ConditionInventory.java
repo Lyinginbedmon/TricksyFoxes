@@ -50,7 +50,7 @@ public class ConditionInventory implements ISubtypeGroup<ConditionNode>
 			public static final WhiteboardRef FACE = InventoryHandler.FACE;
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
 			
-			public Map<WhiteboardRef, INodeInput> variableSet()
+			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
 						TILE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK),
