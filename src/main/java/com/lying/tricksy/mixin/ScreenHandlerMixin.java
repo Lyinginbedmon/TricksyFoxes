@@ -58,7 +58,7 @@ public class ScreenHandlerMixin
 			else if(TFItems.NOTES_CYCLE.contains(stack.getItem()))
 			{
 				int index = TFItems.NOTES_CYCLE.indexOf(stack.getItem()) + 1;
-				Item nextItem = TFItems.NOTES_CYCLE.get(index % TFItems.NOTES.size());
+				Item nextItem = TFItems.NOTES_CYCLE.get(index % TFItems.NOTES_CYCLE.size());
 				ItemStack converted = convertTo(stack, nextItem);
 				TFObjType<?> type = ((ItemPrescientNote.Typed<?>)nextItem).getType();
 				ItemPrescientNote.setVariable(type.create(new NbtCompound()), converted);
