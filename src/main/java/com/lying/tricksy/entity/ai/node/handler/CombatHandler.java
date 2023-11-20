@@ -26,6 +26,7 @@ import net.minecraft.entity.player.PlayerEntity;
 
 public abstract class CombatHandler implements NodeTickHandler<LeafNode>
 {
+	public static final WhiteboardRef TARGET = CommonVariables.TARGET_ENT;
 	public static final Predicate<Entity> VALID_TARGET = (ent) -> 
 	{
 		if(!(ent instanceof LivingEntity))
@@ -42,7 +43,7 @@ public abstract class CombatHandler implements NodeTickHandler<LeafNode>
 	public Map<WhiteboardRef, INodeInput> inputSet()
 	{
 		Map<WhiteboardRef, INodeInput> set = new HashMap<>();
-		set.put(CommonVariables.TARGET_ENT, INodeInput.makeInput((var) -> var.type() == TFObjType.ENT && !var.isSameRef(LocalWhiteboard.SELF), new WhiteboardObjEntity(), LocalWhiteboard.ATTACK_TARGET.displayName()));
+		set.put(TARGET, INodeInput.makeInput((var) -> var.type() == TFObjType.ENT && !var.isSameRef(LocalWhiteboard.SELF), new WhiteboardObjEntity(), LocalWhiteboard.ATTACK_TARGET.displayName()));
 		addVariables(set);
 		return set;
 	}
@@ -54,7 +55,7 @@ public abstract class CombatHandler implements NodeTickHandler<LeafNode>
 		IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
 		
 		Entity ent = null;
-		if(value.isEmpty())
+		if(!parent.inputAssigned(TARGET))
 			ent = tricksy.getTarget();
 		else
 			ent = value.get();

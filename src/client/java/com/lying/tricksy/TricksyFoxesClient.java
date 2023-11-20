@@ -59,6 +59,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		
 		BlockRenderLayerMap.INSTANCE.putBlock(TFBlocks.PRESCIENCE, RenderLayer.getCutout());
 		BlockRenderLayerMap.INSTANCE.putBlock(TFBlocks.CLOCKWORK_FRIAR, RenderLayer.getCutout());
+		BlockRenderLayerMap.INSTANCE.putBlock(TFBlocks.PRESCIENT_CANDLE, RenderLayer.getCutout());
 		
 		ClientBus.registerEventCallbacks();
 		

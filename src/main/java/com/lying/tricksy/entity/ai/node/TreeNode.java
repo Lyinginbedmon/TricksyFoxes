@@ -166,6 +166,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	public final NodeSubType<?> getSubType() { return getType().getSubType(this.subType); }
 	
+	/** Returns true if any value is assigned to the given input */
 	public final boolean inputAssigned(WhiteboardRef reference)
 	{
 		return assignedInputs.entrySet().stream().anyMatch(entry -> entry.getKey().isSameRef(reference) && entry.getValue().isPresent());

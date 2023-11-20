@@ -40,6 +40,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 {
 	public static final Identifier VARIANT_BARK = ISubtypeGroup.variant("bark");
 	public static final Identifier VARIANT_GOTO = ISubtypeGroup.variant("goto");
+	public static final Identifier VARIANT_STOP = ISubtypeGroup.variant("stop");
 	public static final Identifier VARIANT_WAIT = ISubtypeGroup.variant("wait");
 	public static final Identifier VARIANT_SLEEP = ISubtypeGroup.variant("sleep");
 	public static final Identifier VARIANT_SET_HOME = ISubtypeGroup.variant("set_home");
@@ -72,6 +73,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 			}
 		}));
 		set.add(new NodeSubType<LeafNode>(VARIANT_GOTO, leafGoTo()));
+		set.add(new NodeSubType<LeafNode>(VARIANT_STOP, leafStop()));
 		set.add(new NodeSubType<LeafNode>(VARIANT_WANDER, leafWander()));
 		set.add(new NodeSubType<LeafNode>(VARIANT_SLEEP, new NodeTickHandler<LeafNode>()
 		{
@@ -171,11 +173,31 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 						return Result.SUCCESS;
 					
 					navigator.startMovingTo(dest.getX() + 0.5D, dest.getY(), dest.getZ() + 0.5D, 1D);
-					tricksy.logStatus(Text.literal(navigator.isFollowingPath() ? "Moving to "+dest.toShortString() : "No path found"));
-					return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
+					if(navigator.isFollowingPath())
+					{
+						tricksy.logStatus(Text.literal("Moving to "+dest.toShortString()));
+						return Result.RUNNING;
+					}
+					else
+					{
+						tricksy.logStatus(Text.literal("No path found"));
+						return Result.FAILURE;
+					}
 				}
 				else
 					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
+			}
+		};
+	}
+	
+	public static NodeTickHandler<LeafNode> leafStop()
+	{
+		return new NodeTickHandler<LeafNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				tricksy.getNavigation().stop();
+				return Result.SUCCESS;
 			}
 		};
 	}

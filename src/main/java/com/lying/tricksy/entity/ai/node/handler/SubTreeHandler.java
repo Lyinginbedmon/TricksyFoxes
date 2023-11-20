@@ -16,7 +16,7 @@ public abstract class SubTreeHandler implements NodeTickHandler<LeafNode>
 	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 	{
 		if(!parent.isRunning() || parent.subTree == null)
-			parent.subTree = generateSubTree();
+			parent.subTree = generateSubTree(tricksy, local, global, parent);
 		
 		return parent.subTree == null ? Result.FAILURE : parent.subTree.tick(tricksy, local, global);
 	}
@@ -26,5 +26,5 @@ public abstract class SubTreeHandler implements NodeTickHandler<LeafNode>
 		parent.subTree.stop(tricksy);
 	}
 	
-	public abstract TreeNode<?> generateSubTree();
+	public abstract <T extends PathAwareEntity & ITricksyMob<?>> TreeNode<?> generateSubTree(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent);
 }

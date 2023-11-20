@@ -40,6 +40,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 {
 	public static final Identifier VARIANT_CYCLE = ISubtypeGroup.variant("cycle_value");
 	public static final Identifier VARIANT_SORT_NEAREST = ISubtypeGroup.variant("sort_nearest");
+	public static final Identifier VARIANT_SORT_SALESMAN = ISubtypeGroup.variant("sort_salesman");
 	public static final Identifier VARIANT_COPY = ISubtypeGroup.variant("set_value");
 	public static final Identifier VARIANT_CLEAR = ISubtypeGroup.variant("clear_value");
 	
@@ -68,6 +69,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			}
 		});
 		add(set, VARIANT_SORT_NEAREST, leafSortNearest());
+		add(set, VARIANT_SORT_SALESMAN, leafSortSalesman());
 		add(set, VARIANT_COPY, new NodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef COPY = new WhiteboardRef("value_to_copy", TFObjType.BOOL).displayName(CommonVariables.translate("to_copy"));
@@ -133,17 +135,8 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 	
 	public static NodeTickHandler<LeafNode> leafSortNearest()
 	{
-		return new NodeTickHandler<LeafNode>()
+		return new SortHandler()
 		{
-			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BLOCK).displayName(CommonVariables.translate("to_cycle"));
-			
-			public Map<WhiteboardRef, INodeInput> inputSet()
-			{
-				return Map.of(
-						VAR_A, INodeInput.makeInput((ref) -> (ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ENT) && ref.boardType() == BoardType.LOCAL && !ref.isFilter()),
-						CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
-			}
-			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				INodeValue reference = parent.getInput(VAR_A);
@@ -166,52 +159,147 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				if(value.type() == TFObjType.BLOCK)
 				{
 					List<BlockPos> points = value.as(TFObjType.BLOCK).getAll();
-					points.sort(blockSorter(position));
+					points.sort(SortHandler.blockSorter(position, position));
 					
 					tricksy.logStatus(Text.literal("Closest position was "+points.get(0).toShortString()));
 					sorted = new WhiteboardObjBlock();
 					points.forEach((point) -> ((WhiteboardObjBlock)sorted).add(point));
 				}
-				else
+				else if(value.type() == TFObjType.ENT)
 				{
 					List<Entity> points = value.as(TFObjType.ENT).getAll();
-					points.sort(entitySorter(new Vec3d(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D)));
+					Vec3d origin = new Vec3d(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
+					points.sort(SortHandler.entitySorter(origin, origin));
 					
 					tricksy.logStatus(Text.literal("Closest entity was "+points.get(0).getDisplayName().getString()));
 					sorted = new WhiteboardObjEntity();
 					points.forEach((point) -> ((WhiteboardObjEntity)sorted).add(point));
 				}
+				else
+					return Result.FAILURE;
 				
 				local.setValue(((WhiteboardValue)reference).assignment(), sorted);
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
-			
-			private static Comparator<BlockPos> blockSorter(BlockPos position)
-			{
-				return new Comparator<BlockPos>() 
-				{
-					public int compare(BlockPos o1, BlockPos o2)
-					{
-						double dist1 = o1.getSquaredDistance(position);
-						double dist2 = o2.getSquaredDistance(position);
-						return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
-					}
-				};
-			}
-			
-			private static Comparator<Entity> entitySorter(Vec3d position)
-			{
-				return new Comparator<Entity>() 
-				{
-					public int compare(Entity o1, Entity o2)
-					{
-						double dist1 = o1.squaredDistanceTo(position);
-						double dist2 = o2.squaredDistanceTo(position);
-						return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
-					}
-				};
-			}
 		};
+	}
+	
+	public static NodeTickHandler<LeafNode> leafSortSalesman()
+	{
+		return new SortHandler()
+			{
+				public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+				{
+					INodeValue reference = parent.getInput(VAR_A);
+					if(reference.type() != Type.WHITEBOARD)
+						return Result.FAILURE;
+					
+					IWhiteboardObject<?> value = getOrDefault(VAR_A, parent, local, global);
+					IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
+					
+					BlockPos position = null;
+					if(pos.size() == 0)
+						position = tricksy.getBlockPos();
+					else
+						position = pos.as(TFObjType.BLOCK).get();
+					
+					if(value.isEmpty() || !value.isList())
+						return Result.FAILURE;
+					
+					/**
+					 * Starting from the value closest to position,
+					 * Find the next value closest to that value
+					 * Remove the next value from the list and set it as position
+					 * Repeat until all values are accounted for
+					 */
+					IWhiteboardObject<?> sorted;
+					if(value.type() == TFObjType.BLOCK)
+					{
+						sorted = new WhiteboardObjBlock();
+						List<BlockPos> points = Lists.newArrayList();
+						points.addAll(value.as(TFObjType.BLOCK).getAll());
+						
+						BlockPos current = position;
+						while(!points.isEmpty())
+						{
+							points.sort(SortHandler.blockSorter(current, position));
+							current = points.get(0);
+							((WhiteboardObjBlock)sorted).add(current);
+							points.remove(0);
+						}
+					}
+					else if(value.type() == TFObjType.ENT)
+					{
+						sorted = new WhiteboardObjEntity();
+						List<Entity> points = Lists.newArrayList();
+						points.addAll(value.as(TFObjType.ENT).getAll());
+						
+						Vec3d origin = new Vec3d(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
+						Vec3d current = origin;
+						while(!points.isEmpty())
+						{
+							points.sort(SortHandler.entitySorter(current, origin));
+							current = points.get(0).getPos();
+							((WhiteboardObjEntity)sorted).add(points.get(0));
+							points.remove(0);
+						}
+					}
+					else
+						return Result.FAILURE;
+					
+					local.setValue(((WhiteboardValue)reference).assignment(), sorted);
+					tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
+					return Result.SUCCESS;
+				}
+			};
+	}
+	
+	private static interface SortHandler extends NodeTickHandler<LeafNode>
+	{
+		public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BLOCK).displayName(CommonVariables.translate("to_cycle"));
+		
+		public default Map<WhiteboardRef, INodeInput> inputSet()
+		{
+			return Map.of(
+					VAR_A, INodeInput.makeInput((ref) -> (ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ENT) && ref.boardType() == BoardType.LOCAL && !ref.isFilter()),
+					CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
+		}
+		
+		public static Comparator<BlockPos> blockSorter(BlockPos position, BlockPos origin)
+		{
+			return new Comparator<BlockPos>() 
+			{
+				public int compare(BlockPos o1, BlockPos o2)
+				{
+					double dist1 = o1.getSquaredDistance(position);
+					double dist2 = o2.getSquaredDistance(position);
+					if(dist1 != dist2)
+						return dist1 < dist2 ? -1 : 1;
+					
+					dist1 = o1.getSquaredDistance(origin);
+					dist2 = o2.getSquaredDistance(origin);
+					return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+				}
+			};
+		}
+		
+		public static Comparator<Entity> entitySorter(Vec3d position, Vec3d origin)
+		{
+			return new Comparator<Entity>() 
+			{
+				public int compare(Entity o1, Entity o2)
+				{
+					double dist1 = o1.squaredDistanceTo(position);
+					double dist2 = o2.squaredDistanceTo(position);
+					if(dist1 != dist2)
+						return dist1 < dist2 ? -1 : 1;
+					
+					dist1 = o1.squaredDistanceTo(origin);
+					dist2 = o2.squaredDistanceTo(origin);
+					return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+				}
+			};
+		}
 	}
 }
