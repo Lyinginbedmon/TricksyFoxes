@@ -144,19 +144,20 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 					return Result.FAILURE;
 				
 				IWhiteboardObject<?> value = getOrDefault(VAR_A, parent, local, global);
-				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
+				if(value.isEmpty())
+					return Result.FAILURE;
 				
+				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 				BlockPos position = null;
 				if(pos.size() == 0)
 					position = tricksy.getBlockPos();
 				else
 					position = pos.as(TFObjType.BLOCK).get();
 				
-				if(value.isEmpty() || !value.isList())
-					return Result.FAILURE;
-				
 				IWhiteboardObject<?> sorted;
-				if(value.type() == TFObjType.BLOCK)
+				if(!value.isList())
+					sorted = value.copy();
+				else if(value.type() == TFObjType.BLOCK)
 				{
 					List<BlockPos> points = value.as(TFObjType.BLOCK).getAll();
 					points.sort(SortHandler.blockSorter(position, position));
@@ -196,16 +197,15 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 						return Result.FAILURE;
 					
 					IWhiteboardObject<?> value = getOrDefault(VAR_A, parent, local, global);
-					IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
+					if(value.isEmpty())
+						return Result.FAILURE;
 					
+					IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 					BlockPos position = null;
 					if(pos.size() == 0)
 						position = tricksy.getBlockPos();
 					else
 						position = pos.as(TFObjType.BLOCK).get();
-					
-					if(value.isEmpty() || !value.isList())
-						return Result.FAILURE;
 					
 					/**
 					 * Starting from the value closest to position,
@@ -214,7 +214,9 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 					 * Repeat until all values are accounted for
 					 */
 					IWhiteboardObject<?> sorted;
-					if(value.type() == TFObjType.BLOCK)
+					if(!value.isList())
+						sorted = value.copy();
+					else if(value.type() == TFObjType.BLOCK)
 					{
 						sorted = new WhiteboardObjBlock();
 						List<BlockPos> points = Lists.newArrayList();
@@ -262,7 +264,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 		public default Map<WhiteboardRef, INodeInput> inputSet()
 		{
 			return Map.of(
-					VAR_A, INodeInput.makeInput((ref) -> (ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ENT) && ref.boardType() == BoardType.LOCAL && !ref.isFilter()),
+					VAR_A, INodeInput.makeInput((ref) -> (ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ENT) && ref.boardType() == BoardType.LOCAL),
 					CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
 		}
 		

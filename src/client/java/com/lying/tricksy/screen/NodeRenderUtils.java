@@ -69,6 +69,22 @@ public class NodeRenderUtils
 			node.children().forEach((child) -> renderNodeRecursive(child, context, textRenderer, ticksOpen, showVariables, flags));
 	}
 	
+	public static void renderTreeConditional(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen, Predicate<TreeNode<?>> predicate, EnumSet<NodeRenderFlags> flags)
+	{
+		NodeRenderUtils.drawNodeConnectionsConditional(context, node, node.getType().color(), predicate);
+		NodeRenderUtils.renderNodeRecursiveConditional(node, context, textRenderer, ticksOpen, predicate, flags);
+	}
+	
+	public static void renderNodeRecursiveConditional(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen, Predicate<TreeNode<?>> predicate, EnumSet<NodeRenderFlags> flags)
+	{
+		if(predicate.test(node))
+		{
+			renderNode(node, context, textRenderer, ticksOpen, flags);
+			if(!node.isDiscrete(!flags.contains(NodeRenderFlags.CHILDREN)))
+				node.children().forEach(child -> renderNodeRecursiveConditional(child, context, textRenderer, ticksOpen, predicate, flags));
+		}
+	}
+	
 	public static void renderNode(TreeNode<?> node, DrawContext context, TextRenderer textRenderer, int ticksOpen, EnumSet<NodeRenderFlags> flags)
 	{
 		drawNodeBackground(context, node, node.getType().color(), node.screenX, node.screenY, flags.contains(NodeRenderFlags.VARIABLES));
@@ -218,6 +234,112 @@ public class NodeRenderUtils
 		/* Child node connector */
 		if(node.hasChildren())
 			drawTextures(context, node.screenX + CONNECTOR_OFFSET - 8, node.screenY + node.height - 8, 100, 145, 16, 16, r, g, b);
+	}
+	
+	public static void drawNodeConnectionsConditional(DrawContext context, TreeNode<?> node, int colour, Predicate<TreeNode<?>> predicate)
+	{
+		if(!node.hasChildren() || !predicate.test(node) || node.children().stream().noneMatch(predicate))
+			return;
+		
+		Random rand = node.getRNG();
+        Identifier flowerTex = node.getType().flowerTexture();
+		
+		int startX = node.screenX + CONNECTOR_OFFSET;
+		int startY = node.screenY + node.height;
+		Vec2f branchStart = new Vec2f(startX, startY);
+		
+        TreeNode<?> lastChild = node.children().get(0);
+		for(TreeNode<?> child : node.children())
+			if(predicate.test(child))
+				lastChild = child;
+		
+		if(!TricksyFoxesClient.config.fancyTrees())
+		{
+			int col = decimalToARGB(colour);
+			context.fill(startX - 1, startY, startX + 1, lastChild.screenY + lastChild.height / 2 + 1, col);
+			
+			node.children().forEach((child) -> 
+			{
+				int y = child.screenY + child.height / 2;
+				context.fill(startX, y - 1, child.screenX, y + 1, col);
+				drawNodeConnectionsConditional(context, child, child.getType().color(), predicate);
+			});
+			
+			return;
+		}
+		
+        // Main branch
+        Vec2f branchEnd = branchStart;
+        if(lastChild != null)
+        	branchEnd = new Vec2f(startX, lastChild.screenY + lastChild.height * 0.75F);
+        
+        int branchLength = (int)branchEnd.add(branchStart.negate()).length();
+        List<Vec2f> mainPoints = Lists.newArrayList();
+        mainPoints.add(branchStart);
+        Vec2f line = branchEnd.add(branchStart.negate()).normalize();
+        int segmentRate = 16;
+        for(int i=0; i<Math.ceil(branchLength / segmentRate) + 1; i++)
+        {
+        	Vec2f point = branchStart.add(line.multiply(i * segmentRate));
+        	double dist = point.add(branchStart.negate()).length();
+        	double offsetAmount = (dist / branchLength) * 8;
+        	mainPoints.add(point.add(new Vec2f((float)Math.sin(dist / 15D) * (float)offsetAmount, 0F)));
+        }
+        BranchLine mainLine = new BranchLine(mainPoints, rand, flowerTex);
+        mainLine.render(context);
+        
+		// Offshoots
+		for(TreeNode<?> child : node.children())
+		{
+			if(!predicate.test(child))
+				continue;
+			
+			Vec2f lineTarget = new Vec2f(child.screenX, child.screenY + (child.height / 2));
+			
+			/**
+			 * Identify equivalent point on the main branch
+			 * Pair the branch point with its direction at that point
+			 * Determine angle from that direction to the target point
+			 * Step from that point, with that direction, rotating until it enters the child node's area
+			 */
+			
+			List<Vec2f> offshootPoints = Lists.newArrayList();
+			
+			Vec2f start = mainPoints.get(0);
+			Vec2f dir = new Vec2f(0, 1F);
+			float targetY = lineTarget.y - (child.getRNG().nextFloat() * child.height);
+			for(int i=mainPoints.size() - 1; i > 0; i--)
+			{
+				Vec2f pos = mainPoints.get(i);
+				if(pos.y < targetY)
+				{
+					start = pos;
+					if(i > 0)
+						dir = pos.add(mainPoints.get(i-1).negate()).normalize();
+					
+					break;
+				}
+			}
+			offshootPoints.add(start);
+			
+			do
+			{
+				Vec2f direct = lineTarget.add(start.negate()).normalize();
+				Vec2f offset = direct.add(dir.negate());
+				dir = dir.add(offset.multiply(0.5F)).normalize();
+				Vec2f nextPoint = start.add(dir.multiply(16F));
+				
+				start = nextPoint;
+				offshootPoints.add(start);
+			}
+			while(!child.containsPoint((int)start.x, (int)start.y) && offshootPoints.size() < 100);	// TODO Ensure offshoot reaches child without hard size limiter
+			
+	        (new BranchLine(offshootPoints, rand, flowerTex)).render(context);
+			
+	        drawNodeConnectionsConditional(context, child, child.getType().color(), predicate);
+		}
+		
+		mainLine.renderBushes(context);
 	}
 	
 	public static void drawNodeConnections(DrawContext context, TreeNode<?> node, int colour, boolean allowDiscretion)

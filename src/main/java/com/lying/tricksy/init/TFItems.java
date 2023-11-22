@@ -39,10 +39,10 @@ public class TFItems
     public static final Item FOX_EGG = register("fox_spawn_egg", new SpawnEggItem(TFEntityTypes.TRICKSY_FOX, 13396256, 14005919, new FabricItemSettings()));
     
     public static final Item PRESCIENCE_ITEM = register("bottle_prescience", new BlockItem(TFBlocks.PRESCIENCE, new FabricItemSettings().rarity(Rarity.RARE)));
+    public static final Item PRESCIENT_CANDLE_ITEM = register("prescient_candle", new ItemPrescientCandle(new FabricItemSettings().rarity(Rarity.RARE).maxCount(16)));
+    public static final Item PERIAPT = register("periapt_prescience", new ItemPresciencePeriapt(new FabricItemSettings().rarity(Rarity.RARE)));
     public static final Item WORK_TABLE_ITEM = register("work_table", new BlockItem(TFBlocks.WORK_TABLE, new FabricItemSettings()));
     public static final Item CLOCKWORK_FRIAR_ITEM = register("clockwork_friar", new BlockItem(TFBlocks.CLOCKWORK_FRIAR, new FabricItemSettings()));
-    public static final Item PRESCIENT_CANDLE_ITEM = register("prescient_candle", new ItemPrescientCandle(new FabricItemSettings()));
-    public static final Item PERIAPT = register("periapt_prescience", new ItemPresciencePeriapt(new FabricItemSettings().rarity(Rarity.RARE)));
     
     public static final Item NOTE = register("prescient_note", new ItemPrescientNote(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
     public static final Item NOTE_POS = register("prescient_note_block", new ItemPrescientNote.Block(new FabricItemSettings().rarity(Rarity.UNCOMMON)));

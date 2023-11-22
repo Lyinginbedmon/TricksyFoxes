@@ -1,5 +1,21 @@
 {
   "variants": {
-    "": { "model": "tricksy:block/prescient_candle" }
+    "": [
+      {
+        "model": "tricksy:block/prescient_candle"
+      },
+      {
+        "model": "tricksy:block/prescient_candle",
+        "y": 90
+      },
+      {
+        "model": "tricksy:block/prescient_candle",
+        "y": 180
+      },
+      {
+        "model": "tricksy:block/prescient_candle",
+        "y": 270
+      }
+    ]
   }
 }

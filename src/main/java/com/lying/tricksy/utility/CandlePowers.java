@@ -55,6 +55,12 @@ public class CandlePowers extends PersistentState
 		return boards;
 	}
 	
+	public void remove(UUID tricksyID)
+	{
+		powers.remove(tricksyID);
+		markDirty();
+	}
+	
 	public int getPowerFor(UUID tricksyID)
 	{
 		return powers.getOrDefault(tricksyID, 0);

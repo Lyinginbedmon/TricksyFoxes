@@ -18,6 +18,7 @@ import net.minecraft.block.MapColor;
 import net.minecraft.block.dispenser.BlockPlacementDispenserBehavior;
 import net.minecraft.block.dispenser.ItemDispenserBehavior;
 import net.minecraft.block.enums.Instrument;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -36,10 +37,10 @@ public class TFBlocks
 {
 	private static final Map<Identifier, Block> BLOCKS = new HashMap<>();
 	
-	public static final Block PRESCIENCE = register("bottle_prescience", new BlockPrescience(FabricBlockSettings.create().luminance((state) -> 8).strength(0.3f).sounds(BlockSoundGroup.GLASS).nonOpaque().allowsSpawning(TFBlocks::never).solidBlock(TFBlocks::never).suffocates(TFBlocks::never).blockVision(TFBlocks::never)));
-	public static final Block WORK_TABLE = register("work_table", new BlockWorkTable(FabricBlockSettings.create().mapColor(MapColor.SPRUCE_BROWN).instrument(Instrument.BASS).strength(2.5F).sounds(BlockSoundGroup.WOOD)));
-	public static final Block CLOCKWORK_FRIAR = register("clockwork_friar", new BlockClockworkFriar(FabricBlockSettings.create().mapColor(MapColor.SPRUCE_BROWN).instrument(Instrument.BASS).nonOpaque().strength(2.5F).sounds(BlockSoundGroup.WOOD)));
-	public static final Block PRESCIENT_CANDLE = register("prescient_candle", new BlockPrescientCandle(FabricBlockSettings.create().nonOpaque().allowsSpawning(TFBlocks::never).solidBlock(TFBlocks::never).suffocates(TFBlocks::never).blockVision(TFBlocks::never)));
+	public static final Block PRESCIENCE = register("bottle_prescience", new BlockPrescience(FabricBlockSettings.create().luminance((state) -> 8).strength(0.3f).sounds(BlockSoundGroup.GLASS).nonOpaque().pistonBehavior(PistonBehavior.DESTROY).allowsSpawning(TFBlocks::never).solidBlock(TFBlocks::never).suffocates(TFBlocks::never).blockVision(TFBlocks::never)));
+	public static final Block WORK_TABLE = register("work_table", new BlockWorkTable(FabricBlockSettings.create().mapColor(MapColor.SPRUCE_BROWN).instrument(Instrument.BASS).strength(2.5F).pistonBehavior(PistonBehavior.BLOCK).sounds(BlockSoundGroup.WOOD)));
+	public static final Block CLOCKWORK_FRIAR = register("clockwork_friar", new BlockClockworkFriar(FabricBlockSettings.create().mapColor(MapColor.SPRUCE_BROWN).instrument(Instrument.BASS).pistonBehavior(PistonBehavior.BLOCK).nonOpaque().strength(2.5F).sounds(BlockSoundGroup.WOOD)));
+	public static final Block PRESCIENT_CANDLE = register("prescient_candle", new BlockPrescientCandle(FabricBlockSettings.create().strength(0.1F).sounds(BlockSoundGroup.CANDLE).pistonBehavior(PistonBehavior.DESTROY).luminance(BlockPrescientCandle.LIGHT_LEVEL).nonOpaque().allowsSpawning(TFBlocks::never).solidBlock(TFBlocks::never).suffocates(TFBlocks::never).blockVision(TFBlocks::never)));
 	
 	private static Block register(String nameIn, Block blockIn)
 	{

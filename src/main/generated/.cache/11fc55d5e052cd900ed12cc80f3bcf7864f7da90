@@ -1,4 +1,5 @@
-// 1.20.1	2023-11-08T00:05:34.8893054	Tricksy Foxes/Block Loot Tables
+// 1.20.1	2023-11-22T22:52:35.8312871	Tricksy Foxes/Block Loot Tables
 5cfb604782940d478257c83fd3d023cf7962c309 data\tricksy\loot_tables\blocks\bottle_prescience.json
+e025117866ed4de203432c41e15b2fcaeb53d44c data\tricksy\loot_tables\blocks\prescient_candle.json
 e554c837f8ab87749c488fd8feffe195c5f19ac5 data\tricksy\loot_tables\blocks\work_table.json
 725329171a4a5e586c3ed69473c02e8afcfb9dcc data\tricksy\loot_tables\blocks\clockwork_friar.json

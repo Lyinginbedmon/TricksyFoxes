@@ -2,6 +2,7 @@ package com.lying.tricksy.utility;
 
 import com.lying.tricksy.component.Accomplishment;
 import com.lying.tricksy.component.TricksyComponent;
+import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
@@ -56,6 +57,11 @@ public class ServerBus
 		});
 		ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> 
 		{
+			// Clear a tricksy mob's prescient candle value when they die
+			if(entity instanceof ITricksyMob<?>)
+				CandlePowers.getCandlePowers(entity.getServer()).remove(entity.getUuid());
+			
+			// Identify and award any appropriate accomplishment
 			Accomplishment result = null;
 			if(entity.getType() == EntityType.ENDER_DRAGON)
 				result = TFAccomplishments.SQUIRE;

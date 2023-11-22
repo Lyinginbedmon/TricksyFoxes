@@ -50,6 +50,11 @@ public class TFRecipeProvider extends FabricRecipeProvider
 			.criterion(FabricRecipeProvider.hasItem(Items.AMETHYST_SHARD), FabricRecipeProvider.conditionsFromItem(Items.AMETHYST_SHARD))
 			.criterion(FabricRecipeProvider.hasItem(TFBlocks.PRESCIENCE), FabricRecipeProvider.conditionsFromItem(TFBlocks.PRESCIENCE)).offerTo(exporter);
 		
+		ShapelessRecipeJsonBuilder.create(RecipeCategory.REDSTONE, TFBlocks.PRESCIENT_CANDLE, 2).input(TFBlocks.PRESCIENCE).input(Items.STRING).input(Items.HONEYCOMB)
+			.criterion(FabricRecipeProvider.hasItem(Items.STRING), FabricRecipeProvider.conditionsFromItem(Items.STRING))
+			.criterion(FabricRecipeProvider.hasItem(Items.HONEYCOMB), FabricRecipeProvider.conditionsFromItem(Items.HONEYCOMB))
+			.criterion(FabricRecipeProvider.hasItem(TFBlocks.PRESCIENCE), FabricRecipeProvider.conditionsFromItem(TFBlocks.PRESCIENCE)).offerTo(exporter);
+		
 		ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, TFItems.SCRIPTURE)
 			.pattern("ppp")
 			.pattern("pbp")

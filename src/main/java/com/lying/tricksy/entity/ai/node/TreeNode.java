@@ -22,6 +22,7 @@ import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFNodeTypes;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -229,8 +230,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 				subType.onEnd(tricksy, (N)this);
 		}
 		catch(Exception e) { }
-		if(result != Result.FAILURE)
-			getLog().logStatus(getID(), result);
+		getLog().logStatus(getID(), result);
 		
 		return this.lastResult = result;
 	}
@@ -461,6 +461,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		public boolean isEnd() { return this != RUNNING; }
 		
 		public String asString() { return name().toLowerCase(); }
+		
+		public Identifier texture() { return new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/result_"+asString()+".png"); }
 		
 		@Nullable
 		public static Result fromString(String nameIn)

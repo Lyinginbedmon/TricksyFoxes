@@ -7,6 +7,7 @@ import com.google.common.base.Predicates;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
 import com.lying.tricksy.entity.ai.node.TreeNode;
+import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.screen.NodeRenderUtils.NodeRenderFlags;
 
 import net.minecraft.client.gui.DrawContext;
@@ -64,10 +65,13 @@ public class PrescientCandleScreen extends HandledScreen<PrescientCandleScreenHa
 	
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)
 	{
-		context.drawText(textRenderer, this.title, (this.width - this.textRenderer.getWidth(this.title)) / 2, 2 + (26 - this.textRenderer.fontHeight) / 2, 0x404040, false);
-		
+		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
+		context.drawText(textRenderer, this.title, (this.width - this.textRenderer.getWidth(this.title)) / 2, 8, 0x404040, false);
 		if(this.theTricksy.isPresent())
-			context.drawText(textRenderer, this.theTricksy.get().getDisplayName(), (this.width - this.textRenderer.getWidth(this.title)) / 2, 2 + (26 + this.textRenderer.fontHeight + 1) / 2, 0x404040, false);
+		{
+			Text name = this.theTricksy.get().getDisplayName();
+			context.drawText(textRenderer, name, (this.width - this.textRenderer.getWidth(name)) / 2, 8 + this.textRenderer.fontHeight + 1, 0x404040, false);
+		}
 	}
 	
 	protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY)
@@ -96,15 +100,18 @@ public class PrescientCandleScreen extends HandledScreen<PrescientCandleScreenHa
 		renderBackground(context);
 		
 		NodeStatusLog latestLog = tricksy.getLatestLog();
+		NodeRenderUtils.renderTreeConditional(root, context, textRenderer, 0, node -> latestLog.wasActive(node), RENDER_FLAGS);
+		
 		latestLog.getActiveNodes().forEach(id -> 
 		{
 			TreeNode<?> node = root.getByID(id);
 			if(node == null)
 				return;
 			
-			NodeRenderUtils.renderNode(node, context, textRenderer, 0, RENDER_FLAGS);
+			Result result = latestLog.getLog(id);
+			int iconX = node.screenX + node.width + 2;
+			int iconY = node.screenY + (node.height - 16) / 2;
+			context.drawTexture(result.texture(), iconX, iconY, 0, 0, 0, 16, 16, 16, 16);
 		});
-		
-		NodeRenderUtils.drawTextures(context, (this.width - 200) / 2, 2, 0, 68, 200, 26, 255, 255, 255);
 	}
 }

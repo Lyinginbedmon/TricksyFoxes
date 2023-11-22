@@ -35,7 +35,7 @@ public class NodeStatusLog
 	
 	public boolean wasActive(TreeNode<?> node)
 	{
-		return wasActive(node.getID()) || (!node.isRoot() && wasActive(node.parent().getID()));
+		return wasActive(node.getID());
 	}
 	
 	public boolean wasActive(UUID idIn)
