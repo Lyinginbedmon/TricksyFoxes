@@ -11,6 +11,7 @@ import com.lying.tricksy.init.TFScreenHandlerTypes;
 import com.lying.tricksy.item.ISealableItem;
 import com.lying.tricksy.network.RefAddedReceiver;
 import com.lying.tricksy.network.SyncInventoryScreenReceiver;
+import com.lying.tricksy.network.SyncPrescientCandleScreenReceiver;
 import com.lying.tricksy.network.SyncScriptureScreenReceiver;
 import com.lying.tricksy.network.SyncTreeScreenReceiver;
 import com.lying.tricksy.network.SyncWorkTableScreenReceiver;
@@ -21,6 +22,7 @@ import com.lying.tricksy.renderer.block.ClockworkFriarBlockEntityRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyFoxRenderer;
 import com.lying.tricksy.renderer.layer.SageHatRenderer;
 import com.lying.tricksy.screen.ClockworkFriarScreen;
+import com.lying.tricksy.screen.PrescientCandleScreen;
 import com.lying.tricksy.screen.ScriptureScreen;
 import com.lying.tricksy.screen.TreeScreen;
 import com.lying.tricksy.screen.TricksyInventoryScreen;
@@ -94,6 +96,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		HandledScreens.register(TFScreenHandlerTypes.INVENTORY_SCREEN_HANDLER, TricksyInventoryScreen::new);
 		HandledScreens.register(TFScreenHandlerTypes.WORK_TABLE_SCREEN_HANDLER, WorkTableScreen::new);
 		HandledScreens.register(TFScreenHandlerTypes.CLOCKWORK_FRIAR_SCREEN_HANDLER, ClockworkFriarScreen::new);
+		HandledScreens.register(TFScreenHandlerTypes.PRESCIENT_CANDLE_SCREEN_HANDLER, PrescientCandleScreen::new);
 	}
 	
 	private static void registerPacketReceivers()
@@ -103,5 +106,6 @@ public class TricksyFoxesClient implements ClientModInitializer
 		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_INVENTORY_ID, new SyncInventoryScreenReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.REF_ADDED_ID, new RefAddedReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_WORK_TABLE_ID, new SyncWorkTableScreenReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_PRESCIENT_CANDLE_ID, new SyncPrescientCandleScreenReceiver());
 	}
 }

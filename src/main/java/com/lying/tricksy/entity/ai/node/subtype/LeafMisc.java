@@ -22,8 +22,10 @@ import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
+import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.utility.CandlePowers;
 import com.lying.tricksy.utility.Region;
 
 import net.minecraft.entity.Entity;
@@ -47,6 +49,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_LOOK_AROUND = ISubtypeGroup.variant("look_around");
 	public static final Identifier VARIANT_LOOK_AT = ISubtypeGroup.variant("look_at");
 	public static final Identifier VARIANT_WANDER = ISubtypeGroup.variant("wander");
+	public static final Identifier VARIANT_PRAY = ISubtypeGroup.variant("pray");
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_misc"); }
 	
@@ -144,6 +147,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				return Result.SUCCESS;
 			}
 		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_PRAY, leafPray()));
 		return set;
 	}
 	
@@ -325,6 +329,39 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				
 				tricksy.getLookControl().lookAt(tricksy.getX() + parent.nodeRAM.getDouble("DeltaX"), tricksy.getEyeY(), tricksy.getZ() + parent.nodeRAM.getDouble("DeltaZ"));
 				return Result.RUNNING;
+			}
+		};
+	}
+	
+	public static NodeTickHandler<LeafNode> leafPray()
+	{
+		return new NodeTickHandler<LeafNode>()
+		{
+			public Map<WhiteboardRef, INodeInput> inputSet()
+			{
+				return Map.of(
+						CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)),
+						CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				IWhiteboardObject<BlockPos> posIn = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
+				if(posIn.size() == 0)
+					return Result.FAILURE;
+				
+				BlockPos pos = posIn.get();
+				if(tricksy.getWorld().getBlockState(pos).getBlock() != TFBlocks.PRESCIENT_CANDLE || tricksy.squaredDistanceTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D) > (INTERACT_RANGE * INTERACT_RANGE))
+					return Result.FAILURE;
+				
+				tricksy.getLookControl().lookAt(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
+				if(parent.ticksRunning() < Reference.Values.TICKS_PER_SECOND)
+					return Result.RUNNING;
+				
+				int power = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT).get();
+				CandlePowers candles = CandlePowers.getCandlePowers(tricksy.getServer());
+				candles.setPowerFor(tricksy.getUuid(), power);
+				return Result.SUCCESS;
 			}
 		};
 	}

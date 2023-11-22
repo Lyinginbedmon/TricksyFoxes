@@ -17,6 +17,7 @@ public class TFPacketHandler
 	public static final Identifier SYNC_INVENTORY_ID	= make("sync_inventory_screen");
 	public static final Identifier SYNC_TREE_ID			= make("sync_tree_screen");
 	public static final Identifier SYNC_WORK_TABLE_ID	= make("sync_work_table_screen");
+	public static final Identifier SYNC_PRESCIENT_CANDLE_ID	= make("sync_prescient_candle_screen");
 	
 	private static Identifier make(String nameIn) { return new Identifier(Reference.ModInfo.MOD_ID, nameIn); }
 }

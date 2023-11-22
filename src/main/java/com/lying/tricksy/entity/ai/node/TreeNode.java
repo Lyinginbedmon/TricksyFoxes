@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.NodeStatusLog;
 import com.lying.tricksy.entity.ai.node.INodeValue.StaticValue;
 import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
@@ -28,6 +29,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.StringIdentifiable;
 
 /**
  * Base class for behaviour tree nodes.
@@ -66,6 +68,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	// Client-side values used for visualisation
 	public int screenX, screenY;
 	public int width, height;
+	
+	private NodeStatusLog currentLog = new NodeStatusLog();
 	
 	protected TreeNode(NodeType<N> typeIn, UUID uuidIn)
 	{
@@ -225,9 +229,18 @@ public abstract class TreeNode<N extends TreeNode<?>>
 				subType.onEnd(tricksy, (N)this);
 		}
 		catch(Exception e) { }
+		if(result != Result.FAILURE)
+			getLog().logStatus(getID(), result);
 		
 		return this.lastResult = result;
 	}
+	
+	public NodeStatusLog getLog()
+	{
+		return isRoot() ? this.currentLog : this.parent().getLog();
+	}
+	
+	public void clearLog() { this.currentLog.clear(); }
 	
 	/** Returns true if this node is in a runnable condition */
 	public boolean isRunnable() { return true; }
@@ -439,12 +452,23 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		return null;
 	}
 	
-	public static enum Result
+	public static enum Result implements StringIdentifiable
 	{
 		RUNNING,
 		SUCCESS,
 		FAILURE;
 		
 		public boolean isEnd() { return this != RUNNING; }
+		
+		public String asString() { return name().toLowerCase(); }
+		
+		@Nullable
+		public static Result fromString(String nameIn)
+		{
+			for(Result result : Result.values())
+				if(result.asString().equalsIgnoreCase(nameIn))
+					return result;
+			return null;
+		}
 	}
 }

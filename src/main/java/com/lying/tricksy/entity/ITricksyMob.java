@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.BehaviourTree;
+import com.lying.tricksy.entity.ai.NodeStatusLog;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFItems;
@@ -89,6 +90,12 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 	/** Returns the behaviour tree of this mob.<br>Note: This may not exactly match the structure stored in NBT, due to runtime value changes. */
 	public BehaviourTree getBehaviourTree();
 	
+	/** Returns the latest activity log of the mob's behaviour tree */
+	public NodeStatusLog getLatestLog();
+	
+	/** Stores the latest activity log in the mob's data manager */
+	public void setLatestLog(NodeStatusLog logIn);
+	
 	/** Returns the local whiteboard of this mob. */
 	public LocalWhiteboard<T> getLocalWhiteboard();
 	
@@ -109,8 +116,8 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 		
 		// Update behaviour tree
 		BehaviourTree tree = tricksy.getBehaviourTree();
-		
 		tree.update(tricksy, local, global);
+		tricksy.setLatestLog(tree.latestLog());
 	}
 	
 	/** Overwrites the structure of the mob's behaviour tree. */

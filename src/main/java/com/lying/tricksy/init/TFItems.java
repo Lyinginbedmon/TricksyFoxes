@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.item.ISealableItem;
 import com.lying.tricksy.item.ItemPresciencePeriapt;
+import com.lying.tricksy.item.ItemPrescientCandle;
 import com.lying.tricksy.item.ItemPrescientNote;
 import com.lying.tricksy.item.ItemSageHat;
 import com.lying.tricksy.item.ItemScripture;
@@ -40,7 +41,7 @@ public class TFItems
     public static final Item PRESCIENCE_ITEM = register("bottle_prescience", new BlockItem(TFBlocks.PRESCIENCE, new FabricItemSettings().rarity(Rarity.RARE)));
     public static final Item WORK_TABLE_ITEM = register("work_table", new BlockItem(TFBlocks.WORK_TABLE, new FabricItemSettings()));
     public static final Item CLOCKWORK_FRIAR_ITEM = register("clockwork_friar", new BlockItem(TFBlocks.CLOCKWORK_FRIAR, new FabricItemSettings()));
-    public static final Item PRESCIENT_CANDLE_ITEM = register("prescient_candle", new BlockItem(TFBlocks.PRESCIENT_CANDLE, new FabricItemSettings()));
+    public static final Item PRESCIENT_CANDLE_ITEM = register("prescient_candle", new ItemPrescientCandle(new FabricItemSettings()));
     public static final Item PERIAPT = register("periapt_prescience", new ItemPresciencePeriapt(new FabricItemSettings().rarity(Rarity.RARE)));
     
     public static final Item NOTE = register("prescient_note", new ItemPrescientNote(new FabricItemSettings().rarity(Rarity.UNCOMMON)));

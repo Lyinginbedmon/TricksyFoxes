@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.INodeValue;
 import com.lying.tricksy.entity.ai.node.INodeValue.StaticValue;
+import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.handler.CombatHandler;
@@ -63,7 +64,7 @@ public class LeafSubTree implements ISubtypeGroup<LeafNode>
 				if(parent.inputAssigned(TARGET))
 					target = parent.getInput(TARGET);
 				else
-					target = new StaticValue(new WhiteboardObjEntity(tricksy.getTarget()));
+					target = new WhiteboardValue(LocalWhiteboard.ATTACK_TARGET);
 				
 				return TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SELECTOR)
 					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_TRIDENT).assignInput(TARGET, target))

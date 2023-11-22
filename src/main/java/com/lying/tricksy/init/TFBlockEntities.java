@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.lying.tricksy.block.entity.ClockworkFriarBlockEntity;
+import com.lying.tricksy.block.entity.PrescientCandleBlockEntity;
 import com.lying.tricksy.block.entity.WorkTableBlockEntity;
 import com.lying.tricksy.reference.Reference;
 
@@ -20,6 +21,7 @@ public class TFBlockEntities
 	
 	public static final BlockEntityType<WorkTableBlockEntity> WORK_TABLE = register("work_table", FabricBlockEntityTypeBuilder.create(WorkTableBlockEntity::new, TFBlocks.WORK_TABLE).build(null));
 	public static final BlockEntityType<ClockworkFriarBlockEntity> CLOCKWORK_FRIAR = register("clockwork_friar", FabricBlockEntityTypeBuilder.create(ClockworkFriarBlockEntity::new, TFBlocks.CLOCKWORK_FRIAR).build(null));
+	public static final BlockEntityType<PrescientCandleBlockEntity> PRESCIENT_CANDLE = register("prescient_candle", FabricBlockEntityTypeBuilder.create(PrescientCandleBlockEntity::new, TFBlocks.PRESCIENT_CANDLE).build(null));
 	
 	private static <T extends BlockEntity> BlockEntityType<T> register(String nameIn, BlockEntityType<T> typeIn)
 	{

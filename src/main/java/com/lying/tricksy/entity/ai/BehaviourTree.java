@@ -72,9 +72,13 @@ public class BehaviourTree
 			--waitTicks;
 		
 		tricksy.setSleeping(false);
-		if(root().tick(tricksy, local, global) == Result.FAILURE)
+		TreeNode<?> root = root();
+		root.clearLog();
+		if(root.tick(tricksy, local, global) == Result.FAILURE)
 			waitTicks = Reference.Values.TICKS_PER_SECOND;
 	}
+	
+	public NodeStatusLog latestLog() { return root.getLog(); }
 	
 	public NbtCompound storeInNbt()
 	{
