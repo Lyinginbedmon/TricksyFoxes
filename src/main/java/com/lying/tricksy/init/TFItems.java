@@ -37,6 +37,7 @@ public class TFItems
     
     public static final Item SAGE_HAT = register("sage_hat", new ItemSageHat(new FabricItemSettings()));
     public static final Item FOX_EGG = register("fox_spawn_egg", new SpawnEggItem(TFEntityTypes.TRICKSY_FOX, 13396256, 14005919, new FabricItemSettings()));
+    public static final Item GOAT_EGG = register("goat_spawn_egg", new SpawnEggItem(TFEntityTypes.TRICKSY_GOAT, 5589310, 10851452, new FabricItemSettings()));
     
     public static final Item PRESCIENCE_ITEM = register("bottle_prescience", new BlockItem(TFBlocks.PRESCIENCE, new FabricItemSettings().rarity(Rarity.RARE)));
     public static final Item PRESCIENT_CANDLE_ITEM = register("prescient_candle", new ItemPrescientCandle(new FabricItemSettings().rarity(Rarity.RARE).maxCount(16)));
@@ -85,6 +86,7 @@ public class TFItems
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS).register((content) -> 
 		{
 			content.add(FOX_EGG);
+			content.add(GOAT_EGG);
 		});
     }
 }

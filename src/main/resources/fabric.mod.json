@@ -32,6 +32,7 @@
 		"tricksy.mixins.json",
 		"tricksy.client.mixins.json"
 	],
+	"accessWidener": "tricksy.accesswidener",
 	"custom": {
 		"cardinal-components": [
 			"tricksy:tricksy_tracking"

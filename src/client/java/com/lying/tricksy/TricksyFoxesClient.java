@@ -20,6 +20,7 @@ import com.lying.tricksy.particle.PaperParticle;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.renderer.block.ClockworkFriarBlockEntityRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyFoxRenderer;
+import com.lying.tricksy.renderer.entity.EntityTricksyGoatRenderer;
 import com.lying.tricksy.renderer.layer.SageHatRenderer;
 import com.lying.tricksy.screen.ClockworkFriarScreen;
 import com.lying.tricksy.screen.PrescientCandleScreen;
@@ -76,6 +77,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		
 		ArmorRenderer.register(new SageHatRenderer(), TFItems.SAGE_HAT);
 		EntityRendererRegistry.register(TFEntityTypes.TRICKSY_FOX, EntityTricksyFoxRenderer::new);
+		EntityRendererRegistry.register(TFEntityTypes.TRICKSY_GOAT, EntityTricksyGoatRenderer::new);
 		BlockEntityRendererFactories.register(TFBlockEntities.CLOCKWORK_FRIAR, ClockworkFriarBlockEntityRenderer::new);
 		
 		ColorProviderRegistry.ITEM.register((stack, index) -> { return index == 0 ? ((DyeableItem)stack.getItem()).getColor(stack) : -1; }, TFItems.SAGE_HAT);

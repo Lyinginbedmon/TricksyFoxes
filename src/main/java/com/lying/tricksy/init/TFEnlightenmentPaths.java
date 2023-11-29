@@ -18,6 +18,7 @@ import com.google.gson.JsonObject;
 import com.lying.tricksy.component.ConfigurablePath;
 import com.lying.tricksy.component.EnlightenmentPath;
 import com.lying.tricksy.entity.EntityTricksyFox;
+import com.lying.tricksy.entity.EntityTricksyGoat;
 import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.reference.Reference;
 
@@ -28,6 +29,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.passive.FoxEntity;
+import net.minecraft.entity.passive.GoatEntity;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
@@ -57,6 +59,16 @@ public class TFEnlightenmentPaths implements SimpleResourceReloadListener<List<J
 				return tricksy;
 			}
 		});
+	
+	public static final EnlightenmentPath<GoatEntity, EntityTricksyGoat> GOAT	= addEnlightenment(EntityType.GOAT, new ConfigurablePath<GoatEntity, EntityTricksyGoat>(EntityType.GOAT, TFAccomplishments.CLOUDSEEKER, TFAccomplishments.JOURNEYMAN)
+			{
+				public EntityTricksyGoat enlighten(GoatEntity goat)
+				{
+					EntityTricksyGoat tricksy = TFEntityTypes.TRICKSY_GOAT.create(goat.getEntityWorld());
+					tricksy.equipStack(EquipmentSlot.MAINHAND, goat.getEquippedStack(EquipmentSlot.MAINHAND));
+					return tricksy;
+				}
+			});
 	
 	private static <T extends PathAwareEntity, N extends PathAwareEntity & ITricksyMob<?>> EnlightenmentPath<T,N> addEnlightenment(EntityType<? extends MobEntity> type, EnlightenmentPath<T,N> path)
 	{

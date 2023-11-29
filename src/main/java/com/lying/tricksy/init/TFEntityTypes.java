@@ -1,6 +1,7 @@
 package com.lying.tricksy.init;
 
 import com.lying.tricksy.entity.EntityTricksyFox;
+import com.lying.tricksy.entity.EntityTricksyGoat;
 import com.lying.tricksy.reference.Reference;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
@@ -19,8 +20,14 @@ public class TFEntityTypes
 			new Identifier(Reference.ModInfo.MOD_ID, "tricksy_fox"), 
 			FabricEntityTypeBuilder.create(SpawnGroup.CREATURE, EntityTricksyFox::new).dimensions(EntityDimensions.fixed(0.75F, 1.5F)).build());
 	
+	public static final EntityType<EntityTricksyGoat> TRICKSY_GOAT = Registry.register(
+			Registries.ENTITY_TYPE, 
+			new Identifier(Reference.ModInfo.MOD_ID, "tricksy_goat"), 
+			FabricEntityTypeBuilder.create(SpawnGroup.CREATURE, EntityTricksyGoat::new).dimensions(EntityDimensions.fixed(0.8F, 1.85F)).build());
+	
 	public static void init()
 	{
 		FabricDefaultAttributeRegistry.register(TRICKSY_FOX, EntityTricksyFox.createMobAttributes());
+		FabricDefaultAttributeRegistry.register(TRICKSY_GOAT, EntityTricksyGoat.createMobAttributes());
 	}
 }

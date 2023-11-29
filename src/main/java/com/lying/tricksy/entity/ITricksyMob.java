@@ -116,6 +116,9 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 		
 		// Update behaviour tree
 		BehaviourTree tree = tricksy.getBehaviourTree();
+		if(tree == null)
+			return;
+		
 		tree.update(tricksy, local, global);
 		tricksy.setLatestLog(tree.latestLog());
 	}
