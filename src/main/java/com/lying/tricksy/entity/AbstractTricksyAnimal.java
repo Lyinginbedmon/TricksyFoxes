@@ -15,6 +15,7 @@ import com.lying.tricksy.item.ITreeItem;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.ServerWhiteboards;
 
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -32,7 +33,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
@@ -43,7 +43,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 	public static final TrackedData<Optional<UUID>> OWNER_UUID = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	public static final TrackedData<NbtCompound> LOG_NBT = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
-	public static final TrackedData<Text> LOG = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.TEXT_COMPONENT);
+	public static final TrackedData<Boolean> SLEEPING = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.BOOLEAN);
 	public static final TrackedData<Integer> BARK = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.INTEGER);
 	
 	private BehaviourTree behaviourTree = new BehaviourTree();
@@ -68,7 +68,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		this.getDataTracker().startTracking(COLOR, OptionalInt.empty());
 		this.getDataTracker().startTracking(TREE_NBT, BehaviourTree.INITIAL_TREE.write(new NbtCompound()));
 		this.getDataTracker().startTracking(LOG_NBT, new NbtCompound());
-		this.getDataTracker().startTracking(LOG, Text.empty());
+		this.getDataTracker().startTracking(SLEEPING, false);
 		this.getDataTracker().startTracking(BARK, 0);
 	}
 	
@@ -90,6 +90,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		boardLocal.readFromNbt(data.getCompound("Whiteboard"));
 		if(data.contains("BehaviourTree", NbtElement.COMPOUND_TYPE))
 			setBehaviourTree(data.getCompound("BehaviourTree"));
+		setSleeping(data.getBoolean("IsSleeping"));
 		if(data.contains("Home", NbtElement.COMPOUND_TYPE))
 			setPositionTarget(NbtHelper.toBlockPos(data.getCompound("Home")), 6);
 	}
@@ -102,6 +103,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		
 		data.put("Whiteboard", boardLocal.writeToNbt(new NbtCompound()));
 		data.put("BehaviourTree", this.behaviourTree.storeInNbt());
+		data.putBoolean("IsSleeping", isSleeping());
 		if(hasPositionTarget())
 			data.put("Home", NbtHelper.fromBlockPos(getPositionTarget()));
 	}
@@ -178,6 +180,17 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		super.tickMovement();
 	}
 	
+	public boolean isSleeping() { return this.getDataTracker().get(SLEEPING).booleanValue(); }
+	
+	public void setSleeping(boolean var)
+	{
+		this.getDataTracker().set(SLEEPING, var);
+		if(var)
+			setPose(EntityPose.SITTING);
+		else
+			setPose(EntityPose.STANDING);
+	}
+	
 	public Optional<UUID> getSage() { return this.getDataTracker().get(OWNER_UUID); }
 	
 	public void setSage(@Nullable UUID uuidIn) { this.getDataTracker().set(OWNER_UUID, Optional.of(uuidIn)); }
@@ -213,13 +226,6 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 	
 	public void setCustomer(@Nullable PlayerEntity player) { this.customer = player; }
 	
-	public void logStatus(Text message)
-	{
-		this.getDataTracker().set(LOG, message);
-	}
-	
-	public Text latestLog() { return this.getDataTracker().get(LOG); }
-	
 	public void bark(Bark bark)
 	{
 		if(bark == null)
@@ -227,6 +233,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		
 		getDataTracker().set(BARK, bark.ordinal());
 		this.barkTicks = Reference.Values.TICKS_PER_SECOND * 3;
+		playSoundForBark(bark);
 	}
 	
 	public Bark currentBark()

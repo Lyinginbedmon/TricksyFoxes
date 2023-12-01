@@ -22,7 +22,6 @@ import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
@@ -106,10 +105,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 					return Result.SUCCESS;
 				
 				if(!parent.isRunning())
-				{
-					tricksy.logStatus(Text.literal("Running "+parent.child().getSubType().translatedName().getString()+" "+value.size()+" times"));
 					parent.ticks = 0;
-				}
 				
 				if(parent.child().tick(tricksy, local, global).isEnd())
 				{
@@ -131,10 +127,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 			{
 				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT);
 				if(!parent.isRunning())
-				{
-					tricksy.logStatus(Text.literal("Repeating "+parent.child().getSubType().translatedName().getString()+" "+duration.get()+" times"));
 					parent.ticks = 0;
-				}
 				
 				Result result = parent.child().tick(tricksy, local, global);
 				if(result == Result.FAILURE)
@@ -157,10 +150,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 			{
 				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT);
 				if(!parent.isRunning())
-				{
-					tricksy.logStatus(Text.literal("Retrying "+parent.child().getSubType().translatedName().getString()+" "+duration.get()+" times"));
 					parent.ticks = 0;
-				}
 				
 				Result result = parent.child().tick(tricksy, local, global);
 				if(result == Result.SUCCESS)

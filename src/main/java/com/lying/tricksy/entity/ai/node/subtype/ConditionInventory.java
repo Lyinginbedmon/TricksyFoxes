@@ -29,7 +29,6 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -68,10 +67,7 @@ public class ConditionInventory implements ISubtypeGroup<ConditionNode>
 				World world = tricksy.getWorld();
 				BlockEntity tile = world.getBlockEntity(block);
 				if(tile == null || !(tile instanceof Inventory))
-				{
-					tricksy.logStatus(Text.literal("That's not an inventory"));
 					return Result.FAILURE;
-				}
 				
 				Inventory inv = (Inventory)tile;
 				int exitSlot = -1;
@@ -104,10 +100,7 @@ public class ConditionInventory implements ISubtypeGroup<ConditionNode>
 					}
 				
 				if(exitSlot >= 0)
-				{
-					tricksy.logStatus(Text.literal("Found something in slot "+exitSlot));
 					return Result.SUCCESS;
-				}
 				else
 					return Result.FAILURE;
 			}

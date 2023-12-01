@@ -6,6 +6,7 @@ import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.entity.ModelTricksyGoatBase;
 import com.lying.tricksy.model.entity.ModelTricksyGoatMain;
 import com.lying.tricksy.renderer.layer.TricksyBarkLayer;
+import com.lying.tricksy.renderer.layer.TricksyGoatClothingLayer;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -32,7 +33,7 @@ public class EntityTricksyGoatRenderer extends MobEntityRenderer<EntityTricksyGo
 	public EntityTricksyGoatRenderer(Context ctx)
 	{
 		super(ctx, new ModelTricksyGoatMain<EntityTricksyGoat>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_GOAT)), 0.5F);
-//		this.addFeature(new TricksyGoatClothingLayer(this));
+		this.addFeature(new TricksyGoatClothingLayer(this));
 //		this.addFeature(new TricksyFoxHeldItemLayer(this, ctx.getHeldItemRenderer()));
 //		this.addFeature(new TricksyBarkLayer<EntityTricksyGoat, ModelTricksyFoxBase<EntityTricksyGoat>>(this));	TODO Improve bark rendering as FeatureRenderer
 	}

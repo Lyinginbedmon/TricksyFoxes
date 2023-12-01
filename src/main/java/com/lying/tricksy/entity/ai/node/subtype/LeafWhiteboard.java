@@ -162,7 +162,6 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 					List<BlockPos> points = value.as(TFObjType.BLOCK).getAll();
 					points.sort(SortHandler.blockSorter(position, position));
 					
-					tricksy.logStatus(Text.literal("Closest position was "+points.get(0).toShortString()));
 					sorted = new WhiteboardObjBlock();
 					points.forEach((point) -> ((WhiteboardObjBlock)sorted).add(point));
 				}
@@ -172,7 +171,6 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 					Vec3d origin = new Vec3d(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
 					points.sort(SortHandler.entitySorter(origin, origin));
 					
-					tricksy.logStatus(Text.literal("Closest entity was "+points.get(0).getDisplayName().getString()));
 					sorted = new WhiteboardObjEntity();
 					points.forEach((point) -> ((WhiteboardObjEntity)sorted).add(point));
 				}

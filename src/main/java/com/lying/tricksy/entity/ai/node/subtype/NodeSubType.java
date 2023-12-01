@@ -40,10 +40,7 @@ public class NodeSubType<M extends TreeNode<?>>
 	public <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, M parent)
 	{
 		if(!tickFunc.inputsSufficient(parent))
-		{
-			tricksy.logStatus(Text.literal(registryName.toString()+" in "+tricksy.getDisplayName().getString()+" is missing one or more input variables"));
 			return Result.FAILURE;
-		}
 		
 		return tickFunc.doTick(tricksy, local, global, parent);
 	}

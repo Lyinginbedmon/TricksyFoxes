@@ -71,7 +71,6 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 			{
 				int index = MathHelper.clamp(getOrDefault(BARK, parent, local, global).as(TFObjType.INT).get(), 0, Bark.values().length - 1);
 				tricksy.bark(Bark.values()[index]);
-				tricksy.logStatus(Text.literal("Arf! Arf!"));
 				return Result.SUCCESS;
 			}
 		}));
@@ -86,15 +85,11 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				{
 					if(canSleep(tricksy))
 					{
-						tricksy.logStatus(Text.literal("zzZZzzzZZ"));
 						tricksy.setSleeping(true);
 						return Result.RUNNING;
 					}
 					else
-					{
-						tricksy.logStatus(Text.literal("I can't sleep now"));
 						return Result.FAILURE;
-					}
 				}
 				else
 				{
@@ -167,10 +162,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				{
 					IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 					if(targetObj.isEmpty())
-					{
-						tricksy.logStatus(Text.literal("No destination to go to"));
 						return Result.FAILURE;
-					}
 					
 					BlockPos dest = targetObj.as(TFObjType.BLOCK).get();
 					if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 1D)
@@ -178,15 +170,9 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 					
 					navigator.startMovingTo(dest.getX() + 0.5D, dest.getY(), dest.getZ() + 0.5D, 1D);
 					if(navigator.isFollowingPath())
-					{
-						tricksy.logStatus(Text.literal("Moving to "+dest.toShortString()));
 						return Result.RUNNING;
-					}
 					else
-					{
-						tricksy.logStatus(Text.literal("No path found"));
 						return Result.FAILURE;
-					}
 				}
 				else
 					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
@@ -251,7 +237,6 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 						return Result.SUCCESS;
 					
 					navigator.startMovingTo(dest.getX(), dest.getY(), dest.getZ(), 1D);
-					tricksy.logStatus(Text.literal(navigator.isFollowingPath() ? "Moving to destination" : "No path found"));
 					return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
 				}
 				else

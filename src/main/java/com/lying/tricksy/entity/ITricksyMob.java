@@ -31,7 +31,6 @@ import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 
@@ -87,6 +86,8 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 		return false;
 	}
 	
+	public int getColor();
+	
 	/** Returns the behaviour tree of this mob.<br>Note: This may not exactly match the structure stored in NBT, due to runtime value changes. */
 	public BehaviourTree getBehaviourTree();
 	
@@ -130,13 +131,11 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 	
 	public void setCustomer(@Nullable PlayerEntity player);
 	
-	public void logStatus(Text message);
-	
-	public Text latestLog();
-	
 	public default void bark(Bark bark) { }
 	
 	public default Bark currentBark() { return Bark.NONE; }
+	
+	public default void playSoundForBark(Bark bark) { }
 	
 	public void setSleeping(boolean var);
 	
@@ -156,8 +155,7 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
         return ItemStack.EMPTY;
 	}
 	
-	/**	## Inventory methods ##	*/
-
+	/*	## Inventory methods ##	*/
 	
 	public default void clear()
 	{

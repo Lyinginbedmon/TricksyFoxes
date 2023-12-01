@@ -117,7 +117,6 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 				if(tricksy.isInAttackRange(target) && !target.isInvulnerable())
 				{
 					NodeTickHandler.swingHand(tricksy, Hand.MAIN_HAND);
-					tricksy.logStatus(Text.literal("Have at you!"));
 					return tricksy.tryAttack(target) ? Result.SUCCESS : Result.FAILURE;
 				}
 				return Result.FAILURE;
@@ -232,7 +231,6 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 				switch(getStage(bowStack, tricksy.getActiveItem().equals(bowStack)))
 				{
 					case UNCHARGED:
-						tricksy.logStatus(Text.literal("Draw!"));
 						tricksy.setCurrentHand(Hand.MAIN_HAND);
 						break;
 					case CHARGING:

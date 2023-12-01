@@ -65,6 +65,8 @@ public class TFEnlightenmentPaths implements SimpleResourceReloadListener<List<J
 				public EntityTricksyGoat enlighten(GoatEntity goat)
 				{
 					EntityTricksyGoat tricksy = TFEntityTypes.TRICKSY_GOAT.create(goat.getEntityWorld());
+					tricksy.setHorns(goat.hasLeftHorn(), goat.hasRightHorn());
+					tricksy.setScreaming(goat.isScreaming());
 					tricksy.equipStack(EquipmentSlot.MAINHAND, goat.getEquippedStack(EquipmentSlot.MAINHAND));
 					return tricksy;
 				}

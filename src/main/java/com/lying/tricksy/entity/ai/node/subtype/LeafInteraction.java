@@ -124,7 +124,6 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 					BlockPos blockPos = value.as(TFObjType.BLOCK).get();
 					if(!NodeTickHandler.canInteractWithBlock(tricksy, blockPos))
 						return Result.FAILURE;
-					tricksy.logStatus(Text.literal("Using ").append(tricksy.getMainHandStack().getName()).append(" on ").append(tricksy.getEntityWorld().getBlockState(blockPos).getBlock().getName()));
 					tricksy.getLookControl().lookAt(blockPos.getX() + 0.5D, blockPos.getY() + 0.5D, blockPos.getZ() + 0.5D);
 					result = NodeTickHandler.useHeldOnBlock(blockPos, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
 				}
@@ -133,7 +132,6 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 					Entity entity = value.as(TFObjType.ENT).get();
 					if(value.isEmpty() || !(entity instanceof LivingEntity) || !NodeTickHandler.canInteractWithEntity(tricksy, entity))
 						return Result.FAILURE;
-					tricksy.logStatus(Text.literal("Using ").append(tricksy.getMainHandStack().getName()).append(" on ").append(entity.getName()));
 					tricksy.getLookControl().lookAt(entity);
 					result = NodeTickHandler.useHeldOnEntity((LivingEntity)entity, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
 				}
@@ -163,7 +161,6 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 				if(local.isCoolingDown(tricksy.getMainHandStack().getItem()))
 					return Result.RUNNING;
 				
-				tricksy.logStatus(Text.literal("Activating ").append(tricksy.getEntityWorld().getBlockState(blockPos.get()).getBlock().getName()));
 				ActionResult result = NodeTickHandler.activateBlock(blockPos.get(), (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
 				tricksy.getLookControl().lookAt(blockPos.get().getX() + 0.5D, blockPos.get().getY() + 0.5D, blockPos.get().getZ() + 0.5D);
 				NodeTickHandler.swingHand(tricksy, Hand.MAIN_HAND);

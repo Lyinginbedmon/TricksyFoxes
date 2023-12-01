@@ -16,7 +16,6 @@ import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
-import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 
 public abstract class RangedCombatHandler extends CombatHandler
@@ -37,17 +36,13 @@ public abstract class RangedCombatHandler extends CombatHandler
 			tricksy.setCurrentHand(Hand.MAIN_HAND);
 		
 		if(!parent.isRunning())
-		{
-			tricksy.logStatus(Text.literal("Draw!"));
 			return Result.RUNNING;
-		}
 		
 		if(target.isInvulnerable())
 			return Result.FAILURE;
 		
 		if(tricksy.getItemUseTime() >= getDrawTime())
 		{
-			tricksy.logStatus(Text.literal("Firing!"));
 			attack(target, bowStack, BowItem.getPullProgress(tricksy.getItemUseTime()), tricksy);
 			local.setAttackCooldown(Reference.Values.TICKS_PER_SECOND);
 			return Result.SUCCESS;

@@ -47,9 +47,8 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 	public void readCustomDataFromNbt(NbtCompound data)
 	{
 		super.readCustomDataFromNbt(data);
-		getDataTracker().set(SCREAMING, data.getBoolean("IsScreamingGoat"));
-		getDataTracker().set(LEFT_HORN, data.getBoolean("HasLeftHorn"));
-		getDataTracker().set(RIGHT_HORN, data.getBoolean("HasRightHorn"));
+		setScreaming(data.getBoolean("IsScreamingGoat"));
+		setHorns(data.getBoolean("HasLeftHorn"), data.getBoolean("HasRightHorn"));
 	}
 	
 	public void writeCustomDataToNbt(NbtCompound data)
@@ -85,7 +84,15 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 	
 	public boolean hasRightHorn() { return getDataTracker().get(RIGHT_HORN).booleanValue(); }
 	
+	public void setHorns(boolean left, boolean right)
+	{
+		getDataTracker().set(LEFT_HORN, left);
+		getDataTracker().set(RIGHT_HORN, right);
+	}
+	
 	public boolean isScreaming() { return getDataTracker().get(SCREAMING).booleanValue(); }
+	
+	public void setScreaming(boolean par1Bool) { getDataTracker().set(SCREAMING, par1Bool); }
 	
 	@Nullable
 	protected SoundEvent getAmbientSound() { return isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_AMBIENT : SoundEvents.ENTITY_GOAT_AMBIENT; }

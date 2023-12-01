@@ -39,7 +39,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -137,17 +136,11 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				ItemStack heldStack = tricksy.getMainHandStack();
 				// Fail if we have nothing to insert OR we don't have enough items to insert
 				if(heldStack.isEmpty() || count.size() > 0 && count.as(TFObjType.INT).get() > heldStack.getCount())
-				{
-					tricksy.logStatus(Text.literal("I don't have anything to insert"));
 					return Result.FAILURE;
-				}
 				
 				// Fail if our held stack doesn't meet a provided item filter
 				if(filter.size() > 0 && !InventoryHandler.matchesItemFilter(heldStack, filter.as(TFObjType.ITEM)))
-				{
-					tricksy.logStatus(Text.literal("I don't have the right item to insert"));
 					return Result.FAILURE;
-				}
 				
 				World world = tricksy.getWorld();
 				BlockEntity tile = world.getBlockEntity(block);
@@ -156,7 +149,6 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				insertStack = InventoryHandler.insertStackIntoTile(insertStack, tile, ((WhiteboardObjBlock)face).direction(), slot.size() == 0 ? -1 : slot.get());
 				// Return any remaining items in insertStack to the heldStack
 				heldStack.increment(insertStack.getCount());
-				tricksy.logStatus(Text.literal(insertStack.isEmpty() ? "Item inserted successfully" : "I couldn't insert the item"));
 				if(insertStack.isEmpty())
 					tile.markDirty();
 				
@@ -200,28 +192,18 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				World world = tricksy.getWorld();
 				BlockEntity tile = world.getBlockEntity(block);
 				if(tile == null || !(tile instanceof Inventory))
-				{
-					tricksy.logStatus(Text.literal("That's not an inventory"));
 					return Result.FAILURE;
-				}
 				
 				// Fail if we can't put the extracted item into our main hand
 				ItemStack heldStack = tricksy.getMainHandStack();
-				if(!heldStack.isEmpty())
-					if(heldStack.getCount() == heldStack.getMaxCount() || !InventoryHandler.matchesItemFilter(heldStack, filter))
-					{
-						tricksy.logStatus(Text.literal("I can't extract that currently"));
-						return Result.FAILURE;
-					}
+				if(!heldStack.isEmpty() && (heldStack.getCount() == heldStack.getMaxCount() || !InventoryHandler.matchesItemFilter(heldStack, filter)))
+					return Result.FAILURE;
 				
 				Inventory inv = (Inventory)tile;
 				
 				// Fail if the inventory doesn't contain any items that match the filter
 				if(filter.size() > 0 && !inv.containsAny((stack) -> InventoryHandler.matchesItemFilter(stack, filter)))
-				{
-					tricksy.logStatus(Text.literal("There isn't any of that there"));
 					return Result.FAILURE;
-				}
 				
 				tricksy.getLookControl().lookAt(block.getX() + 0.5D, block.getY() + 0.5D, block.getZ() + 0.5D);
 				
@@ -245,15 +227,11 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 					extracted = InventoryHandler.extractItemFrom(inv, heldStack);
 				
 				if(extracted.isEmpty())
-				{
-					tricksy.logStatus(Text.literal("I didn't manage to extract anything"));
 					return Result.FAILURE;
-				}
 				else
 				{
 					tile.markDirty();
 					tricksy.setStackInHand(Hand.MAIN_HAND, InventoryHandler.mergeStacks(heldStack, extracted));
-					tricksy.logStatus(Text.literal("I'm now holding ").append(tricksy.getMainHandStack().getName()).append(Text.literal(" x"+tricksy.getMainHandStack().getCount())));
 					
 					if(tricksy.getRandom().nextInt(20) == 0)
 						NodeTickHandler.activateBlock(block, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
@@ -332,12 +310,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				ArmorItem armor = (ArmorItem)heldStack.getItem();
 				EquipmentSlot slot = armor.getSlotType();
 				if(!tricksy.getEquippedStack(slot).isEmpty())
-				{
-					tricksy.logStatus(Text.literal("I'm already wearing a "+slot.getName()));
 					return Result.FAILURE;
-				}
 				
-				tricksy.logStatus(Text.literal("Equipped "+heldStack.getName().getString()));
 				tricksy.equipStack(slot, heldStack.split(1));
 				tricksy.setStackInHand(Hand.MAIN_HAND, heldStack.getCount() > 0 ? heldStack : ItemStack.EMPTY);
 				return Result.SUCCESS;
@@ -381,7 +355,6 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				if(equipped.isEmpty() || EnchantmentHelper.hasBindingCurse(equipped))
 					return Result.FAILURE;
 				
-				tricksy.logStatus(Text.literal("Dropping my "+equip.getName()));
 				tricksy.dropStack(equipped);
 				tricksy.equipStack(equip, ItemStack.EMPTY);
 				return Result.SUCCESS;

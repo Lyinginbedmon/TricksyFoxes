@@ -29,7 +29,6 @@ import net.minecraft.world.World;
 public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHolder<Type>
 {
 	private static final TrackedData<Integer> TYPE = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
-	private static final TrackedData<Boolean> SLEEPING = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.BOOLEAN);
 	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
@@ -40,7 +39,6 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 	{
 		super.initDataTracker();
 		this.getDataTracker().startTracking(TYPE, 0);
-		this.getDataTracker().startTracking(SLEEPING, false);
 	}
 	
 	public static DefaultAttributeContainer.Builder createMobAttributes()
@@ -77,17 +75,6 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 		return null;
 	}
 	
-	public boolean isSleeping() { return this.getDataTracker().get(SLEEPING).booleanValue(); }
-	
-	public void setSleeping(boolean var)
-	{
-		this.getDataTracker().set(SLEEPING, var);
-		if(var)
-			setPose(EntityPose.SITTING);
-		else
-			setPose(EntityPose.STANDING);
-	}
-	
 	public EntityDimensions getDimensions(EntityPose pose)
 	{
 		switch(pose)
@@ -118,11 +105,8 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 	@Nullable
 	protected SoundEvent getDeathSound() { return SoundEvents.ENTITY_FOX_DEATH; }
 	
-	public void bark(Bark bark)
+	public void playSoundForBark(Bark bark)
 	{
-		super.bark(bark);
-		if(bark == null)
-			bark = Bark.NONE;
 		switch(bark)
 		{
 			case HAPPY:
