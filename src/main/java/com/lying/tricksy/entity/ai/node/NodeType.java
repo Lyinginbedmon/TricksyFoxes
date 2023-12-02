@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;

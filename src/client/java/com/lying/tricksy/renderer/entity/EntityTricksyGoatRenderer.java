@@ -1,7 +1,7 @@
 package com.lying.tricksy.renderer.entity;
 
+import com.lying.tricksy.api.entity.ITricksyMob.Bark;
 import com.lying.tricksy.entity.EntityTricksyGoat;
-import com.lying.tricksy.entity.ITricksyMob.Bark;
 import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.entity.ModelTricksyGoatBase;
 import com.lying.tricksy.model.entity.ModelTricksyGoatMain;
@@ -24,24 +24,19 @@ import net.minecraft.util.Identifier;
 @Environment(EnvType.CLIENT)
 public class EntityTricksyGoatRenderer extends MobEntityRenderer<EntityTricksyGoat, ModelTricksyGoatBase<EntityTricksyGoat>>
 {
-	public static final Identifier TEXTURE_RED = new Identifier("textures/entity/fox/fox.png");
-	public static final Identifier TEXTURE_SNOW = new Identifier("textures/entity/fox/snow_fox.png");
-	
-	public static final Identifier TEXTURE_RED_SLEEPING = new Identifier("textures/entity/fox/fox_sleep.png");
-	public static final Identifier TEXTURE_SNOW_SLEEPING = new Identifier("textures/entity/fox/snow_fox_sleep.png");
+	public static final Identifier TEXTURE = new Identifier("textures/entity/goat/goat.png");
 	
 	public EntityTricksyGoatRenderer(Context ctx)
 	{
 		super(ctx, new ModelTricksyGoatMain<EntityTricksyGoat>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_GOAT)), 0.5F);
 		this.addFeature(new TricksyGoatClothingLayer(this));
-//		this.addFeature(new TricksyFoxHeldItemLayer(this, ctx.getHeldItemRenderer()));
-//		this.addFeature(new TricksyBarkLayer<EntityTricksyGoat, ModelTricksyFoxBase<EntityTricksyGoat>>(this));	TODO Improve bark rendering as FeatureRenderer
+//		this.addFeature(new TricksyGoatHeldItemLayer(this, ctx.getHeldItemRenderer()));
 	}
 	
 	@Override
 	public void render(EntityTricksyGoat mobEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i)
 	{
-		if(!mobEntity.isSleeping())
+		if(!mobEntity.isTreeSleeping())
 			setModelPose(mobEntity);
 		
 		super.render(mobEntity, f, g, matrixStack, vertexConsumerProvider, i);
@@ -107,6 +102,6 @@ public class EntityTricksyGoatRenderer extends MobEntityRenderer<EntityTricksyGo
 	
 	public Identifier getTexture(EntityTricksyGoat entity)
 	{
-		return new Identifier("textures/entity/goat/goat.png");
+		return TEXTURE;
 	}
 }

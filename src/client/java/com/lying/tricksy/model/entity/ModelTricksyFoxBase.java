@@ -19,7 +19,7 @@ public abstract class ModelTricksyFoxBase<T extends EntityTricksyFox> extends Bi
 		this.tail1 = this.tailRoot.getChild("tail1");
 	}
 	
-    public void copyFoxStateTo(ModelTricksyFoxBase<T> model)
+    public void copyModelStateTo(ModelTricksyFoxBase<T> model)
 	{
         super.copyBipedStateTo(model);
         model.tailRoot.copyTransform(this.tailRoot);

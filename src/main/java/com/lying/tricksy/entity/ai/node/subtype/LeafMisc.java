@@ -7,11 +7,11 @@ import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Lists;
-import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ITricksyMob.Bark;
+import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob.Bark;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.node.handler.GetterHandler;
+import com.lying.tricksy.entity.ai.node.handler.GetterHandlerTyped;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
@@ -85,7 +85,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				{
 					if(canSleep(tricksy))
 					{
-						tricksy.setSleeping(true);
+						tricksy.setTreeSleeping(true);
 						return Result.RUNNING;
 					}
 					else
@@ -100,7 +100,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 					else if(parent.ticksRunning()%Reference.Values.TICKS_PER_SECOND == 0 && tricksy.getHealth() < tricksy.getMaxHealth())
 						tricksy.heal(1F);
 					
-					tricksy.setSleeping(!end.isEnd());
+					tricksy.setTreeSleeping(!end.isEnd());
 					return end;
 				}
 			}
@@ -199,7 +199,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
 				return Map.of(
-						CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION,
+						CommonVariables.VAR_POS, GetterHandlerTyped.POS_OR_REGION,
 						CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal(String.valueOf(4))));
 			}
 			
@@ -207,7 +207,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 			{
 				IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 				IWhiteboardObject<Integer> targetRange = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
-				Region area = GetterHandler.getSearchArea(targetObj, targetRange, tricksy, (mob) -> 
+				Region area = GetterHandlerTyped.getSearchArea(targetObj, targetRange, tricksy, (mob) -> 
 				{
 					// Wander area based on region -> home position -> current position
 					if(mob.hasPositionTarget())

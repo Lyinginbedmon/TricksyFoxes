@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.subtype.ConditionMisc;
@@ -37,7 +37,7 @@ public class BehaviourTree
 				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_SET_HOME)
 					.assignInputRef(CommonVariables.VAR_POS, LocalWhiteboard.SELF)))
 			.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SEQUENCE).setCustomName(Text.translatable("node."+Reference.ModInfo.MOD_ID+".meander")).setDiscrete(true)
-				.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID(), ConditionWhiteboard.VARIANT_VALUE_EQUALS)
+				.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID(), ConditionWhiteboard.VARIANT_EQUALS)
 					.assignInputRef(CommonVariables.VAR_A, LocalWhiteboard.HAS_SAGE)
 					.assignInputStatic(CommonVariables.VAR_B, new WhiteboardObj.Bool(false)))
 				.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_BARK)
@@ -71,7 +71,7 @@ public class BehaviourTree
 		if(waitTicks > 0)
 			--waitTicks;
 		
-		tricksy.setSleeping(false);
+		tricksy.setTreeSleeping(false);
 		TreeNode<?> root = root();
 		root.clearLog();
 		if(root.tick(tricksy, local, global) == Result.FAILURE)

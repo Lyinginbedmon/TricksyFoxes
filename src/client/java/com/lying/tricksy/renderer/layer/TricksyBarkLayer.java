@@ -4,8 +4,8 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import com.lying.tricksy.entity.ITricksyMob;
-import com.lying.tricksy.entity.ITricksyMob.Bark;
+import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob.Bark;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;

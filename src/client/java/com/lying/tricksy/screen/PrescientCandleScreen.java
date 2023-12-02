@@ -3,18 +3,29 @@ package com.lying.tricksy.screen;
 import java.util.EnumSet;
 import java.util.Optional;
 
+import org.joml.Matrix4f;
+
 import com.google.common.base.Predicates;
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
+import com.lying.tricksy.entity.ai.NodeStatusLog.Log;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.screen.NodeRenderUtils.NodeRenderFlags;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BufferRenderer;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec2f;
 
 public class PrescientCandleScreen extends HandledScreen<PrescientCandleScreenHandler>
@@ -108,10 +119,29 @@ public class PrescientCandleScreen extends HandledScreen<PrescientCandleScreenHa
 			if(node == null)
 				return;
 			
-			Result result = latestLog.getLog(id);
+			Log latest = latestLog.getLog(id);
+			Result result = latest.getLeft();
 			int iconX = node.screenX + node.width + 2;
 			int iconY = node.screenY + (node.height - 16) / 2;
-			context.drawTexture(result.texture(), iconX, iconY, 0, 0, 0, 16, 16, 16, 16);
+			
+			int alpha = (int)(((float)latest.getRight() / (float)Log.DURATION) * 255F);
+			renderTransparentIcon(result.texture(), iconX, iconY, alpha, context);
 		});
+	}
+	
+	private static void renderTransparentIcon(Identifier texture, int iconX, int iconY, int alpha, DrawContext context)
+	{
+		RenderSystem.setShaderTexture(0, texture);
+		RenderSystem.setShader(GameRenderer::getPositionColorTexProgram);
+		RenderSystem.enableBlend();
+		Matrix4f matrix4f = context.getMatrices().peek().getPositionMatrix();
+		BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
+		bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE);
+			bufferBuilder.vertex(matrix4f, iconX + 0, iconY + 0, 0).color(255, 255, 255, alpha).texture(0, 0).next();
+			bufferBuilder.vertex(matrix4f, iconX + 0, iconY + 16, 0).color(255, 255, 255, alpha).texture(0, 1).next();
+			bufferBuilder.vertex(matrix4f, iconX + 16, iconY + 16, 0).color(255, 255, 255, alpha).texture(1, 1).next();
+			bufferBuilder.vertex(matrix4f, iconX + 16, iconY + 0, 0).color(255, 255, 255, alpha).texture(1, 0).next();
+		BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+		RenderSystem.disableBlend();
 	}
 }

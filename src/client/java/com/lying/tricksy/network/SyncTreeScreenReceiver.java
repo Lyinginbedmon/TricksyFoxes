@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.google.common.collect.Lists;
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.screen.TricksyTreeScreenHandler;

@@ -3,7 +3,7 @@ package com.lying.tricksy.network;
 import java.util.List;
 import java.util.UUID;
 
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.screen.TricksyInventoryScreenHandler;
 
 import net.fabricmc.api.EnvType;

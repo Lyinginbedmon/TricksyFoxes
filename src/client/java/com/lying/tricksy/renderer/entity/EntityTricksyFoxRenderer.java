@@ -1,14 +1,14 @@
 package com.lying.tricksy.renderer.entity;
 
+import com.lying.tricksy.api.entity.ITricksyMob.Bark;
 import com.lying.tricksy.entity.EntityTricksyFox;
-import com.lying.tricksy.entity.ITricksyMob.Bark;
 import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.entity.ModelTricksyFoxBase;
 import com.lying.tricksy.model.entity.ModelTricksyFoxMain;
 import com.lying.tricksy.model.entity.ModelTricksyFoxSleeping;
+import com.lying.tricksy.renderer.layer.AbstractOffsetHeldItemLayer;
 import com.lying.tricksy.renderer.layer.TricksyBarkLayer;
 import com.lying.tricksy.renderer.layer.TricksyFoxClothingLayer;
-import com.lying.tricksy.renderer.layer.TricksyFoxHeldItemLayer;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -39,7 +39,13 @@ public class EntityTricksyFoxRenderer extends MobEntityRenderer<EntityTricksyFox
 	{
 		super(ctx, new ModelTricksyFoxMain<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX)), 0.5F);
 		this.addFeature(new TricksyFoxClothingLayer(this));
-		this.addFeature(new TricksyFoxHeldItemLayer(this, ctx.getHeldItemRenderer()));
+		this.addFeature(new AbstractOffsetHeldItemLayer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>(this, ctx.getHeldItemRenderer())
+		{
+			public void translateToHand(MatrixStack matrices, boolean isLeft)
+			{
+				matrices.translate((float)(isLeft ? -1 : 1) / 16.0f, 0.025f, -0.325f);
+			}
+		});
 //		this.addFeature(new TricksyBarkLayer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>(this));	TODO Improve bark rendering as FeatureRenderer
 		
 		this.standing = this.model;
@@ -49,8 +55,8 @@ public class EntityTricksyFoxRenderer extends MobEntityRenderer<EntityTricksyFox
 	@Override
 	public void render(EntityTricksyFox mobEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i)
 	{
-		this.model = mobEntity.isSleeping() ? this.sleeping : this.standing;
-		if(!mobEntity.isSleeping())
+		this.model = mobEntity.isTreeSleeping() ? this.sleeping : this.standing;
+		if(!mobEntity.isTreeSleeping())
 			setModelPose(mobEntity);
 		
 		super.render(mobEntity, f, g, matrixStack, vertexConsumerProvider, i);
@@ -119,10 +125,10 @@ public class EntityTricksyFoxRenderer extends MobEntityRenderer<EntityTricksyFox
 		switch(entity.getVariant())
 		{
 			case SNOW:
-				return entity.isSleeping() ? TEXTURE_SNOW_SLEEPING : TEXTURE_SNOW;
+				return entity.isTreeSleeping() ? TEXTURE_SNOW_SLEEPING : TEXTURE_SNOW;
 			case RED:
 			default:
-				return entity.isSleeping() ? TEXTURE_RED_SLEEPING : TEXTURE_RED;
+				return entity.isTreeSleeping() ? TEXTURE_RED_SLEEPING : TEXTURE_RED;
 		}
 	}
 }

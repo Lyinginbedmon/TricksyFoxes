@@ -43,11 +43,20 @@ public interface INodeInput
 	/** Accept only values castable as the given type */
 	public static Predicate<WhiteboardRef> ofType(TFObjType<?> typeIn, boolean filterAllowed) { return (ref) -> ref.type().castableTo(typeIn) && (filterAllowed || !ref.isFilter()); }
 	
-	public static INodeInput outputRefOnly(TFObjType<?> type)
+	public static INodeInput outputRefOnly(TFObjType<?>... typesIn)
 	{
 		return new INodeInput()
 				{
-					public Predicate<WhiteboardRef> predicate() { return (ref) -> ref.boardType() == BoardType.LOCAL && !ref.uncached() && type == ref.type(); }
+					public Predicate<WhiteboardRef> predicate()
+					{
+						return (ref) -> 
+						{
+							for(TFObjType<?> type : typesIn)
+							if(type == ref.type())
+								return ref.boardType() == BoardType.LOCAL && !ref.uncached();
+							return false;
+						};
+					}
 					
 					public boolean allowStatic() { return false; }
 				};

@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
 import com.lying.tricksy.entity.ai.node.INodeValue.StaticValue;
 import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
@@ -240,7 +240,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		return isRoot() ? this.currentLog : this.parent().getLog();
 	}
 	
-	public void clearLog() { this.currentLog.clear(); }
+	public void clearLog() { this.currentLog.tick(); }
 	
 	/** Returns true if this node is in a runnable condition */
 	public boolean isRunnable() { return true; }

@@ -2,8 +2,8 @@ package com.lying.tricksy.network;
 
 import java.util.UUID;
 
-import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 
 import io.netty.buffer.Unpooled;

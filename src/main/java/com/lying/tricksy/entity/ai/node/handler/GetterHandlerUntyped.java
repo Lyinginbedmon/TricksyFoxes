@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.INodeValue;
 import com.lying.tricksy.entity.ai.node.INodeValue.Type;
 import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
@@ -25,22 +25,23 @@ import com.lying.tricksy.utility.RegionSphere;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.BlockPos;
 
-public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
+public abstract class GetterHandlerUntyped implements NodeTickHandler<LeafNode>
 {
 	public static final INodeInput POS_OR_REGION = INodeInput.makeInput(ref -> (ref.type() == TFObjType.BLOCK && !ref.isFilter()) || ref.type() == TFObjType.REGION, new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName());
+	public static final INodeInput NUM_OR_POS = INodeInput.makeInput(ref -> ref.type() == TFObjType.INT || ref.type() == TFObjType.BLOCK);
 	
-	private final WhiteboardRef entry;
-	private final TFObjType<T> type;
+	protected final WhiteboardRef entry;
 	
 	private final Map<WhiteboardRef, INodeInput> variableSet = new HashMap<>();
 	
-	public GetterHandler(TFObjType<T> typeIn)
+	public GetterHandlerUntyped(TFObjType<?>... typesIn)
 	{
-		this.type = typeIn;
-		this.entry = new WhiteboardRef("target_reference", type).displayName(CommonVariables.translate("ref_target"));
+		if(typesIn == null || typesIn.length < 1)
+			typesIn = new TFObjType[] {TFObjType.BOOL};
+		this.entry = new WhiteboardRef("target_reference", typesIn[0]).displayName(CommonVariables.translate("ref_target"));
 		
 		// TODO Formalise output values as distinct from input values
-		this.variableSet.put(entry, INodeInput.outputRefOnly(typeIn));
+		this.variableSet.put(entry, INodeInput.outputRefOnly(typesIn));
 		addInputVariables(this.variableSet);
 	}
 	
@@ -55,12 +56,9 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 		if(dest == null)
 			return Result.FAILURE;
 		
-		IWhiteboardObject<T> result = getResult(tricksy, local, global, parent);
+		IWhiteboardObject<?> result = getResult(tricksy, local, global, parent);
 		if(result == null || result.isEmpty() || result.size() == 0)
-		{
-			local.setValue(dest, type.blank());
 			return Result.FAILURE;
-		}
 		
 		local.setValue(dest, result);
 		return Result.SUCCESS;
@@ -69,7 +67,7 @@ public abstract class GetterHandler<T> implements NodeTickHandler<LeafNode>
 	public abstract void addInputVariables(Map<WhiteboardRef, INodeInput> set);
 	
 	@Nullable
-	public abstract <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<T> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent);
+	public abstract <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent);
 	
 	/** Returns a provided Region or generates one around a provided position */
 	@Nullable

@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;
+import com.lying.tricksy.entity.ai.node.subtype.LeafArithmetic;
 import com.lying.tricksy.entity.ai.node.subtype.LeafCombat;
 import com.lying.tricksy.entity.ai.node.subtype.LeafGetter;
 import com.lying.tricksy.entity.ai.node.subtype.LeafInteraction;
@@ -24,6 +25,7 @@ public class LeafNode extends TreeNode<LeafNode>
 	
 	private static final Set<ISubtypeGroup<LeafNode>> SUBTYPES = Set.of(
 			new LeafMisc(), 
+			new LeafArithmetic(), 
 			new LeafWhiteboard(), 
 			new LeafInventory(), 
 			new LeafInteraction(), 

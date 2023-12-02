@@ -3,7 +3,7 @@ package com.lying.tricksy.component;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
 import com.lying.tricksy.init.TFEnlightenmentPaths;

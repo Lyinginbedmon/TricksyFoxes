@@ -92,7 +92,7 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 	@Nullable
 	protected SoundEvent getAmbientSound()
 	{
-		if(this.isSleeping())
+		if(this.isTreeSleeping())
 			return SoundEvents.ENTITY_FOX_SLEEP;
 		if(!this.getWorld().isDay() && this.random.nextFloat() < 0.1f && getWorld().getEntitiesByClass(PlayerEntity.class, this.getBoundingBox().expand(16.0, 16.0, 16.0), EntityPredicates.EXCEPT_SPECTATOR).isEmpty())
 			return SoundEvents.ENTITY_FOX_SCREECH;

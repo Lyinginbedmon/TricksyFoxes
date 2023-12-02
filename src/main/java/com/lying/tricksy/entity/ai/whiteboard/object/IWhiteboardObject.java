@@ -20,6 +20,7 @@ public interface IWhiteboardObject<T>
 {
 	public TFObjType<T> type();
 	
+	/** Return the first value in this object */
 	public T get();
 	
 	public default List<T> getAll()

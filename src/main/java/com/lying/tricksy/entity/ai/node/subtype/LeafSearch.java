@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Lists;
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.handler.BlockSearchHandler;
-import com.lying.tricksy.entity.ai.node.handler.GetterHandler;
+import com.lying.tricksy.entity.ai.node.handler.GetterHandlerTyped;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.InventoryHandler;
 import com.lying.tricksy.entity.ai.node.handler.MatchBlockSearchHandler;
@@ -50,22 +50,22 @@ public class LeafSearch implements ISubtypeGroup<LeafNode>
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		add(set, VARIANT_GET_ITEMS, new GetterHandler<Entity>(TFObjType.ENT)
+		add(set, VARIANT_GET_ITEMS, new GetterHandlerTyped<Entity>(TFObjType.ENT)
 		{
 			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION);
+				set.put(CommonVariables.VAR_POS, GetterHandlerTyped.POS_OR_REGION);
 				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
 				set.put(CommonVariables.VAR_ITEM, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
 			
-			public <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
+			public <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getTypedResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
 				IWhiteboardObject<ItemStack> filter = getOrDefault(CommonVariables.VAR_ITEM, parent, local, global).as(TFObjType.ITEM);
 				
-				Region searchArea = GetterHandler.getSearchArea(pos, range, tricksy);
+				Region searchArea = GetterHandlerTyped.getSearchArea(pos, range, tricksy);
 				World world = tricksy.getWorld();
 				List<ItemEntity> items = searchArea.getEntitiesByClass(ItemEntity.class, world, (item) -> InventoryHandler.matchesItemFilter(item.getStack(), filter));
 				if(items.isEmpty())
@@ -87,24 +87,24 @@ public class LeafSearch implements ISubtypeGroup<LeafNode>
 				return result;
 			}
 		});
-		add(set, VARIANT_GET_ENTITIES, new GetterHandler<Entity>(TFObjType.ENT)
+		add(set, VARIANT_GET_ENTITIES, new GetterHandlerTyped<Entity>(TFObjType.ENT)
 		{
 			public static WhiteboardRef FILTER = new WhiteboardRef("entity_filter", TFObjType.ENT).displayName(CommonVariables.translate("item_filter"));
 			
 			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
 			{
-				set.put(CommonVariables.VAR_POS, GetterHandler.POS_OR_REGION);
+				set.put(CommonVariables.VAR_POS, GetterHandlerTyped.POS_OR_REGION);
 				set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
 				set.put(FILTER, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, true), ConstantsWhiteboard.FILTER_MONSTER.copy(), ConstantsWhiteboard.ENT_MONSTERS.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
 				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
 				IWhiteboardObject<Entity> filter = getOrDefault(FILTER, parent, local, global).as(TFObjType.ENT);
 				
-				Region searchArea = GetterHandler.getSearchArea(pos, range, tricksy);
+				Region searchArea = GetterHandlerTyped.getSearchArea(pos, range, tricksy);
 				World world = tricksy.getWorld();
 				List<LivingEntity> mobs = searchArea.getEntitiesByClass(LivingEntity.class, world, (ent) -> NodeTickHandler.matchesEntityFilter(ent, filter));
 				if(mobs.isEmpty())

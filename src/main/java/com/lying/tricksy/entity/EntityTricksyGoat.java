@@ -76,9 +76,9 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 		return null;
 	}
 	
-	public boolean isSleeping() { return false; }
+	public boolean isTreeSleeping() { return false; }
 	
-	public void setSleeping(boolean var) { }
+	public void setTreeSleeping(boolean var) { }
 	
 	public boolean hasLeftHorn() { return getDataTracker().get(LEFT_HORN).booleanValue(); }
 	
@@ -103,25 +103,21 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 	@Nullable
 	protected SoundEvent getDeathSound() { return isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_DEATH : SoundEvents.ENTITY_GOAT_DEATH; }
 	
-	public void bark(Bark bark)
+	public void playSoundForBark(Bark bark)
 	{
-		super.bark(bark);
-		if(bark == null)
-			bark = Bark.NONE;
-		
 		switch(bark)
 		{
 			case HAPPY:
-				this.playSound(SoundEvents.ENTITY_GOAT_AMBIENT, 1F, 1F);
+				this.playSound(isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_AMBIENT : SoundEvents.ENTITY_GOAT_AMBIENT, 1F, 1F);
 				break;
 			case CURIOUS:
-				this.playSound(SoundEvents.ENTITY_FOX_SNIFF, 1F, 1F);
+//				this.playSound(SoundEvents.ENTITY_FOX_SNIFF, 1F, 1F);
 				break;
 			case CONFUSED:
-				this.playSound(SoundEvents.ENTITY_FOX_SCREECH, 2F, 1F);
+//				this.playSound(SoundEvents.ENTITY_FOX_SCREECH, 2F, 1F);
 				break;
 			case ALERT:
-				this.playSound(SoundEvents.ENTITY_FOX_AGGRO, 5F, 1F);
+				this.playSound(isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_PREPARE_RAM : SoundEvents.ENTITY_GOAT_PREPARE_RAM, 5F, 1F);
 				break;
 			case NONE:
 			default:

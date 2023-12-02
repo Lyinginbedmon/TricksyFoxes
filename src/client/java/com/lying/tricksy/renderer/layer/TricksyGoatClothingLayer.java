@@ -28,6 +28,6 @@ public class TricksyGoatClothingLayer extends DyeableClothingLayer<EntityTricksy
 	
 	public void copyModelStateTo(ModelTricksyGoatBase<EntityTricksyGoat> contextModel, ModelTricksyGoatBase<EntityTricksyGoat> clothingModel)
 	{
-		contextModel.copyFoxStateTo(clothingModel);
+		contextModel.copyModelStateTo(clothingModel);
 	}
 }

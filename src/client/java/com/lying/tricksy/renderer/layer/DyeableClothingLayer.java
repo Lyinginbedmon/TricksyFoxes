@@ -1,6 +1,6 @@
 package com.lying.tricksy.renderer.layer;
 
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
 import com.google.common.collect.Lists;
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.CombatHandler;

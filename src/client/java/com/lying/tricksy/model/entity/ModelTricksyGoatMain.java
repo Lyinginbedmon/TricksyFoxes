@@ -57,7 +57,7 @@ public class ModelTricksyGoatMain<T extends EntityTricksyGoat> extends ModelTric
 		{
 			// Main body fur minus south cube face
 			body.addChild("fur_r1", cuboid(ModelPartBuilder.create().uv(0, 28), -5F, -2F, -6F, 11F, 14F, 11, dilation.add(0.5F), EnumSet.complementOf(EnumSet.of(Direction.SOUTH))), ModelTransform.of(0.5F, -5.0F, -0.5F, 0.0F, 3.1416F, 0.0F));
-			// Main body fur replacement south cube face	TODO Adjust uv coords to match rear face
+			// Main body fur replacement south cube face
 			body.addChild("fur_front_r1", cuboid(ModelPartBuilder.create().uv(0, 39), -5.0F, -15.0F, -10.0F, 11.0F, 14.0F, 0.0F, dilation.add(0.5F), EnumSet.of(Direction.SOUTH)), ModelTransform.pivot(-0.5F, 8.0F, 3.5F));
 		}
 		else

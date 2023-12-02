@@ -1,11 +1,11 @@
 package com.lying.tricksy.renderer.layer;
 
-import com.lying.tricksy.entity.EntityTricksyFox;
-import com.lying.tricksy.model.entity.ModelTricksyFoxBase;
+import com.lying.tricksy.api.entity.ITricksyMob;
 
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.feature.HeldItemFeatureRenderer;
+import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.render.entity.model.ModelWithArms;
 import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
@@ -15,19 +15,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Arm;
 import net.minecraft.util.math.RotationAxis;
 
-public class TricksyFoxHeldItemLayer extends HeldItemFeatureRenderer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>
+public abstract class AbstractOffsetHeldItemLayer<T extends LivingEntity & ITricksyMob<?>, M extends EntityModel<T> & ModelWithArms> extends HeldItemFeatureRenderer<T, M>
 {
 	private final HeldItemRenderer heldItemRenderer;
 	
-	public TricksyFoxHeldItemLayer(FeatureRendererContext<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>> context, HeldItemRenderer heldItemRenderer)
+	public AbstractOffsetHeldItemLayer(FeatureRendererContext<T, M> context, HeldItemRenderer heldItemRenderer)
 	{
 		super(context, heldItemRenderer);
 		this.heldItemRenderer = heldItemRenderer;
 	}
 	
-	public void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, EntityTricksyFox livingEntity, float f, float g, float h, float j, float k, float l)
+	public void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, T livingEntity, float f, float g, float h, float j, float k, float l)
 	{
-		if(!livingEntity.isSleeping())
+		if(!((ITricksyMob<?>)livingEntity).isTreeSleeping())
 			super.render(matrixStack, vertexConsumerProvider, i, livingEntity, f, g, h, j, k, l);
 	}
 	
@@ -41,8 +41,10 @@ public class TricksyFoxHeldItemLayer extends HeldItemFeatureRenderer<EntityTrick
 			matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-90.0f));
 			matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0f));
 			boolean isLeft = arm == Arm.LEFT;
-			matrices.translate((float)(isLeft ? -1 : 1) / 16.0f, 0.025f, -0.325f);
+			translateToHand(matrices, isLeft);
 			this.heldItemRenderer.renderItem(entity, stack, transformationMode, isLeft, matrices, vertexConsumers, light);
 		matrices.pop();
 	}
+	
+	public abstract void translateToHand(MatrixStack matrices, boolean isLeft);
 }

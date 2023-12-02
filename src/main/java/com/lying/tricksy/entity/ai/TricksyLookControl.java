@@ -1,6 +1,6 @@
 package com.lying.tricksy.entity.ai;
 
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 
 import net.minecraft.entity.ai.control.LookControl;
 import net.minecraft.entity.mob.MobEntity;
@@ -17,7 +17,7 @@ public class TricksyLookControl extends LookControl
 	
 	public void tick()
 	{
-		if(!tricksy.isSleeping())
+		if(!tricksy.isTreeSleeping())
 			super.tick();
 	}
 	

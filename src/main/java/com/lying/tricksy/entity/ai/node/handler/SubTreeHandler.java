@@ -2,7 +2,7 @@ package com.lying.tricksy.entity.ai.node.handler;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;

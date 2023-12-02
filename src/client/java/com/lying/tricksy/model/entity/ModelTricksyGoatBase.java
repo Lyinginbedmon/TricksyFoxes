@@ -18,12 +18,14 @@ public abstract class ModelTricksyGoatBase<T extends EntityTricksyGoat> extends 
 		this.rightHorn = head.getChild(EntityModelPartNames.RIGHT_HORN);
 	}
 	
-    public void copyFoxStateTo(ModelTricksyGoatBase<T> model)
+    public void copyModelStateTo(ModelTricksyGoatBase<T> model)
 	{
         super.copyBipedStateTo(model);
         model.leftArm.visible = this.leftArm.visible;
         model.rightArm.visible = this.rightArm.visible;
         model.leftLeg.visible = this.leftLeg.visible;
         model.rightLeg.visible = this.rightLeg.visible;
+        model.leftHorn.visible = this.leftHorn.visible;
+        model.rightHorn.visible = this.rightHorn.visible;
     }
 }

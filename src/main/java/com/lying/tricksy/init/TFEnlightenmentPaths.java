@@ -15,11 +15,11 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.component.ConfigurablePath;
 import com.lying.tricksy.component.EnlightenmentPath;
 import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.entity.EntityTricksyGoat;
-import com.lying.tricksy.entity.ITricksyMob;
 import com.lying.tricksy.reference.Reference;
 
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;

@@ -3,7 +3,7 @@ package com.lying.tricksy.component;
 import java.util.Collection;
 
 import com.google.gson.JsonObject;
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;

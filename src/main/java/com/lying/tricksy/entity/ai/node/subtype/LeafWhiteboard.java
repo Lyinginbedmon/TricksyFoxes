@@ -8,7 +8,7 @@ import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Lists;
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.INodeValue;
 import com.lying.tricksy.entity.ai.node.INodeValue.Type;
 import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;

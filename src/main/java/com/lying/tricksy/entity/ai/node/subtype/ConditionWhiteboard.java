@@ -7,7 +7,7 @@ import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Lists;
-import com.lying.tricksy.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.ConditionNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.INodeInput;
@@ -27,8 +27,9 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 {
 	public static final Identifier VARIANT_VALUE_TRUE = ISubtypeGroup.variant("value_true");
 	public static final Identifier VARIANT_VALUE_EXISTS = ISubtypeGroup.variant("value_exists");
-	public static final Identifier VARIANT_VALUE_EQUALS = ISubtypeGroup.variant("value_equals");
+	public static final Identifier VARIANT_EQUALS = ISubtypeGroup.variant("value_equals");
 	public static final Identifier VARIANT_LESS_THAN = ISubtypeGroup.variant("less_than");
+	public static final Identifier VARIANT_GREATER_THAN = ISubtypeGroup.variant("greater_than");
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_whiteboard"); }
 	
@@ -63,7 +64,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 			}
 		}));
 		/** Returns SUCCESS if the given objects match */
-		set.add(new NodeSubType<ConditionNode>(VARIANT_VALUE_EQUALS, new NodeTickHandler<ConditionNode>()
+		set.add(new NodeSubType<ConditionNode>(VARIANT_EQUALS, new NodeTickHandler<ConditionNode>()
 		{
 			public Map<WhiteboardRef, INodeInput> inputSet()
 			{
@@ -90,9 +91,25 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
 			{
-				IWhiteboardObject<Integer> objA = getOrDefault(CommonVariables.VAR_A, parent, local, global).as(TFObjType.INT);
-				IWhiteboardObject<Integer> objB = getOrDefault(CommonVariables.VAR_B, parent, local, global).as(TFObjType.INT);
-				return objA.get() < objB.get() ? Result.SUCCESS : Result.FAILURE;
+				int objA = getOrDefault(CommonVariables.VAR_A, parent, local, global).as(TFObjType.INT).get();
+				int objB = getOrDefault(CommonVariables.VAR_B, parent, local, global).as(TFObjType.INT).get();
+				return objA < objB ? Result.SUCCESS : Result.FAILURE;
+			}
+		}));
+		set.add(new NodeSubType<ConditionNode>(VARIANT_GREATER_THAN, new NodeTickHandler<ConditionNode>() 
+		{
+			public Map<WhiteboardRef, INodeInput> inputSet()
+			{
+				return Map.of(
+						CommonVariables.VAR_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true)), 
+						CommonVariables.VAR_B, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)
+			{
+				int objA = getOrDefault(CommonVariables.VAR_A, parent, local, global).as(TFObjType.INT).get();
+				int objB = getOrDefault(CommonVariables.VAR_B, parent, local, global).as(TFObjType.INT).get();
+				return objA > objB ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 		return set;

@@ -1,10 +1,11 @@
-package com.lying.tricksy.entity;
+package com.lying.tricksy.api.entity;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.BehaviourTree;
@@ -135,11 +136,11 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 	
 	public default Bark currentBark() { return Bark.NONE; }
 	
-	public default void playSoundForBark(Bark bark) { }
+	public default void playSoundForBark(@NotNull Bark bark) { }
 	
-	public void setSleeping(boolean var);
+	public void setTreeSleeping(boolean var);
 	
-	public boolean isSleeping();
+	public boolean isTreeSleeping();
 	
 	public ItemStack getProjectileType(ItemStack stack);
 	
