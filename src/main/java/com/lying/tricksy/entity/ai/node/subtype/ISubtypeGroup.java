@@ -2,8 +2,8 @@ package com.lying.tricksy.entity.ai.node.subtype;
 
 import java.util.Collection;
 
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.TreeNode;
-import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.text.Text;
@@ -19,7 +19,7 @@ public interface ISubtypeGroup<T extends TreeNode<?>>
 	
 	public Collection<NodeSubType<T>> getSubtypes();
 	
-	public default void add(Collection<NodeSubType<T>> set, Identifier name, NodeTickHandler<T> handler)
+	public default void add(Collection<NodeSubType<T>> set, Identifier name, INodeTickHandler<T> handler)
 	{
 		set.add(new NodeSubType<T>(name, handler));
 	}

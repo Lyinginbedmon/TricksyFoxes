@@ -8,10 +8,11 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ai.INodeIO;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.DecoratorNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.node.handler.INodeInput;
-import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
+import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
@@ -41,7 +42,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 	public Collection<NodeSubType<DecoratorNode>> getSubtypes()
 	{
 		List<NodeSubType<DecoratorNode>> set = Lists.newArrayList();
-		set.add(new NodeSubType<DecoratorNode>(VARIANT_INVERTER, new NodeTickHandler<DecoratorNode>()
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_INVERTER, new INodeTickHandler<DecoratorNode>()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
@@ -57,25 +58,25 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 				return Result.FAILURE;
 			}
 		}));
-		set.add(new NodeSubType<DecoratorNode>(VARIANT_FORCE_FAILURE, new NodeTickHandler<DecoratorNode>()
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_FORCE_FAILURE, new INodeTickHandler<DecoratorNode>()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
 				return parent.child().tick(tricksy, local, global).isEnd() ? Result.FAILURE : Result.RUNNING;
 			}
 		}));
-		set.add(new NodeSubType<DecoratorNode>(VARIANT_FORCE_SUCCESS, new NodeTickHandler<DecoratorNode>()
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_FORCE_SUCCESS, new INodeTickHandler<DecoratorNode>()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{
 				return parent.child().tick(tricksy, local, global).isEnd() ? Result.SUCCESS : Result.RUNNING;
 			}
 		}));
-		set.add(new NodeSubType<DecoratorNode>(VARIANT_DELAY, new NodeTickHandler<DecoratorNode>()
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_DELAY, new INodeTickHandler<DecoratorNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.any(), new WhiteboardObj.Int(1)));
+				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.any(), new WhiteboardObj.Int(1)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
@@ -89,13 +90,13 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 				return Result.RUNNING;
 			}
 		}));
-		set.add(new NodeSubType<DecoratorNode>(VARIANT_FOR_EACH, new NodeTickHandler<DecoratorNode>()
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_FOR_EACH, new INodeTickHandler<DecoratorNode>()
 		{
 			public static final WhiteboardRef LIST = new WhiteboardRef("value_to_cycle", TFObjType.BOOL).displayName(CommonVariables.translate("to_cycle"));
 			
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(LIST, INodeInput.makeInput(INodeInput.any()));
+				return Map.of(LIST, NodeInput.makeInput(NodeInput.any()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
@@ -116,11 +117,11 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 				return Result.RUNNING;
 			}
 		}));
-		set.add(new NodeSubType<DecoratorNode>(VARIANT_REPEAT, new NodeTickHandler<DecoratorNode>()
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_REPEAT, new INodeTickHandler<DecoratorNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4)));
+				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
@@ -139,11 +140,11 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 				return Result.RUNNING;
 			}
 		}));
-		set.add(new NodeSubType<DecoratorNode>(VARIANT_RETRY, new NodeTickHandler<DecoratorNode>()
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_RETRY, new INodeTickHandler<DecoratorNode>()
 		{
-			public @NotNull Map<WhiteboardRef, INodeInput> inputSet()
+			public @NotNull Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4)));
+				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
@@ -162,7 +163,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 				return Result.RUNNING;
 			}
 		}));
-		set.add(new NodeSubType<DecoratorNode>(VARIANT_DO_ONCE, new NodeTickHandler<DecoratorNode>()
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_DO_ONCE, new INodeTickHandler<DecoratorNode>()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
 			{

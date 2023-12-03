@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Predicate;
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ai.INodeIO;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
@@ -24,7 +26,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 
-public abstract class CombatHandler implements NodeTickHandler<LeafNode>
+public abstract class CombatHandler implements INodeTickHandler<LeafNode>
 {
 	public static final WhiteboardRef TARGET = CommonVariables.TARGET_ENT;
 	public static final Predicate<Entity> VALID_TARGET = (ent) -> 
@@ -40,15 +42,15 @@ public abstract class CombatHandler implements NodeTickHandler<LeafNode>
 		return true;
 	};
 	
-	public Map<WhiteboardRef, INodeInput> inputSet()
+	public Map<WhiteboardRef, INodeIO> ioSet()
 	{
-		Map<WhiteboardRef, INodeInput> set = new HashMap<>();
-		set.put(TARGET, INodeInput.makeInput((var) -> var.type() == TFObjType.ENT && !var.isSameRef(LocalWhiteboard.SELF), new WhiteboardObjEntity(), LocalWhiteboard.ATTACK_TARGET.displayName()));
+		Map<WhiteboardRef, INodeIO> set = new HashMap<>();
+		set.put(TARGET, NodeInput.makeInput((var) -> var.type() == TFObjType.ENT && !var.isSameRef(LocalWhiteboard.SELF), new WhiteboardObjEntity(), LocalWhiteboard.ATTACK_TARGET.displayName()));
 		addVariables(set);
 		return set;
 	}
 	
-	protected void addVariables(Map<WhiteboardRef, INodeInput> set) { }
+	protected void addVariables(Map<WhiteboardRef, INodeIO> set) { }
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 	{

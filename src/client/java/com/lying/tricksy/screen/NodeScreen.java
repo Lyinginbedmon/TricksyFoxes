@@ -13,9 +13,9 @@ import org.lwjgl.glfw.GLFW;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
-import com.lying.tricksy.entity.ai.node.INodeValue;
+import com.lying.tricksy.api.entity.ai.INodeIO;
+import com.lying.tricksy.api.entity.ai.INodeIOValue;
 import com.lying.tricksy.entity.ai.node.TreeNode;
-import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.NodeRenderUtils.NodeRenderFlags;
@@ -297,7 +297,7 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 		parts.addAll(typeAndSubtype);
 		
 		// Generate parts related to variables
-		List<Pair<WhiteboardRef, Optional<INodeValue>>> sortedVariables = NodeRenderUtils.getSortedVariables(currentNode);
+		List<Pair<WhiteboardRef, Optional<INodeIOValue>>> sortedVariables = NodeRenderUtils.getSortedIOs(currentNode);
 		if(!sortedVariables.isEmpty())
 		{
 			int width = currentNode.width;
@@ -324,14 +324,14 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 	}
 	
 	@Nullable
-	public WhiteboardRef targetInputRef() { return this.targetPart() != null ? this.targetPart().inputRef : null; }
+	public WhiteboardRef targetIORef() { return this.targetPart() != null ? this.targetPart().inputRef : null; }
 	
 	@Nullable
 	public Predicate<WhiteboardRef> targetInputPred()
 	{
 		if(this.targetPart() == null || this.targetPart().type != NodeElement.VARIABLES)
 			return Predicates.alwaysTrue();
-		INodeInput input = currentNode.getSubType().getInputCondition(this.targetPart().inputRef);
+		INodeIO input = currentNode.getSubType().getIOCondition(this.targetPart().inputRef);
 		return input != null ? input.predicate() : Predicates.alwaysTrue();
 	}
 	

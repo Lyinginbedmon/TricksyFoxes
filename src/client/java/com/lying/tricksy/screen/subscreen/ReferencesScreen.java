@@ -81,7 +81,7 @@ public class ReferencesScreen extends NestedScreen<NodeScreen>
 	public void tick()
 	{
 		super.tick();
-		this.createStaticButton.active = parent.currentNode.getSubType().getInputCondition(parent.targetInputRef()).allowStatic();
+		this.createStaticButton.active = parent.currentNode.getSubType().getIOCondition(parent.targetIORef()).allowStatic();
 		this.staticScreen.ifPresent(screen -> screen.tick());
 	}
 	

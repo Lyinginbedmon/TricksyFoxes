@@ -203,13 +203,22 @@ public abstract class Whiteboard<T>
 	
 	public static enum BoardType implements StringIdentifiable
 	{
-		CONSTANT,
-		LOCAL,
-		GLOBAL;
+		CONSTANT(true),
+		LOCAL(false),
+		GLOBAL(true);
+		
+		private final boolean readOnly;
+		
+		private BoardType(boolean isReadOnly)
+		{
+			readOnly = isReadOnly;
+		}
 		
 		public String asString() { return name().toLowerCase(); }
 		
 		public Text translate() { return Text.translatable("board."+Reference.ModInfo.MOD_ID+"."+asString()); }
+		
+		public boolean isReadOnly() { return this.readOnly; }
 		
 		@Nullable
 		public static BoardType fromString(String nameIn)

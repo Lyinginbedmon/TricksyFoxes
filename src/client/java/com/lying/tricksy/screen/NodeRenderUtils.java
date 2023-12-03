@@ -13,10 +13,11 @@ import org.joml.Matrix4f;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxesClient;
-import com.lying.tricksy.entity.ai.node.INodeValue;
-import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
+import com.lying.tricksy.api.entity.ai.INodeIO;
+import com.lying.tricksy.api.entity.ai.INodeIOValue;
+import com.lying.tricksy.api.entity.ai.INodeIO.Type;
+import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.node.TreeNode;
-import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
@@ -124,9 +125,9 @@ public class NodeRenderUtils
 		drawY += 11;
 		if(flags.contains(NodeRenderFlags.VARIABLES))
 		{
-			for(Pair<WhiteboardRef, Optional<INodeValue>> line : getSortedVariables(node))
+			for(Pair<WhiteboardRef, Optional<INodeIOValue>> line : getSortedIOs(node))
 			{
-				INodeInput input = subType.getInputCondition(line.getLeft());
+				INodeIO input = subType.getIOCondition(line.getLeft());
 				if(input == null)
 					continue;
 				
@@ -153,7 +154,7 @@ public class NodeRenderUtils
 		}
 	}
 	
-	public static void renderStatic(INodeValue reference, DrawContext context, TextRenderer textRenderer, int x, int y)
+	public static void renderStatic(INodeIOValue reference, DrawContext context, TextRenderer textRenderer, int x, int y)
 	{
 		Text defaultName = reference.displayName();
 		context.drawText(textRenderer, defaultName, x + (94 - textRenderer.getWidth(defaultName)) / 2, y, 0x808080, false);
@@ -568,23 +569,28 @@ public class NodeRenderUtils
         RenderSystem.disableBlend();
 	}
 	
-	public static List<Pair<WhiteboardRef, Optional<INodeValue>>> getSortedVariables(TreeNode<?> node)
+	public static List<Pair<WhiteboardRef, Optional<INodeIOValue>>> getSortedIOs(TreeNode<?> node)
 	{
-		List<Pair<WhiteboardRef, Optional<INodeValue>>> variablesToDisplay = Lists.newArrayList();
-		Map<WhiteboardRef, INodeInput> variableSet = node.getSubType().inputSet();
+		List<Pair<WhiteboardRef, Optional<INodeIOValue>>> variablesToDisplay = Lists.newArrayList();
+		Map<WhiteboardRef, INodeIO> variableSet = node.getSubType().inputSet();
 		for(WhiteboardRef input : variableSet.keySet())
 		{
-			INodeValue value = node.getInput(input);
+			INodeIOValue value = node.getIO(input);
 			variablesToDisplay.add(new Pair<>(input, value == null ? Optional.empty() : Optional.of(value)));
 		}
 		
 		// Sort variables by input name
 		variablesToDisplay.sort(new Comparator<>()
 		{
-			public int compare(Pair<WhiteboardRef, Optional<INodeValue>> o1, Pair<WhiteboardRef, Optional<INodeValue>> o2)
+			public int compare(Pair<WhiteboardRef, Optional<INodeIOValue>> o1, Pair<WhiteboardRef, Optional<INodeIOValue>> o2)
 			{
-				boolean optional1 = variableSet.get(o1.getLeft()).isOptional();
-				boolean optional2 = variableSet.get(o2.getLeft()).isOptional();
+				INodeIO io1 = variableSet.get(o1.getLeft());
+				INodeIO io2 = variableSet.get(o2.getLeft());
+				if(io1.type() != io2.type())
+					return io1.type() == Type.INPUT ? -1 : 1;
+				
+				boolean optional1 = io1.isOptional();
+				boolean optional2 = io2.isOptional();
 				if(optional1 != optional2)
 					return optional1 && !optional2 ? 1 : !optional1 && optional2 ? -1 : 0;
 				return WhiteboardRef.REF_SORT.compare(o1.getLeft(), o2.getLeft());

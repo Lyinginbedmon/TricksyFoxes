@@ -9,11 +9,12 @@ import org.joml.Vector3f;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ai.INodeIO;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.CombatHandler;
-import com.lying.tricksy.entity.ai.node.handler.INodeInput;
-import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
+import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.node.handler.RangedCombatHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
@@ -78,13 +79,13 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		return set;
 	}
 	
-	private static NodeTickHandler<LeafNode> setAttackTarget()
+	private static INodeTickHandler<LeafNode> setAttackTarget()
 	{
-		return new NodeTickHandler<LeafNode>()
+		return new INodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity()));
+				return Map.of(CommonVariables.TARGET_ENT, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -108,7 +109,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		};
 	}
 	
-	private static NodeTickHandler<LeafNode> meleeAttack()
+	private static INodeTickHandler<LeafNode> meleeAttack()
 	{
 		return new CombatHandler()
 		{
@@ -116,7 +117,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 			{
 				if(tricksy.isInAttackRange(target) && !target.isInvulnerable())
 				{
-					NodeTickHandler.swingHand(tricksy, Hand.MAIN_HAND);
+					INodeTickHandler.swingHand(tricksy, Hand.MAIN_HAND);
 					return tricksy.tryAttack(target) ? Result.SUCCESS : Result.FAILURE;
 				}
 				return Result.FAILURE;
@@ -124,7 +125,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		};
 	}
 	
-	private static NodeTickHandler<LeafNode> potionAttack()
+	private static INodeTickHandler<LeafNode> potionAttack()
 	{
 		return new RangedCombatHandler()
 		{
@@ -153,7 +154,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		};
 	}
 	
-	private static NodeTickHandler<LeafNode> tridentAttack()
+	private static INodeTickHandler<LeafNode> tridentAttack()
 	{
 		return new RangedCombatHandler() 
 		{
@@ -175,7 +176,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 		};
 	}
 	
-	private static NodeTickHandler<LeafNode> bowAttack()
+	private static INodeTickHandler<LeafNode> bowAttack()
 	{
 		return new RangedCombatHandler()
 		{
@@ -183,9 +184,9 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 			/** How long the bow should be drawn */
 			private int drawTicks = 0;
 			
-			protected void addVariables(Map<WhiteboardRef, INodeInput> set)
+			protected void addVariables(Map<WhiteboardRef, INodeIO> set)
 			{
-				set.put(DRAW, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
+				set.put(DRAW, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -218,7 +219,7 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 	}
 	
 	
-	private static NodeTickHandler<LeafNode> crossbowAttack()
+	private static INodeTickHandler<LeafNode> crossbowAttack()
 	{
 		return new RangedCombatHandler()
 		{
@@ -329,13 +330,13 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 	}
 	
 	// FIXME Ensure that tricksy shield actually reduces knockback and speed
-	private static NodeTickHandler<LeafNode> shieldAgainst()
+	private static INodeTickHandler<LeafNode> shieldAgainst()
 	{
-		return new NodeTickHandler<LeafNode>()
+		return new INodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(
+				return Map.of(CommonVariables.TARGET_ENT, NodeInput.makeInput(
 						(var) -> !var.isSameRef(LocalWhiteboard.SELF) && (var.type() == TFObjType.BLOCK || (var.type() == TFObjType.ENT && !var.isFilter())), 
 						new WhiteboardObjEntity(), 
 						LocalWhiteboard.ATTACK_TARGET.displayName()));

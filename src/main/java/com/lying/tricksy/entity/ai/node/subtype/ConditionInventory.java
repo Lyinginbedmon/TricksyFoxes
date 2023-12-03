@@ -8,11 +8,12 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ai.INodeIO;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.ConditionNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.InventoryHandler;
-import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
+import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
@@ -43,18 +44,18 @@ public class ConditionInventory implements ISubtypeGroup<ConditionNode>
 	public Collection<NodeSubType<ConditionNode>> getSubtypes()
 	{
 		List<NodeSubType<ConditionNode>> set = Lists.newArrayList();
-		set.add(new NodeSubType<ConditionNode>(VARIANT_INV_HAS, new NodeTickHandler<ConditionNode>()
+		set.add(new NodeSubType<ConditionNode>(VARIANT_INV_HAS, new INodeTickHandler<ConditionNode>()
 		{
 			public static final WhiteboardRef TILE = CommonVariables.VAR_POS;
 			public static final WhiteboardRef FACE = InventoryHandler.FACE;
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
 			
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
 				return Map.of(
-						TILE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK),
-						FACE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK, new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.DOWN), ConstantsWhiteboard.DIRECTIONS.get(Direction.DOWN).displayName()),
-						FILTER, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
+						TILE, NodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK),
+						FACE, NodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK, new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.DOWN), ConstantsWhiteboard.DIRECTIONS.get(Direction.DOWN).displayName()),
+						FILTER, NodeInput.makeInput(NodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ConditionNode parent)

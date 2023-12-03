@@ -13,9 +13,10 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ai.INodeIOValue;
+import com.lying.tricksy.api.entity.ai.INodeIOValue.StaticValue;
+import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
-import com.lying.tricksy.entity.ai.node.INodeValue.StaticValue;
-import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
@@ -38,6 +39,10 @@ import net.minecraft.util.StringIdentifiable;
  */
 public abstract class TreeNode<N extends TreeNode<?>>
 {
+	public static final String TYPE_KEY = "Type";
+	public static final String SUBTYPE_KEY = "Variant";
+	public static final String IO_KEY = "IO";
+	
 	/** A unique identifier, stored by behaviour trees to reduce unnecessary ticking in large trees by only ticking the running node */
 	@NotNull
 	private final UUID nodeID;
@@ -61,7 +66,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	private List<TreeNode<?>> children = Lists.newArrayList();
 	
 	/** Map of input variable references to corresponding value getters */
-	private Map<WhiteboardRef, Optional<INodeValue>> assignedInputs = new HashMap<>();
+	private Map<WhiteboardRef, Optional<INodeIOValue>> assignedIO = new HashMap<>();
 	
 	/** Temporary storage for tick handler use */
 	public NbtCompound nodeRAM = new NbtCompound();
@@ -164,8 +169,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	public final TreeNode<N> setSubType(Identifier typeIn)
 	{
 		this.subType = typeIn;
-		this.assignedInputs.clear();
-		getSubType().inputSet().keySet().forEach((key) -> this.assignedInputs.put(key, Optional.empty()));
+		this.assignedIO.clear();
+		getSubType().inputSet().keySet().forEach((key) -> this.assignedIO.put(key, Optional.empty()));
 		return this;
 	};
 	
@@ -174,20 +179,20 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** Returns true if any value is assigned to the given input */
 	public final boolean inputAssigned(WhiteboardRef reference)
 	{
-		return assignedInputs.entrySet().stream().anyMatch(entry -> entry.getKey().isSameRef(reference) && entry.getValue().isPresent());
+		return assignedIO.entrySet().stream().anyMatch(entry -> entry.getKey().isSameRef(reference) && entry.getValue().isPresent());
 	}
 	
 	public final TreeNode<N> assignInputRef(WhiteboardRef variable, @Nullable WhiteboardRef value)
 	{
-		return assignInput(variable, new WhiteboardValue(value));
+		return assignIO(variable, new WhiteboardValue(value));
 	}
 	
 	public final TreeNode<N> assignInputStatic(WhiteboardRef variable, @Nullable IWhiteboardObject<?> value)
 	{
-		return assignInput(variable, new StaticValue(value));
+		return assignIO(variable, new StaticValue(value));
 	}
 	
-	public final TreeNode<N> assignInput(WhiteboardRef variable, @Nullable INodeValue value)
+	public final TreeNode<N> assignIO(WhiteboardRef variable, @Nullable INodeIOValue value)
 	{
 		if(WhiteboardRef.findInMap(getSubType().inputSet(), variable) == null)
 		{
@@ -195,17 +200,17 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			return this;
 		}
 		
-		assignedInputs.entrySet().removeIf(input -> input.getKey().isSameRef(variable));
-		assignedInputs.put(variable, value == null ? Optional.empty() : Optional.of(value));
+		assignedIO.entrySet().removeIf(input -> input.getKey().isSameRef(variable));
+		assignedIO.put(variable, value == null ? Optional.empty() : Optional.of(value));
 		return this;
 	}
 	
 	/** Returns the node value assigned to the specified input variable, or null if it is unassigned */
 	@Nullable
-	public final INodeValue getInput(WhiteboardRef reference)
+	public final INodeIOValue getIO(WhiteboardRef reference)
 	{
 		if(inputAssigned(reference))
-			return assignedInputs.entrySet().stream().filter(entry -> entry.getKey().isSameRef(reference)).findFirst().get().getValue().get();
+			return assignedIO.entrySet().stream().filter(entry -> entry.getKey().isSameRef(reference)).findFirst().get().getValue().get();
 		return null;
 	}
 	
@@ -336,7 +341,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	{
 		if(data.contains("Type", NbtElement.STRING_TYPE))
 		{
-			Identifier type = new Identifier(data.getString("Type"));
+			Identifier type = new Identifier(data.getString(TYPE_KEY));
 			NodeType<?> nodeType = TFNodeTypes.getTypeById(type);
 			if(nodeType == null)
 			{
@@ -352,18 +357,11 @@ public abstract class TreeNode<N extends TreeNode<?>>
 				return null;
 			}
 			
-			parent.setSubType(data.contains("Variant", NbtElement.STRING_TYPE) ? new Identifier(data.getString("Variant")) : NodeType.DUMMY_ID);
+			parent.setSubType(data.contains(SUBTYPE_KEY, NbtElement.STRING_TYPE) ? new Identifier(data.getString(SUBTYPE_KEY)) : NodeType.DUMMY_ID);
 			if(data.contains("Variables", NbtElement.LIST_TYPE))
-			{
-				NbtList variables = data.getList("Variables", NbtElement.COMPOUND_TYPE);
-				for(int i=0; i<variables.size(); i++)
-				{
-					NbtCompound nbt = variables.getCompound(i);
-					WhiteboardRef variable = WhiteboardRef.fromNbt(nbt.getCompound("Variable"));
-					INodeValue value = INodeValue.readFromNbt(nbt.getCompound("Value"));
-					parent.assignInput(variable, value);
-				}
-			}
+				loadIOFromList(parent, data.getList("Variables", NbtElement.COMPOUND_TYPE));
+			else if(data.contains(IO_KEY, NbtElement.LIST_TYPE))
+				loadIOFromList(parent, data.getList(IO_KEY, NbtElement.COMPOUND_TYPE));
 			
 			if(data.contains("CustomName", NbtElement.STRING_TYPE))
 			{
@@ -377,7 +375,6 @@ public abstract class TreeNode<N extends TreeNode<?>>
 					TricksyFoxes.LOGGER.warn("Failed to parse tree node custom name {}", (Object)string, (Object)e);
 				}
 			}
-			parent.hideChildren = data.getBoolean("Discrete");
 			
 			NbtList children = data.contains("Children", NbtElement.LIST_TYPE) ? data.getList("Children", NbtElement.COMPOUND_TYPE) : new NbtList();
 			for(int i=0; i<children.size(); i++)
@@ -386,33 +383,58 @@ public abstract class TreeNode<N extends TreeNode<?>>
 				if(child != null && parent.canAddChild())
 					parent.addChild(child);
 			}
+			if(children.size() > 0)
+				parent.hideChildren = data.getBoolean("Discrete");
 			
 			return parent;
 		}
 		return null;
 	}
 	
+	private static void loadIOFromList(TreeNode<?> node, NbtList list)
+	{
+		for(int i=0; i<list.size(); i++)
+		{
+			NbtCompound nbt = list.getCompound(i);
+			WhiteboardRef variable = loadIO(nbt);
+			if(variable == null)
+				continue;
+			INodeIOValue value = INodeIOValue.readFromNbt(nbt.getCompound("Value"));
+			node.assignIO(variable, value);
+		}
+	}
+	
+	@Nullable
+	private static WhiteboardRef loadIO(NbtCompound nbt)
+	{
+		if(nbt.contains("Variable", NbtElement.COMPOUND_TYPE))
+			return WhiteboardRef.fromNbt(nbt.getCompound("Variable"));
+		else if(nbt.contains("IO", NbtElement.COMPOUND_TYPE))
+			return WhiteboardRef.fromNbt(nbt.getCompound("IO"));
+		return null;
+	}
+	
 	public final NbtCompound write(NbtCompound data)
 	{
-		data.putString("Type", this.nodeType.getRegistryName().toString());
+		data.putString(TYPE_KEY, this.nodeType.getRegistryName().toString());
+		data.putString(SUBTYPE_KEY, this.subType.toString());
 		data.putUuid("UUID", this.nodeID);
-		data.putString("Variant", this.subType.toString());
 		
-		if(!assignedInputs.isEmpty())
+		if(!assignedIO.isEmpty())
 		{
 			NbtList variables = new NbtList();
-			assignedInputs.entrySet().forEach((entry) -> 
+			assignedIO.entrySet().forEach((entry) -> 
 			{
 				if(!entry.getValue().isPresent() || entry.getKey() == null)
 					return;
 				
 				NbtCompound nbt = new NbtCompound();
-				nbt.put("Variable", entry.getKey().writeToNbt(new NbtCompound()));
+				nbt.put("IO", entry.getKey().writeToNbt(new NbtCompound()));
 				nbt.put("Value", entry.getValue().get().writeToNbt(new NbtCompound()));
 				
 				variables.add(nbt);
 			});
-			data.put("Variables", variables);
+			data.put(IO_KEY, variables);
 		}
 		
 		if(!children().isEmpty())
@@ -420,12 +442,12 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			NbtList children = new NbtList();
 			children().forEach((child) -> children.add(child.write(new NbtCompound())));
 			data.put("Children", children);
+			
+			data.putBoolean("Discrete", this.hideChildren);
 		}
 		
 		if(hasCustomName())
 			data.putString("CustomName", Text.Serializer.toJson(this.customName));
-		
-		data.putBoolean("Discrete", this.hideChildren);
 		
 		NbtCompound storage = writeToNbt(new NbtCompound());
 		if(!storage.isEmpty())

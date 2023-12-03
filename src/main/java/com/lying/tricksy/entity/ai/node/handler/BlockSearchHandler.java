@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ai.INodeIO;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.subtype.LeafSearch;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
@@ -31,10 +33,10 @@ public class BlockSearchHandler extends GetterHandlerTyped<BlockPos>
 		this.func = function == null ? Optional.empty() : Optional.of(function);
 	}
 	
-	public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
+	public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 	{
 		set.put(CommonVariables.VAR_POS, GetterHandlerTyped.POS_OR_REGION);
-		set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
+		set.put(CommonVariables.VAR_DIS, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)INodeTickHandler.INTERACT_RANGE)));
 	}
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)

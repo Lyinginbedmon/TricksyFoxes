@@ -44,7 +44,7 @@ public class CreateStaticScreen extends NestedScreen<NodeScreen> implements INes
 	{
 		super(parentIn);
 		this.refParent = refParentIn;
-		objType = parentIn.targetInputRef().type();
+		objType = parentIn.targetIORef().type();
 		objPredicate = parentIn.targetInputPred();
 	}
 	
@@ -57,7 +57,7 @@ public class CreateStaticScreen extends NestedScreen<NodeScreen> implements INes
 		
 		addDrawableChild(saveButton = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.save"), (button) -> 
 		{
-			this.parent.currentNode.assignInputStatic(parent.targetInputRef(), getCurrentValue()); 
+			this.parent.currentNode.assignInputStatic(parent.targetIORef(), getCurrentValue()); 
 			this.refParent.closeStatic();
 		}).dimensions(this.width / 2 - 20, (this.height / 2) + 60, 40, 20).build());
 		

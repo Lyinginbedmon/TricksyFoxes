@@ -8,11 +8,12 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ai.INodeIO;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.node.handler.INodeInput;
 import com.lying.tricksy.entity.ai.node.handler.InventoryHandler;
-import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
+import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
@@ -61,11 +62,11 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		add(set, VARIANT_DROP, new NodeTickHandler<LeafNode>()
+		add(set, VARIANT_DROP, new INodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()));
+				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -79,7 +80,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				return Result.SUCCESS;
 			}
 		});
-		add(set, VARIANT_SWAP, new NodeTickHandler<LeafNode>()
+		add(set, VARIANT_SWAP, new INodeTickHandler<LeafNode>()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
@@ -99,7 +100,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		return set;
 	}
 	
-	private static NodeTickHandler<LeafNode> insert()
+	private static INodeTickHandler<LeafNode> insert()
 	{
 		return new InventoryHandler()
 		{
@@ -111,14 +112,14 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
 			public static final WhiteboardRef SLOT = new WhiteboardRef("slot", TFObjType.INT);
 			
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
 				return Map.of(
-						TILE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK && !ref.isFilter()),
-						FACE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK, new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.UP), ConstantsWhiteboard.DIRECTIONS.get(Direction.UP).displayName()),
-						SLOT, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()),
-						LIMIT, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()),
-						FILTER, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
+						TILE, NodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK && !ref.isFilter()),
+						FACE, NodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK, new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.UP), ConstantsWhiteboard.DIRECTIONS.get(Direction.UP).displayName()),
+						SLOT, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()),
+						LIMIT, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()),
+						FILTER, NodeInput.makeInput(NodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -130,7 +131,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				IWhiteboardObject<?> count = getOrDefault(LIMIT, parent, local, global);
 				
 				BlockPos block = value.get();
-				if(!NodeTickHandler.canInteractWithBlock(tricksy, block))
+				if(!INodeTickHandler.canInteractWithBlock(tricksy, block))
 					return Result.FAILURE;
 				
 				ItemStack heldStack = tricksy.getMainHandStack();
@@ -153,7 +154,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 					tile.markDirty();
 				
 				if(tricksy.getRandom().nextInt(20) == 0)
-					NodeTickHandler.activateBlock(block, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
+					INodeTickHandler.activateBlock(block, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
 				tricksy.getLookControl().lookAt(block.getX() + 0.5D, block.getY() + 0.5D, block.getZ() + 0.5D);
 				
 				return insertStack.isEmpty() ? Result.SUCCESS : Result.FAILURE;
@@ -161,7 +162,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		};
 	}
 	
-	private static NodeTickHandler<LeafNode> extract()
+	private static INodeTickHandler<LeafNode> extract()
 	{
 		return new InventoryHandler()
 		{
@@ -171,12 +172,12 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 			public static final WhiteboardRef FACE = InventoryHandler.FACE;
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
 			
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
 				return Map.of(
-						TILE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK && !ref.isFilter()),
-						FACE, INodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK, new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.DOWN), ConstantsWhiteboard.DIRECTIONS.get(Direction.DOWN).displayName()),
-						FILTER, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
+						TILE, NodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK && !ref.isFilter()),
+						FACE, NodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK, new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.DOWN), ConstantsWhiteboard.DIRECTIONS.get(Direction.DOWN).displayName()),
+						FILTER, NodeInput.makeInput(NodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -186,7 +187,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				IWhiteboardObject<ItemStack> filter = getOrDefault(FILTER, parent, local, global).as(TFObjType.ITEM);
 				
 				BlockPos block = value.get();
-				if(!NodeTickHandler.canInteractWithBlock(tricksy, block))
+				if(!INodeTickHandler.canInteractWithBlock(tricksy, block))
 					return Result.FAILURE;
 				
 				World world = tricksy.getWorld();
@@ -234,20 +235,20 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 					tricksy.setStackInHand(Hand.MAIN_HAND, InventoryHandler.mergeStacks(heldStack, extracted));
 					
 					if(tricksy.getRandom().nextInt(20) == 0)
-						NodeTickHandler.activateBlock(block, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
+						INodeTickHandler.activateBlock(block, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
 					return Result.SUCCESS;
 				}
 			}
 		};
 	}
 	
-	private static NodeTickHandler<LeafNode> pickUp()
+	private static INodeTickHandler<LeafNode> pickUp()
 	{
-		return new NodeTickHandler<LeafNode>()
+		return new INodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(CommonVariables.TARGET_ENT, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false)));
+				return Map.of(CommonVariables.TARGET_ENT, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -255,7 +256,7 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
 				if(value.isEmpty())
 					return Result.FAILURE;
-				else if(value.get().getType() != EntityType.ITEM || !NodeTickHandler.canInteractWithEntity(tricksy, value.get()))
+				else if(value.get().getType() != EntityType.ITEM || !INodeTickHandler.canInteractWithEntity(tricksy, value.get()))
 					return Result.FAILURE;
 				
 				ItemEntity itemEnt = (ItemEntity)value.get();
@@ -286,15 +287,15 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		};
 	}
 	
-	private static NodeTickHandler<LeafNode> equip()
+	private static INodeTickHandler<LeafNode> equip()
 	{
-		return new NodeTickHandler<LeafNode>()
+		return new INodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
 			
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(FILTER, INodeInput.makeInput(INodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
+				return Map.of(FILTER, NodeInput.makeInput(NodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -319,13 +320,13 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		};
 	}
 	
-	private static NodeTickHandler<LeafNode> unequip()
+	private static INodeTickHandler<LeafNode> unequip()
 	{
-		return new NodeTickHandler<LeafNode>()
+		return new INodeTickHandler<LeafNode>()
 		{
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()));
+				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)

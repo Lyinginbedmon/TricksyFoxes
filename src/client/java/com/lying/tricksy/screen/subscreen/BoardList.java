@@ -34,7 +34,7 @@ public class BoardList extends ElementListWidget<BoardList.BoardEntry>
 	public void refreshEntries()
 	{
 		this.clearEntries();
-		for(BoardType board : new BoardType[] {BoardType.CONSTANT, BoardType.GLOBAL, BoardType.LOCAL})
+		for(BoardType board : BoardType.values())
 			if(parent.hasValuesFor(board))
 				addEntry(new BoardEntry(board, parent, width));
 	}

@@ -9,13 +9,14 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.node.INodeValue;
-import com.lying.tricksy.entity.ai.node.INodeValue.Type;
-import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
+import com.lying.tricksy.api.entity.ai.INodeIO;
+import com.lying.tricksy.api.entity.ai.INodeIOValue;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
+import com.lying.tricksy.api.entity.ai.INodeIOValue.Type;
+import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.node.handler.INodeInput;
-import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
+import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
@@ -49,13 +50,13 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		add(set, VARIANT_CYCLE, new NodeTickHandler<LeafNode>()
+		add(set, VARIANT_CYCLE, new INodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BOOL).displayName(CommonVariables.translate("to_cycle"));
 			
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(VAR_A, INodeInput.makeInput(INodeInput.anyLocal()));
+				return Map.of(VAR_A, NodeInput.makeInput(NodeInput.anyLocal()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -70,22 +71,22 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 		});
 		add(set, VARIANT_SORT_NEAREST, leafSortNearest());
 		add(set, VARIANT_SORT_SALESMAN, leafSortSalesman());
-		add(set, VARIANT_COPY, new NodeTickHandler<LeafNode>()
+		add(set, VARIANT_COPY, new INodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef COPY = new WhiteboardRef("value_to_copy", TFObjType.BOOL).displayName(CommonVariables.translate("to_copy"));
 			public static final WhiteboardRef DEST = new WhiteboardRef("target_reference", TFObjType.BOOL).displayName(CommonVariables.translate("ref_target"));
 			
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
 				return Map.of(
-						COPY, INodeInput.makeInput(INodeInput.any(), TFObjType.EMPTY.blank(), Text.literal("")),
-						DEST, INodeInput.makeInput((var) -> !var.uncached() && var.boardType() == BoardType.LOCAL));
+						COPY, NodeInput.makeInput(NodeInput.any(), TFObjType.EMPTY.blank(), Text.literal("")),
+						DEST, NodeInput.makeInput((var) -> !var.uncached() && !var.boardType().isReadOnly()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				IWhiteboardObject<?> value = getOrDefault(COPY, parent, local, global);
-				INodeValue targetVal = parent.getInput(DEST);
+				INodeIOValue targetVal = parent.getIO(DEST);
 				WhiteboardRef target = targetVal.type() == Type.WHITEBOARD ? ((WhiteboardValue)targetVal).assignment() : null;
 				if(target == null)
 					return Result.FAILURE;
@@ -104,19 +105,19 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				return Result.SUCCESS;
 			}
 		});
-		add(set, VARIANT_CLEAR, new NodeTickHandler<LeafNode>()
+		add(set, VARIANT_CLEAR, new INodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef DEST = new WhiteboardRef("target_reference", TFObjType.BOOL).displayName(CommonVariables.translate("ref_target"));
 			
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
 				return Map.of(
-						DEST, INodeInput.makeInput((var) -> !var.uncached() && var.boardType() == BoardType.LOCAL));
+						DEST, NodeInput.makeInput((var) -> !var.uncached() && !var.boardType().isReadOnly()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
-				INodeValue targetVal = parent.getInput(DEST);
+				INodeIOValue targetVal = parent.getIO(DEST);
 				if(targetVal.type() != Type.WHITEBOARD)
 					return Result.FAILURE;
 				
@@ -133,13 +134,13 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 		return set;
 	}
 	
-	public static NodeTickHandler<LeafNode> leafSortNearest()
+	public static INodeTickHandler<LeafNode> leafSortNearest()
 	{
 		return new SortHandler()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
-				INodeValue reference = parent.getInput(VAR_A);
+				INodeIOValue reference = parent.getIO(VAR_A);
 				if(reference.type() != Type.WHITEBOARD)
 					return Result.FAILURE;
 				
@@ -184,13 +185,13 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 		};
 	}
 	
-	public static NodeTickHandler<LeafNode> leafSortSalesman()
+	public static INodeTickHandler<LeafNode> leafSortSalesman()
 	{
 		return new SortHandler()
 			{
 				public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 				{
-					INodeValue reference = parent.getInput(VAR_A);
+					INodeIOValue reference = parent.getIO(VAR_A);
 					if(reference.type() != Type.WHITEBOARD)
 						return Result.FAILURE;
 					
@@ -255,15 +256,15 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			};
 	}
 	
-	private static interface SortHandler extends NodeTickHandler<LeafNode>
+	private static interface SortHandler extends INodeTickHandler<LeafNode>
 	{
 		public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BLOCK).displayName(CommonVariables.translate("to_cycle"));
 		
-		public default Map<WhiteboardRef, INodeInput> inputSet()
+		public default Map<WhiteboardRef, INodeIO> ioSet()
 		{
 			return Map.of(
-					VAR_A, INodeInput.makeInput((ref) -> (ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ENT) && ref.boardType() == BoardType.LOCAL),
-					CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
+					VAR_A, NodeInput.makeInput((ref) -> (ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ENT) && ref.boardType() == BoardType.LOCAL),
+					CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
 		}
 		
 		public static Comparator<BlockPos> blockSorter(BlockPos position, BlockPos origin)

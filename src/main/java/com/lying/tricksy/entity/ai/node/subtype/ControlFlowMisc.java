@@ -5,10 +5,10 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.ControlFlowNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.reference.Reference;
@@ -27,7 +27,7 @@ public class ControlFlowMisc implements ISubtypeGroup<ControlFlowNode>
 	public Collection<NodeSubType<ControlFlowNode>> getSubtypes()
 	{
 		List<NodeSubType<ControlFlowNode>> set = Lists.newArrayList();
-		set.add(new NodeSubType<ControlFlowNode>(VARIANT_SEQUENCE, new NodeTickHandler<ControlFlowNode>() 
+		set.add(new NodeSubType<ControlFlowNode>(VARIANT_SEQUENCE, new INodeTickHandler<ControlFlowNode>() 
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ControlFlowNode parent)
 			{
@@ -54,7 +54,7 @@ public class ControlFlowMisc implements ISubtypeGroup<ControlFlowNode>
 				parent.index = 0;
 			}
 		}));
-		set.add(new NodeSubType<ControlFlowNode>(VARIANT_SELECTOR, new NodeTickHandler<ControlFlowNode>() 
+		set.add(new NodeSubType<ControlFlowNode>(VARIANT_SELECTOR, new INodeTickHandler<ControlFlowNode>() 
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ControlFlowNode parent)
 			{
@@ -84,7 +84,7 @@ public class ControlFlowMisc implements ISubtypeGroup<ControlFlowNode>
 				}
 			}
 		}));
-		set.add(new NodeSubType<ControlFlowNode>(VARIANT_REACTIVE, new NodeTickHandler<ControlFlowNode>() 
+		set.add(new NodeSubType<ControlFlowNode>(VARIANT_REACTIVE, new INodeTickHandler<ControlFlowNode>() 
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ControlFlowNode parent)
 			{

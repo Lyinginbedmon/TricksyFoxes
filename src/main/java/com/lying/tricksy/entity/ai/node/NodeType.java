@@ -13,8 +13,8 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
 import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
@@ -31,7 +31,7 @@ import net.minecraft.util.Identifier;
 public class NodeType<M extends TreeNode<?>>
 {
 	public static final Identifier DUMMY_ID = new Identifier(Reference.ModInfo.MOD_ID, "dummy");
-	private final NodeSubType<M> dummy = new NodeSubType<M>(DUMMY_ID, new NodeTickHandler<M>()
+	private final NodeSubType<M> dummy = new NodeSubType<M>(DUMMY_ID, new INodeTickHandler<M>()
 	{
 		public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, M parent)
 		{

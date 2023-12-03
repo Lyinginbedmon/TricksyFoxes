@@ -5,6 +5,8 @@ import java.util.Map;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ai.INodeIO;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.subtype.LeafSearch;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
@@ -36,11 +38,11 @@ public class MatchBlockSearchHandler extends GetterHandlerTyped<BlockPos>
 		super(TFObjType.BLOCK);
 	}
 	
-	public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
+	public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 	{
 		set.put(CommonVariables.VAR_POS, GetterHandlerTyped.POS_OR_REGION);
-		set.put(CommonVariables.VAR_DIS, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)NodeTickHandler.INTERACT_RANGE)));
-		set.put(MATCH, INodeInput.makeInput(ref -> ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ITEM, new WhiteboardObj.Item(new ItemStack(Blocks.STONE))));
+		set.put(CommonVariables.VAR_DIS, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)INodeTickHandler.INTERACT_RANGE)));
+		set.put(MATCH, NodeInput.makeInput(ref -> ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ITEM, new WhiteboardObj.Item(new ItemStack(Blocks.STONE))));
 	}
 	
 	@Override

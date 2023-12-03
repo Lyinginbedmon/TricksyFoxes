@@ -6,10 +6,11 @@ import java.util.Map;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ai.INodeIO;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.handler.GetterHandlerTyped;
 import com.lying.tricksy.entity.ai.node.handler.GetterHandlerUntyped;
-import com.lying.tricksy.entity.ai.node.handler.INodeInput;
+import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
@@ -45,11 +46,11 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 		{
 			private static final WhiteboardRef SUB = new WhiteboardRef("subtract", TFObjType.BOOL).displayName(CommonVariables.translate("subtract"));
 			
-			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
 				set.put(CommonVariables.VAR_A, NUM_OR_POS);
 				set.put(CommonVariables.VAR_B, NUM_OR_POS);
-				set.put(SUB, INodeInput.makeInput(INodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
+				set.put(SUB, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -79,11 +80,11 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 		{
 			private static final WhiteboardRef DIV = new WhiteboardRef("divide", TFObjType.BOOL).displayName(CommonVariables.translate("divide"));
 			
-			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
 				set.put(CommonVariables.VAR_A, NUM_OR_POS);
 				set.put(CommonVariables.VAR_B, NUM_OR_POS);
-				set.put(DIV, INodeInput.makeInput(INodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
+				set.put(DIV, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -124,10 +125,10 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 		});
 		add(set, VARIANT_MOD, new GetterHandlerTyped<Integer>(TFObjType.INT)
 		{
-			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
-				set.put(CommonVariables.VAR_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true)));
-				set.put(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal("4")));
+				set.put(CommonVariables.VAR_A, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true)));
+				set.put(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal("4")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -139,10 +140,10 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 		});
 		add(set, VARIANT_GET_COORD, new GetterHandlerTyped<Integer>(TFObjType.INT)
 		{
-			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
-				set.put(CommonVariables.VAR_POS, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, true)));
-				set.put(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
+				set.put(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, true)));
+				set.put(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -158,11 +159,11 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 			public static final WhiteboardRef Y = new WhiteboardRef("y_coord", TFObjType.INT).displayName(Text.literal("Y"));
 			public static final WhiteboardRef Z = new WhiteboardRef("z_coord", TFObjType.INT).displayName(Text.literal("Z"));
 			
-			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
-				set.put(X, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
-				set.put(Y, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
-				set.put(Z, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
+				set.put(X, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
+				set.put(Y, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
+				set.put(Z, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -175,11 +176,11 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 		});
 		add(set, VARIANT_OFFSET, new GetterHandlerTyped<BlockPos>(TFObjType.BLOCK)
 		{
-			public void addInputVariables(Map<WhiteboardRef, INodeInput> set)
+			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
-				set.put(CommonVariables.VAR_A, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, false)));
-				set.put(CommonVariables.VAR_B, INodeInput.makeInput(INodeInput.ofType(TFObjType.BLOCK, true), new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.NORTH), ConstantsWhiteboard.DIRECTIONS.get(Direction.NORTH).displayName()));
-				set.put(CommonVariables.VAR_NUM, INodeInput.makeInput(INodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(1), Text.literal("1")));
+				set.put(CommonVariables.VAR_A, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
+				set.put(CommonVariables.VAR_B, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, true), new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.NORTH), ConstantsWhiteboard.DIRECTIONS.get(Direction.NORTH).displayName()));
+				set.put(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(1), Text.literal("1")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)

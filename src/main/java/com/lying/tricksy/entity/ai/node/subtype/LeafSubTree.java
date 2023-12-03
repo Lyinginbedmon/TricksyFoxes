@@ -8,14 +8,15 @@ import java.util.function.Function;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.node.INodeValue;
-import com.lying.tricksy.entity.ai.node.INodeValue.StaticValue;
-import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
+import com.lying.tricksy.api.entity.ai.INodeIO;
+import com.lying.tricksy.api.entity.ai.INodeIOValue;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
+import com.lying.tricksy.api.entity.ai.INodeIOValue.StaticValue;
+import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.handler.CombatHandler;
-import com.lying.tricksy.entity.ai.node.handler.INodeInput;
-import com.lying.tricksy.entity.ai.node.handler.NodeTickHandler;
+import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.node.handler.SubTreeHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
@@ -47,78 +48,78 @@ public class LeafSubTree implements ISubtypeGroup<LeafNode>
 		return set;
 	}
 	
-	private static NodeTickHandler<LeafNode> genericCombat()
+	private static INodeTickHandler<LeafNode> genericCombat()
 	{
 		return new SubTreeHandler()
 		{
 			public static final WhiteboardRef TARGET = CombatHandler.TARGET;
 			
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(TARGET, INodeInput.makeInput(INodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity()));
+				return Map.of(TARGET, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity()));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> TreeNode<?> generateSubTree(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
-				INodeValue target;
+				INodeIOValue target;
 				if(parent.inputAssigned(TARGET))
-					target = parent.getInput(TARGET);
+					target = parent.getIO(TARGET);
 				else
 					target = new WhiteboardValue(LocalWhiteboard.ATTACK_TARGET);
 				
 				return TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SELECTOR)
-					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_TRIDENT).assignInput(TARGET, target))
-					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_POTION).assignInput(TARGET, target))
-					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_CROSSBOW).assignInput(TARGET, target))
-					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_BOW).assignInput(TARGET, target))
+					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_TRIDENT).assignIO(TARGET, target))
+					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_POTION).assignIO(TARGET, target))
+					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_CROSSBOW).assignIO(TARGET, target))
+					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_BOW).assignIO(TARGET, target))
 					.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_REACTIVE)
 						.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID(), DecoratorMisc.VARIANT_FORCE_SUCCESS)
-							.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_MELEE).assignInput(TARGET, target)))
+							.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_MELEE).assignIO(TARGET, target)))
 						.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_GOTO)
-							.assignInput(CommonVariables.VAR_POS, target)));
+							.assignIO(CommonVariables.VAR_POS, target)));
 			}
 		};
 	}
 	
-	private static NodeTickHandler<LeafNode> goPickUp()
+	private static INodeTickHandler<LeafNode> goPickUp()
 	{
 		return goAnd(
-				val -> TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafInventory.VARIANT_PICK_UP).assignInput(CommonVariables.TARGET_ENT, val), 
-				(int)NodeTickHandler.INTERACT_RANGE / 2, 
+				val -> TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafInventory.VARIANT_PICK_UP).assignIO(CommonVariables.TARGET_ENT, val), 
+				(int)INodeTickHandler.INTERACT_RANGE / 2, 
 				CommonVariables.TARGET_ENT, 
 				TFObjType.ENT);
 	}
 	
-	private static NodeTickHandler<LeafNode> goBreak()
+	private static INodeTickHandler<LeafNode> goBreak()
 	{
 		return goAnd(
-				val -> TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafInteraction.VARIANT_BREAK_BLOCK).assignInput(CommonVariables.VAR_POS, val), 
-				(int)NodeTickHandler.INTERACT_RANGE - 1, 
+				val -> TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafInteraction.VARIANT_BREAK_BLOCK).assignIO(CommonVariables.VAR_POS, val), 
+				(int)INodeTickHandler.INTERACT_RANGE - 1, 
 				CommonVariables.VAR_POS, 
 				TFObjType.BLOCK);
 	}
 	
-	private static NodeTickHandler<LeafNode> goAnd(Function<INodeValue, TreeNode<?>> action, int distance, WhiteboardRef position, TFObjType<?> type)
+	private static INodeTickHandler<LeafNode> goAnd(Function<INodeIOValue, TreeNode<?>> action, int distance, WhiteboardRef position, TFObjType<?> type)
 	{
 		return new SubTreeHandler()
 		{
 			public final WhiteboardRef TARGET = position;
 			
-			public Map<WhiteboardRef, INodeInput> inputSet()
+			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(TARGET, INodeInput.makeInput(INodeInput.ofType(type, false)));
+				return Map.of(TARGET, NodeInput.makeInput(NodeInput.ofType(type, false)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> TreeNode<?> generateSubTree(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
-				INodeValue target = parent.getInput(TARGET);
+				INodeIOValue target = parent.getIO(TARGET);
 				return TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SELECTOR)
 					.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_REACTIVE)
 						.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID(), DecoratorMisc.VARIANT_INVERTER)
 							.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID(), ConditionMisc.VARIANT_CLOSER_THAN)
-								.assignInput(CommonVariables.VAR_POS_A, target)
-								.assignInput(CommonVariables.VAR_DIS, new StaticValue(new WhiteboardObj.Int(Math.max(1, distance))))))
-						.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_GOTO).assignInput(CommonVariables.VAR_POS, target)))
+								.assignIO(CommonVariables.VAR_POS_A, target)
+								.assignIO(CommonVariables.VAR_DIS, new StaticValue(new WhiteboardObj.Int(Math.max(1, distance))))))
+						.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_GOTO).assignIO(CommonVariables.VAR_POS, target)))
 					.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SEQUENCE)
 						.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_STOP))
 						.addChild(action.apply(target)));

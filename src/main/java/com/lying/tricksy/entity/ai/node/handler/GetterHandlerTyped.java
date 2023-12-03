@@ -3,9 +3,9 @@ package com.lying.tricksy.entity.ai.node.handler;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.api.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.node.INodeValue;
-import com.lying.tricksy.entity.ai.node.INodeValue.Type;
-import com.lying.tricksy.entity.ai.node.INodeValue.WhiteboardValue;
+import com.lying.tricksy.api.entity.ai.INodeIOValue;
+import com.lying.tricksy.api.entity.ai.INodeIOValue.Type;
+import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
@@ -28,7 +28,7 @@ public abstract class GetterHandlerTyped<T> extends GetterHandlerUntyped
 	
 	public <N extends PathAwareEntity & ITricksyMob<?>> Result doTick(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
 	{
-		INodeValue target = parent.getInput(entry);
+		INodeIOValue target = parent.getIO(entry);
 		if(target.type() != Type.WHITEBOARD)
 			return Result.FAILURE;
 		WhiteboardRef dest = ((WhiteboardValue)target).assignment();
