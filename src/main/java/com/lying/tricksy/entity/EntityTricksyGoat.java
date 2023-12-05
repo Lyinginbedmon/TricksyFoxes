@@ -80,6 +80,8 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 	
 	public void setTreeSleeping(boolean var) { }
 	
+	public int getDefaultColor() { return 9647415; }
+	
 	public boolean hasLeftHorn() { return getDataTracker().get(LEFT_HORN).booleanValue(); }
 	
 	public boolean hasRightHorn() { return getDataTracker().get(RIGHT_HORN).booleanValue(); }

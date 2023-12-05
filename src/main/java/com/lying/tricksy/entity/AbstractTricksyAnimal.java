@@ -218,7 +218,9 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		behaviourTree = BehaviourTree.create(data);
 	}
 	
-	public int getColor() { return getDataTracker().get(COLOR).isPresent() ? getDataTracker().get(COLOR).getAsInt() : 12779520; }
+	public int getColor() { return getDataTracker().get(COLOR).isPresent() ? getDataTracker().get(COLOR).getAsInt() : getDefaultColor(); }
+	
+	public abstract int getDefaultColor();
 	
 	public boolean hasCustomer() { return this.customer != null; }
 	

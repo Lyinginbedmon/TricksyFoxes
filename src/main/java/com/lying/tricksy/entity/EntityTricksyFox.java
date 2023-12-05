@@ -89,6 +89,8 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 	
 	public Type getVariant() { return Type.fromId(this.dataTracker.get(TYPE)); }
 	
+	public int getDefaultColor() { return 12779520; }
+	
 	@Nullable
 	protected SoundEvent getAmbientSound()
 	{
