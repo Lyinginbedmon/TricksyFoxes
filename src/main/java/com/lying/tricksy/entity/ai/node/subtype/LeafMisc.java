@@ -50,7 +50,6 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -101,6 +100,8 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 		set.add(new NodeSubType<LeafNode>(VARIANT_WANDER, leafWander()));
 		set.add(new NodeSubType<LeafNode>(VARIANT_SLEEP, new INodeTickHandler<LeafNode>()
 		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy) { return Reference.Values.TICKS_PER_SECOND; }
+			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				if(!parent.isRunning())
@@ -170,9 +171,9 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 					public List<MutableText> fullDescription()
 					{
 						List<MutableText> list = Lists.newArrayList();
-						MutableText exclusivity = Text.literal("Exclusive to ").append(TFEntityTypes.TRICKSY_FOX.getName()).styled(style -> style.withBold(true).withColor(Formatting.GOLD));
-						list.add(exclusivity);
+						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_FOX.getName()));
 						list.addAll(super.fullDescription());
+						list.add(cooldownDesc(Text.translatable("info."+Reference.ModInfo.MOD_ID+".fox_pray_cooldown")));
 						return list;
 					}
 				});
@@ -181,11 +182,6 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 					private static final int MIN_RAM_DISTANCE = 4;
 					private static final int MAX_RAM_DISTANCE = 7;
 					private static final TargetPredicate RAM_TARGET_PREDICATE = TargetPredicate.createAttackable().setPredicate(entity -> !entity.getType().equals(EntityType.GOAT) && entity.getWorld().getWorldBorder().contains(entity.getBoundingBox()));
-					
-					public Map<WhiteboardRef, INodeIO> ioSet()
-					{
-						return Map.of(CommonVariables.TARGET_ENT, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false)));
-					}
 					
 					public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
 					{
@@ -199,6 +195,11 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 								return UniformIntProvider.create(600, 6000).get(rand);
 						}
 						return UniformIntProvider.create(6000, 60000).get(rand);
+					}
+					
+					public Map<WhiteboardRef, INodeIO> ioSet()
+					{
+						return Map.of(CommonVariables.TARGET_ENT, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false)));
 					}
 					
 					public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -304,11 +305,9 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 					public List<MutableText> fullDescription()
 					{
 						List<MutableText> list = Lists.newArrayList();
-						MutableText exclusivity = Text.literal("Exclusive to ").append(TFEntityTypes.TRICKSY_GOAT.getName()).styled(style -> style.withBold(true).withColor(Formatting.GOLD));
-						MutableText cooldown = Text.literal("Cooldown: "+"30-300 seconds, 5-15 seconds for screaming").styled(style -> style.withColor(Formatting.GRAY));
-						list.add(exclusivity);
+						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_GOAT.getName()));
 						list.addAll(super.fullDescription());
-						list.add(cooldown);
+						list.add(cooldownDesc(Text.translatable("info."+Reference.ModInfo.MOD_ID+".goat_ram_cooldown")));
 						return list;
 					}
 				});

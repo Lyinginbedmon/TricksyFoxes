@@ -38,7 +38,7 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
 	{
 		if(ItemScripture.shouldOverruleInvalid(stack))
-			tooltip.add(Text.literal("Will overrule next invalid mob check"));
+			tooltip.add(Text.translatable(getTranslationKey()+".tooltip_overrule"));
 		if(hasTree(stack))
 		{
 			if(!stack.getNbt().contains("Size", NbtElement.INT_TYPE))

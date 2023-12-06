@@ -11,6 +11,7 @@ import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.DecoratorNode;
+import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
@@ -35,6 +36,7 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 	public static final Identifier VARIANT_RETRY = ISubtypeGroup.variant("retry");
 	public static final Identifier VARIANT_FOR_EACH = ISubtypeGroup.variant("for_each");
 	public static final Identifier VARIANT_DO_ONCE = ISubtypeGroup.variant("do_once");
+	public static final Identifier VARIANT_WAIT_COOL = ISubtypeGroup.variant("wait_for_cooldown");
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "decorator_misc"); }
 
@@ -177,6 +179,28 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 					return result;
 				}
 				return Result.RUNNING;
+			}
+		}));
+		set.add(new NodeSubType<DecoratorNode>(VARIANT_WAIT_COOL, new INodeTickHandler<DecoratorNode>()
+		{
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, DecoratorNode parent)
+			{
+				if(isCoolingDownRecursive(parent.child(), local))
+					return Result.RUNNING;
+				
+				return parent.child().tick(tricksy, local, global);
+			}
+			
+			private boolean isCoolingDownRecursive(TreeNode<?> node, LocalWhiteboard<?> local)
+			{
+				if(local.isNodeCoolingDown(node.getSubType()))
+					return true;
+				
+				if(!node.children().isEmpty())
+					if(node.children().stream().anyMatch(child -> isCoolingDownRecursive(child, local)))
+						return true;
+				
+				return false;
 			}
 		}));
 		return set;

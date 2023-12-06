@@ -136,5 +136,7 @@ public class NodeStatusLog
 			log.setRight(data.getInt("Ticks"));
 			return log;
 		}
+		
+		public boolean onCooldown() { return this.isCold; }
 	}
 }

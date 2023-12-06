@@ -223,8 +223,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		NodeSubType<N> subType = nodeType.getSubType(this.subType);
 		if(local.isNodeCoolingDown(subType))
 		{
-			getLog().logStatus(getID(), Result.RUNNING);
-			return Result.RUNNING;
+			getLog().logCold(getID());
+			return Result.FAILURE;
 		}
 		
 		if(this.lastResult.isEnd())
@@ -240,8 +240,10 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			if(result.isEnd())
 			{
 				subType.onEnd(tricksy, (N)this);
-				if(subType.hasCooldown())
-					local.setNodeCooldown(subType, subType.cooldown(tricksy));
+				
+				int cooldown = subType.cooldown(tricksy);
+				if(cooldown > 0)
+					local.setNodeCooldown(subType, cooldown);
 			}
 		}
 		catch(Exception e) { }

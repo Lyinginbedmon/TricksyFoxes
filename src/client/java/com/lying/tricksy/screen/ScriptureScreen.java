@@ -12,8 +12,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec2f;
 
-// TODO Implement translation for overrule button & tooltip
-
 public class ScriptureScreen extends HandledScreen<ScriptureScreenHandler>
 {
 	private Vec2f position = Vec2f.ZERO;
@@ -32,12 +30,12 @@ public class ScriptureScreen extends HandledScreen<ScriptureScreenHandler>
 	{
 		position = new Vec2f(-this.width / 4, -this.height / 4);
 		
-		addDrawableChild(overrule = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.reset"), (button) -> 
+		addDrawableChild(overrule = ButtonWidget.builder(Text.empty(), (button) -> 
 		{
 			getScreenHandler().toggleOverrule();
 			ToggleScriptureOverrulePacket.send(client.player, getScreenHandler().shouldOverrule());
 		}).dimensions(this.width - 84, this.height - 20, 80, 16).build());
-		overrule.setTooltip(Tooltip.of(Text.literal("Determines the result when a mob is given a scripture it cannot follow")));
+		overrule.setTooltip(Tooltip.of(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".scripture_screen.paste.desc")));
 	}
 	
 	public boolean shouldPause() { return true; }
@@ -76,7 +74,9 @@ public class ScriptureScreen extends HandledScreen<ScriptureScreenHandler>
 		super.handledScreenTick();
 		ticksOpen++;
 		
-		overrule.setMessage(getScreenHandler().shouldOverrule() ? Text.literal("Permit") : Text.literal("Refuse"));
+		overrule.setMessage(getScreenHandler().shouldOverrule() ? 
+				Text.translatable("gui."+Reference.ModInfo.MOD_ID+".scripture_screen.paste.force") : 
+				Text.translatable("gui."+Reference.ModInfo.MOD_ID+".scripture_screen.paste.prevent"));
 	}
 	
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)

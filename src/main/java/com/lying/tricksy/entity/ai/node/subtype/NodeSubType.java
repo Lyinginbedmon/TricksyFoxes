@@ -13,11 +13,13 @@ import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
 /** Contains the method and data pertaining to a given node subtype */
@@ -42,8 +44,6 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public List<MutableText> fullDescription() { return List.of(description()); }
 	
-	public boolean hasCooldown() { return tickFunc.hasCooldown(); }
-	
 	public <T extends PathAwareEntity & ITricksyMob<?>> int cooldown(T tricksy) { return tickFunc.getCooldown(tricksy); }
 	
 	public Map<WhiteboardRef, INodeIO> inputSet(){ return tickFunc.ioSet(); }
@@ -66,5 +66,15 @@ public class NodeSubType<M extends TreeNode<?>>
 	public INodeIO getIOCondition(WhiteboardRef reference)
 	{
 		return tickFunc.ioCondition(reference);
+	}
+	
+	public static MutableText exclusivityDesc(Text descIn)
+	{
+		return Text.translatable("info."+Reference.ModInfo.MOD_ID+".node_exclusivity", descIn).styled(style -> style.withBold(true).withColor(Formatting.GOLD));
+	}
+	
+	public static MutableText cooldownDesc(Text descIn)
+	{
+		return Text.translatable("info."+Reference.ModInfo.MOD_ID+".node_cooldown", descIn).styled(style -> style.withColor(Formatting.GRAY));
 	}
 }

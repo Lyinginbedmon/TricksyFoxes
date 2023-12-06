@@ -32,6 +32,7 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
@@ -245,20 +246,24 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 	@SuppressWarnings("deprecation")
 	private void renderPartTooltip(List<MutableText> desc, DrawContext context, final int y)
 	{
+		List<OrderedText> lines = Lists.newArrayList();
+		for(MutableText line : desc)
+			lines.addAll(textRenderer.wrapLines(line, 170));
+		
 		int padding = 4;
 		
-		int tooltipHeight = (textRenderer.fontHeight * desc.size() + desc.size() - 1) + padding;
+		int tooltipHeight = (textRenderer.fontHeight * lines.size() + lines.size() - 1) + padding;
 		int drawY = Math.min(this.height - tooltipHeight - 2, y);
 		
 		int maxWidth = 0;
-		for(MutableText text : desc)
+		for(OrderedText text : lines)
 			maxWidth = Math.max(maxWidth, textRenderer.getWidth(text));
 		int tooltipWidth = maxWidth + padding;
 		
 		context.draw(() -> TooltipBackgroundRenderer.render(context, (this.width - tooltipWidth) / 2, drawY - (padding / 2), tooltipWidth, tooltipHeight, 0));
 		
 		int textY = drawY;
-		for(MutableText text : desc)
+		for(OrderedText text : lines)
 		{
 			int width = textRenderer.getWidth(text);
 			context.drawText(textRenderer, text, (this.width - width) / 2, textY, -1, false);
