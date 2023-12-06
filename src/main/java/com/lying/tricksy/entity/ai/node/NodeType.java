@@ -24,6 +24,7 @@ import com.lying.tricksy.utility.TricksyUtils;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -78,8 +79,8 @@ public class NodeType<M extends TreeNode<?>>
 	public Identifier flowerTexture() { return this.flowerTexture; }
 	
 	public Text translatedName() { return Text.translatable("node."+registryName.getNamespace()+"."+registryName.getPath()); }
-
-	public Text description() { return Text.translatable("node."+registryName.getNamespace()+"."+registryName.getPath()+".desc"); }
+	
+	public MutableText description() { return Text.translatable("node."+registryName.getNamespace()+"."+registryName.getPath()+".desc"); }
 	
 	public final M create(UUID uuidIn) { return create(uuidIn, new NbtCompound()); }
 	

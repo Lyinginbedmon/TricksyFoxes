@@ -31,6 +31,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
@@ -223,10 +224,10 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 			switch(this.targetPart().type)
 			{
 				case TYPE:
-					renderPartTooltip(currentNode.getType().description(), context, currentNode.screenY + currentNode.height + 20);
+					renderPartTooltip(List.of(currentNode.getType().description()), context, currentNode.screenY + currentNode.height + 20);
 					break;
 				case SUBTYPE:
-					renderPartTooltip(currentNode.getSubType().description(), context, currentNode.screenY + currentNode.height + 20);
+					renderPartTooltip(currentNode.getSubType().fullDescription(), context, currentNode.screenY + currentNode.height + 20);
 					break;
 				case VARIABLES:
 					break;
@@ -242,18 +243,27 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 	}
 	
 	@SuppressWarnings("deprecation")
-	private void renderPartTooltip(Text desc, DrawContext context, final int y)
+	private void renderPartTooltip(List<MutableText> desc, DrawContext context, final int y)
 	{
 		int padding = 4;
 		
-		int tooltipHeight = textRenderer.fontHeight + padding;
+		int tooltipHeight = (textRenderer.fontHeight * desc.size() + desc.size() - 1) + padding;
 		int drawY = Math.min(this.height - tooltipHeight - 2, y);
 		
-		int width = textRenderer.getWidth(desc);
-		int tooltipWidth = width + padding;
+		int maxWidth = 0;
+		for(MutableText text : desc)
+			maxWidth = Math.max(maxWidth, textRenderer.getWidth(text));
+		int tooltipWidth = maxWidth + padding;
 		
 		context.draw(() -> TooltipBackgroundRenderer.render(context, (this.width - tooltipWidth) / 2, drawY - (padding / 2), tooltipWidth, tooltipHeight, 0));
-		context.drawText(textRenderer, desc, (this.width - width) / 2, drawY, -1, false);
+		
+		int textY = drawY;
+		for(MutableText text : desc)
+		{
+			int width = textRenderer.getWidth(text);
+			context.drawText(textRenderer, text, (this.width - width) / 2, textY, -1, false);
+			textY += textRenderer.fontHeight + 1;
+		}
 	}
 	
 	protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY)

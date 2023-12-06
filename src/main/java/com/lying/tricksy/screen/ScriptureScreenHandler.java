@@ -16,12 +16,16 @@ import net.minecraft.screen.ScreenHandler;
 public class ScriptureScreenHandler extends ScreenHandler
 {
 	private TreeNode<?> root;
+	private boolean shouldOverrule = false;
 	
 	public ScriptureScreenHandler(int syncId, ItemStack stack)
 	{
 		super(TFScreenHandlerTypes.SCRIPTURE_SCREEN_HANDLER, syncId);
 		if(stack != null)
+		{
 			root = ItemScripture.getTree(stack).root();
+			shouldOverrule = ItemScripture.shouldOverruleInvalid(stack);
+		}
 	}
 	
 	public ItemStack quickMove(PlayerEntity var1, int var2) { return null; }
@@ -34,4 +38,8 @@ public class ScriptureScreenHandler extends ScreenHandler
 	{
 		this.root = ItemScripture.getTree(stack).root();
 	}
+	
+	public boolean shouldOverrule() { return this.shouldOverrule; }
+	
+	public void toggleOverrule() { this.shouldOverrule = !this.shouldOverrule; }
 }

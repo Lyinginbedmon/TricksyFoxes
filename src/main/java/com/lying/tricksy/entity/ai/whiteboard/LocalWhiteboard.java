@@ -3,6 +3,7 @@ package com.lying.tricksy.entity.ai.whiteboard;
 import java.util.function.Function;
 
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
@@ -35,6 +36,7 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 	
 	private int attackCooldown = 0;
 	private ItemCooldownManager itemCooldowns = new ItemCooldownManager();
+	private NodeCooldownManager specialCooldowns = new NodeCooldownManager();
 	
 	public LocalWhiteboard(T tricksyIn)
 	{
@@ -72,6 +74,7 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 		if(attackCooldown > 0)
 			attackCooldown = Math.max(0, attackCooldown - 1);
 		itemCooldowns.update();
+		specialCooldowns.update();
 	}
 	
 	public boolean canAttack() { return attackCooldown == 0; }
@@ -86,5 +89,9 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 		this.itemCooldowns.set(item, var);
 	}
 	
-	public boolean isCoolingDown(net.minecraft.item.Item item) { return item == Items.AIR ? false : this.itemCooldowns.isCoolingDown(item); }
+	public boolean isItemCoolingDown(net.minecraft.item.Item item) { return item == Items.AIR ? false : this.itemCooldowns.isCoolingDown(item); }
+	
+	public void setNodeCooldown(NodeSubType<?> type, int duration) { this.specialCooldowns.putOnCooldown(type, duration); }
+	
+	public boolean isNodeCoolingDown(NodeSubType<?> type) { return this.specialCooldowns.isOnCooldown(type); }
 }

@@ -62,7 +62,7 @@ public class SubTypeList extends ElementListWidget<SubTypeList.SubTypeEntry>
 		
 		Map<String, NodeSubType<?>> subtypeMap = new HashMap<>();
 		List<String> names = Lists.newArrayList();
-		group.getSubtypes().forEach((subtype) -> 
+		group.getSubtypesFor(parent.getScreenHandler().getTricksyType()).forEach((subtype) -> 
 		{
 			String name = subtype.translatedName().getString();
 			subtypeMap.put(name, subtype);

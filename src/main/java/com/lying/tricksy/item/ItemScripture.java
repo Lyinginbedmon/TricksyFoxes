@@ -6,11 +6,13 @@ import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
+import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.network.SyncScriptureScreenPacket;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.ScriptureScreenHandler;
 
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -35,6 +37,8 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 	
 	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
 	{
+		if(ItemScripture.shouldOverruleInvalid(stack))
+			tooltip.add(Text.literal("Will overrule next invalid mob check"));
 		if(hasTree(stack))
 		{
 			if(!stack.getNbt().contains("Size", NbtElement.INT_TYPE))
@@ -66,7 +70,16 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 		{
 			if(tricksy.isSage(user) && hasTree(stack))
 			{
+				EntityType<?> entityType = tricksy.getType();
+				BehaviourTree nextTree = getTree(stack);
+				if(nextTree == null || (!doesNodeAcceptRecursive(nextTree.root(), entityType) && !shouldOverruleInvalid(stack)))
+				{
+					user.sendMessage(Text.translatable("item."+Reference.ModInfo.MOD_ID+".scripture.paste_fail", tricksy.getDisplayName()), true);
+					return ActionResult.FAIL;
+				}
+				
 				user.sendMessage(Text.translatable("item."+Reference.ModInfo.MOD_ID+".scripture.paste", tricksy.getDisplayName()), true);
+				setOverrule(stack, false);
 				tricksy.setBehaviourTree(stack.getOrCreateSubNbt("Tree"));
 				return ActionResult.success(user.getWorld().isClient());
 			}
@@ -127,5 +140,35 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 		nbt.put("Tree", obj.storeInNbt());
 		nbt.putBoolean("HasCopied", obj != null && obj.root() != null);
 		stack.setNbt(nbt);
+	}
+	
+	public static boolean shouldOverruleInvalid(ItemStack stack)
+	{
+		return stack.getOrCreateNbt().getBoolean("Overrule");
+	}
+	
+	public static void setOverrule(ItemStack stack, boolean bool)
+	{
+		NbtCompound nbt = stack.getOrCreateNbt();
+		nbt.putBoolean("Overrule", bool);
+		stack.setNbt(nbt);
+	}
+	
+	public static boolean doesNodeAcceptRecursive(TreeNode<?> node, EntityType<?> type)
+	{
+		if(!doesNodeAccept(node, type))
+			return false;
+		
+		if(node.hasChildren())
+			for(TreeNode<?> child : node.children())
+				if(!doesNodeAcceptRecursive(child, type))
+					return false;
+		
+		return true;
+	}
+	
+	public static boolean doesNodeAccept(TreeNode<?> node, EntityType<?> type)
+	{
+		return node.getSubType().isValidFor(type);
 	}
 }

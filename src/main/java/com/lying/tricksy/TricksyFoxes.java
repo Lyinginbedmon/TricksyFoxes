@@ -22,6 +22,7 @@ import com.lying.tricksy.network.OpenTreeScreenReceiver;
 import com.lying.tricksy.network.RemoveUserReceiver;
 import com.lying.tricksy.network.SaveTreeReceiver;
 import com.lying.tricksy.network.TFPacketHandler;
+import com.lying.tricksy.network.ToggleScriptureOverruleReceiver;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.ServerBus;
 
@@ -60,5 +61,6 @@ public class TricksyFoxes implements ModInitializer
 		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.DELETE_REF_ID, new DeleteReferenceReceiver());
 		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.OPEN_TREE_ID, new OpenTreeScreenReceiver());
 		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.SAVE_TREE_ID, new SaveTreeReceiver());
+		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.TOGGLE_SCRIPTURE_ID, new ToggleScriptureOverruleReceiver());
 	}
 }

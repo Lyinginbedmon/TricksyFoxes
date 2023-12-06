@@ -10,7 +10,6 @@ import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
 import com.lying.tricksy.entity.ai.NodeStatusLog.Log;
 import com.lying.tricksy.entity.ai.node.TreeNode;
-import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.screen.NodeRenderUtils.NodeRenderFlags;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -120,12 +119,12 @@ public class PrescientCandleScreen extends HandledScreen<PrescientCandleScreenHa
 				return;
 			
 			Log latest = latestLog.getLog(id);
-			Result result = latest.getLeft();
 			int iconX = node.screenX + node.width + 2;
 			int iconY = node.screenY + (node.height - 16) / 2;
-			
+			// TODO Swap texture if log indicates cooldown in progress
+			Identifier texture = latest.getLeft().texture();
 			int alpha = (int)(((float)latest.getRight() / (float)Log.DURATION) * 255F);
-			renderTransparentIcon(result.texture(), iconX, iconY, alpha, context);
+			renderTransparentIcon(texture, iconX, iconY, alpha, context);
 		});
 	}
 	

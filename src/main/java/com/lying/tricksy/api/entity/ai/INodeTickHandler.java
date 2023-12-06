@@ -96,6 +96,10 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 		return false;
 	}
 	
+	public default boolean hasCooldown() { return false; }
+	
+	public default <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy) { return 0; }
+	
 	/** Returns the value associated with the given input by the given parent node, or its default value if it is optional */
 	@Nullable
 	public default IWhiteboardObject<?> getOrDefault(WhiteboardRef input, M parent, LocalWhiteboard<?> local, GlobalWhiteboard global)

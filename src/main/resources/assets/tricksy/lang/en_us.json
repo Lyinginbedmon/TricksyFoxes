@@ -317,6 +317,7 @@
 	"item.tricksy.prescient_note.give_value.global": "Value added to the sage's whiteboard",
 	"item.tricksy.scripture.copy": "%s now details the behaviour of %s",
 	"item.tricksy.scripture.paste": "%s will now follow this doctrine",
+	"item.tricksy.scripture.paste_fail": "%s doesn't understand this doctrine",
 	"sound.tricksy.whiteboard_updated": "Whiteboard updated",
 	"sound.tricksy.tricksy_enlightened": "Mob enlightened",
 	"gui.tricksy.tree_screen.reset": "Reset",

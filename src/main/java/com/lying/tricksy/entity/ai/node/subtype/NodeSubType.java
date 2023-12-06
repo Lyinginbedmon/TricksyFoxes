@@ -1,5 +1,6 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
+import java.util.List;
 import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +14,9 @@ import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -31,15 +34,23 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public Identifier getRegistryName() { return this.registryName; }
 	
+	public boolean isValidFor(EntityType<?> typeIn) { return true; }
+	
 	public Text translatedName() { return Text.translatable("variant."+registryName.getNamespace()+"."+registryName.getPath()); }
 	
-	public Text description() { return Text.translatable("variant."+registryName.getNamespace()+"."+registryName.getPath()+".desc"); }
+	public MutableText description() { return Text.translatable("variant."+registryName.getNamespace()+"."+registryName.getPath()+".desc"); }
+	
+	public List<MutableText> fullDescription() { return List.of(description()); }
+	
+	public boolean hasCooldown() { return tickFunc.hasCooldown(); }
+	
+	public <T extends PathAwareEntity & ITricksyMob<?>> int cooldown(T tricksy) { return tickFunc.getCooldown(tricksy); }
 	
 	public Map<WhiteboardRef, INodeIO> inputSet(){ return tickFunc.ioSet(); }
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, M parent)
 	{
-		if(!tickFunc.inputsSufficient(parent))
+		if(!tickFunc.inputsSufficient(parent) || !isValidFor(tricksy.getType()))
 			return Result.FAILURE;
 		
 		return tickFunc.doTick(tricksy, local, global, parent);

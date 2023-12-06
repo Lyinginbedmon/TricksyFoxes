@@ -38,9 +38,14 @@ public class NodeStatusLog
 		dead.forEach(id -> log.remove(id));
 	}
 	
+	public void logCold(UUID idIn)
+	{
+		putStatus(idIn, new Log());
+	}
+	
 	public void logStatus(UUID idIn, Result resultIn)
 	{
-		putStatus(idIn, new Log(resultIn));
+		putStatus(idIn, new Log(resultIn, false));
 	}
 	
 	protected void putStatus(UUID idIn, Log logIn)
@@ -104,22 +109,30 @@ public class NodeStatusLog
 	public static class Log extends Pair<Result, Integer>
 	{
 		public static final int DURATION = Reference.Values.TICKS_PER_SECOND;
+		private final boolean isCold;
 		
-		public Log(Result resultIn)
+		public Log()
+		{
+			this(Result.FAILURE, true);
+		}
+		
+		public Log(Result resultIn, boolean isCold)
 		{
 			super(resultIn, DURATION);
+			this.isCold = isCold;
 		}
 		
 		public NbtCompound toNbt(NbtCompound data)
 		{
 			data.putString("Value", getLeft().asString());
+			data.putBoolean("Cold", isCold);
 			data.putInt("Ticks", getRight());
 			return data;
 		}
 		
 		public static Log fromNbt(NbtCompound data)
 		{
-			Log log = new Log(Result.fromString(data.getString("Value")));
+			Log log = new Log(Result.fromString(data.getString("Value")), data.getBoolean("Cold"));
 			log.setRight(data.getInt("Ticks"));
 			return log;
 		}

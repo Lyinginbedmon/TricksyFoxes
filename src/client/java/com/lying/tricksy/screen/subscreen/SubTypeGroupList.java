@@ -16,6 +16,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.widget.ElementListWidget;
+import net.minecraft.entity.EntityType;
 
 public class SubTypeGroupList extends ElementListWidget<SubTypeGroupList.GroupEntry>
 {
@@ -33,10 +34,14 @@ public class SubTypeGroupList extends ElementListWidget<SubTypeGroupList.GroupEn
 		this.clearEntries();
 		if(type.groups().size() > 1)
 		{
+			EntityType<?> entityType = parent.parent.getScreenHandler().getTricksyType();
 			Map<String, ISubtypeGroup<?>> groupMap = new HashMap<>();
 			List<String> names = Lists.newArrayList();
 			type.groups().forEach((group) -> 
 			{
+				if(group.getSubtypesFor(entityType).isEmpty())
+					return;
+				
 				String name = group.displayName().getString();
 				groupMap.put(name, group);
 				names.add(name);

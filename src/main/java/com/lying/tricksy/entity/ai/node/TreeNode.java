@@ -174,7 +174,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		return this;
 	};
 	
-	public final NodeSubType<?> getSubType() { return getType().getSubType(this.subType); }
+	public final NodeSubType<N> getSubType() { return nodeType.getSubType(this.subType); }
 	
 	/** Returns true if any value is assigned to the given input */
 	public final boolean inputAssigned(WhiteboardRef reference)
@@ -220,6 +220,13 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		if(!isRunnable())
 			return this.lastResult = Result.FAILURE;
 		
+		NodeSubType<N> subType = nodeType.getSubType(this.subType);
+		if(local.isNodeCoolingDown(subType))
+		{
+			getLog().logStatus(getID(), Result.RUNNING);
+			return Result.RUNNING;
+		}
+		
 		if(this.lastResult.isEnd())
 			this.ticksRunning = 0;
 		else
@@ -229,14 +236,17 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		Result result = Result.FAILURE;
 		try
 		{
-			NodeSubType<N> subType = nodeType.getSubType(this.subType);
 			result = subType.call(tricksy, local, global, (N)this);
 			if(result.isEnd())
+			{
 				subType.onEnd(tricksy, (N)this);
+				if(subType.hasCooldown())
+					local.setNodeCooldown(subType, subType.cooldown(tricksy));
+			}
 		}
 		catch(Exception e) { }
-		getLog().logStatus(getID(), result);
 		
+		getLog().logStatus(getID(), result);
 		return this.lastResult = result;
 	}
 	

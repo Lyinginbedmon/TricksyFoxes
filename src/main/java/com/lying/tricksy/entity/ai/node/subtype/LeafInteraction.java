@@ -116,7 +116,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 				if(value == null || value.isEmpty() || UNUSABLES.contains(tricksy.getMainHandStack().getItem()))
 					return Result.FAILURE;
 				
-				if(local.isCoolingDown(tricksy.getMainHandStack().getItem()))
+				if(local.isItemCoolingDown(tricksy.getMainHandStack().getItem()))
 					return Result.RUNNING;
 				
 				ActionResult result = ActionResult.FAIL;
@@ -159,7 +159,7 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 				if(!INodeTickHandler.canInteractWithBlock(tricksy, blockPos.get()) || blockPos.isEmpty())
 					return Result.FAILURE;
 				
-				if(local.isCoolingDown(tricksy.getMainHandStack().getItem()))
+				if(local.isItemCoolingDown(tricksy.getMainHandStack().getItem()))
 					return Result.RUNNING;
 				
 				ActionResult result = INodeTickHandler.activateBlock(blockPos.get(), (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);

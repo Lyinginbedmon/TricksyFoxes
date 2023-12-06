@@ -19,6 +19,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFScreenHandlerTypes;
 
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -117,6 +118,9 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 		this.tricksyMob = mobIn;
 		resetTree();
 	}
+	
+	@Nullable
+	public EntityType<?> getTricksyType() { return this.tricksyMob != null ? this.tricksyMob.getType() : null; }
 	
 	public void setUUID(UUID idIn) { this.tricksyID = idIn; }
 	

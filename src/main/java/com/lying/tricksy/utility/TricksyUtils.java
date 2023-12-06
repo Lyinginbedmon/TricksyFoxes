@@ -12,6 +12,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.RecipeMatcher;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Direction;
@@ -30,6 +31,19 @@ public class TricksyUtils
 	public static Text translateDirection(Direction dir)
 	{
 		return Text.translatable("enum."+Reference.ModInfo.MOD_ID+".direction."+dir.asString());
+	}
+	
+	public static MutableText tooltipToMultilineText(List<MutableText> tooltip)
+	{
+		if(tooltip.isEmpty())
+			return Text.empty();
+		MutableText text = tooltip.get(0);
+		// TODO Figure out how to turn avoid style overflow in concatenated text
+		MutableText lineBreak = Text.literal("\n");
+		if(tooltip.size() > 1)
+			for(int i=1; i<tooltip.size(); i++)
+				text.append(lineBreak).append(tooltip.get(i));
+		return text;
 	}
 	
 	public static RecipeInputInventory ingredientsFromInventory(Inventory inventory)
