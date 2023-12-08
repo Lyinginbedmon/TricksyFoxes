@@ -110,13 +110,18 @@ public class DecoratorMisc implements ISubtypeGroup<DecoratorNode>
 				if(!parent.isRunning())
 					parent.ticks = 0;
 				
-				if(parent.child().tick(tricksy, local, global).isEnd())
+				switch(parent.child().tick(tricksy, local, global))
 				{
-					value.cycle();
-					if(++parent.ticks == value.size())
-						return Result.SUCCESS;
+					case FAILURE:
+						return Result.FAILURE;
+					case SUCCESS:
+						value.cycle();
+						if(++parent.ticks == value.size())
+							return Result.SUCCESS;
+					default:
+					case RUNNING:
+						return Result.RUNNING;
 				}
-				return Result.RUNNING;
 			}
 		}));
 		set.add(new NodeSubType<DecoratorNode>(VARIANT_REPEAT, new INodeTickHandler<DecoratorNode>()

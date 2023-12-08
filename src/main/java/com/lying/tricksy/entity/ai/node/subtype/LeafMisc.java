@@ -336,7 +336,8 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 					if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 1D)
 						return Result.SUCCESS;
 					
-					navigator.startMovingTo(dest.getX() + 0.5D, dest.getY(), dest.getZ() + 0.5D, 1D);
+					// FIXME Needs to better suit get-closer usage as well as go-directly-to usage (see: EntityNavigation.findPathToAny
+					navigator.startMovingAlong(navigator.findPathTo(dest, -1), 1D);
 					if(navigator.isFollowingPath())
 						return Result.RUNNING;
 					else
