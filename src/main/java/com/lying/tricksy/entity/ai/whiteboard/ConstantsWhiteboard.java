@@ -29,8 +29,8 @@ public class ConstantsWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?
 	public static final WhiteboardRef ENT_ANIMALS = new WhiteboardRef("entity_animal", TFObjType.ENT).filter().displayName(Text.translatable("constant."+Reference.ModInfo.MOD_ID+".entity_animal"));
 	public static final WhiteboardRef ENT_PLAYERS = new WhiteboardRef("entity_player", TFObjType.ENT).filter().displayName(Text.translatable("constant."+Reference.ModInfo.MOD_ID+".entity_player"));
 	
-	public static WhiteboardObjEntity FILTER_MONSTER = new WhiteboardObjEntity();
-	public static WhiteboardObjEntity FILTER_ANIMAL = new WhiteboardObjEntity();
+	public static WhiteboardObjEntity FILTER_MONSTER = new WhiteboardObjEntity().setFilter(true);
+	public static WhiteboardObjEntity FILTER_ANIMAL = new WhiteboardObjEntity().setFilter(true);
 	
 	public static final Map<Direction, WhiteboardRef> DIRECTIONS = new HashMap<>();
 	
@@ -58,8 +58,8 @@ public class ConstantsWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?
 	/** Called by the server when the server starts or the data pack finishes reloading */
 	public static void populateTagFilters()
 	{
-		FILTER_MONSTER = WhiteboardObjEntity.ofTypes(getOfTag(TFEntityTags.MONSTER));
-		FILTER_ANIMAL = WhiteboardObjEntity.ofTypes(getOfTag(TFEntityTags.ANIMAL));
+		FILTER_MONSTER = WhiteboardObjEntity.ofTypes(getOfTag(TFEntityTags.MONSTER)).setFilter(true);
+		FILTER_ANIMAL = WhiteboardObjEntity.ofTypes(getOfTag(TFEntityTags.ANIMAL)).setFilter(true);
 	}
 	
 	public static EntityType<?>[] getOfTag(TagKey<EntityType<?>> tagIn)

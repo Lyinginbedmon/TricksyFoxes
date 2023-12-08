@@ -91,7 +91,11 @@ public class ServerBus
 			if(heldStack.getItem() == TFItems.NOTE_ENT && player.isSneaking() && entity instanceof LivingEntity)
 			{
 				if(!world.isClient())
+				{
 					ItemPrescientNote.Ent.addEntityToStack(heldStack, (LivingEntity)entity);
+					System.out.println("Added "+entity.getName().getString()+" to scroll, size "+ItemPrescientNote.getVariable(heldStack).size());
+					player.setStackInHand(hand, heldStack);
+				}
 				return ActionResult.SUCCESS;
 			}
 			

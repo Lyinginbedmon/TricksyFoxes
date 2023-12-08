@@ -217,6 +217,11 @@ public class ItemPrescientNote extends Item
 			super(TFObjType.ENT, settings);
 		}
 		
+		public static boolean isFilterList(ItemStack stack)
+		{
+			return ((WhiteboardObjEntity)getVariable(stack).as(TFObjType.ENT)).isFilterList();
+		}
+		
 		public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
 		{
 			super.appendTooltip(stack, world, tooltip, context);

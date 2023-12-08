@@ -87,7 +87,7 @@ public abstract class WhiteboardObjBase<T, N, G extends NbtElement> implements I
 		this.value.add(storeValue(val));
 	}
 	
-	public final void add(T val)
+	public void add(T val)
 	{
 		this.value.add(storeValue(val));
 	}
@@ -121,8 +121,12 @@ public abstract class WhiteboardObjBase<T, N, G extends NbtElement> implements I
 			compound.put("Data", values);
 		}
 		
+		write(compound);
+		
 		return compound;
 	}
+	
+	protected NbtCompound write(NbtCompound compound) { return compound; }
 	
 	@SuppressWarnings("unchecked")
 	public final void readFromNbt(NbtCompound compound)
@@ -134,5 +138,9 @@ public abstract class WhiteboardObjBase<T, N, G extends NbtElement> implements I
 			for(int i=0; i<values.size(); i++)
 				value.add(valueFromNbt((G)values.get(i)));
 		}
+		
+		read(compound);
 	}
+	
+	protected void read(NbtCompound compound) { }
 }

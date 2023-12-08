@@ -1,11 +1,13 @@
 package com.lying.tricksy.entity.ai.whiteboard.object;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
@@ -24,6 +26,8 @@ import net.minecraft.world.World;
 
 public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity.EntityData, NbtCompound>
 {
+	private boolean isFilterList = false;
+	
 	public WhiteboardObjEntity()
 	{
 		super(TFObjType.ENT, NbtElement.COMPOUND_TYPE);
@@ -41,6 +45,25 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		val.recache(world);
 	}
 	
+	public List<Text> describe()
+	{
+		List<Text> description = Lists.newArrayList();
+		
+		String header = "value."+Reference.ModInfo.MOD_ID+".entity";
+		if(isFilterList)
+			header += "_filter";
+		if(isList())
+			header += "_list";
+		
+		description.add(Text.translatable(header, value.size()));
+		
+		value.forEach((val) -> {
+			Text entry = describeValue(val);
+			description.add(isList() ? Text.literal(" * ").append(entry) : entry);
+		});
+		return description;
+	}
+	
 	public Text describeValue(WhiteboardObjEntity.EntityData value)
 	{
 		if(value.valueName != null)
@@ -50,7 +73,33 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		return Text.translatable("value."+Reference.ModInfo.MOD_ID+".entity");
 	}
 	
-	protected EntityData storeValue(Entity val) { return val == null ? new EntityData() : new EntityData(val); }
+	public boolean isFilterList() { return this.isFilterList; }
+	
+	public WhiteboardObjEntity setFilter(boolean bool) { this.isFilterList = bool; return this; }
+	
+	protected NbtCompound write(NbtCompound compound)
+	{
+		compound.putBoolean("Filter", isFilterList);
+		return compound;
+	}
+	
+	protected void read(NbtCompound compound)
+	{
+		this.isFilterList = compound.getBoolean("Filter");
+	}
+	
+	public void add(Entity val)
+	{
+		if(val == null || value.size() > 0 && matches(val))
+			return;
+		
+		super.add(val);
+	}
+	
+	protected EntityData storeValue(Entity val)
+	{
+		return val == null ? new EntityData() : new EntityData(val);
+	}
 	
 	protected Entity getValue(WhiteboardObjEntity.EntityData entry) { return entry.isBlank() ? null : entry.value; }
 	
@@ -92,21 +141,14 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		filter.value.clear();
 		for(EntityType<?> type : typeIn)
 			filter.value.add(new EntityData((UUID)null, type));
+		filter.setFilter(true);
 		return filter;
 	}
 	
+	/** Returns true if this object matches the given entity (either as a filter or specific value) */
 	public boolean matches(Entity entity)
 	{
-		if(value.size() == 0)
-			return true;
-		
-		for(EntityData data : value)
-			if(data.isBlank())
-				continue;
-			else if(data.type == entity.getType() && (data.isFilter() || data.uuid.equals(entity.getUuid())))
-				return true;
-		
-		return false;
+		return value.isEmpty() ? true : this.value.stream().anyMatch(data -> data.matches(entity, isFilterList));
 	}
 	
 	public static class EntityData
@@ -165,6 +207,11 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		
 		/** Filters intentionally lack a UUID */
 		public boolean isFilter() { return !isBlank() && this.uuid == null; }
+		
+		public boolean matches(Entity ent, boolean asFilter)
+		{
+			return asFilter && ent.getType() == this.type || !asFilter && ent.getUuid().equals(this.uuid);
+		}
 		
 		public void recache(World world)
 		{
