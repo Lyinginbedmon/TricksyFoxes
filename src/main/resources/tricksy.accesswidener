@@ -1,6 +1,7 @@
 accessWidener v2 named
 
 accessible    method    net/minecraft/client/model/ModelCuboidData    <init>    (Ljava/lang/String;FFFFFFFFLnet/minecraft/client/model/Dilation;ZFFLjava/util/Set;)V
+accessible    method    net/minecraft/entity/ai/pathing/EntityNavigation    findPathToAny    (Ljava/util/Set;IZIF)Lnet/minecraft/entity/ai/pathing/Path;
 
 accessible    field    net/minecraft/client/model/ModelPartBuilder    cuboidData    Ljava/util/List;
 accessible    field    net/minecraft/client/model/ModelPartBuilder    textureX    I

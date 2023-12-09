@@ -38,6 +38,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 
 public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 {
@@ -181,6 +182,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			{
 				List<T> sortedList = Lists.newArrayList();
 				
+				// Collect points into layers of a nested cube
 				Map<Integer, List<T>> pointMap = new HashMap<>();
 				for(T point : set)
 				{
@@ -191,8 +193,34 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 					pointMap.put(dist, group);
 				}
 				
-				// TODO Sort points by lateral coordinates before adding such that matching points are grouped vertically
-				pointMap.keySet().stream().forEach(index -> sortedList.addAll(pointMap.get(index)));
+				// XXX This feels like overcomplicating things a bit...
+				
+				// Collect points in each layer into ascending columns
+				Vec3i originLat = new Vec3i((int)origin.x, 0, (int)origin.z);
+				Comparator<T> sorter = new Comparator<T>()
+						{
+							public int compare(T o1, T o2)
+							{
+								Vec3d vec1 = converter.apply(o1);
+								Vec3d vec2 = converter.apply(o2);
+								
+								Vec3i lat1 = new Vec3i((int)vec1.x, 0, (int)vec1.z);
+								Vec3i lat2 = new Vec3i((int)vec2.x, 0, (int)vec2.z);
+								if(lat1.getX() ==  lat2.getX() && lat1.getZ() == lat2.getZ())
+									return vec1.y < vec2.y ? -1 : vec1.y > vec2.y ? 1 : 0;
+								
+								double lat1L = lat1.getSquaredDistance(originLat);
+								double lat2L = lat2.getSquaredDistance(originLat);
+								return lat1L < lat2L ? -1 : lat1L > lat2L ? 1 : 0;
+							}
+						};
+				
+				pointMap.keySet().stream().forEach(index -> 
+				{
+					List<T> points = pointMap.get(index);
+					points.sort(sorter);
+					points.stream().forEach(point -> sortedList.add(point));
+				});
 				
 				return sortedList;
 			}

@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ITricksyMob.Bark;
@@ -336,9 +337,8 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 					if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 1D)
 						return Result.SUCCESS;
 					
-					// FIXME Needs to better suit get-closer usage as well as go-directly-to usage (see: EntityNavigation.findPathToAny
-					navigator.startMovingAlong(navigator.findPathTo(dest, -1), 1D);
-					if(navigator.isFollowingPath())
+					Path path = navigator.findPathToAny(ImmutableSet.of(dest), 100, false, 1, 128F);
+					if(path != null && navigator.startMovingAlong(path, 1D))
 						return Result.RUNNING;
 					else
 						return Result.FAILURE;
