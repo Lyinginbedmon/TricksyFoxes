@@ -103,9 +103,10 @@ public class RegionCuboid extends Region
 	{
 		List<BlockPos> matches = Lists.newArrayList();
 		Vec3i size = size();
-		int sizeX = size.getX() + 1;
-		int sizeY = size.getY() + 1;
-		int sizeZ = size.getZ() + 1;
+		int sizeX = Math.min(size.getX() + 1, 256);
+		int sizeY = Math.min(size.getY() + 1, 256);
+		int sizeZ = Math.min(size.getZ() + 1, 256);
+		
 		for(int y=0; y < sizeY; y++)
 		{
 			int posY = min.getY() + y;
@@ -118,6 +119,9 @@ public class RegionCuboid extends Region
 					BlockPos offset = new BlockPos(x, 0, z).add(min.getX(), posY, min.getZ());
 					if(filter.test(offset, world.getBlockState(offset)))
 						matches.add(offset);
+					
+					if(matches.size() >= 256)
+						return matches;
 				}
 		}
 		return matches;

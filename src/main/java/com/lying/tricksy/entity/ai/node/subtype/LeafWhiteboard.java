@@ -31,12 +31,10 @@ import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFSoundEvents;
 import com.lying.tricksy.reference.Reference;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
@@ -73,7 +71,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			}
 		});
 		add(set, VARIANT_SORT_NEAREST, leafSortNearest());
-		add(set, VARIANT_SORT_SALESMAN, leafSortSalesman());
+		add(set, VARIANT_SORT_SALESMAN, leafSortContiguous());
 		add(set, VARIANT_COPY, new INodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef COPY = new WhiteboardRef("value_to_copy", TFObjType.BOOL).displayName(CommonVariables.translate("to_copy"));
@@ -141,44 +139,8 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 	{
 		return new SortHandler()
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
-			{
-				INodeIOValue reference = parent.getIO(VAR_UNSORTED);
-				if(reference.type() != Type.WHITEBOARD)
-					return Result.FAILURE;
-				
-				IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, local, global);
-				if(value.isEmpty())
-					return Result.FAILURE;
-				
-				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
-				Vec3d origin = (pos.size() == 0 ? tricksy.getBlockPos() : pos.as(TFObjType.BLOCK).get()).toCenterPos();
-				
-				IWhiteboardObject<?> sorted;
-				if(!value.isList() || value.size() < 2)
-					sorted = value.copy();
-				else if(value.type() == TFObjType.BLOCK)
-				{
-					WhiteboardObjBlock result = new WhiteboardObjBlock();
-					getCubeSorted(value.as(TFObjType.BLOCK).getAll(), origin, point -> point.toCenterPos()).forEach(point -> result.add(point));
-					sorted = result;
-				}
-				else if(value.type() == TFObjType.ENT)
-				{
-					WhiteboardObjEntity result = new WhiteboardObjEntity();
-					getCubeSorted(value.as(TFObjType.ENT).getAll(), origin, ent -> ent.getPos()).forEach(ent -> result.add(ent));
-					sorted = result;
-				}
-				else
-					return Result.FAILURE;
-				
-				local.setValue(((WhiteboardValue)reference).assignment(), sorted);
-				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
-				return Result.SUCCESS;
-			}
-			
 			/** Sorts the input points based on their containment within a cube expanding from the origin point */
-			public static <T extends Object> List<T> getCubeSorted(final List<T> set, Vec3d origin, Function<T, Vec3d> converter)
+			public <T extends Object> List<T> sort(final List<T> set, Vec3d origin, Function<T, Vec3d> converter)
 			{
 				List<T> sortedList = Lists.newArrayList();
 				
@@ -207,7 +169,11 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 								Vec3i lat1 = new Vec3i((int)vec1.x, 0, (int)vec1.z);
 								Vec3i lat2 = new Vec3i((int)vec2.x, 0, (int)vec2.z);
 								if(lat1.getX() ==  lat2.getX() && lat1.getZ() == lat2.getZ())
-									return vec1.y < vec2.y ? -1 : vec1.y > vec2.y ? 1 : 0;
+								{
+									double off1 = Math.abs(origin.y - vec1.y);
+									double off2 = Math.abs(origin.y - vec2.y);
+									return off1 < off2 ? -1 : off1 > off2 ? 1 : 0;
+								}
 								
 								double lat1L = lat1.getSquaredDistance(originLat);
 								double lat2L = lat2.getSquaredDistance(originLat);
@@ -227,73 +193,69 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 		};
 	}
 	
-	// FIXME Needs refinement
-	public static INodeTickHandler<LeafNode> leafSortSalesman()
+	public static INodeTickHandler<LeafNode> leafSortContiguous()
 	{
 		return new SortHandler()
 			{
-				public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+				public <T extends Object> List<T> sort(final List<T> set, Vec3d origin, Function<T, Vec3d> converter)
 				{
-					INodeIOValue reference = parent.getIO(VAR_UNSORTED);
-					if(reference.type() != Type.WHITEBOARD)
-						return Result.FAILURE;
+					List<T> sortedList = Lists.newArrayList();
 					
-					IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, local, global);
-					if(value.isEmpty())
-						return Result.FAILURE;
+					List<T> values = Lists.newArrayList();
+					values.addAll(set);
 					
-					IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
-					BlockPos position = null;
-					if(pos.size() == 0)
-						position = tricksy.getBlockPos();
-					else
-						position = pos.as(TFObjType.BLOCK).get();
-					
-					/**
-					 * Starting from the value closest to position,
-					 * Find the next value closest to that value
-					 * Remove the next value from the list and set it as position
-					 * Repeat until all values are accounted for
-					 */
-					IWhiteboardObject<?> sorted;
-					if(!value.isList() || value.size() < 2)
-						sorted = value.copy();
-					else if(value.type() == TFObjType.BLOCK)
+					values.sort((o1,o2) -> 
 					{
-						sorted = new WhiteboardObjBlock();
-						List<BlockPos> points = Lists.newArrayList();
-						points.addAll(value.as(TFObjType.BLOCK).getAll());
-						
-						BlockPos current = position;
-						while(!points.isEmpty())
-						{
-							points.sort(SortHandler.blockSorter(current, position));
-							current = points.remove(0);
-							((WhiteboardObjBlock)sorted).add(current);
-						}
-					}
-					else if(value.type() == TFObjType.ENT)
-					{
-						sorted = new WhiteboardObjEntity();
-						List<Entity> points = Lists.newArrayList();
-						points.addAll(value.as(TFObjType.ENT).getAll());
-						
-						Vec3d origin = new Vec3d(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
-						Vec3d current = origin;
-						while(!points.isEmpty())
-						{
-							points.sort(SortHandler.entitySorter(current, origin));
-							current = points.get(0).getPos();
-							((WhiteboardObjEntity)sorted).add(points.get(0));
-							points.remove(0);
-						}
-					}
-					else
-						return Result.FAILURE;
+						double dist1 = converter.apply(o1).distanceTo(origin);
+						double dist2 = converter.apply(o2).distanceTo(origin);
+						return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+					});
 					
-					local.setValue(((WhiteboardValue)reference).assignment(), sorted);
-					tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
-					return Result.SUCCESS;
+					T initialFocus = values.remove(0);
+					Vec3d focalPoint = converter.apply(initialFocus);
+					sortedList.add(initialFocus);
+					
+					while(!values.isEmpty())
+					{
+						if(values.size() == 1)
+						{
+							sortedList.add(values.get(0));
+							break;
+						}
+						
+						// Sort points by distance to the current focal point
+						values.sort(distToVec(focalPoint, converter));
+						double minDist = converter.apply(values.get(0)).distanceTo(focalPoint);
+						
+						// Filter out all points with the same distance to the focal point
+						List<T> allSameDist = Lists.newArrayList();
+						values.stream().filter(sameDistTo(focalPoint, converter, minDist)).forEach(val -> allSameDist.add(val));
+						values.removeAll(allSameDist);
+						
+						// Add points to the sorted list based on their distance to the origin point
+						allSameDist.sort(distToVec(origin, converter));
+						Vec3d nextFocal = converter.apply(allSameDist.get(0));
+						sortedList.addAll(allSameDist);
+						
+						focalPoint = nextFocal;
+					}
+					
+					return sortedList;
+				}
+				
+				private static <T extends Object> Predicate<T> sameDistTo(Vec3d currentVec, Function<T, Vec3d> converter, double dist)
+				{
+					return val -> converter.apply(val).distanceTo(currentVec) == dist;
+				}
+				
+				private static <T extends Object> Comparator<T> distToVec(Vec3d currentVec, Function<T, Vec3d> converter)
+				{
+					return (o1,o2) -> 
+					{
+						double dist1 = converter.apply(o1).distanceTo(currentVec);
+						double dist2 = converter.apply(o2).distanceTo(currentVec);
+						return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+					};
 				}
 			};
 	}
@@ -317,30 +279,42 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 					CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
 		}
 		
-		public static Comparator<BlockPos> blockSorter(BlockPos position, BlockPos origin)
+		public default <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 		{
-			return new Comparator<BlockPos>() 
+			INodeIOValue reference = parent.getIO(VAR_UNSORTED);
+			if(reference.type() != Type.WHITEBOARD)
+				return Result.FAILURE;
+			
+			IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, local, global);
+			if(value.isEmpty())
+				return Result.FAILURE;
+			
+			IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
+			Vec3d origin = (pos.size() == 0 ? tricksy.getBlockPos() : pos.as(TFObjType.BLOCK).get()).toCenterPos();
+			
+			IWhiteboardObject<?> sorted;
+			if(!value.isList() || value.size() < 2)
+				sorted = value.copy();
+			else if(value.type() == TFObjType.BLOCK)
 			{
-				public int compare(BlockPos o1, BlockPos o2)
-				{
-					double dist1 = o1.getSquaredDistance(position) + o1.getSquaredDistance(origin);
-					double dist2 = o2.getSquaredDistance(position) + o2.getSquaredDistance(origin);
-					return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
-				}
-			};
+				WhiteboardObjBlock result = new WhiteboardObjBlock();
+				sort(value.as(TFObjType.BLOCK).getAll(), origin, point -> point.toCenterPos()).forEach(point -> result.add(point));
+				sorted = result;
+			}
+			else if(value.type() == TFObjType.ENT)
+			{
+				WhiteboardObjEntity result = new WhiteboardObjEntity();
+				sort(value.as(TFObjType.ENT).getAll(), origin, ent -> ent.getPos()).forEach(ent -> result.add(ent));
+				sorted = result;
+			}
+			else
+				return Result.FAILURE;
+			
+			local.setValue(((WhiteboardValue)reference).assignment(), sorted);
+			tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
+			return Result.SUCCESS;
 		}
 		
-		public static Comparator<Entity> entitySorter(Vec3d position, Vec3d origin)
-		{
-			return new Comparator<Entity>() 
-			{
-				public int compare(Entity o1, Entity o2)
-				{
-					double dist1 = o1.squaredDistanceTo(position) + o1.squaredDistanceTo(origin);
-					double dist2 = o2.squaredDistanceTo(position) + o2.squaredDistanceTo(origin);
-					return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
-				}
-			};
-		}
+		public abstract <T extends Object> List<T> sort(List<T> set, Vec3d origin, Function<T, Vec3d> converter);
 	}
 }
