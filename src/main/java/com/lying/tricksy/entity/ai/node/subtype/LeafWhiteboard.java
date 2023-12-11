@@ -25,6 +25,7 @@ import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFObjType;
@@ -42,7 +43,9 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 {
 	public static final Identifier VARIANT_CYCLE = ISubtypeGroup.variant("cycle_value");
 	public static final Identifier VARIANT_SORT_NEAREST = ISubtypeGroup.variant("sort_nearest");
-	public static final Identifier VARIANT_SORT_SALESMAN = ISubtypeGroup.variant("sort_salesman");
+	public static final Identifier VARIANT_SORT_CONTIGUOUS = ISubtypeGroup.variant("sort_contiguous");
+	public static final Identifier VARIANT_SORT_COLUMNAR = ISubtypeGroup.variant("sort_columnar");
+	public static final Identifier VARIANT_SORT_VERTICAL = ISubtypeGroup.variant("sort_vertical");
 	public static final Identifier VARIANT_COPY = ISubtypeGroup.variant("set_value");
 	public static final Identifier VARIANT_CLEAR = ISubtypeGroup.variant("clear_value");
 	
@@ -71,7 +74,9 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			}
 		});
 		add(set, VARIANT_SORT_NEAREST, leafSortNearest());
-		add(set, VARIANT_SORT_SALESMAN, leafSortContiguous());
+		add(set, VARIANT_SORT_COLUMNAR, leafSortColumnar());
+		add(set, VARIANT_SORT_CONTIGUOUS, leafSortContiguous());
+		add(set, VARIANT_SORT_VERTICAL, leafSortVertical());
 		add(set, VARIANT_COPY, new INodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef COPY = new WhiteboardRef("value_to_copy", TFObjType.BOOL).displayName(CommonVariables.translate("to_copy"));
@@ -136,6 +141,75 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 	}
 	
 	public static INodeTickHandler<LeafNode> leafSortNearest()
+	{
+		return new SortHandler()
+		{
+			private static boolean isInverted;
+			
+			public Map<WhiteboardRef, INodeIO> ioSet()
+			{
+				return Map.of(
+						VAR_UNSORTED, UNSORTED_INPUT,
+						POSITION, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()),
+						INVERT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(), (new WhiteboardObj.Bool(false)).describe().get(0)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				INodeIOValue reference = parent.getIO(VAR_UNSORTED);
+				if(reference.type() != Type.WHITEBOARD)
+					return Result.FAILURE;
+				
+				IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, local, global);
+				if(value.isEmpty())
+					return Result.FAILURE;
+				
+				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
+				Vec3d origin = (pos.size() == 0 ? tricksy.getBlockPos() : pos.as(TFObjType.BLOCK).get()).toCenterPos();
+				
+				isInverted = getOrDefault(INVERT, parent, local, global).as(TFObjType.BOOL).get();
+				
+				IWhiteboardObject<?> sorted;
+				if(!value.isList() || value.size() < 2)
+					sorted = value.copy();
+				else if(value.type() == TFObjType.BLOCK)
+				{
+					WhiteboardObjBlock result = new WhiteboardObjBlock();
+					sort(value.as(TFObjType.BLOCK).getAll(), origin, ent -> ent.toCenterPos()).forEach(ent -> result.add(ent));
+					sorted = result;
+				}
+				else if(value.type() == TFObjType.ENT)
+				{
+					WhiteboardObjEntity result = new WhiteboardObjEntity();
+					sort(value.as(TFObjType.ENT).getAll(), origin, ent -> ent.getPos()).forEach(ent -> result.add(ent));
+					sorted = result;
+				}
+				else
+					return Result.FAILURE;
+				
+				local.setValue(((WhiteboardValue)reference).assignment(), sorted);
+				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
+				return Result.SUCCESS;
+			}
+			
+			public <T extends Object> List<T> sort(final List<T> set, Vec3d origin, Function<T, Vec3d> converter)
+			{
+				List<T> sortedList = Lists.newArrayList();
+				sortedList.addAll(set);
+				
+				sortedList.sort((o1,o2) -> 
+				{
+					double dist1 = converter.apply(o1).distanceTo(origin) * (isInverted ? -1 : 1);
+					double dist2 = converter.apply(o2).distanceTo(origin) * (isInverted ? -1 : 1);
+					return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
+				});
+				
+				return sortedList;
+			}
+		};
+	}
+	
+	public static INodeTickHandler<LeafNode> leafSortColumnar()
 	{
 		return new SortHandler()
 		{
@@ -260,6 +334,79 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			};
 	}
 	
+	public static INodeTickHandler<LeafNode> leafSortVertical()
+	{
+		return new SortHandler()
+		{
+			public Map<WhiteboardRef, INodeIO> ioSet()
+			{
+				return Map.of(
+						VAR_UNSORTED, UNSORTED_INPUT,
+						INVERT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(), (new WhiteboardObj.Bool(false)).describe().get(0)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				INodeIOValue reference = parent.getIO(VAR_UNSORTED);
+				if(reference.type() != Type.WHITEBOARD)
+					return Result.FAILURE;
+				
+				IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, local, global);
+				if(value.isEmpty())
+					return Result.FAILURE;
+				
+				boolean inverted = getOrDefault(INVERT, parent, local, global).as(TFObjType.BOOL).get();
+				Vec3d origin = inverted ? new Vec3d(0, -1, 0) : new Vec3d(0, 1, 0);
+				
+				IWhiteboardObject<?> sorted;
+				if(!value.isList() || value.size() < 2)
+					sorted = value.copy();
+				else if(value.type() == TFObjType.BLOCK)
+				{
+					WhiteboardObjBlock result = new WhiteboardObjBlock();
+					sort(value.as(TFObjType.BLOCK).getAll(), origin, ent -> ent.toCenterPos()).forEach(ent -> result.add(ent));
+					sorted = result;
+				}
+				else if(value.type() == TFObjType.ENT)
+				{
+					WhiteboardObjEntity result = new WhiteboardObjEntity();
+					sort(value.as(TFObjType.ENT).getAll(), origin, ent -> ent.getPos()).forEach(ent -> result.add(ent));
+					sorted = result;
+				}
+				else
+					return Result.FAILURE;
+				
+				local.setValue(((WhiteboardValue)reference).assignment(), sorted);
+				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
+				return Result.SUCCESS;
+			}
+			
+			public <T extends Object> List<T> sort(final List<T> set, Vec3d origin, Function<T, Vec3d> converter)
+			{
+				List<T> sortedList = Lists.newArrayList();
+				sortedList.addAll(set);
+				
+				sortedList.sort((o1,o2) -> 
+				{
+					Vec3d vec1 = converter.apply(o1);
+					Vec3d vec2 = converter.apply(o2);
+					if(vec1.distanceTo(vec2) == 0D)
+						return 0;
+					
+					double[] val1 = new double[] {vec1.y * origin.y, vec1.x, vec1.z};
+					double[] val2 = new double[] {vec2.y * origin.y, vec2.x, vec2.z};
+					for(int i=0; i<val1.length; i++)
+						if(val1[i] != val2[i])
+							return val1[i] < val2[i] ? -1 : val1[i] > val2[i] ? 1 : 0;
+					
+					return 0;
+				});
+				
+				return sortedList;
+			}
+		};
+	}
+	
 	private static interface SortHandler extends INodeTickHandler<LeafNode>
 	{
 		public static final WhiteboardRef VAR_UNSORTED = new WhiteboardRef("value_to_cycle", TFObjType.BLOCK).displayName(CommonVariables.translate("to_cycle"));
@@ -269,6 +416,8 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			
 			public boolean allowStatic() { return false; }
 		};
+		public static final WhiteboardRef POSITION = CommonVariables.VAR_POS;
+		public static final WhiteboardRef INVERT = new WhiteboardRef("invert", TFObjType.BOOL).displayName(CommonVariables.translate("invert"));
 		
 		public default <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy) { return 20; }
 		
@@ -276,7 +425,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 		{
 			return Map.of(
 					VAR_UNSORTED, UNSORTED_INPUT,
-					CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
+					POSITION, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
 		}
 		
 		public default <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -298,7 +447,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			else if(value.type() == TFObjType.BLOCK)
 			{
 				WhiteboardObjBlock result = new WhiteboardObjBlock();
-				sort(value.as(TFObjType.BLOCK).getAll(), origin, point -> point.toCenterPos()).forEach(point -> result.add(point));
+				sort(value.as(TFObjType.BLOCK).getAll(), origin, ent -> ent.toCenterPos()).forEach(ent -> result.add(ent));
 				sorted = result;
 			}
 			else if(value.type() == TFObjType.ENT)
@@ -315,6 +464,6 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			return Result.SUCCESS;
 		}
 		
-		public abstract <T extends Object> List<T> sort(List<T> set, Vec3d origin, Function<T, Vec3d> converter);
+		public <T extends Object> List<T> sort(List<T> set, Vec3d origin, Function<T, Vec3d> converter);
 	}
 }

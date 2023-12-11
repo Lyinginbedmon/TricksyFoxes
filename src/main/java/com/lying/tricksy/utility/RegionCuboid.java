@@ -61,6 +61,8 @@ public class RegionCuboid extends Region
 	
 	public Vec3i size() { return new Vec3i(max.getX() - min.getX(), max.getY() - min.getY(), max.getZ() - min.getZ()); }
 	
+	public Vec3i searchSize() { return new Vec3i(Math.min(256, size().getX()), Math.min(256, size().getY()), Math.min(256, size().getZ())); }
+	
 	public BlockPos center()
 	{
 		Vec3i size = size();
@@ -102,10 +104,10 @@ public class RegionCuboid extends Region
 	public List<BlockPos> getBlocks(World world, BiPredicate<BlockPos, BlockState> filter)
 	{
 		List<BlockPos> matches = Lists.newArrayList();
-		Vec3i size = size();
-		int sizeX = Math.min(size.getX() + 1, 256);
-		int sizeY = Math.min(size.getY() + 1, 256);
-		int sizeZ = Math.min(size.getZ() + 1, 256);
+		Vec3i size = searchSize();
+		int sizeX = size.getX() + 1;
+		int sizeY = size.getY() + 1;
+		int sizeZ = size.getZ() + 1;
 		
 		for(int y=0; y < sizeY; y++)
 		{

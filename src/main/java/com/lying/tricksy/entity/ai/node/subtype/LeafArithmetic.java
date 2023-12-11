@@ -44,20 +44,20 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
 		add(set, VARIANT_ADD, new GetterHandlerUntyped(TFObjType.INT, TFObjType.BLOCK)
 		{
-			private static final WhiteboardRef SUB = new WhiteboardRef("subtract", TFObjType.BOOL).displayName(CommonVariables.translate("subtract"));
+			private static final WhiteboardRef SUBTRACT = new WhiteboardRef("subtract", TFObjType.BOOL).displayName(CommonVariables.translate("subtract"));
 			
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
 				set.put(CommonVariables.VAR_A, NUM_OR_POS);
 				set.put(CommonVariables.VAR_B, NUM_OR_POS);
-				set.put(SUB, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
+				set.put(SUBTRACT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				IWhiteboardObject<?> intA = getOrDefault(CommonVariables.VAR_A, parent, local, global);
 				IWhiteboardObject<?> intB = getOrDefault(CommonVariables.VAR_B, parent, local, global);
-				int mul = getOrDefault(SUB, parent, local, global).as(TFObjType.BOOL).get() ? -1 : 1;
+				int mul = getOrDefault(SUBTRACT, parent, local, global).as(TFObjType.BOOL).get() ? -1 : 1;
 				
 				// Add an integer to all coordinates of a position
 				if(intA.type() != intB.type())
