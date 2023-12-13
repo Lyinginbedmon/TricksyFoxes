@@ -1,5 +1,6 @@
 package com.lying.tricksy.api.entity.ai;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -11,6 +12,7 @@ import com.google.common.base.Predicates;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO.Type;
 import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
+import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
@@ -42,6 +44,9 @@ import net.minecraft.util.math.Vec3d;
 public interface INodeTickHandler<M extends TreeNode<?>>
 {
 	public static final double INTERACT_RANGE = 4D;
+	
+	/** Returns a set of action flags that are occupied by the action of this node */
+	public default EnumSet<ActionFlag> flagsUsed() { return EnumSet.noneOf(ActionFlag.class); }
 	
 	/** Returns a map containing all necessary IOs of this behaviour and predicates defining their needs */
 	@NotNull

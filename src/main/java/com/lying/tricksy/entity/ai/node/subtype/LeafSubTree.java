@@ -1,6 +1,7 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -13,6 +14,7 @@ import com.lying.tricksy.api.entity.ai.INodeIOValue;
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.api.entity.ai.INodeIOValue.StaticValue;
 import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
+import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.handler.CombatHandler;
@@ -53,6 +55,8 @@ public class LeafSubTree implements ISubtypeGroup<LeafNode>
 		return new SubTreeHandler()
 		{
 			public static final WhiteboardRef TARGET = CombatHandler.TARGET;
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS, ActionFlag.MOVE); }
 			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -104,6 +108,8 @@ public class LeafSubTree implements ISubtypeGroup<LeafNode>
 		return new SubTreeHandler()
 		{
 			public final WhiteboardRef TARGET = position;
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS, ActionFlag.MOVE, ActionFlag.LOOK); }
 			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{

@@ -1,6 +1,7 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
+import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
@@ -63,6 +65,8 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }
+			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(false), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
@@ -104,6 +108,8 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 			
 			// Items that directly affect the player using them, hence cannot be used normally by a mob
 			private static final Set<Item> UNUSABLES = Set.of(Items.ENDER_PEARL, Items.LEAD, Items.FISHING_ROD);
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.HANDS); }
 			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -148,6 +154,8 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_activate");
 			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.HANDS); }
+			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
@@ -175,6 +183,8 @@ public class LeafInteraction implements ISubtypeGroup<LeafNode>
 		return new INodeTickHandler<LeafNode>()
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_break");
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.HANDS); }
 			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{

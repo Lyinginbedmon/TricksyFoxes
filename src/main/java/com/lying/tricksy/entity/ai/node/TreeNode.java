@@ -170,7 +170,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	{
 		this.subType = typeIn;
 		this.assignedIO.clear();
-		getSubType().inputSet().keySet().forEach((key) -> this.assignedIO.put(key, Optional.empty()));
+		getSubType().ioSet().keySet().forEach((key) -> this.assignedIO.put(key, Optional.empty()));
 		return this;
 	};
 	
@@ -194,7 +194,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	public final TreeNode<N> assignIO(WhiteboardRef variable, @Nullable INodeIOValue value)
 	{
-		if(WhiteboardRef.findInMap(getSubType().inputSet(), variable) == null)
+		if(WhiteboardRef.findInMap(getSubType().ioSet(), variable) == null)
 		{
 			TricksyFoxes.LOGGER.warn("Attempted to assign a variable this node does not have! "+variable.name()+" in "+subType.toString()+" of "+nodeType.getRegistryName().toString());
 			return this;
@@ -234,19 +234,25 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		
 		@Nullable
 		Result result = Result.FAILURE;
-		try
-		{
-			result = subType.call(tricksy, local, global, (N)this);
-			if(result.isEnd())
+		if(subType.usesFlags().isEmpty() || subType.usesFlags().stream().allMatch(flag -> local.canUseFlag(flag)))
+			try
 			{
-				subType.onEnd(tricksy, (N)this);
+				result = subType.call(tricksy, local, global, (N)this);
+				if(result.isEnd())
+				{
+					subType.onEnd(tricksy, (N)this);
+					
+					int cooldown = subType.cooldown(tricksy);
+					if(cooldown > 0)
+						local.setNodeCooldown(subType, cooldown);
+					
+					this.nodeRAM = new NbtCompound();
+				}
 				
-				int cooldown = subType.cooldown(tricksy);
-				if(cooldown > 0)
-					local.setNodeCooldown(subType, cooldown);
+				if(!subType.usesFlags().isEmpty())
+					local.flagAction(subType.usesFlags());
 			}
-		}
-		catch(Exception e) { }
+			catch(Exception e) { }
 		
 		getLog().logStatus(getID(), result);
 		return this.lastResult = result;

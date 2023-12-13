@@ -216,7 +216,7 @@ public class NodeRenderUtils
 		drawY += 13;
 		
 		/* Subtype */
-		int variables = showVariables ? node.getSubType().inputSet().size() : 0;
+		int variables = showVariables ? node.getSubType().ioSet().size() : 0;
 		drawTextures(context, x - 25, drawY, 0, variables == 0 ? 32 : 20, 200, variables == 0 ? 19 : 11, r, g, b);
 		drawTextures(context, x + 25, drawY, 0, 145, 100, 11, r, g, b);
 		
@@ -481,7 +481,7 @@ public class NodeRenderUtils
 		if(nodeIn == null)
 			return 13 + 11;
 		
-		int variables = nodeIn.getSubType().inputSet().size();
+		int variables = nodeIn.getSubType().ioSet().size();
 		
 		// Type
 		int height = 13;
@@ -572,7 +572,7 @@ public class NodeRenderUtils
 	public static List<Pair<WhiteboardRef, Optional<INodeIOValue>>> getSortedIOs(TreeNode<?> node)
 	{
 		List<Pair<WhiteboardRef, Optional<INodeIOValue>>> variablesToDisplay = Lists.newArrayList();
-		Map<WhiteboardRef, INodeIO> variableSet = node.getSubType().inputSet();
+		Map<WhiteboardRef, INodeIO> variableSet = node.getSubType().ioSet();
 		for(WhiteboardRef input : variableSet.keySet())
 		{
 			INodeIOValue value = node.getIO(input);

@@ -1,6 +1,7 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
+import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.InventoryHandler;
@@ -64,6 +66,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
 		add(set, VARIANT_DROP, new INodeTickHandler<LeafNode>()
 		{
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }
+			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
 				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()));
@@ -82,6 +86,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		});
 		add(set, VARIANT_SWAP, new INodeTickHandler<LeafNode>()
 		{
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }
+			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{
 				ItemStack mainStack = tricksy.getMainHandStack().copy();
@@ -246,6 +252,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }
+			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
 				return Map.of(CommonVariables.TARGET_ENT, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false)));
@@ -293,6 +301,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 		{
 			public static final WhiteboardRef FILTER = InventoryHandler.FILTER;
 			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }
+			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
 				return Map.of(FILTER, NodeInput.makeInput(NodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
@@ -324,6 +334,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }
+			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
 				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int()));

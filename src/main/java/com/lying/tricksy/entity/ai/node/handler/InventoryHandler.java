@@ -1,6 +1,9 @@
 package com.lying.tricksy.entity.ai.node.handler;
 
+import java.util.EnumSet;
+
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
+import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
@@ -18,6 +21,8 @@ public interface InventoryHandler extends INodeTickHandler<LeafNode>
 {
 	public static final WhiteboardRef FILTER = new WhiteboardRef("item_filter", TFObjType.ITEM).displayName(CommonVariables.translate("item_filter"));
 	public static final WhiteboardRef FACE = new WhiteboardRef("face", TFObjType.BLOCK).displayName(CommonVariables.translate("face"));
+	
+	public default EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }
 	
 	/**
 	 * 

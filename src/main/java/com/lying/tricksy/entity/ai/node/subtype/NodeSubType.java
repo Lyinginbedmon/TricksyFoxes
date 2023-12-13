@@ -1,5 +1,6 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -8,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
+import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
@@ -46,7 +48,9 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> int cooldown(T tricksy) { return tickFunc.getCooldown(tricksy); }
 	
-	public Map<WhiteboardRef, INodeIO> inputSet(){ return tickFunc.ioSet(); }
+	public EnumSet<ActionFlag> usesFlags() { return tickFunc.flagsUsed(); }
+	
+	public Map<WhiteboardRef, INodeIO> ioSet(){ return tickFunc.ioSet(); }
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, M parent)
 	{

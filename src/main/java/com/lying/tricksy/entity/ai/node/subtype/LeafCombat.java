@@ -1,6 +1,7 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
+import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.CombatHandler;
@@ -334,6 +336,8 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS, ActionFlag.LOOK); }
+			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
 				return Map.of(CommonVariables.TARGET_ENT, NodeInput.makeInput(

@@ -12,6 +12,7 @@ import com.lying.tricksy.entity.ai.node.subtype.LeafInteraction;
 import com.lying.tricksy.entity.ai.node.subtype.LeafInventory;
 import com.lying.tricksy.entity.ai.node.subtype.LeafMisc;
 import com.lying.tricksy.entity.ai.node.subtype.LeafSearch;
+import com.lying.tricksy.entity.ai.node.subtype.LeafSpecial;
 import com.lying.tricksy.entity.ai.node.subtype.LeafSubTree;
 import com.lying.tricksy.entity.ai.node.subtype.LeafWhiteboard;
 import com.lying.tricksy.init.TFNodeTypes;
@@ -26,13 +27,14 @@ public class LeafNode extends TreeNode<LeafNode>
 	private static final Set<ISubtypeGroup<LeafNode>> SUBTYPES = Set.of(
 			new LeafMisc(), 
 			new LeafArithmetic(), 
-			new LeafWhiteboard(), 
+			new LeafCombat(), 
 			new LeafInventory(), 
 			new LeafInteraction(), 
-			new LeafCombat(), 
 			new LeafGetter(), 
-			new LeafSearch(),
-			new LeafSubTree());
+			new LeafSearch(), 
+			new LeafSpecial(), 
+			new LeafSubTree(), 
+			new LeafWhiteboard());
 	
 	public LeafNode(UUID uuidIn)
 	{

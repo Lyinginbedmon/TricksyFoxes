@@ -1,5 +1,6 @@
 package com.lying.tricksy.entity.ai.node.handler;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +10,7 @@ import com.google.common.base.Predicate;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
+import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
@@ -41,6 +43,8 @@ public abstract class CombatHandler implements INodeTickHandler<LeafNode>
 			return false;
 		return true;
 	};
+	
+	public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }
 	
 	public Map<WhiteboardRef, INodeIO> ioSet()
 	{

@@ -1,8 +1,10 @@
 package com.lying.tricksy.entity.ai.whiteboard;
 
+import java.util.EnumSet;
 import java.util.function.Function;
 
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
@@ -35,8 +37,10 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 	private final T tricksy;
 	
 	private int attackCooldown = 0;
-	private ItemCooldownManager itemCooldowns = new ItemCooldownManager();
-	private NodeCooldownManager specialCooldowns = new NodeCooldownManager();
+	private final ItemCooldownManager itemCooldowns = new ItemCooldownManager();
+	private final NodeCooldownManager specialCooldowns = new NodeCooldownManager();
+	
+	private final EnumSet<ActionFlag> flagsInUse = EnumSet.noneOf(ActionFlag.class);
 	
 	public LocalWhiteboard(T tricksyIn)
 	{
@@ -69,12 +73,24 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 	
 	public Function<T, IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return (tricksy) -> object; }
 	
+	public void flagAction(EnumSet<ActionFlag> flags)
+	{
+		for(ActionFlag flag : flags)
+			if(!flagsInUse.contains(flag))
+				flagsInUse.add(flag);
+	}
+	
+	/** Returns true if the given flag is not already in use by a node in the behaviour tree */
+	public boolean canUseFlag(ActionFlag flag) { return !flagsInUse.contains(flag); }
+	
+	/** Called each tick just before the behaviour tree updates to update cooldowns and refresh action flags */
 	public void tick()
 	{
 		if(attackCooldown > 0)
-			attackCooldown = Math.max(0, attackCooldown - 1);
+			attackCooldown--;
 		itemCooldowns.update();
 		specialCooldowns.update();
+		flagsInUse.clear();
 	}
 	
 	public boolean canAttack() { return attackCooldown == 0; }

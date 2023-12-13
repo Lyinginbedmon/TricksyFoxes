@@ -6,7 +6,10 @@ import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.init.TFEntityTypes;
 
+import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -22,10 +25,12 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 public class EntityTricksyGoat extends AbstractTricksyAnimal
 {
+	public static final EntityDimensions LONG_JUMPING_DIMENSIONS = EntityDimensions.changing(0.8F, 1.85F).scaled(0.7f);
     private static final TrackedData<Boolean> SCREAMING = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> LEFT_HORN = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> RIGHT_HORN = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -37,6 +42,9 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 	public EntityTricksyGoat(EntityType<? extends AnimalEntity> entityType, World world)
 	{
 		super(TFEntityTypes.TRICKSY_GOAT, world);
+		getNavigation().setCanSwim(true);
+		setPathfindingPenalty(PathNodeType.POWDER_SNOW, -1F);
+		setPathfindingPenalty(PathNodeType.DANGER_POWDER_SNOW, -1F);
 	}
 	
 	public void initDataTracker()
@@ -53,6 +61,16 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 		return GoatEntity.createGoatAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20D).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2D);
 	}
 	
+	public int getMaxHeadRotation() { return 15; }
+	
+	public void setHeadYaw(float headYaw)
+	{
+		int i = getMaxHeadRotation();
+		float f = MathHelper.subtractAngles(this.bodyYaw, headYaw);
+		float g = MathHelper.clamp(f, (float)-i, (float)i);
+		super.setHeadYaw(this.bodyYaw + g);
+	}
+	
 	public void readCustomDataFromNbt(NbtCompound data)
 	{
 		super.readCustomDataFromNbt(data);
@@ -66,6 +84,11 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 		data.putBoolean("IsScreamingGoat", isScreaming());
 		data.putBoolean("HasLeftHorn", hasLeftHorn());
 		data.putBoolean("HasRightHorn", hasRightHorn());
+	}
+	
+	public EntityDimensions getDimensions(EntityPose pose)
+	{
+		return pose == EntityPose.LONG_JUMPING ? LONG_JUMPING_DIMENSIONS : super.getDimensions(pose);
 	}
 	
 	@Nullable
@@ -118,10 +141,8 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 				this.playSound(isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_AMBIENT : SoundEvents.ENTITY_GOAT_AMBIENT, 1F, 1F);
 				break;
 			case CURIOUS:
-//				this.playSound(SoundEvents.ENTITY_FOX_SNIFF, 1F, 1F);
 				break;
 			case CONFUSED:
-//				this.playSound(SoundEvents.ENTITY_FOX_SCREECH, 2F, 1F);
 				break;
 			case ALERT:
 				this.playSound(isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_PREPARE_RAM : SoundEvents.ENTITY_GOAT_PREPARE_RAM, 5F, 1F);
@@ -131,6 +152,8 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 				break;
 		}
 	}
+	
+	protected int computeFallDamage(float fallDistance, float damageMultiplier) { return super.computeFallDamage(fallDistance, damageMultiplier) - 10; }
 	
 	public void tick()
 	{

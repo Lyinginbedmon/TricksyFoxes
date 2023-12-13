@@ -107,4 +107,11 @@ public class BehaviourTree
 	}
 	
 	public boolean isRunning() { return this.waitTicks == 0; }
+	
+	public static enum ActionFlag
+	{
+		LOOK,
+		MOVE,
+		HANDS;
+	}
 }
