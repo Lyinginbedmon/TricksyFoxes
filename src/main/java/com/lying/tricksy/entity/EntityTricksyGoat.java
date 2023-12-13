@@ -1,11 +1,15 @@
 package com.lying.tricksy.entity;
 
+import java.util.UUID;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.init.TFEntityTypes;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
@@ -25,7 +29,11 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
     private static final TrackedData<Boolean> SCREAMING = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> LEFT_HORN = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> RIGHT_HORN = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Boolean> BLOCKADING = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
 	
+    private static final UUID BLOCKADE_KNOCKBACK_ID = UUID.fromString("ce647cae-a269-4b88-970d-49a32e51cb73");
+    private static final EntityAttributeModifier BLOCKADE_KNOCKBACK_BUFF = new EntityAttributeModifier(BLOCKADE_KNOCKBACK_ID, "Blockading knockback buff", 1.0, EntityAttributeModifier.Operation.ADDITION);
+    
 	public EntityTricksyGoat(EntityType<? extends AnimalEntity> entityType, World world)
 	{
 		super(TFEntityTypes.TRICKSY_GOAT, world);
@@ -37,6 +45,7 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
         this.getDataTracker().startTracking(SCREAMING, false);
         this.getDataTracker().startTracking(LEFT_HORN, true);
         this.getDataTracker().startTracking(RIGHT_HORN, true);
+        this.getDataTracker().startTracking(BLOCKADING, false);
 	}
 	
 	public static DefaultAttributeContainer.Builder createMobAttributes()
@@ -75,10 +84,6 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 		
 		return null;
 	}
-	
-	public boolean isTreeSleeping() { return false; }
-	
-	public void setTreeSleeping(boolean var) { }
 	
 	public int getDefaultColor() { return 9647415; }
 	
@@ -126,4 +131,22 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 				break;
 		}
 	}
+	
+	public void tick()
+	{
+		super.tick();
+		
+		EntityAttributeInstance attribute = this.getAttributeInstance(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE);
+		if(isBlockading() != attribute.hasModifier(BLOCKADE_KNOCKBACK_BUFF))
+			if(isBlockading())
+				attribute.addTemporaryModifier(BLOCKADE_KNOCKBACK_BUFF);
+			else
+				attribute.removeModifier(BLOCKADE_KNOCKBACK_BUFF);
+	}
+	
+	public boolean isBlockading() { return this.getDataTracker().get(BLOCKADING).booleanValue(); }
+	
+	public void setBlockading(boolean bool) { this.getDataTracker().set(BLOCKADING, bool); }
+	
+	public boolean isCollidable() { return isBlockading() && isAlive() || super.isCollidable(); } 
 }

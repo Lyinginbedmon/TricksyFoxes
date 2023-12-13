@@ -20,6 +20,7 @@ import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.TricksyInventoryScreenHandler;
 import com.lying.tricksy.screen.TricksyTreeScreenHandler;
 
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -138,9 +139,23 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 	
 	public default void playSoundForBark(@NotNull Bark bark) { }
 	
-	public void setTreeSleeping(boolean var);
+	public default EntityPose defaultPose() { return EntityPose.STANDING; }
 	
-	public boolean isTreeSleeping();
+	public void setTreePose(EntityPose pose);
+	
+	public EntityPose getTreePose();
+	
+	public default boolean isTreeSleeping() { return getTreePose() == EntityPose.SLEEPING; }
+	
+	public static EntityPose poseFromName(String nameIn)
+	{
+		for(EntityPose pose : EntityPose.values())
+			if(pose.name().equalsIgnoreCase(nameIn))
+				return pose;
+		return EntityPose.STANDING;
+	}
+	
+	public static String nameFromPose(EntityPose poseIn) { return poseIn.name().toLowerCase(); }
 	
 	public ItemStack getProjectileType(ItemStack stack);
 	

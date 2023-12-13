@@ -71,7 +71,7 @@ public class BehaviourTree
 		if(waitTicks > 0)
 			--waitTicks;
 		
-		tricksy.setTreeSleeping(false);
+		tricksy.setTreePose(tricksy.defaultPose());
 		TreeNode<?> root = root();
 		root.clearLog();
 		if(root.tick(tricksy, local, global) == Result.FAILURE)

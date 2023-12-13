@@ -29,6 +29,7 @@ import net.minecraft.world.World;
 public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHolder<Type>
 {
 	private static final TrackedData<Integer> TYPE = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
+	private static final TrackedData<Boolean> STANCE = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.BOOLEAN);
 	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
@@ -39,6 +40,7 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 	{
 		super.initDataTracker();
 		this.getDataTracker().startTracking(TYPE, 0);
+		this.getDataTracker().startTracking(STANCE, false);
 	}
 	
 	public static DefaultAttributeContainer.Builder createMobAttributes()
@@ -50,12 +52,21 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 	{
 		super.readCustomDataFromNbt(data);
 		setVariant(Type.byName(data.getString("Type")));
+		setStance(data.getBoolean("Stance"));
 	}
 	
 	public void writeCustomDataToNbt(NbtCompound data)
 	{
 		super.writeCustomDataToNbt(data);
 		data.putString("Type", this.getVariant().asString());
+		data.putBoolean("Stance", currentStance());
+	}
+	
+	public void tick()
+	{
+		super.tick();
+		if(isSprinting() != currentStance())
+			setSprinting(currentStance());
 	}
 	
 	@Nullable
@@ -80,6 +91,7 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 		switch(pose)
 		{
 			case SITTING:	return EntityDimensions.fixed(super.getDimensions(pose).width, 0.7F);
+			case CROUCHING:	return EntityDimensions.fixed(0.6F, 0.7F);
 			default:
 				return super.getDimensions(pose);
 		}
@@ -128,4 +140,10 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 				break;
 		}
 	}
+	
+	public void setStance(boolean bool) { getDataTracker().set(STANCE, bool); }
+	
+	public boolean currentStance() { return this.getDataTracker().get(STANCE).booleanValue(); }
+	
+	public EntityPose defaultPose() { return currentStance() ? EntityPose.CROUCHING : EntityPose.STANDING; }
 }

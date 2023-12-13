@@ -24,8 +24,6 @@ public class ModelTricksyFoxSleeping<T extends EntityTricksyFox> extends ModelTr
 	
 	public static TexturedModelData getMainModel() { return getTexturedModelData(0F); }
 	
-	public static TexturedModelData getOuterModel() { return getTexturedModelData(0.5F); }
-	
 	public static TexturedModelData getTexturedModelData(float inflation)
 	{
 		Dilation dilation = new Dilation(inflation);

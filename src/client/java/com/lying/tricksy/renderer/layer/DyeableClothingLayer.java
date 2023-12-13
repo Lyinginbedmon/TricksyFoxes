@@ -22,7 +22,7 @@ public abstract class DyeableClothingLayer<T extends PathAwareEntity & ITricksyM
 	public final Identifier texture;
 	public final Identifier textureOverlay;
 	
-	private final M clothingModel;
+	protected M clothingModel;
 	
 	public DyeableClothingLayer(FeatureRendererContext<T, M> context, M clothingModel, Identifier textureA, Identifier textureB)
 	{

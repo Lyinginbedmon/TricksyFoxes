@@ -44,7 +44,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 	public static final TrackedData<Optional<UUID>> OWNER_UUID = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	public static final TrackedData<NbtCompound> LOG_NBT = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
-	public static final TrackedData<Boolean> SLEEPING = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.BOOLEAN);
+	public static final TrackedData<EntityPose> TREE_POSE = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.ENTITY_POSE);
 	public static final TrackedData<Integer> BARK = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.INTEGER);
 	
 	private BehaviourTree behaviourTree = new BehaviourTree();
@@ -69,7 +69,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		this.getDataTracker().startTracking(COLOR, OptionalInt.empty());
 		this.getDataTracker().startTracking(TREE_NBT, BehaviourTree.INITIAL_TREE.write(new NbtCompound()));
 		this.getDataTracker().startTracking(LOG_NBT, new NbtCompound());
-		this.getDataTracker().startTracking(SLEEPING, false);
+		this.getDataTracker().startTracking(TREE_POSE, EntityPose.STANDING);
 		this.getDataTracker().startTracking(BARK, Bark.NONE.ordinal());
 	}
 	
@@ -91,7 +91,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		boardLocal.readFromNbt(data.getCompound("Whiteboard"));
 		if(data.contains("BehaviourTree", NbtElement.COMPOUND_TYPE))
 			setBehaviourTree(data.getCompound("BehaviourTree"));
-		setTreeSleeping(data.getBoolean("IsSleeping"));
+		setTreePose(data.getBoolean("IsSleeping") ? EntityPose.SLEEPING : EntityPose.STANDING);
 		if(data.contains("Home", NbtElement.COMPOUND_TYPE))
 			setPositionTarget(NbtHelper.toBlockPos(data.getCompound("Home")), 6);
 	}
@@ -181,16 +181,16 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		super.tickMovement();
 	}
 	
-	public boolean isTreeSleeping() { return this.getDataTracker().get(SLEEPING).booleanValue(); }
+	/** Returns true if the behaviour tree is enforcing a sitting pose */
+	public boolean isTreeSleeping() { return this.getDataTracker().get(TREE_POSE) == EntityPose.SITTING; }
 	
-	public void setTreeSleeping(boolean var)
+	public void setTreePose(EntityPose pose)
 	{
-		this.getDataTracker().set(SLEEPING, var);
-		if(var)
-			setPose(EntityPose.SITTING);
-		else
-			setPose(EntityPose.STANDING);
+		getDataTracker().set(TREE_POSE, pose);
+		setPose(pose);
 	}
+	
+	public EntityPose getTreePose() { return this.getDataTracker().get(TREE_POSE); }
 	
 	public Optional<UUID> getSage() { return this.getDataTracker().get(OWNER_UUID); }
 	

@@ -33,6 +33,7 @@ public class EntityTricksyFoxRenderer extends MobEntityRenderer<EntityTricksyFox
 	public static final Identifier TEXTURE_SNOW_SLEEPING = new Identifier("textures/entity/fox/snow_fox_sleep.png");
 	
 	private final ModelTricksyFoxBase<EntityTricksyFox> standing;
+	private final ModelTricksyFoxBase<EntityTricksyFox> crouching;
 	private final ModelTricksyFoxBase<EntityTricksyFox> sleeping;
 	
 	public EntityTricksyFoxRenderer(Context ctx)
@@ -49,13 +50,26 @@ public class EntityTricksyFoxRenderer extends MobEntityRenderer<EntityTricksyFox
 //		this.addFeature(new TricksyBarkLayer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>(this));	TODO Improve bark rendering as FeatureRenderer
 		
 		this.standing = this.model;
+		this.crouching = new ModelTricksyFoxMain<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX_CROUCHING));
 		this.sleeping = new ModelTricksyFoxSleeping<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX_SLEEPING));
 	}
 	
 	@Override
 	public void render(EntityTricksyFox mobEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i)
 	{
-		this.model = mobEntity.isTreeSleeping() ? this.sleeping : this.standing;
+		switch(mobEntity.getTreePose())
+		{
+			case SITTING:
+				this.model = this.sleeping;
+				break;
+			case CROUCHING:
+				this.model = this.crouching;
+				break;
+			case STANDING:
+			default:
+				this.model = this.standing;
+				break;
+		}
 		if(!mobEntity.isTreeSleeping())
 			setModelPose(mobEntity);
 		
