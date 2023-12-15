@@ -34,6 +34,7 @@ import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.CandlePowers;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
@@ -106,6 +107,17 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 					}
 				});
 		set.add(new NodeSubType<LeafNode>(VARIANT_FOX_STANCE, leafFoxStance())
+				{
+					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_FOX; }
+					public List<MutableText> fullDescription()
+					{
+						List<MutableText> list = Lists.newArrayList();
+						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_FOX.getName()));
+						list.addAll(super.fullDescription());
+						return list;
+					}
+				});
+		set.add(new NodeSubType<LeafNode>(VARIANT_FOX_FIRE, leafFoxFire())
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_FOX; }
 					public List<MutableText> fullDescription()
@@ -545,5 +557,54 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return true;
 					}
 				};
+	}
+	
+	public static INodeTickHandler<LeafNode> leafFoxFire()
+	{
+		return new INodeTickHandler<LeafNode>()
+		{
+			// TODO Replace with reference to proprietary fox fire block placed by projectile
+			public static final BlockState FIRE = Blocks.TORCH.getDefaultState();
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.MOVE); }
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
+			{
+				Random rand = tricksy.getRandom();
+				return UniformIntProvider.create(60, 120).get(rand);
+			}
+			
+			public Map<WhiteboardRef, INodeIO> ioSet()
+			{
+				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			{
+				IWhiteboardObject<BlockPos> posIn = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
+				if(posIn.size() == 0)
+					return Result.FAILURE;
+				
+				BlockPos pos = posIn.get();
+				if(!tricksy.getBlockPos().isWithinDistance(pos, 16D) || !FIRE.canPlaceAt(tricksy.getEntityWorld(), pos) || !INodeTickHandler.canSee(tricksy, pos.toCenterPos()))
+					return Result.FAILURE;
+				
+				tricksy.getLookControl().lookAt(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
+				if(parent.ticksRunning() < Reference.Values.TICKS_PER_SECOND)
+					return Result.RUNNING;
+				
+				// TODO Launch fox fire projectile towards position
+				/**
+				 * Projectile will travel without gravity or deceleration until either:
+				 * * It reaches the preset target position
+				 * * Its lifespan is depleted
+				 * It will then place the fox fire block wherever it is, if possible
+				 * 
+				 * Entities struck by the projectile will be briefly ignited and the projectile removed
+				 */
+				
+				return Result.SUCCESS;
+			}
+		};
 	}
 }

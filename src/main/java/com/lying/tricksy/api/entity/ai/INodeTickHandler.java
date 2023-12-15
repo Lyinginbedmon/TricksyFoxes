@@ -37,9 +37,11 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 
 public interface INodeTickHandler<M extends TreeNode<?>>
 {
@@ -131,6 +133,14 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 	{
 		return tricksy.distanceTo(pos) < INTERACT_RANGE;
 	}
+	
+    public static <T extends PathAwareEntity & ITricksyMob<?>> boolean canSee(T tricksy, Vec3d position)
+    {
+        Vec3d vec3d = new Vec3d(tricksy.getX(), tricksy.getEyeY(), tricksy.getZ());
+        if(position.distanceTo(vec3d) > 128.0)
+            return false;
+        return tricksy.getWorld().raycast(new RaycastContext(vec3d, position, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, tricksy)).getType() == HitResult.Type.MISS;
+    }
 	
 	public static <T extends PathAwareEntity & ITricksyMob<?>> ActionResult activateBlock(BlockPos blockPos, ServerWorld world, T tricksy, Identifier builderID)
 	{
