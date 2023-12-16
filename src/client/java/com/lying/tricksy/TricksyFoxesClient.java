@@ -1,6 +1,7 @@
 package com.lying.tricksy;
 
 import com.lying.tricksy.config.ClientConfig;
+import com.lying.tricksy.entity.EntityFoxFire;
 import com.lying.tricksy.init.TFBlockEntities;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
@@ -44,6 +45,7 @@ import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
+import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 import net.minecraft.item.DyeableItem;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
@@ -78,6 +80,8 @@ public class TricksyFoxesClient implements ClientModInitializer
 		ArmorRenderer.register(new SageHatRenderer(), TFItems.SAGE_HAT);
 		EntityRendererRegistry.register(TFEntityTypes.TRICKSY_FOX, EntityTricksyFoxRenderer::new);
 		EntityRendererRegistry.register(TFEntityTypes.TRICKSY_GOAT, EntityTricksyGoatRenderer::new);
+		EntityRendererRegistry.register(TFEntityTypes.FOX_FIRE, context -> new FlyingItemEntityRenderer<EntityFoxFire>(context, 0.75F, true));
+		
 		BlockEntityRendererFactories.register(TFBlockEntities.CLOCKWORK_FRIAR, ClockworkFriarBlockEntityRenderer::new);
 		
 		ColorProviderRegistry.ITEM.register((stack, index) -> { return index == 0 ? ((DyeableItem)stack.getItem()).getColor(stack) : -1; }, TFItems.SAGE_HAT);

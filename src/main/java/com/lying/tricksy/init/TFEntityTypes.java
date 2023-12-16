@@ -1,5 +1,6 @@
 package com.lying.tricksy.init;
 
+import com.lying.tricksy.entity.EntityFoxFire;
 import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.entity.EntityTricksyGoat;
 import com.lying.tricksy.reference.Reference;
@@ -24,6 +25,11 @@ public class TFEntityTypes
 			Registries.ENTITY_TYPE, 
 			new Identifier(Reference.ModInfo.MOD_ID, "tricksy_goat"), 
 			FabricEntityTypeBuilder.create(SpawnGroup.CREATURE, EntityTricksyGoat::new).dimensions(EntityDimensions.fixed(0.8F, 1.85F)).build());
+	
+	public static final EntityType<EntityFoxFire> FOX_FIRE = Registry.register(
+			Registries.ENTITY_TYPE,
+			new Identifier(Reference.ModInfo.MOD_ID, "fox_fire"),
+			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityFoxFire::new).dimensions(EntityDimensions.fixed(0.2F, 0.2F)).build());
 	
 	public static void init()
 	{

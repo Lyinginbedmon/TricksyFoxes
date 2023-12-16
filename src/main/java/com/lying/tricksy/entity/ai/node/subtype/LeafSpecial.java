@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
+import com.lying.tricksy.entity.EntityFoxFire;
 import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.entity.EntityTricksyGoat;
 import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
@@ -564,7 +565,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 		return new INodeTickHandler<LeafNode>()
 		{
 			// TODO Replace with reference to proprietary fox fire block placed by projectile
-			public static final BlockState FIRE = Blocks.TORCH.getDefaultState();
+			public static final BlockState FIRE = TFBlocks.FOX_FIRE.getDefaultState();
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.MOVE); }
 			
@@ -593,15 +594,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 				if(parent.ticksRunning() < Reference.Values.TICKS_PER_SECOND)
 					return Result.RUNNING;
 				
-				// TODO Launch fox fire projectile towards position
-				/**
-				 * Projectile will travel without gravity or deceleration until either:
-				 * * It reaches the preset target position
-				 * * Its lifespan is depleted
-				 * It will then place the fox fire block wherever it is, if possible
-				 * 
-				 * Entities struck by the projectile will be briefly ignited and the projectile removed
-				 */
+				EntityFoxFire.spawnFlameTargeting(tricksy, pos);
 				
 				return Result.SUCCESS;
 			}

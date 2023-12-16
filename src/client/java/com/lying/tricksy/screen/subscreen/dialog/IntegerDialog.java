@@ -36,7 +36,12 @@ public class IntegerDialog extends ValueDialog<Integer>
 	
 	public void incVal(int amount)
 	{
-		int val = Integer.valueOf(input.getText());
+		int val = 0;
+		try
+		{
+			val = Integer.valueOf(input.getText());
+		}
+		catch(NumberFormatException e) { val = 0; }
 		val = MathHelper.clamp(val + amount, 0, 30000000);
 		input.setText(String.valueOf(val));
 	}
