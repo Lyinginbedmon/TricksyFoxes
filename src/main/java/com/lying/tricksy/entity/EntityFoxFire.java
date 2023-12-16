@@ -6,6 +6,7 @@ import com.lying.tricksy.block.BlockFoxFire;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.utility.TricksyUtils;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -19,6 +20,7 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -26,12 +28,18 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+/**
+ * XXX Entities struck by the projectile will be briefly ignited and the projectile removed?
+ */
 public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 {
+	private static final double VELOCITY = 0.5D;
 	private static final TrackedData<Optional<BlockPos>> TARGET_POSITION = DataTracker.registerData(EntityFoxFire.class, TrackedDataHandlerRegistry.OPTIONAL_BLOCK_POS);
 	private static final TrackedData<Integer> LIFESPAN = DataTracker.registerData(EntityFoxFire.class, TrackedDataHandlerRegistry.INTEGER);
 	
@@ -49,10 +57,6 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 		return fire;
 	}
 	
-	/**
-	 * TODO Projectile ricochets if it hits something before reaching its intended destination
-	 * XXX Entities struck by the projectile will be briefly ignited and the projectile removed?
-	 */
 	public static void spawnFlameTargeting(LivingEntity mob, BlockPos targetPos)
 	{
 		EntityFoxFire fire = fromMob(mob);
@@ -65,7 +69,7 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 	protected void initDataTracker()
 	{
 		getDataTracker().startTracking(TARGET_POSITION, Optional.empty());
-		getDataTracker().startTracking(LIFESPAN, Reference.Values.TICKS_PER_SECOND * 10);
+		getDataTracker().startTracking(LIFESPAN, Reference.Values.TICKS_PER_SECOND * 5);
 	}
 	
 	protected void writeCustomDataToNbt(NbtCompound nbt)
@@ -102,7 +106,7 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 		Vec3d origin = getPos();
 		
 		Vec3d offset = target.subtract(origin).normalize();
-		setVelocity(offset.multiply(0.5D));
+		setVelocity(offset.multiply(VELOCITY));
 	}
 	
 	public void tick()
@@ -120,6 +124,10 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 		}
 		else
 		{
+			HitResult hitResult = ProjectileUtil.getCollision(this, this::canHit);
+			if(hitResult != null && hitResult.getType() != HitResult.Type.MISS)
+				onCollision(hitResult);
+			
 			this.prevX = getX();
 			this.prevY = getY();
 			this.prevZ = getZ();
@@ -152,4 +160,10 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 	public ItemStack getStack() { return Items.FIRE_CHARGE.getDefaultStack(); }
 	
 	protected boolean canHit(Entity entity) { return false; }
+	
+	protected void onBlockHit(BlockHitResult blockHitResult)
+	{
+		super.onBlockHit(blockHitResult);
+		setVelocity(TricksyUtils.reflect(getVelocity(), Vec3d.of(blockHitResult.getSide().getVector())).normalize().multiply(getVelocity().length()));
+	}
 }

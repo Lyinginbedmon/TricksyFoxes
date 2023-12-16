@@ -16,6 +16,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 
 public class TricksyUtils
 {
@@ -88,4 +89,27 @@ public class TricksyUtils
 		
 		return input;
 	}
+	
+	/**
+	 * Returns a direction vector reflected by impact with a plane with the given normal vector
+	 * @param v Direction of motion at impact
+	 * @param n Normal of the face hit
+	 * @param f Friction coefficient
+	 * @param r Elasticity coefficient
+	 * @return
+	 */
+	public static Vec3d reflect(Vec3d v, Vec3d n, double f, double r)
+	{
+		v = v.normalize();
+		n = n.normalize();
+		
+		// Direction perpendicular to the impact face
+		Vec3d u = n.multiply(v.dotProduct(n));
+		// Direction parallel to the impact face
+		Vec3d w = v.subtract(u);
+		
+		return (w.multiply(f)).subtract(u.multiply(r));
+	}
+	
+	public static Vec3d reflect(Vec3d v, Vec3d n) { return reflect(v, n, 1D, 1D); }
 }
