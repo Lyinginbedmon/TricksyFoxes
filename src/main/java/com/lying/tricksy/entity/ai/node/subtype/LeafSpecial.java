@@ -68,9 +68,6 @@ import net.minecraft.util.math.random.Random;
 
 public class LeafSpecial implements ISubtypeGroup<LeafNode>
 {
-	/** TODO More special actions
-	 * Foxfire
-	 */
 	public static final Identifier VARIANT_FOX_PRAY = ISubtypeGroup.variant("fox_pray");
 	public static final Identifier VARIANT_FOX_STANCE = ISubtypeGroup.variant("fox_stance");
 	public static final Identifier VARIANT_FOX_FIRE = ISubtypeGroup.variant("fox_fire");
@@ -126,6 +123,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						List<MutableText> list = Lists.newArrayList();
 						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_FOX.getName()));
 						list.addAll(super.fullDescription());
+						list.add(cooldownDesc(Text.translatable("info."+Reference.ModInfo.MOD_ID+".fox_fire_cooldown")));
 						return list;
 					}
 				});
@@ -137,6 +135,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						List<MutableText> list = Lists.newArrayList();
 						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_GOAT.getName()));
 						list.addAll(super.fullDescription());
+						list.add(cooldownDesc(Text.translatable("info."+Reference.ModInfo.MOD_ID+".goat_blockade_cooldown")));
 						return list;
 					}
 				});
@@ -148,6 +147,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						List<MutableText> list = Lists.newArrayList();
 						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_GOAT.getName()));
 						list.addAll(super.fullDescription());
+						list.add(cooldownDesc(Text.translatable("info."+Reference.ModInfo.MOD_ID+".goat_jump_cooldown")));
 						return list;
 					}
 				});
@@ -159,6 +159,11 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 		return new INodeTickHandler<LeafNode>()
 		{
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
+			{
+				return Reference.Values.TICKS_PER_SECOND;
+			}
 			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -392,6 +397,11 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 					
 					public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.MOVE); }
 					
+					public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
+					{
+						return Reference.Values.TICKS_PER_SECOND;
+					}
+					
 					public Map<WhiteboardRef, INodeIO> ioSet()
 					{
 						return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
@@ -564,7 +574,6 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
-			// TODO Replace with reference to proprietary fox fire block placed by projectile
 			public static final BlockState FIRE = TFBlocks.FOX_FIRE.getDefaultState();
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.MOVE); }

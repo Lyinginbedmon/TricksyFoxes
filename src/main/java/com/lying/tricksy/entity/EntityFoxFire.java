@@ -13,7 +13,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.FlyingItemEntity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MovementType;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.data.DataTracker;
@@ -53,7 +52,7 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 	{
 		EntityFoxFire fire = TFEntityTypes.FOX_FIRE.create(shooter.getEntityWorld());
 		fire.setOwner(shooter);
-		fire.setPos(shooter.getX(), shooter.getEyeY(), shooter.getZ());
+		fire.setPos(shooter.getX(), shooter.getEyeY() + 0.5D, shooter.getZ());
 		return fire;
 	}
 	
@@ -127,11 +126,12 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 			HitResult hitResult = ProjectileUtil.getCollision(this, this::canHit);
 			if(hitResult != null && hitResult.getType() != HitResult.Type.MISS)
 				onCollision(hitResult);
+			this.checkBlockCollision();
 			
 			this.prevX = getX();
 			this.prevY = getY();
 			this.prevZ = getZ();
-			move(MovementType.SELF, getVelocity());
+			this.setPos(getX() + getVelocity().getX(), getY() + getVelocity().getY(), getZ() + getVelocity().getZ());
 			
 			int life = lifespan() - 1;
 			getDataTracker().set(LIFESPAN, life);
@@ -159,11 +159,13 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 	
 	public ItemStack getStack() { return Items.FIRE_CHARGE.getDefaultStack(); }
 	
-	protected boolean canHit(Entity entity) { return false; }
+	protected boolean canHit(Entity entity) { return entity == null; }
 	
 	protected void onBlockHit(BlockHitResult blockHitResult)
 	{
 		super.onBlockHit(blockHitResult);
-		setVelocity(TricksyUtils.reflect(getVelocity(), Vec3d.of(blockHitResult.getSide().getVector())).normalize().multiply(getVelocity().length()));
+		Vec3d vel = getVelocity();
+		Vec3d ref = TricksyUtils.reflect(vel, Vec3d.of(blockHitResult.getSide().getVector()));
+		setVelocity(ref.normalize().multiply(vel.length()));
 	}
 }

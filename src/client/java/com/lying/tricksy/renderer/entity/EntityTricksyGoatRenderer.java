@@ -5,6 +5,7 @@ import com.lying.tricksy.entity.EntityTricksyGoat;
 import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.entity.ModelTricksyGoatBase;
 import com.lying.tricksy.model.entity.ModelTricksyGoatMain;
+import com.lying.tricksy.model.entity.ModelTricksyGoatSleeping;
 import com.lying.tricksy.renderer.layer.TricksyBarkLayer;
 import com.lying.tricksy.renderer.layer.TricksyGoatClothingLayer;
 
@@ -25,17 +26,33 @@ import net.minecraft.util.Identifier;
 public class EntityTricksyGoatRenderer extends MobEntityRenderer<EntityTricksyGoat, ModelTricksyGoatBase<EntityTricksyGoat>>
 {
 	public static final Identifier TEXTURE = new Identifier("textures/entity/goat/goat.png");
+
+	private final ModelTricksyGoatBase<EntityTricksyGoat> standing;
+	private final ModelTricksyGoatBase<EntityTricksyGoat> sleeping;
 	
 	public EntityTricksyGoatRenderer(Context ctx)
 	{
 		super(ctx, new ModelTricksyGoatMain<EntityTricksyGoat>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_GOAT)), 0.5F);
 		this.addFeature(new TricksyGoatClothingLayer(this));
 //		this.addFeature(new TricksyGoatHeldItemLayer(this, ctx.getHeldItemRenderer()));
+		
+		this.standing = this.model;
+		this.sleeping = new ModelTricksyGoatSleeping<EntityTricksyGoat>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_GOAT_SLEEPING));
 	}
 	
 	@Override
 	public void render(EntityTricksyGoat mobEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i)
 	{
+		switch(mobEntity.getTreePose())
+		{
+			case SITTING:
+				this.model = this.sleeping;
+				break;
+			case STANDING:
+			default:
+				this.model = this.standing;
+				break;
+		}
 		if(!mobEntity.isTreeSleeping())
 			setModelPose(mobEntity);
 		

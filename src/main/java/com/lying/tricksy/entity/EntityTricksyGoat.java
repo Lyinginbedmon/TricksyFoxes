@@ -31,6 +31,7 @@ import net.minecraft.world.World;
 public class EntityTricksyGoat extends AbstractTricksyAnimal
 {
 	public static final EntityDimensions LONG_JUMPING_DIMENSIONS = EntityDimensions.changing(0.8F, 1.85F).scaled(0.7f);
+	public static final EntityDimensions SLEEPING_DIMENSIONS = EntityDimensions.fixed(0.8F, 1.4F);
     private static final TrackedData<Boolean> SCREAMING = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> LEFT_HORN = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> RIGHT_HORN = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -88,7 +89,12 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 	
 	public EntityDimensions getDimensions(EntityPose pose)
 	{
-		return pose == EntityPose.LONG_JUMPING ? LONG_JUMPING_DIMENSIONS : super.getDimensions(pose);
+		switch(pose)
+		{
+			case LONG_JUMPING:	return LONG_JUMPING_DIMENSIONS;
+			case SITTING:		return SLEEPING_DIMENSIONS;
+			default:	return super.getDimensions(pose);
+		}
 	}
 	
 	@Nullable

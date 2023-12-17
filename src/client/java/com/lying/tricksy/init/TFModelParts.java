@@ -6,6 +6,7 @@ import com.lying.tricksy.model.entity.ModelTricksyFoxCrouching;
 import com.lying.tricksy.model.entity.ModelTricksyFoxMain;
 import com.lying.tricksy.model.entity.ModelTricksyFoxSleeping;
 import com.lying.tricksy.model.entity.ModelTricksyGoatMain;
+import com.lying.tricksy.model.entity.ModelTricksyGoatSleeping;
 import com.lying.tricksy.model.layer.ModelFoxPeriapt;
 import com.lying.tricksy.reference.Reference;
 
@@ -28,6 +29,7 @@ public class TFModelParts
 	
 	public static final EntityModelLayer TRICKSY_GOAT	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_goat"), "main");
 	public static final EntityModelLayer TRICKSY_GOAT_CLOTHING	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_goat"), "clothing");
+	public static final EntityModelLayer TRICKSY_GOAT_SLEEPING	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_goat"), "sleeping");
 	
 	public static final EntityModelLayer SAGE_HAT	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "sage_hat"), "main");
 	
@@ -42,6 +44,7 @@ public class TFModelParts
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_FOX_SLEEPING, ModelTricksyFoxSleeping::getMainModel);
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_GOAT, ModelTricksyGoatMain::getMainModel);
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_GOAT_CLOTHING, ModelTricksyGoatMain::getOuterModel);
+		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_GOAT_SLEEPING, ModelTricksyGoatSleeping::getModelData);
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.SAGE_HAT, ModelSageHat::getTexturedModelData);
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.PERIAPT_FOX, ModelFoxPeriapt::getTexturedModelData);
 		

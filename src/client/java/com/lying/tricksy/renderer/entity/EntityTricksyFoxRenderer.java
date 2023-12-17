@@ -4,6 +4,7 @@ import com.lying.tricksy.api.entity.ITricksyMob.Bark;
 import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.entity.ModelTricksyFoxBase;
+import com.lying.tricksy.model.entity.ModelTricksyFoxCrouching;
 import com.lying.tricksy.model.entity.ModelTricksyFoxMain;
 import com.lying.tricksy.model.entity.ModelTricksyFoxSleeping;
 import com.lying.tricksy.renderer.layer.AbstractOffsetHeldItemLayer;
@@ -50,7 +51,7 @@ public class EntityTricksyFoxRenderer extends MobEntityRenderer<EntityTricksyFox
 //		this.addFeature(new TricksyBarkLayer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>(this));	TODO Improve bark rendering as FeatureRenderer
 		
 		this.standing = this.model;
-		this.crouching = new ModelTricksyFoxMain<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX_CROUCHING));
+		this.crouching = new ModelTricksyFoxCrouching<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX_CROUCHING));
 		this.sleeping = new ModelTricksyFoxSleeping<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX_SLEEPING));
 	}
 	
@@ -87,14 +88,14 @@ public class EntityTricksyFoxRenderer extends MobEntityRenderer<EntityTricksyFox
 			offPose = mobEntity.getOffHandStack().isEmpty() ? BipedEntityModel.ArmPose.EMPTY : BipedEntityModel.ArmPose.ITEM;
 		switch(mobEntity.getMainArm())
 		{
-		case LEFT:
-			this.model.leftArmPose = mainPose;
-			this.model.rightArmPose = offPose;
-			break;
-		case RIGHT:
-			this.model.rightArmPose = mainPose;
-			this.model.leftArmPose = offPose;
-			break;
+			case LEFT:
+				this.model.leftArmPose = mainPose;
+				this.model.rightArmPose = offPose;
+				break;
+			case RIGHT:
+				this.model.rightArmPose = mainPose;
+				this.model.leftArmPose = offPose;
+				break;
 		}
 	}
 	
