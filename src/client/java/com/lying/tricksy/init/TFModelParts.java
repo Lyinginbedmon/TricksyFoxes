@@ -8,6 +8,7 @@ import com.lying.tricksy.model.entity.ModelTricksyFoxSleeping;
 import com.lying.tricksy.model.entity.ModelTricksyGoatMain;
 import com.lying.tricksy.model.entity.ModelTricksyGoatSleeping;
 import com.lying.tricksy.model.layer.ModelFoxPeriapt;
+import com.lying.tricksy.model.layer.ModelGoatPeriapt;
 import com.lying.tricksy.reference.Reference;
 
 import net.fabricmc.api.EnvType;
@@ -20,6 +21,7 @@ import net.minecraft.util.Identifier;
 public class TFModelParts
 {
 	public static final EntityModelLayer PERIAPT_FOX	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "fox_periapt"), "main");
+	public static final EntityModelLayer PERIAPT_GOAT	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "goat_periapt"), "main");
 	
 	public static final EntityModelLayer TRICKSY_FOX	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_fox"), "main");
 	public static final EntityModelLayer TRICKSY_FOX_CROUCHING	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_fox"), "crouching");
@@ -47,6 +49,7 @@ public class TFModelParts
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_GOAT_SLEEPING, ModelTricksyGoatSleeping::getModelData);
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.SAGE_HAT, ModelSageHat::getTexturedModelData);
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.PERIAPT_FOX, ModelFoxPeriapt::getTexturedModelData);
+		EntityModelLayerRegistry.registerModelLayer(TFModelParts.PERIAPT_GOAT, ModelGoatPeriapt::getTexturedModelData);
 		
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.CLOCKWORK_FRIAR, ModelClockworkFriar::getTexturedModelData);
 	}
