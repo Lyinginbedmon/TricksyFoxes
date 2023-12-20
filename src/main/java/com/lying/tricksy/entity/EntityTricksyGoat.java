@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.init.TFEntityTypes;
 
-import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
@@ -32,18 +31,21 @@ import net.minecraft.world.World;
 
 public class EntityTricksyGoat extends AbstractTricksyAnimal implements IAnimatedBiped
 {
+    private static final TrackedData<Integer> ANIMATING = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.INTEGER);
+    /**
+     * 0 - Blockading
+     * 1 - Charging
+     */
+    public final AnimationManager<EntityTricksyGoat> animations = new AnimationManager<>(2);
+	
 	public static final EntityDimensions LONG_JUMPING_DIMENSIONS = EntityDimensions.changing(0.8F, 1.85F).scaled(0.7f);
 	public static final EntityDimensions SLEEPING_DIMENSIONS = EntityDimensions.fixed(0.8F, 1.4F);
     private static final TrackedData<Boolean> SCREAMING = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> LEFT_HORN = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> RIGHT_HORN = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Boolean> BLOCKADING = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.BOOLEAN);
-	
+    
     private static final UUID BLOCKADE_KNOCKBACK_ID = UUID.fromString("ce647cae-a269-4b88-970d-49a32e51cb73");
     private static final EntityAttributeModifier BLOCKADE_KNOCKBACK_BUFF = new EntityAttributeModifier(BLOCKADE_KNOCKBACK_ID, "Blockading knockback buff", 1.0, EntityAttributeModifier.Operation.ADDITION);
-    
-    public final AnimationState blockadeAnimationState = new AnimationState();
-    public final AnimationState chargeAnimationState = new AnimationState();
     
 	public EntityTricksyGoat(EntityType<? extends AnimalEntity> entityType, World world)
 	{
@@ -59,7 +61,7 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal implements IAnimate
         this.getDataTracker().startTracking(SCREAMING, false);
         this.getDataTracker().startTracking(LEFT_HORN, true);
         this.getDataTracker().startTracking(RIGHT_HORN, true);
-        this.getDataTracker().startTracking(BLOCKADING, false);
+        this.getDataTracker().startTracking(ANIMATING, -1);
 	}
 	
 	public static DefaultAttributeContainer.Builder createMobAttributes()
@@ -169,7 +171,7 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal implements IAnimate
 	public void tick()
 	{
 		super.tick();
-		
+		this.animations.tick(this);
 		EntityAttributeInstance attribute = this.getAttributeInstance(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE);
 		if(isBlockading() != attribute.hasModifier(BLOCKADE_KNOCKBACK_BUFF))
 			if(isBlockading())
@@ -178,35 +180,41 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal implements IAnimate
 				attribute.removeModifier(BLOCKADE_KNOCKBACK_BUFF);
 	}
 	
-	public boolean isBlockading() { return this.getDataTracker().get(BLOCKADING).booleanValue(); }
+	public boolean isBlockading() { return this.getDataTracker().get(ANIMATING).intValue() == 0; }
 	
-	public void setBlockading(boolean bool)
+	public void setBlockading() { this.getDataTracker().set(ANIMATING, 0); }
+	
+	public void setCharging() { this.getDataTracker().set(ANIMATING, 1); }
+	
+	public void clearAnimation(int index)
 	{
-		this.getDataTracker().set(BLOCKADING, bool);
+		if(index < 0 || this.animations.currentAnim() == index)
+			this.getDataTracker().set(ANIMATING, this.animations.stopAll());
 	}
+	
+	public boolean isCollidable() { return isBlockading() && isAlive() || super.isCollidable(); }
 	
 	public void onTrackedDataSet(TrackedData<?> data)
 	{
-		if(BLOCKADING.equals(data))
-		{
-			if(isBlockading())
+		if(ANIMATING.equals(data))
+			switch(getDataTracker().get(ANIMATING).intValue())
 			{
-				this.blockadeAnimationState.start(this.age);
-				this.chargeAnimationState.stop();
+				case -1:
+					this.animations.stopAll();
+					break;
+				default:
+					this.animations.start(getDataTracker().get(ANIMATING), this.age);
+					break;
 			}
-			else
-				this.blockadeAnimationState.stop();
-		}
 	}
-	
-	public boolean isCollidable() { return isBlockading() && isAlive() || super.isCollidable(); } 
 	
 	public EnumSet<BipedPart> getPartsAnimating()
 	{
-		if(this.blockadeAnimationState.isRunning())
-			return EnumSet.of(BipedPart.LEFT_ARM, BipedPart.LEFT_LEG, BipedPart.RIGHT_ARM, BipedPart.RIGHT_LEG);
-		else if(this.chargeAnimationState.isRunning())
-			return EnumSet.allOf(BipedPart.class);
-		return IAnimatedBiped.super.getPartsAnimating();
+		switch(this.animations.currentAnim())
+		{
+			case 1:	return EnumSet.of(BipedPart.LEFT_ARM, BipedPart.LEFT_LEG, BipedPart.RIGHT_ARM, BipedPart.RIGHT_LEG);
+			case 0:	return EnumSet.allOf(BipedPart.class);
+			default:	return IAnimatedBiped.super.getPartsAnimating();
+		}
 	}
 }

@@ -11,5 +11,18 @@
 		"sounds": [
 			"tricksy:tricksy_enlightened"
 		]
+	},
+	"clap": {
+		"subtitle": "sound.tricksy.clap",
+		"sounds": [
+			"tricksy:clap0",
+			"tricksy:clap1",
+			"tricksy:clap2",
+			"tricksy:clap3",
+			"tricksy:clap4",
+			"tricksy:clap5",
+			"tricksy:clap6",
+			"tricksy:clap7"
+		]
 	}
 }

@@ -1,5 +1,6 @@
 package com.lying.tricksy.api.entity;
 
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
+import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFItems;
@@ -116,6 +118,7 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 		
 		// Update local whiteboard
 		local.tick();
+		local.flagAction(tricksy.getActiveFlags());
 		
 		// Update behaviour tree
 		BehaviourTree tree = tricksy.getBehaviourTree();
@@ -138,6 +141,8 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 	public default Bark currentBark() { return Bark.NONE; }
 	
 	public default void playSoundForBark(@NotNull Bark bark) { }
+	
+	public default EnumSet<ActionFlag> getActiveFlags() { return EnumSet.noneOf(ActionFlag.class); }
 	
 	public default EntityPose defaultPose() { return EntityPose.STANDING; }
 	

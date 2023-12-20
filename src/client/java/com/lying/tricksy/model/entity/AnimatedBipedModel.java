@@ -121,6 +121,8 @@ public abstract class AnimatedBipedModel<T extends LivingEntity> extends SingleP
 	
 	public void setArmAngle(Arm arm, MatrixStack matrices) { getArm(arm).rotate(matrices); }
 	
+	public void resetAllParts() { getPart().traverse().forEach(ModelPart::resetTransform); }
+	
 	public void resetAnimatedParts(EnumSet<BipedPart> parts)
 	{
 		parts.stream().forEach(part -> partsMap.get(part).resetTransform());

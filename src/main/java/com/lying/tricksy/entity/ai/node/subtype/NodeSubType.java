@@ -23,17 +23,26 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.intprovider.ConstantIntProvider;
+import net.minecraft.util.math.intprovider.IntProvider;
 
 /** Contains the method and data pertaining to a given node subtype */
 public class NodeSubType<M extends TreeNode<?>>
 {
 	private final Identifier registryName;
 	private final INodeTickHandler<M> tickFunc;
+	private final IntProvider cooldown;
 	
 	public NodeSubType(Identifier nameIn, INodeTickHandler<M> func)
 	{
+		this(nameIn, func, ConstantIntProvider.create(0));
+	}
+	
+	public NodeSubType(Identifier nameIn, INodeTickHandler<M> func, IntProvider cooldownIn)
+	{
 		this.registryName = nameIn;
 		this.tickFunc = func;
+		this.cooldown = cooldownIn;
 	}
 	
 	public Identifier getRegistryName() { return this.registryName; }
@@ -46,7 +55,8 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public List<MutableText> fullDescription() { return List.of(description()); }
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy) { return tickFunc.getCooldown(tricksy); }
+	/** Returns a value of 0 or greater, reflecting how many ticks before this type of node can be used again */
+	public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy) { return this.cooldown.get(tricksy.getRandom()); }
 	
 	public EnumSet<ActionFlag> usesFlags() { return tickFunc.flagsUsed(); }
 	

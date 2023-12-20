@@ -39,6 +39,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.intprovider.ConstantIntProvider;
 import net.minecraft.util.math.random.Random;
 
 public class LeafMisc implements ISubtypeGroup<LeafNode>
@@ -79,7 +80,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 		set.add(new NodeSubType<LeafNode>(VARIANT_GOTO, leafGoTo()));
 		set.add(new NodeSubType<LeafNode>(VARIANT_STOP, leafStop()));
 		set.add(new NodeSubType<LeafNode>(VARIANT_WANDER, leafWander()));
-		set.add(new NodeSubType<LeafNode>(VARIANT_SLEEP, leafSleep()));
+		set.add(new NodeSubType<LeafNode>(VARIANT_SLEEP, leafSleep(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND)));
 		set.add(new NodeSubType<LeafNode>(VARIANT_WAIT, new INodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
@@ -234,8 +235,6 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 		return new INodeTickHandler<LeafNode>()
 		{
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy) { return Reference.Values.TICKS_PER_SECOND; }
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
 			{

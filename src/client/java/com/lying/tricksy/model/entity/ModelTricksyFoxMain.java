@@ -36,7 +36,8 @@ public class ModelTricksyFoxMain<T extends EntityTricksyFox> extends ModelTricks
 	{
 		Dilation dilation = new Dilation(inflation);
 		ModelData meshdefinition = new ModelData();
-		ModelPartData root = meshdefinition.getRoot();
+		ModelPartData modelRoot = meshdefinition.getRoot();
+		ModelPartData root = modelRoot.addChild(EntityModelPartNames.ROOT, ModelPartBuilder.create(), ModelTransform.pivot(0, 0, 0));
 		
 		root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create().uv(1, 5).cuboid(-4.0F, -6.0F, -3.0F, 8.0F, 6.0F, 6.0F, dilation)
 			.uv(15, 1).cuboid(2.0F, -8.0F, -2.0F, 2.0F, 2.0F, 1.0F, dilation)
@@ -62,6 +63,8 @@ public class ModelTricksyFoxMain<T extends EntityTricksyFox> extends ModelTricks
 	
 	public void setAngles(T livingEntity, float limbSwing, float limbSwingAmount, float ageInTicks, float headYaw, float headPitch)
 	{
+		this.resetAllParts();
+		
 		boolean isRightHanded;
 		boolean bl = livingEntity.getRoll() > 4;
 		this.head.yaw = headYaw * ((float)Math.PI / 180);
@@ -194,7 +197,8 @@ public class ModelTricksyFoxMain<T extends EntityTricksyFox> extends ModelTricks
 		}
 		
 		this.resetAnimatedParts(livingEntity.getPartsAnimating());
-		this.updateAnimation(livingEntity.foxfireAnimationState, TFAnimations.FOXFIRE, ageInTicks);
+		this.updateAnimation(livingEntity.animations.get(0), TFAnimations.FOXFIRE, ageInTicks);
+		this.updateAnimation(livingEntity.animations.get(1), TFAnimations.PRAYER, ageInTicks);
 		
 		this.hat.copyTransform(this.head);
 	}

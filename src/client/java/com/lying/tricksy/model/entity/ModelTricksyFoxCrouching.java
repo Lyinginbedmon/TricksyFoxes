@@ -31,7 +31,8 @@ public class ModelTricksyFoxCrouching<T extends EntityTricksyFox> extends ModelT
 	{
 		Dilation dilation = Dilation.NONE;
 		ModelData meshdefinition = new ModelData();
-		ModelPartData root = meshdefinition.getRoot();
+		ModelPartData modelRoot = meshdefinition.getRoot();
+		ModelPartData root = modelRoot.addChild(EntityModelPartNames.ROOT, ModelPartBuilder.create(), ModelTransform.pivot(0, 0, 0));
 		
 		root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create().uv(1, 5).cuboid(-4.0F, -6.0F, -6.0F, 8.0F, 6.0F, 6.0F, dilation)
 			.uv(15, 1).cuboid(2.0F, -8.0F, -5.0F, 2.0F, 2.0F, 1.0F, dilation)

@@ -242,8 +242,8 @@ public class ModelTricksyGoatMain<T extends EntityTricksyGoat> extends ModelTric
 		}
 		
 		this.resetAnimatedParts(livingEntity.getPartsAnimating());
-		this.updateAnimation(livingEntity.blockadeAnimationState, TFAnimations.BLOCKADE, ageInTicks);
-		this.updateAnimation(livingEntity.chargeAnimationState, TFAnimations.CHARGE, ageInTicks);
+		this.updateAnimation(livingEntity.animations.get(0), TFAnimations.BLOCKADE, ageInTicks);
+		this.updateAnimation(livingEntity.animations.get(1), TFAnimations.CHARGE, ageInTicks);
 		
 		this.hat.copyTransform(this.head);
 	}

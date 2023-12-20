@@ -73,10 +73,10 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				return Result.SUCCESS;
 			}
 		});
-		add(set, VARIANT_SORT_NEAREST, leafSortNearest());
-		add(set, VARIANT_SORT_COLUMNAR, leafSortColumnar());
-		add(set, VARIANT_SORT_CONTIGUOUS, leafSortContiguous());
-		add(set, VARIANT_SORT_VERTICAL, leafSortVertical());
+		add(set, VARIANT_SORT_NEAREST, leafSortNearest(), Reference.Values.TICKS_PER_SECOND);
+		add(set, VARIANT_SORT_COLUMNAR, leafSortColumnar(), Reference.Values.TICKS_PER_SECOND);
+		add(set, VARIANT_SORT_CONTIGUOUS, leafSortContiguous(), Reference.Values.TICKS_PER_SECOND);
+		add(set, VARIANT_SORT_VERTICAL, leafSortVertical(), Reference.Values.TICKS_PER_SECOND);
 		add(set, VARIANT_COPY, new INodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef COPY = new WhiteboardRef("value_to_copy", TFObjType.BOOL).displayName(CommonVariables.translate("to_copy"));
@@ -418,8 +418,6 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 		};
 		public static final WhiteboardRef POSITION = CommonVariables.VAR_POS;
 		public static final WhiteboardRef INVERT = new WhiteboardRef("invert", TFObjType.BOOL).displayName(CommonVariables.translate("invert"));
-		
-		public default <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy) { return 20; }
 		
 		public default Map<WhiteboardRef, INodeIO> ioSet()
 		{

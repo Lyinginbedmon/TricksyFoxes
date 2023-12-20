@@ -4,9 +4,11 @@ import java.util.EnumSet;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.init.TFEntityTypes;
+import com.lying.tricksy.init.TFSoundEvents;
+import com.lying.tricksy.reference.Reference;
 
-import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
@@ -31,10 +33,27 @@ import net.minecraft.world.World;
 
 public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHolder<Type>, IAnimatedBiped
 {
+    private static final TrackedData<Integer> ANIMATING = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
+    /**
+     * 0 - Foxfire
+     * 1 - Praying
+     */
+	public final AnimationManager<EntityTricksyFox> animations = new AnimationManager<>(2)
+	{
+		public void onUpdateAnim(int animation, int ticksRunning, EntityTricksyFox ent)
+		{
+			if(animation == 1)
+			{
+				int clap1 = (int)(1.125F * Reference.Values.TICKS_PER_SECOND);
+				int clap2 = (int)(1.333F * Reference.Values.TICKS_PER_SECOND);
+				if(ticksRunning == clap1 || ticksRunning == clap2)
+					ent.playSound(TFSoundEvents.CLAP, getSoundVolume(), getSoundPitch());
+			}
+		}
+	};
+	
 	private static final TrackedData<Integer> TYPE = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<Boolean> STANCE = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.BOOLEAN);
-	
-	public AnimationState foxfireAnimationState = new AnimationState();
 	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
@@ -46,6 +65,7 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 		super.initDataTracker();
 		this.getDataTracker().startTracking(TYPE, 0);
 		this.getDataTracker().startTracking(STANCE, false);
+		this.getDataTracker().startTracking(ANIMATING, -1);
 	}
 	
 	public static DefaultAttributeContainer.Builder createMobAttributes()
@@ -72,6 +92,8 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 		super.tick();
 		if(isSprinting() != currentStance())
 			setSprinting(currentStance());
+		
+		this.animations.tick(this);
 	}
 	
 	@Nullable
@@ -152,10 +174,42 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 	
 	public EntityPose defaultPose() { return currentStance() ? EntityPose.CROUCHING : EntityPose.STANDING; }
 	
+	public void setFoxfire() { this.getDataTracker().set(ANIMATING, 0); }
+	
+	public void setPraying() { this.getDataTracker().set(ANIMATING, 1); }
+	
+	public void clearAnimation(int index)
+	{
+		if(index < 0 || this.animations.currentAnim() == index)
+			this.getDataTracker().set(ANIMATING, this.animations.stopAll());
+	}
+	
+	public EnumSet<ActionFlag> getActiveFlags()
+	{
+		EnumSet<ActionFlag> flags = super.getActiveFlags();
+		if(currentStance())
+			flags.add(ActionFlag.HANDS);
+		return flags;
+	}
+	
+	public void onTrackedDataSet(TrackedData<?> data)
+	{
+		if(ANIMATING.equals(data))
+			switch(getDataTracker().get(ANIMATING).intValue())
+			{
+				case -1:
+					this.animations.stopAll();
+					break;
+				default:
+					this.animations.start(getDataTracker().get(ANIMATING), this.age);
+					break;
+			}
+	}
+	
 	public EnumSet<BipedPart> getPartsAnimating()
 	{
-		if(this.foxfireAnimationState.isRunning())
-			return EnumSet.of(BipedPart.LEFT_ARM, BipedPart.LEFT_LEG, BipedPart.RIGHT_ARM, BipedPart.RIGHT_LEG, BipedPart.BODY);
+		if(this.animations.currentAnim() >= 0)
+			return EnumSet.allOf(BipedPart.class);
 		return IAnimatedBiped.super.getPartsAnimating();
 	}
 }

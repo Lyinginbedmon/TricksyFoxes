@@ -28,7 +28,8 @@ public class ModelTricksyFoxSleeping<T extends EntityTricksyFox> extends ModelTr
 	{
 		Dilation dilation = new Dilation(inflation);
 		ModelData meshDefinition = new ModelData();
-		ModelPartData root = meshDefinition.getRoot();
+		ModelPartData modelRoot = meshDefinition.getRoot();
+		ModelPartData root = modelRoot.addChild(EntityModelPartNames.ROOT, ModelPartBuilder.create(), ModelTransform.pivot(0, 0, 0));
 		
 		root.addChild("head", ModelPartBuilder.create().uv(1, 5).cuboid(-4.0F, -6.0F, -3.0F, 8.0F, 6.0F, 6.0F, dilation)
 			.uv(15, 1).cuboid(2.0F, -8.0F, -2.0F, 2.0F, 2.0F, 1.0F, dilation)

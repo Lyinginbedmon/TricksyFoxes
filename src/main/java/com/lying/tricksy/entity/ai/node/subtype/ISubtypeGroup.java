@@ -11,6 +11,7 @@ import com.lying.tricksy.reference.Reference;
 import net.minecraft.entity.EntityType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.intprovider.ConstantIntProvider;
 
 public interface ISubtypeGroup<T extends TreeNode<?>>
 {
@@ -33,5 +34,10 @@ public interface ISubtypeGroup<T extends TreeNode<?>>
 	public default void add(Collection<NodeSubType<T>> set, Identifier name, INodeTickHandler<T> handler)
 	{
 		set.add(new NodeSubType<T>(name, handler));
+	}
+	
+	public default void add(Collection<NodeSubType<T>> set, Identifier name, INodeTickHandler<T> handler, int cooldown)
+	{
+		set.add(new NodeSubType<T>(name, handler, ConstantIntProvider.create(cooldown)));
 	}
 }

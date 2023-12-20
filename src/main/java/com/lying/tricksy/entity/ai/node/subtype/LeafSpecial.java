@@ -64,6 +64,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.intprovider.ConstantIntProvider;
 import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.minecraft.util.math.random.Random;
 
@@ -72,6 +73,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_FOX_PRAY = ISubtypeGroup.variant("fox_pray");
 	public static final Identifier VARIANT_FOX_STANCE = ISubtypeGroup.variant("fox_stance");
 	public static final Identifier VARIANT_FOX_FIRE = ISubtypeGroup.variant("fox_fire");
+	
 	public static final Identifier VARIANT_GOAT_RAM = ISubtypeGroup.variant("goat_ram");
 	public static final Identifier VARIANT_GOAT_BLOCKADE = ISubtypeGroup.variant("goat_blockade");
 	public static final Identifier VARIANT_GOAT_JUMP = ISubtypeGroup.variant("goat_jump");
@@ -81,7 +83,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		set.add(new NodeSubType<LeafNode>(VARIANT_FOX_PRAY, leafFoxPray())
+		set.add(new NodeSubType<LeafNode>(VARIANT_FOX_PRAY, leafFoxPray(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND))
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_FOX; }
 					public List<MutableText> fullDescription()
@@ -96,6 +98,19 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 		set.add(new NodeSubType<LeafNode>(VARIANT_GOAT_RAM, leafGoatRam())
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_GOAT; }
+					public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
+					{
+						Random rand = tricksy.getRandom();
+						if(tricksy.getType() == TFEntityTypes.TRICKSY_GOAT)
+						{
+							EntityTricksyGoat goat = (EntityTricksyGoat)tricksy;
+							if(goat.isScreaming())
+								return UniformIntProvider.create(100, 300).get(rand);
+							else
+								return UniformIntProvider.create(600, 6000).get(rand);
+						}
+						return UniformIntProvider.create(6000, 60000).get(rand);
+					}
 					public List<MutableText> fullDescription()
 					{
 						List<MutableText> list = Lists.newArrayList();
@@ -119,6 +134,11 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 		set.add(new NodeSubType<LeafNode>(VARIANT_FOX_FIRE, leafFoxFire())
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_FOX; }
+					public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
+					{
+						Random rand = tricksy.getRandom();
+						return UniformIntProvider.create(60, 120).get(rand);
+					}
 					public List<MutableText> fullDescription()
 					{
 						List<MutableText> list = Lists.newArrayList();
@@ -131,6 +151,11 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 		set.add(new NodeSubType<LeafNode>(VARIANT_GOAT_BLOCKADE, leafGoatBlockade())
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_GOAT; }
+					public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
+					{
+						Random rand = tricksy.getRandom();
+						return UniformIntProvider.create(6000, 12000).get(rand);
+					}
 					public List<MutableText> fullDescription()
 					{
 						List<MutableText> list = Lists.newArrayList();
@@ -140,7 +165,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return list;
 					}
 				});
-		set.add(new NodeSubType<LeafNode>(VARIANT_GOAT_JUMP, leafGoatJump())
+		set.add(new NodeSubType<LeafNode>(VARIANT_GOAT_JUMP, leafGoatJump(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND))
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_GOAT; }
 					public List<MutableText> fullDescription()
@@ -159,12 +184,8 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
+			private static final int ANIMATION_END_TICK = (int)(1.5F * Reference.Values.TICKS_PER_SECOND);
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
-			{
-				return Reference.Values.TICKS_PER_SECOND;
-			}
 			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -184,18 +205,26 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 					return Result.FAILURE;
 				
 				tricksy.getLookControl().lookAt(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
-				if(parent.ticksRunning() < Reference.Values.TICKS_PER_SECOND)
-					return Result.RUNNING;
+				if(tricksy.getType() == TFEntityTypes.TRICKSY_FOX)
+					((EntityTricksyFox)tricksy).setPraying();
 				
-				int power = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT).get();
-				CandlePowers candles = CandlePowers.getCandlePowers(tricksy.getServer());
-				candles.setPowerFor(tricksy.getUuid(), power);
-				return Result.SUCCESS;
+				if(parent.ticksRunning() == ANIMATION_END_TICK)
+				{
+					CandlePowers candles = CandlePowers.getCandlePowers(tricksy.getServer());
+					candles.setPowerFor(tricksy.getUuid(), getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT).get());
+					return Result.SUCCESS;
+				}
+				return Result.RUNNING;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
+			{
+				if(tricksy.getType() == TFEntityTypes.TRICKSY_FOX)
+					((EntityTricksyFox)tricksy).clearAnimation(1);
 			}
 		};
 	}
 	
-
 	public static INodeTickHandler<LeafNode> leafGoatRam()
 	{
 		return new INodeTickHandler<LeafNode>()
@@ -203,20 +232,6 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 			private static final int MIN_RAM_DISTANCE = 4;
 			private static final int MAX_RAM_DISTANCE = 7;
 			private static final TargetPredicate RAM_TARGET_PREDICATE = TargetPredicate.createAttackable().setPredicate(entity -> !entity.getType().equals(EntityType.GOAT) && entity.getWorld().getWorldBorder().contains(entity.getBoundingBox()));
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
-			{
-				Random rand = tricksy.getRandom();
-				if(tricksy.getType() == TFEntityTypes.TRICKSY_GOAT)
-				{
-					EntityTricksyGoat goat = (EntityTricksyGoat)tricksy;
-					if(goat.isScreaming())
-						return UniformIntProvider.create(100, 300).get(rand);
-					else
-						return UniformIntProvider.create(600, 6000).get(rand);
-				}
-				return UniformIntProvider.create(6000, 60000).get(rand);
-			}
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.MOVE, ActionFlag.LOOK); }
 			
@@ -248,6 +263,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 					{
 						Path path = navigator.findPathTo(ram.get().getEnd(), 0);
 						navigator.startMovingAlong(path, 3F);
+						goat.setCharging();
 						
 						BlockPos goatPos = goat.getBlockPos();
 						Vec3d targetVec = calculateRamTarget(ram.get().getStart(), ram.get().getEnd());
@@ -283,6 +299,11 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 					return Result.RUNNING;
 				}
 				return Result.FAILURE;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
+			{
+				((EntityTricksyGoat)tricksy).clearAnimation(1);
 			}
 			
 			private Vec3d calculateRamTarget(BlockPos start, BlockPos end)
@@ -341,6 +362,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 				if(tricksy.getType() == TFEntityTypes.TRICKSY_FOX)
 				{
 					((EntityTricksyFox)tricksy).setStance(getOrDefault(VAL, parent, local, global).as(TFObjType.BOOL).get());
+					tricksy.getWorld().playSoundFromEntity(null, tricksy, SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, SoundCategory.NEUTRAL, 1.0f, 1.0f);
 					return Result.SUCCESS;
 				}
 				return Result.FAILURE;
@@ -354,12 +376,6 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 		{
 			public static final int DURATION = Reference.Values.TICKS_PER_SECOND * 15;
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
-			{
-				Random rand = tricksy.getRandom();
-				return UniformIntProvider.create(6000, 12000).get(rand);
-			}
-			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.MOVE); }
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
@@ -368,15 +384,12 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 				{
 					if(!parent.isRunning())
 					{
-						((EntityTricksyGoat)tricksy).setBlockading(true);
+						((EntityTricksyGoat)tricksy).setBlockading();
 						tricksy.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, DURATION, 5));
 						return Result.RUNNING;
 					}
 					else if(parent.ticksRunning() < DURATION)
 						return Result.RUNNING;
-					
-					((EntityTricksyGoat)tricksy).setBlockading(false);
-					tricksy.removeStatusEffect(StatusEffects.RESISTANCE);
 					return Result.SUCCESS;
 				}
 				return Result.FAILURE;
@@ -384,7 +397,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
 			{
-				((EntityTricksyGoat)tricksy).setBlockading(false);
+				((EntityTricksyGoat)tricksy).clearAnimation(0);
 				tricksy.removeStatusEffect(StatusEffects.RESISTANCE);
 			}
 		};
@@ -397,11 +410,6 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 					private static final List<Integer> RAM_RANGES = Lists.newArrayList(80, 75, 70, 65);
 					
 					public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.MOVE); }
-					
-					public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
-					{
-						return Reference.Values.TICKS_PER_SECOND;
-					}
 					
 					public Map<WhiteboardRef, INodeIO> ioSet()
 					{
@@ -585,15 +593,11 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
+			private static final int SPAWN_FIRE_TICK = Reference.Values.TICKS_PER_SECOND;
+			private static final int ANIMATION_END_TICK = (int)(1.5F * Reference.Values.TICKS_PER_SECOND);
 			public static final BlockState FIRE = TFBlocks.FOX_FIRE.getDefaultState();
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.MOVE); }
-			
-			public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
-			{
-				Random rand = tricksy.getRandom();
-				return UniformIntProvider.create(60, 120).get(rand);
-			}
 			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -610,13 +614,20 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 				if(!tricksy.getBlockPos().isWithinDistance(pos, 16D) || !FIRE.canPlaceAt(tricksy.getEntityWorld(), pos) || !INodeTickHandler.canSee(tricksy, pos.toCenterPos()))
 					return Result.FAILURE;
 				
+				if(tricksy.getType() == TFEntityTypes.TRICKSY_FOX)
+					((EntityTricksyFox)tricksy).setFoxfire();
 				tricksy.getLookControl().lookAt(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
-				if(parent.ticksRunning() < Reference.Values.TICKS_PER_SECOND)
-					return Result.RUNNING;
 				
-				EntityFoxFire.spawnFlameTargeting(tricksy, pos);
+				if(parent.ticksRunning() == SPAWN_FIRE_TICK)
+					EntityFoxFire.spawnFlameTargeting(tricksy, pos);
 				
-				return Result.SUCCESS;
+				return parent.ticksRunning() < ANIMATION_END_TICK ? Result.RUNNING : Result.SUCCESS;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
+			{
+				if(tricksy.getType() == TFEntityTypes.TRICKSY_FOX)
+					((EntityTricksyFox)tricksy).clearAnimation(0);
 			}
 		};
 	}

@@ -34,7 +34,7 @@ public class EntityTricksyGoatRenderer extends MobEntityRenderer<EntityTricksyGo
 	{
 		super(ctx, new ModelTricksyGoatMain<EntityTricksyGoat>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_GOAT)), 0.5F);
 		this.addFeature(new TricksyGoatClothingLayer(this));
-//		this.addFeature(new TricksyGoatHeldItemLayer(this, ctx.getHeldItemRenderer()));
+//		this.addFeature(new TricksyGoatHeldItemLayer(this, ctx.getHeldItemRenderer())); TODO Add goat held item rendering
 		
 		this.standing = this.model;
 		this.sleeping = new ModelTricksyGoatSleeping<EntityTricksyGoat>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_GOAT_SLEEPING));
