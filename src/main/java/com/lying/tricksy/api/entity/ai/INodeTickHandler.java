@@ -104,6 +104,7 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 	}
 	
 	/** Returns a value of 0 or greater, reflecting how many ticks before this type of node can be used again */
+	// FIXME Move this to NodeSubType to allow for type-specific cooldowns
 	public default <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy) { return 0; }
 	
 	/** Returns the value associated with the given input by the given parent node, or its default value if it is optional */

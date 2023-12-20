@@ -1,9 +1,12 @@
 package com.lying.tricksy.entity;
 
+import java.util.EnumSet;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.init.TFEntityTypes;
 
+import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
@@ -26,10 +29,12 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.World;
 
-public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHolder<Type>
+public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHolder<Type>, IAnimatedBiped
 {
 	private static final TrackedData<Integer> TYPE = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<Boolean> STANCE = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.BOOLEAN);
+	
+	public AnimationState foxfireAnimationState = new AnimationState();
 	
 	public EntityTricksyFox(EntityType<? extends AnimalEntity> entityType, World world)
 	{
@@ -146,4 +151,11 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 	public boolean currentStance() { return this.getDataTracker().get(STANCE).booleanValue(); }
 	
 	public EntityPose defaultPose() { return currentStance() ? EntityPose.CROUCHING : EntityPose.STANDING; }
+	
+	public EnumSet<BipedPart> getPartsAnimating()
+	{
+		if(this.foxfireAnimationState.isRunning())
+			return EnumSet.of(BipedPart.LEFT_ARM, BipedPart.LEFT_LEG, BipedPart.RIGHT_ARM, BipedPart.RIGHT_LEG, BipedPart.BODY);
+		return IAnimatedBiped.super.getPartsAnimating();
+	}
 }

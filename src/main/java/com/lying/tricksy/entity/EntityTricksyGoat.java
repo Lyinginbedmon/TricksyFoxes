@@ -1,11 +1,13 @@
 package com.lying.tricksy.entity;
 
+import java.util.EnumSet;
 import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.init.TFEntityTypes;
 
+import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
@@ -28,7 +30,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
-public class EntityTricksyGoat extends AbstractTricksyAnimal
+public class EntityTricksyGoat extends AbstractTricksyAnimal implements IAnimatedBiped
 {
 	public static final EntityDimensions LONG_JUMPING_DIMENSIONS = EntityDimensions.changing(0.8F, 1.85F).scaled(0.7f);
 	public static final EntityDimensions SLEEPING_DIMENSIONS = EntityDimensions.fixed(0.8F, 1.4F);
@@ -39,6 +41,9 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 	
     private static final UUID BLOCKADE_KNOCKBACK_ID = UUID.fromString("ce647cae-a269-4b88-970d-49a32e51cb73");
     private static final EntityAttributeModifier BLOCKADE_KNOCKBACK_BUFF = new EntityAttributeModifier(BLOCKADE_KNOCKBACK_ID, "Blockading knockback buff", 1.0, EntityAttributeModifier.Operation.ADDITION);
+    
+    public final AnimationState blockadeAnimationState = new AnimationState();
+    public final AnimationState chargeAnimationState = new AnimationState();
     
 	public EntityTricksyGoat(EntityType<? extends AnimalEntity> entityType, World world)
 	{
@@ -175,7 +180,33 @@ public class EntityTricksyGoat extends AbstractTricksyAnimal
 	
 	public boolean isBlockading() { return this.getDataTracker().get(BLOCKADING).booleanValue(); }
 	
-	public void setBlockading(boolean bool) { this.getDataTracker().set(BLOCKADING, bool); }
+	public void setBlockading(boolean bool)
+	{
+		this.getDataTracker().set(BLOCKADING, bool);
+	}
+	
+	public void onTrackedDataSet(TrackedData<?> data)
+	{
+		if(BLOCKADING.equals(data))
+		{
+			if(isBlockading())
+			{
+				this.blockadeAnimationState.start(this.age);
+				this.chargeAnimationState.stop();
+			}
+			else
+				this.blockadeAnimationState.stop();
+		}
+	}
 	
 	public boolean isCollidable() { return isBlockading() && isAlive() || super.isCollidable(); } 
+	
+	public EnumSet<BipedPart> getPartsAnimating()
+	{
+		if(this.blockadeAnimationState.isRunning())
+			return EnumSet.of(BipedPart.LEFT_ARM, BipedPart.LEFT_LEG, BipedPart.RIGHT_ARM, BipedPart.RIGHT_LEG);
+		else if(this.chargeAnimationState.isRunning())
+			return EnumSet.allOf(BipedPart.class);
+		return IAnimatedBiped.super.getPartsAnimating();
+	}
 }

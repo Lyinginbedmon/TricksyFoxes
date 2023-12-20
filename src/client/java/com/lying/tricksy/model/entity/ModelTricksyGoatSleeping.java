@@ -33,7 +33,8 @@ public class ModelTricksyGoatSleeping<T extends EntityTricksyGoat> extends Model
 	{
 		Dilation dilation = new Dilation(inflation);
 		ModelData meshdefinition = new ModelData();
-		ModelPartData root = meshdefinition.getRoot();
+		ModelPartData modelRoot = meshdefinition.getRoot();
+		ModelPartData root = modelRoot.addChild(EntityModelPartNames.ROOT, ModelPartBuilder.create(), ModelTransform.pivot(0, 0, 0));
 		
 		ModelPartData head = root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create()
 			.uv(23, 52).cuboid(0.0F, 2.0F, -8.0F, 0.0F, 7.0F, 5.0F, Dilation.NONE)

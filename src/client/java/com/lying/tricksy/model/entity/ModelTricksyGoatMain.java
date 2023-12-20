@@ -4,6 +4,8 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import com.lying.tricksy.entity.EntityTricksyGoat;
+import com.lying.tricksy.renderer.TFAnimations;
+import com.lying.tricksy.utility.TricksyUtils;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -15,6 +17,7 @@ import net.minecraft.client.model.ModelPartBuilder;
 import net.minecraft.client.model.ModelPartData;
 import net.minecraft.client.model.ModelTransform;
 import net.minecraft.client.model.TexturedModelData;
+import net.minecraft.client.render.entity.model.BipedEntityModel.ArmPose;
 import net.minecraft.client.render.entity.model.CrossbowPosing;
 import net.minecraft.client.render.entity.model.EntityModelPartNames;
 import net.minecraft.util.Arm;
@@ -36,7 +39,8 @@ public class ModelTricksyGoatMain<T extends EntityTricksyGoat> extends ModelTric
 	{
 		Dilation dilation = new Dilation(0.5F);
 		ModelData meshdefinition = new ModelData();
-		ModelPartData root = meshdefinition.getRoot();
+		ModelPartData modelRoot = meshdefinition.getRoot();
+		ModelPartData root = modelRoot.addChild(EntityModelPartNames.ROOT, ModelPartBuilder.create(), ModelTransform.pivot(0, 0, 0));
 		
 		ModelPartData head = root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create()
 				.uv(2, 61).cuboid(-5.5F, -5.0F, -2.75F, 3.0F, 2.0F, 1.0F, dilation)
@@ -69,7 +73,8 @@ public class ModelTricksyGoatMain<T extends EntityTricksyGoat> extends ModelTric
 	{
 		Dilation dilation = new Dilation(inflation);
 		ModelData meshdefinition = new ModelData();
-		ModelPartData root = meshdefinition.getRoot();
+		ModelPartData modelRoot = meshdefinition.getRoot();
+		ModelPartData root = modelRoot.addChild(EntityModelPartNames.ROOT, ModelPartBuilder.create(), ModelTransform.pivot(0, 0, 0));
 		
 		ModelPartData head = root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create()
 			.uv(23, 52).cuboid(0.0F, 2.0F, -8.0F, 0.0F, 7.0F, 5.0F, Dilation.NONE)
@@ -109,6 +114,7 @@ public class ModelTricksyGoatMain<T extends EntityTricksyGoat> extends ModelTric
 	
 	public void setAngles(T livingEntity, float limbSwing, float limbSwingAmount, float ageInTicks, float headYaw, float headPitch)
 	{
+		this.getPart().traverse().forEach(ModelPart::resetTransform);
 		this.leftHorn.visible = livingEntity.hasLeftHorn();
 		this.rightHorn.visible = livingEntity.hasRightHorn();
 		
@@ -118,7 +124,7 @@ public class ModelTricksyGoatMain<T extends EntityTricksyGoat> extends ModelTric
 		this.head.pitch = 
 				bl ? -0.7853982f : 
 					(this.leaningPitch > 0.0f ? 
-						this.lerpAngle(this.leaningPitch, this.head.pitch, headPitch * ((float)Math.PI / 180)) : headPitch * ((float)Math.PI / 180));
+						TricksyUtils.lerpAngle(this.leaningPitch, this.head.pitch, headPitch * ((float)Math.PI / 180)) : headPitch * ((float)Math.PI / 180));
 		this.head.roll = 0.0f;
 		
 		this.rightArm.pivotZ = 2.0f;
@@ -201,31 +207,31 @@ public class ModelTricksyGoatMain<T extends EntityTricksyGoat> extends ModelTric
 			{
 				if(l < 14.0f)
 				{
-					this.leftArm.pitch = this.lerpAngle(n, this.leftArm.pitch, 0.0f);
+					this.leftArm.pitch = TricksyUtils.lerpAngle(n, this.leftArm.pitch, 0.0f);
 					this.rightArm.pitch = MathHelper.lerp((float)m, (float)this.rightArm.pitch, (float)0.0f);
-					this.leftArm.yaw = this.lerpAngle(n, this.leftArm.yaw, (float)Math.PI);
+					this.leftArm.yaw = TricksyUtils.lerpAngle(n, this.leftArm.yaw, (float)Math.PI);
 					this.rightArm.yaw = MathHelper.lerp((float)m, (float)this.rightArm.yaw, (float)((float)Math.PI));
-					this.leftArm.roll = this.lerpAngle(n, this.leftArm.roll, (float)Math.PI + 1.8707964f * this.method_2807(l) / this.method_2807(14.0f));
+					this.leftArm.roll = TricksyUtils.lerpAngle(n, this.leftArm.roll, (float)Math.PI + 1.8707964f * this.method_2807(l) / this.method_2807(14.0f));
 					this.rightArm.roll = MathHelper.lerp((float)m, (float)this.rightArm.roll, (float)((float)Math.PI - 1.8707964f * this.method_2807(l) / this.method_2807(14.0f)));
 				}
 				else if(l >= 14.0f && l < 22.0f)
 				{
 					o = (l - 14.0f) / 8.0f;
-					this.leftArm.pitch = this.lerpAngle(n, this.leftArm.pitch, 1.5707964f * o);
+					this.leftArm.pitch = TricksyUtils.lerpAngle(n, this.leftArm.pitch, 1.5707964f * o);
 					this.rightArm.pitch = MathHelper.lerp((float)m, (float)this.rightArm.pitch, (float)(1.5707964f * o));
-					this.leftArm.yaw = this.lerpAngle(n, this.leftArm.yaw, (float)Math.PI);
+					this.leftArm.yaw = TricksyUtils.lerpAngle(n, this.leftArm.yaw, (float)Math.PI);
 					this.rightArm.yaw = MathHelper.lerp((float)m, (float)this.rightArm.yaw, (float)((float)Math.PI));
-					this.leftArm.roll = this.lerpAngle(n, this.leftArm.roll, 5.012389f - 1.8707964f * o);
+					this.leftArm.roll = TricksyUtils.lerpAngle(n, this.leftArm.roll, 5.012389f - 1.8707964f * o);
 					this.rightArm.roll = MathHelper.lerp((float)m, (float)this.rightArm.roll, (float)(1.2707963f + 1.8707964f * o));
 				}
 				else if(l >= 22.0f && l < 26.0f)
 				{
 					o = (l - 22.0f) / 4.0f;
-					this.leftArm.pitch = this.lerpAngle(n, this.leftArm.pitch, 1.5707964f - 1.5707964f * o);
+					this.leftArm.pitch = TricksyUtils.lerpAngle(n, this.leftArm.pitch, 1.5707964f - 1.5707964f * o);
 					this.rightArm.pitch = MathHelper.lerp((float)m, (float)this.rightArm.pitch, (float)(1.5707964f - 1.5707964f * o));
-					this.leftArm.yaw = this.lerpAngle(n, this.leftArm.yaw, (float)Math.PI);
+					this.leftArm.yaw = TricksyUtils.lerpAngle(n, this.leftArm.yaw, (float)Math.PI);
 					this.rightArm.yaw = MathHelper.lerp((float)m, (float)this.rightArm.yaw, (float)((float)Math.PI));
-					this.leftArm.roll = this.lerpAngle(n, this.leftArm.roll, (float)Math.PI);
+					this.leftArm.roll = TricksyUtils.lerpAngle(n, this.leftArm.roll, (float)Math.PI);
 					this.rightArm.roll = MathHelper.lerp((float)m, (float)this.rightArm.roll, (float)((float)Math.PI));
 				}
 			}
@@ -234,6 +240,11 @@ public class ModelTricksyGoatMain<T extends EntityTricksyGoat> extends ModelTric
 			this.leftLeg.pitch = MathHelper.lerp((float)this.leaningPitch, (float)this.leftLeg.pitch, (float)(0.3f * MathHelper.cos((float)(limbSwing * p + (float)Math.PI))));
 			this.rightLeg.pitch = MathHelper.lerp((float)this.leaningPitch, (float)this.rightLeg.pitch, (float)(0.3f * MathHelper.cos((float)(limbSwing * p))));
 		}
+		
+		this.resetAnimatedParts(livingEntity.getPartsAnimating());
+		this.updateAnimation(livingEntity.blockadeAnimationState, TFAnimations.BLOCKADE, ageInTicks);
+		this.updateAnimation(livingEntity.chargeAnimationState, TFAnimations.CHARGE, ageInTicks);
+		
 		this.hat.copyTransform(this.head);
 	}
 	

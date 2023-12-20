@@ -46,7 +46,7 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public List<MutableText> fullDescription() { return List.of(description()); }
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> int cooldown(T tricksy) { return tickFunc.getCooldown(tricksy); }
+	public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy) { return tickFunc.getCooldown(tricksy); }
 	
 	public EnumSet<ActionFlag> usesFlags() { return tickFunc.flagsUsed(); }
 	

@@ -52,6 +52,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -462,6 +463,15 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 								tricksy.setNoDrag(true);
 								tricksy.setTreePose(EntityPose.LONG_JUMPING);
 								
+								for(int i=0; i<5; i++)
+								{
+									Random rand = tricksy.getRandom();
+									double x = rand.nextDouble() - 0.5D;
+									double z = rand.nextDouble() - 0.5D;
+									Vec3d vel = (new Vec3d(x, 0, z)).normalize();
+									((ServerWorld)tricksy.getWorld()).spawnParticles(ParticleTypes.CLOUD, start.getX(), start.getY(), start.getZ(), 1, vel.x, 0, vel.z, 0.1D);
+								}
+								
 								Vec3d vel = new Vec3d(parent.nodeRAM.getDouble("JumpX"), parent.nodeRAM.getDouble("JumpY"), parent.nodeRAM.getDouble("JumpZ"));
 								double d = vel.length();
 								double e = d + tricksy.getJumpBoostVelocityModifier();
@@ -469,6 +479,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 								
 								if(tricksy.getType() == TFEntityTypes.TRICKSY_GOAT)
 									tricksy.getWorld().playSoundFromEntity(null, tricksy, ((EntityTricksyGoat)tricksy).isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_LONG_JUMP : SoundEvents.ENTITY_GOAT_LONG_JUMP, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+								
 							}
 						}
 						

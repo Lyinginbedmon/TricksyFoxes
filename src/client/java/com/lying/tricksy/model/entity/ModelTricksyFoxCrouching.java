@@ -1,6 +1,7 @@
 package com.lying.tricksy.model.entity;
 
 import com.lying.tricksy.entity.EntityTricksyFox;
+import com.lying.tricksy.utility.TricksyUtils;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -62,7 +63,7 @@ public class ModelTricksyFoxCrouching<T extends EntityTricksyFox> extends ModelT
 		this.head.pitch = 
 				bl ? -0.7853982f : 
 					(this.leaningPitch > 0.0f ? 
-						this.lerpAngle(this.leaningPitch, this.head.pitch, headPitch * ((float)Math.PI / 180)) : headPitch * ((float)Math.PI / 180));
+						TricksyUtils.lerpAngle(this.leaningPitch, this.head.pitch, headPitch * ((float)Math.PI / 180)) : headPitch * ((float)Math.PI / 180));
 		this.head.roll = 0.0f;
 		
 		this.tailRoot.pitch = 0.1745F;

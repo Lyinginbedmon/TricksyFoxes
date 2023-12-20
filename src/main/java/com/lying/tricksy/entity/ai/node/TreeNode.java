@@ -242,7 +242,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 				{
 					subType.onEnd(tricksy, (N)this);
 					
-					int cooldown = subType.cooldown(tricksy);
+					int cooldown = subType.getCooldown(tricksy);
 					if(cooldown > 0)
 						local.setNodeCooldown(subType, cooldown);
 					

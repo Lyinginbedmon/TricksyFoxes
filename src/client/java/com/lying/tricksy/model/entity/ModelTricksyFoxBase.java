@@ -3,10 +3,9 @@ package com.lying.tricksy.model.entity;
 import com.lying.tricksy.entity.EntityTricksyFox;
 
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.render.entity.model.EntityModelPartNames;
 
-public abstract class ModelTricksyFoxBase<T extends EntityTricksyFox> extends BipedEntityModel<T>
+public abstract class ModelTricksyFoxBase<T extends EntityTricksyFox> extends AnimatedBipedModel<T>
 {
 	public final ModelPart tailRoot;
 	public final ModelPart tail0, tail1;

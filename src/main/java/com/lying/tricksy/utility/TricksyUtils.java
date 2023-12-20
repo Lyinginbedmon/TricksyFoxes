@@ -112,4 +112,14 @@ public class TricksyUtils
 	}
 	
 	public static Vec3d reflect(Vec3d v, Vec3d n) { return reflect(v, n, 1D, 1D); }
+	
+	public static float lerpAngle(float angleOne, float angleTwo, float magnitude)
+	{
+		float f = (magnitude - angleTwo) % ((float)Math.PI * 2);
+		if (f < (float)(-Math.PI))
+			f += (float)Math.PI * 2;
+		if (f >= (float)Math.PI)
+			f -= (float)Math.PI * 2;
+		return angleTwo + angleOne * f;
+	}
 }
