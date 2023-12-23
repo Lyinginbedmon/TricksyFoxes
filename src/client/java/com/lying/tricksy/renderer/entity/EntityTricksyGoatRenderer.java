@@ -6,6 +6,7 @@ import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.entity.ModelTricksyGoatBase;
 import com.lying.tricksy.model.entity.ModelTricksyGoatMain;
 import com.lying.tricksy.model.entity.ModelTricksyGoatSleeping;
+import com.lying.tricksy.renderer.layer.AbstractOffsetHeldItemLayer;
 import com.lying.tricksy.renderer.layer.TricksyBarkLayer;
 import com.lying.tricksy.renderer.layer.TricksyGoatClothingLayer;
 
@@ -34,7 +35,13 @@ public class EntityTricksyGoatRenderer extends MobEntityRenderer<EntityTricksyGo
 	{
 		super(ctx, new ModelTricksyGoatMain<EntityTricksyGoat>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_GOAT)), 0.5F);
 		this.addFeature(new TricksyGoatClothingLayer(this));
-//		this.addFeature(new TricksyGoatHeldItemLayer(this, ctx.getHeldItemRenderer())); TODO Add goat held item rendering
+		this.addFeature(new AbstractOffsetHeldItemLayer<EntityTricksyGoat, ModelTricksyGoatBase<EntityTricksyGoat>>(this, ctx.getHeldItemRenderer())
+		{
+			public void translateToHand(MatrixStack matrices, boolean isLeft)
+			{
+				matrices.translate((float)(isLeft ? -1 : 1) / 16.0f * 1.7f, 0.025f, -0.525f);
+			}
+		});
 		
 		this.standing = this.model;
 		this.sleeping = new ModelTricksyGoatSleeping<EntityTricksyGoat>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_GOAT_SLEEPING));

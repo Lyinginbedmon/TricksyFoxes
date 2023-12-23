@@ -1,5 +1,6 @@
 package com.lying.tricksy.block;
 
+import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFParticles;
 
 import net.minecraft.block.Block;
@@ -22,6 +23,7 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldView;
 
 public class BlockFoxFire extends Block implements Waterloggable
 {
@@ -79,9 +81,9 @@ public class BlockFoxFire extends Block implements Waterloggable
     	return super.getPlacementState(ctx);
     }
     
-    public boolean canPlaceAt(BlockState state, World world, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos)
     {
     	BlockState stateAt = world.getBlockState(pos);
-    	return world.isAir(pos) || stateAt.isReplaceable();
+    	return stateAt.getFluidState().isEmpty() && (world.isAir(pos) || stateAt.isReplaceable() || stateAt.isOf(TFBlocks.FOX_FIRE));
     }
 }

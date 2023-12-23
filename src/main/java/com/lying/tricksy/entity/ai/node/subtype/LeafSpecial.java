@@ -67,6 +67,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.math.intprovider.ConstantIntProvider;
 import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.World;
 
 public class LeafSpecial implements ISubtypeGroup<LeafNode>
 {
@@ -610,8 +611,9 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 				if(posIn.size() == 0)
 					return Result.FAILURE;
 				
+				World world = tricksy.getEntityWorld();
 				BlockPos pos = posIn.get();
-				if(!tricksy.getBlockPos().isWithinDistance(pos, 16D) || !FIRE.canPlaceAt(tricksy.getEntityWorld(), pos) || !INodeTickHandler.canSee(tricksy, pos.toCenterPos()))
+				if(!tricksy.getBlockPos().isWithinDistance(pos, 16D) || !(FIRE.canPlaceAt(world, pos) || EntityFoxFire.canIgnite(world.getBlockState(pos))) || !INodeTickHandler.canSee(tricksy, pos.toCenterPos()))
 					return Result.FAILURE;
 				
 				if(tricksy.getType() == TFEntityTypes.TRICKSY_FOX)

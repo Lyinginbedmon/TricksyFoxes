@@ -9,6 +9,9 @@ import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.TricksyUtils;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.CampfireBlock;
+import net.minecraft.block.CandleBlock;
+import net.minecraft.block.CandleCakeBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.FlyingItemEntity;
@@ -25,11 +28,13 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.event.GameEvent;
 
 /**
  * XXX Entities struck by the projectile will be briefly ignited and the projectile removed?
@@ -131,10 +136,22 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 			this.prevZ = getZ();
 			this.setPos(getX() + getVelocity().getX(), getY() + getVelocity().getY(), getZ() + getVelocity().getZ());
 			
-			int life = lifespan() - 1;
-			getDataTracker().set(LIFESPAN, life);
+			if(hasDestination() && getBlockPos().getManhattanDistance(destination()) == 0)
+			{
+				tryPlaceLight();
+				return;
+			}
 			
-			if(life < 0 || hasDestination() && getBlockPos().isWithinDistance(destination(), 0.5D))
+			int life = lifespan() - 1;
+			BlockState state = getWorld().getBlockState(getBlockPos());
+			if(!state.isAir() && canIgnite(state))
+			{
+				ignite(getBlockPos(), getWorld());
+				life -= 5;
+			}
+			
+			getDataTracker().set(LIFESPAN, life);
+			if(life < 0)
 				tryPlaceLight();
 		}
 		
@@ -143,16 +160,18 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 	
 	public void tryPlaceLight()
 	{
+		remove(RemovalReason.DISCARDED);
+		
 		World world = getEntityWorld();
 		BlockPos pos = getBlockPos();
-		if(pos.getY() > world.getBottomY() && pos.getY() < 256)
-		{
-			BlockState stateAt = world.getBlockState(pos);
-			if(TFBlocks.FOX_FIRE.getDefaultState().canPlaceAt(world, pos))
-				world.setBlockState(pos, TFBlocks.FOX_FIRE.getDefaultState().with(BlockFoxFire.WATERLOGGED, !stateAt.getFluidState().isEmpty()));
-		}
+		if(pos.getY() < world.getBottomY() || pos.getY() > 256)
+			return;
 		
-		remove(RemovalReason.DISCARDED);
+		BlockState stateAt = world.getBlockState(pos);
+		if(TFBlocks.FOX_FIRE.getDefaultState().canPlaceAt(world, pos))
+			world.setBlockState(pos, TFBlocks.FOX_FIRE.getDefaultState().with(BlockFoxFire.WATERLOGGED, !stateAt.getFluidState().isEmpty()));
+		else if(canIgnite(stateAt))
+			ignite(pos, world);
 	}
 	
 	public ItemStack getStack() { return ItemStack.EMPTY; }
@@ -165,5 +184,20 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 		Vec3d vel = getVelocity();
 		Vec3d ref = TricksyUtils.reflect(vel, Vec3d.of(blockHitResult.getSide().getVector()));
 		setVelocity(ref.normalize().multiply(vel.length()));
+	}
+	
+	public static boolean canIgnite(BlockState state)
+	{
+		return CampfireBlock.canBeLit(state) || CandleBlock.canBeLit(state) || CandleCakeBlock.canBeLit(state);
+	}
+	
+	public static void ignite(BlockPos pos, World world)
+	{
+		BlockState state = world.getBlockState(pos);
+		if(!state.getProperties().contains(Properties.LIT))
+			return;
+		
+		world.setBlockState(pos, world.getBlockState(pos).with(Properties.LIT, true));
+		world.emitGameEvent(null, GameEvent.BLOCK_CHANGE, pos);
 	}
 }
