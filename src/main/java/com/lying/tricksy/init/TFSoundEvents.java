@@ -18,10 +18,14 @@ public class TFSoundEvents
 	private static final Identifier ID_CLAP = new Identifier(Reference.ModInfo.MOD_ID, "clap");
 	public static final SoundEvent CLAP = SoundEvent.of(ID_CLAP);
 	
+	private static final Identifier ID_SNAP = new Identifier(Reference.ModInfo.MOD_ID, "snap");
+	public static final SoundEvent SNAP = SoundEvent.of(ID_SNAP);
+	
 	public static void init()
 	{
 		Registry.register(Registries.SOUND_EVENT, ID_WHITEBOARD_UPDATED, WHITEBOARD_UPDATED);
 		Registry.register(Registries.SOUND_EVENT, ID_TRICKSY_ENLIGHTENED, TRICKSY_ENLIGHTENED);
 		Registry.register(Registries.SOUND_EVENT, ID_CLAP, CLAP);
+		Registry.register(Registries.SOUND_EVENT, ID_SNAP, SNAP);
 	}
 }

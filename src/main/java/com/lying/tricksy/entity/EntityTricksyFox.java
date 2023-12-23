@@ -4,6 +4,7 @@ import java.util.EnumSet;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.lying.tricksy.block.BlockFoxFire;
 import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFSoundEvents;
@@ -29,6 +30,7 @@ import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
 public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHolder<Type>, IAnimatedBiped
@@ -42,12 +44,31 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 	{
 		public void onUpdateAnim(int animation, int ticksRunning, EntityTricksyFox ent)
 		{
-			if(animation == 1)
+			Random rand = ent.getRandom();
+			switch(animation)
 			{
-				int clap1 = (int)(1.125F * Reference.Values.TICKS_PER_SECOND);
-				int clap2 = (int)(1.333F * Reference.Values.TICKS_PER_SECOND);
-				if(ticksRunning == clap1 || ticksRunning == clap2)
-					ent.playSound(TFSoundEvents.CLAP, getSoundVolume(), getSoundPitch());
+				case 0:
+					int snap = (int)(0.58F * Reference.Values.TICKS_PER_SECOND);
+					int flameStart = (int)(0.63F * Reference.Values.TICKS_PER_SECOND);
+					if(ticksRunning == snap)
+						ent.playSound(TFSoundEvents.SNAP, getSoundVolume(), getSoundPitch());
+					if(ticksRunning > flameStart && ticksRunning < Reference.Values.TICKS_PER_SECOND && rand.nextInt(3) == 0)
+					{
+						double vel = 0.03D;
+						double velX = (rand.nextDouble() * (rand.nextBoolean() ? 1 : -1)) * vel;
+						double velY = (rand.nextDouble() * (rand.nextBoolean() ? 1 : -1)) * vel;
+						double velZ = (rand.nextDouble() * (rand.nextBoolean() ? 1 : -1)) * vel;
+						ent.getWorld().addParticle(BlockFoxFire.PARTICLE, ent.getX(), ent.getEyeY() + 0.5D, ent.getZ(), velX, velY, velZ);
+					}
+					break;
+				case 1:
+					int clap1 = (int)(1.125F * Reference.Values.TICKS_PER_SECOND);
+					int clap2 = (int)(1.333F * Reference.Values.TICKS_PER_SECOND);
+					if(ticksRunning == clap1 || ticksRunning == clap2)
+						ent.playSound(TFSoundEvents.CLAP, getSoundVolume(), getSoundPitch());
+					break;
+				default:
+					return;
 			}
 		}
 	};

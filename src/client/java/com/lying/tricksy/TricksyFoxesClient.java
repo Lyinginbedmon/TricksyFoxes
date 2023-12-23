@@ -17,6 +17,7 @@ import com.lying.tricksy.network.SyncScriptureScreenReceiver;
 import com.lying.tricksy.network.SyncTreeScreenReceiver;
 import com.lying.tricksy.network.SyncWorkTableScreenReceiver;
 import com.lying.tricksy.network.TFPacketHandler;
+import com.lying.tricksy.particle.FoxfireParticle;
 import com.lying.tricksy.particle.PaperParticle;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.renderer.block.ClockworkFriarBlockEntityRenderer;
@@ -87,6 +88,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		ColorProviderRegistry.ITEM.register((stack, index) -> { return index == 0 ? ((DyeableItem)stack.getItem()).getColor(stack) : -1; }, TFItems.SAGE_HAT);
 		
 		ParticleFactoryRegistry.getInstance().register(TFParticles.PAPER, PaperParticle.Factory::new);
+		ParticleFactoryRegistry.getInstance().register(TFParticles.FOXFIRE, FoxfireParticle.Factory::new);
 		
 		Identifier note_sealed = new Identifier(Reference.ModInfo.MOD_ID, "sealed");
 		for(Item scroll : TFItems.SEALABLES)

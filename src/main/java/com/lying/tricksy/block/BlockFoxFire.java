@@ -1,5 +1,7 @@
 package com.lying.tricksy.block;
 
+import com.lying.tricksy.init.TFParticles;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -8,7 +10,7 @@ import net.minecraft.block.Waterloggable;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.particle.ParticleTypes;
+import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
@@ -23,6 +25,7 @@ import net.minecraft.world.World;
 
 public class BlockFoxFire extends Block implements Waterloggable
 {
+	public static final DefaultParticleType PARTICLE = TFParticles.FOXFIRE;
 	public static final BooleanProperty WATERLOGGED = Properties.WATERLOGGED;
 	public static final IntProperty TIME = Properties.AGE_4;
 	
@@ -63,10 +66,10 @@ public class BlockFoxFire extends Block implements Waterloggable
 	
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random)
     {
-        double d = (double)pos.getX() + 0.5 + (random.nextDouble() * 0.15D);
-        double e = (double)pos.getY() + 0.5 + (random.nextDouble() * 0.15D);
-        double f = (double)pos.getZ() + 0.5 + (random.nextDouble() * 0.15D);
-        world.addParticle(ParticleTypes.FLAME, d, e, f, 0.0, 0.0, 0.0);
+        double d = (double)pos.getX() + 0.5 + (random.nextDouble() * 0.25D);
+        double e = (double)pos.getY() + 0.5 + (random.nextDouble() * 0.25D);
+        double f = (double)pos.getZ() + 0.5 + (random.nextDouble() * 0.25D);
+        world.addParticle(PARTICLE, d, e, f, 0.0, 0.0, 0.0);
     }
     
     public BlockState getPlacementState(ItemPlacementContext ctx)

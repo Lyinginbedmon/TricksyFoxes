@@ -24,5 +24,11 @@
 			"tricksy:clap6",
 			"tricksy:clap7"
 		]
+	},
+	"snap": {
+		"subtitle": "sound.tricksy.snap",
+		"sounds": [
+			"tricksy:snap0"
+		]
 	}
 }

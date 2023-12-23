@@ -21,11 +21,9 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -118,7 +116,7 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 		        double d = pos.getX() + (random.nextDouble() * 0.15D);
 		        double e = pos.getY() + (random.nextDouble() * 0.15D);
 		        double f = pos.getZ() + (random.nextDouble() * 0.15D);
-		        getWorld().addParticle(ParticleTypes.FLAME, d, e, f, 0.0, 0.0, 0.0);
+		        getWorld().addParticle(BlockFoxFire.PARTICLE, d, e, f, 0.0, 0.0, 0.0);
 			}
 		}
 		else
@@ -157,7 +155,7 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 		remove(RemovalReason.DISCARDED);
 	}
 	
-	public ItemStack getStack() { return Items.FIRE_CHARGE.getDefaultStack(); }
+	public ItemStack getStack() { return ItemStack.EMPTY; }
 	
 	protected boolean canHit(Entity entity) { return entity == null; }
 	

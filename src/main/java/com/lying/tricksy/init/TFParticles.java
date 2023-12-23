@@ -11,9 +11,11 @@ import net.minecraft.util.Identifier;
 public class TFParticles
 {
 	public static final DefaultParticleType PAPER	= FabricParticleTypes.simple();
+	public static final DefaultParticleType FOXFIRE	= FabricParticleTypes.simple();
 	
 	public static void init()
 	{
 		Registry.register(Registries.PARTICLE_TYPE, new Identifier(Reference.ModInfo.MOD_ID, "paper"), PAPER);
+		Registry.register(Registries.PARTICLE_TYPE, new Identifier(Reference.ModInfo.MOD_ID, "foxfire"), FOXFIRE);
 	}
 }
