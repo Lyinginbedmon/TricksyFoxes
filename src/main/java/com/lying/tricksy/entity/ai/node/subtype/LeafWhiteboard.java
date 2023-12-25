@@ -20,6 +20,7 @@ import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
+import com.lying.tricksy.entity.ai.node.handler.NodeOutput;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
@@ -86,7 +87,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			{
 				return Map.of(
 						COPY, NodeInput.makeInput(NodeInput.any(), TFObjType.EMPTY.blank(), Text.literal("")),
-						DEST, NodeInput.makeInput((var) -> !var.uncached() && !var.boardType().isReadOnly()));
+						DEST, new NodeOutput(TFObjType.types().toArray(new TFObjType[0])));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)

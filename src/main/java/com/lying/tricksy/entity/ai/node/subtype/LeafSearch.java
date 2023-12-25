@@ -87,7 +87,7 @@ public class LeafSearch implements ISubtypeGroup<LeafNode>
 				items.forEach((mob) -> result.add(mob));
 				return result;
 			}
-		});
+		}, Reference.Values.TICKS_PER_SECOND);
 		add(set, VARIANT_GET_ENTITIES, new GetterHandlerTyped<Entity>(TFObjType.ENT)
 		{
 			public static WhiteboardRef FILTER = new WhiteboardRef("entity_filter", TFObjType.ENT).displayName(CommonVariables.translate("item_filter"));
@@ -126,11 +126,11 @@ public class LeafSearch implements ISubtypeGroup<LeafNode>
 				mobs.forEach((mob) -> result.add(mob));
 				return result;
 			}
-		});
-		add(set, VARIANT_GET_INVENTORIES, new BlockSearchHandler((world, pos, state) -> state.hasBlockEntity() && world.getBlockEntity(pos) instanceof Inventory));
-		add(set, VARIANT_GET_MINEABLE, new BlockSearchHandler((world, pos, state) -> state.getHardness(world, pos) >= 0 && !state.getCollisionShape(world, pos).isEmpty()));
-		add(set, VARIANT_GET_REPLACEABLE, new BlockSearchHandler((world, pos, state) -> state.isReplaceable()));
-		add(set, VARIANT_GET_MATCHES, new MatchBlockSearchHandler());
+		}, Reference.Values.TICKS_PER_SECOND);
+		add(set, VARIANT_GET_INVENTORIES, new BlockSearchHandler((world, pos, state) -> state.hasBlockEntity() && world.getBlockEntity(pos) instanceof Inventory), Reference.Values.TICKS_PER_SECOND);
+		add(set, VARIANT_GET_MINEABLE, new BlockSearchHandler((world, pos, state) -> state.getHardness(world, pos) >= 0 && !state.getCollisionShape(world, pos).isEmpty()), Reference.Values.TICKS_PER_SECOND);
+		add(set, VARIANT_GET_REPLACEABLE, new BlockSearchHandler((world, pos, state) -> state.isReplaceable()), Reference.Values.TICKS_PER_SECOND);
+		add(set, VARIANT_GET_MATCHES, new MatchBlockSearchHandler(), Reference.Values.TICKS_PER_SECOND);
 		return set;
 	}
 	
