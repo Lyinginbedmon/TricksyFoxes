@@ -10,6 +10,7 @@ import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
 import com.lying.tricksy.entity.ai.TricksyLookControl;
+import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.item.ITreeItem;
@@ -198,9 +199,21 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 	
 	public BehaviourTree getBehaviourTree() { return getWorld().isClient() ? BehaviourTree.create(getDataTracker().get(TREE_NBT)) : this.behaviourTree; }
 	
+	public void setBehaviourTree(NbtCompound data)
+	{
+		behaviourTree.root().stop(this);
+		getDataTracker().set(TREE_NBT, data);
+		behaviourTree = BehaviourTree.create(data);
+	}
+	
 	public void setLatestLog(NodeStatusLog logIn) { this.getDataTracker().set(LOG_NBT, logIn.writeToNbt(new NbtCompound())); }
 	
 	public NodeStatusLog getLatestLog() { return NodeStatusLog.fromNbt(this.getDataTracker().get(LOG_NBT)); }
+	
+	public void giveCommand(CommandWhiteboard command)
+	{
+		getBehaviourTree().giveCommand(command, this);
+	}
 	
 	public LocalWhiteboard<AbstractTricksyAnimal> getLocalWhiteboard() { return this.boardLocal; }
 	
@@ -209,13 +222,6 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		return hasSage() ? 
 					ServerWhiteboards.getServerWhiteboards(getServer()).getWhiteboardFor(getSage().get()) : 
 					new GlobalWhiteboard(getEntityWorld());
-	}
-	
-	public void setBehaviourTree(NbtCompound data)
-	{
-		behaviourTree.root().stop(this);
-		getDataTracker().set(TREE_NBT, data);
-		behaviourTree = BehaviourTree.create(data);
 	}
 	
 	public int getColor() { return getDataTracker().get(COLOR).isPresent() ? getDataTracker().get(COLOR).getAsInt() : getDefaultColor(); }

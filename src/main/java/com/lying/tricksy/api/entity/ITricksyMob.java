@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
+import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.init.TFItems;
@@ -131,6 +132,9 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 	
 	/** Overwrites the structure of the mob's behaviour tree. */
 	public void setBehaviourTree(NbtCompound data);
+	
+	/** Stops the current executing tree and sets the command whiteboard in the mob's behaviour tree */
+	public void giveCommand(CommandWhiteboard command);
 	
 	public boolean hasCustomer();
 	

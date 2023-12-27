@@ -76,6 +76,9 @@ public class WhiteboardRef
 	/** True if this reference only holds information used for filtering */
 	private boolean isFilter = false;
 	
+	/** True if this reference should not be accessible by players */
+	private boolean isHidden = false;
+	
 	private Text displayName = null;
 	
 	public WhiteboardRef(String nameIn, TFObjType<?> typeIn) { this(nameIn, typeIn, BoardType.CONSTANT); }
@@ -133,6 +136,10 @@ public class WhiteboardRef
 	
 	public boolean isFilter() { return this.isFilter; }
 	
+	public WhiteboardRef hidden() { this.isHidden = true; return this; }
+	
+	public boolean isHidden() { return this.isHidden; }
+	
 	public NbtCompound writeToNbt(NbtCompound data)
 	{
 		data.putString(NAME_KEY, name);
@@ -143,6 +150,8 @@ public class WhiteboardRef
 			data.putBoolean("Live", noCache);
 		if(isFilter)
 			data.putBoolean("Filter", isFilter);
+		if(isHidden)
+			data.putBoolean("Hidden", isHidden);
 		if(displayName != null)
 			data.putString("DisplayName", Text.Serializer.toJson(displayName));
 		return data;
@@ -159,6 +168,8 @@ public class WhiteboardRef
 			ref.noCache();
 		if(data.contains("Filter") && data.getBoolean("Filter"))
 			ref.filter();
+		if(data.contains("Hidden") && data.getBoolean("Hidden"))
+			ref.hidden();
 		if(data.contains("DisplayName", NbtElement.STRING_TYPE))
 		{
 			String string = data.getString("DisplayName");

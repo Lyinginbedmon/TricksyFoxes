@@ -105,13 +105,13 @@ public class PrescientCandleScreen extends HandledScreen<PrescientCandleScreenHa
 			renderY += offsetY;
 		}
 		
-		// FIXME Display latest active tree instead of default
-		TreeNode<?> root = tricksy.getBehaviourTree().root();
+		NodeStatusLog latestLog = tricksy.getLatestLog();
+		TreeNode<?> root = tricksy.getBehaviourTree().root(latestLog.tree());
+		
 		NodeRenderUtils.scaleAndPositionNode(root, renderX, renderY, Predicates.alwaysFalse(), false);
 		NodeRenderUtils.renderTree(root, context, this.textRenderer, 0, Predicates.alwaysFalse(), false);
 		renderBackground(context);
 		
-		NodeStatusLog latestLog = tricksy.getLatestLog();
 		NodeRenderUtils.renderTreeConditional(root, context, textRenderer, 0, node -> latestLog.wasActive(node), RENDER_FLAGS);
 		
 		latestLog.getActiveNodes().forEach(id -> 

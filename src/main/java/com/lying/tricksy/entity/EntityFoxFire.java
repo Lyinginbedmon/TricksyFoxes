@@ -36,9 +36,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 
-/**
- * XXX Entities struck by the projectile will be briefly ignited and the projectile removed?
- */
 public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 {
 	private static final double VELOCITY = 0.5D;

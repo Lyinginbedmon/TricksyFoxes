@@ -3,8 +3,8 @@ package com.lying.tricksy.item;
 import java.util.List;
 
 import com.lying.tricksy.api.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard.Order;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -39,7 +39,7 @@ public class ItemSageFan extends Item
 			
 			ITricksyMob<?> tricksy = (ITricksyMob<?>)tricksys.get(0);
 			if(tricksy.isSage(user))
-				tricksy.getBehaviourTree().giveCommand(CommandWhiteboard.ofCommand(Order.GOTO));
+				tricksy.giveCommand(Order.GOTO.create(new WhiteboardObjEntity(user)));
 		}
 		return TypedActionResult.success(itemStack, world.isClient());
 	}

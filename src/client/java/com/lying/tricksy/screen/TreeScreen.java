@@ -83,9 +83,10 @@ public class TreeScreen extends TricksyScreenBase
 			client.setScreen(new WhiteboardScreen(getScreenHandler(), this.playerInv, this.title));
 		}));
 		
-		addDrawableChild(ButtonWidget.builder(Text.literal("Idle"), (button) -> this.handler.showSubTree(null)).dimensions(0, 0, 25, 20).build());
+		// TODO Display available trees more aesthetically
+		addDrawableChild(ButtonWidget.builder(Text.translatable("order."+Reference.ModInfo.MOD_ID+".idle"), (button) -> this.handler.showSubTree(null)).dimensions(0, 0, 35, 20).build());
 		for(Order order : Order.values())
-			addDrawableChild(ButtonWidget.builder(Text.literal(order.asString()), (button) -> this.handler.showSubTree(order)).dimensions(0, (1+order.ordinal()) * 22, 25, 20).build());
+			addDrawableChild(ButtonWidget.builder(order.translate(), (button) -> this.handler.showSubTree(order)).dimensions(0, (1+order.ordinal()) * 22, 35, 20).build());
 		
 		if(position == null)
 			setPosition(-this.width / 4, -this.height / 4);

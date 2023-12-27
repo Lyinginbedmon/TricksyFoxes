@@ -42,6 +42,8 @@ public class SyncTreeScreenPacket
 		{
 			board.allReferences().forEach((ref) -> 
 			{
+				if(ref.isHidden())
+					return;
 				NbtCompound data = new NbtCompound();
 				data.put("Ref", ref.writeToNbt(new NbtCompound()));
 				IWhiteboardObject<?> value = board.getValue(ref);

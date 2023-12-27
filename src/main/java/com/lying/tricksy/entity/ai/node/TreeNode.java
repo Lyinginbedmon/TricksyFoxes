@@ -275,7 +275,9 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		return isRoot() ? this.currentLog : this.parent().getLog();
 	}
 	
-	public void clearLog() { this.currentLog.tick(); }
+	public void tickLog() { this.currentLog.tick(); }
+	
+	public void clearLog() { this.currentLog.clear(); }
 	
 	/** Returns true if this node is in a runnable condition */
 	public boolean isRunnable() { return true; }

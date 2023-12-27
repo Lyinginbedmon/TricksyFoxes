@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
+import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard.Order;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.nbt.NbtCompound;
@@ -22,6 +23,14 @@ import net.minecraft.util.Pair;
 public class NodeStatusLog
 {
 	private Map<UUID, Log> log = new HashMap<>();
+	
+	private Order tree = null;
+	
+	public void setTree(Order orderIn) { this.tree = orderIn; }
+
+	public Order tree() { return this.tree; }
+	
+	public void clear() { this.log.clear(); }
 	
 	public void tick()
 	{
@@ -77,6 +86,9 @@ public class NodeStatusLog
 	
 	public NbtCompound writeToNbt(NbtCompound nbt)
 	{
+		if(this.tree != null)
+			nbt.putString("Tree", this.tree.asString());
+		
 		NbtList list = new NbtList();
 		log.entrySet().forEach(entry -> 
 		{
@@ -92,6 +104,9 @@ public class NodeStatusLog
 	public static NodeStatusLog fromNbt(NbtCompound nbt)
 	{
 		NodeStatusLog log = new NodeStatusLog();
+		
+		if(nbt.contains("Tree", NbtElement.STRING_TYPE))
+			log.setTree(Order.fromString(nbt.getString("Tree")));
 		
 		if(nbt.contains("Data", NbtElement.LIST_TYPE))
 		{

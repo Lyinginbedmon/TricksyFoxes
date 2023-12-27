@@ -76,6 +76,8 @@ public class BehaviourTree
 	/** Whiteboard storing current command information */
 	protected CommandWhiteboard boardCommand = (CommandWhiteboard)(new CommandWhiteboard().build());
 	
+	private NodeStatusLog latestLog = new NodeStatusLog();
+	private TreeNode<?> latestTicked = null;
 	private int waitTicks = 0;
 	
 	public BehaviourTree() { this(INITIAL_TREE.copy()); }
@@ -92,7 +94,10 @@ public class BehaviourTree
 	/** Root of the current tree being executed */
 	public TreeNode<?> root()
 	{
-		return commandNodes.getOrDefault(boardCommand.currentType(), (this.root == null ? (this.root = TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID())) : this.root));
+		Order command = boardCommand.currentType();
+		TreeNode<?> root = commandNodes.getOrDefault(boardCommand.currentType(), (this.root == null ? (this.root = TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID())) : this.root));
+		root.getLog().setTree(commandNodes.containsKey(command) ? command : null);
+		return root;
 	}
 	
 	public TreeNode<?> root(Order forOrder)
@@ -108,31 +113,27 @@ public class BehaviourTree
 		this.boardCommand.setWorld(tricksy.getWorld());
 		
 		tricksy.setTreePose(tricksy.defaultPose());
-		TreeNode<?> root = root();
-		root.clearLog();
+		TreeNode<?> root = (latestTicked = root());
+		root.tickLog();
 		if(root.tick(tricksy, new WhiteboardManager<T>(local, global, this.boardCommand)) == Result.FAILURE)
 			waitTicks = Reference.Values.TICKS_PER_SECOND;
 		
-		if(this.boardCommand.isDirty())
-		{
-			if(!tricksy.getWorld().isClient())
-				tricksy.setBehaviourTree(storeInNbt());
-			this.boardCommand.markDirty(false);
-		}
+		this.latestLog = root.getLog();
 	}
 	
 	/** Retrieves the status log of the tree most recently ticked */
-	public NodeStatusLog latestLog() { return root().getLog(); }
+	public NodeStatusLog latestLog() { return this.latestLog; }
 	
 	public CommandWhiteboard command() { return this.boardCommand; }
 	
-	public void setExecutor(Order type, TreeNode<?> treeIn)
-	{
-		this.commandNodes.put(type, treeIn);
-	}
+	public void setExecutor(Order type, TreeNode<?> treeIn) { this.commandNodes.put(type, treeIn); }
 	
-	// TODO Add copy() method to Whiteboard
-	public void giveCommand(CommandWhiteboard commandIn) { this.boardCommand = (CommandWhiteboard)commandIn.copy(); }
+	public <T extends PathAwareEntity & ITricksyMob<?>> void giveCommand(CommandWhiteboard commandIn, T tricksy)
+	{
+		this.latestTicked.clearLog();
+		this.latestTicked.stop(tricksy);
+		this.boardCommand = (CommandWhiteboard)commandIn.copy();
+	}
 	
 	// XXX Move tree storage out of entity NBT?
 	public NbtCompound storeInNbt()
