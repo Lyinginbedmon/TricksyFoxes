@@ -22,8 +22,8 @@ import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.node.handler.NodeOutput;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
@@ -64,9 +64,9 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				return Map.of(VAR_A, NodeInput.makeInput(NodeInput.anyLocal()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<?> value = getOrDefault(VAR_A, parent, local, global);
+				IWhiteboardObject<?> value = getOrDefault(VAR_A, parent, whiteboards);
 				if(!value.isList())
 					return Result.FAILURE;
 				
@@ -90,9 +90,9 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 						DEST, new NodeOutput(TFObjType.types().toArray(new TFObjType[0])));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<?> value = getOrDefault(COPY, parent, local, global);
+				IWhiteboardObject<?> value = getOrDefault(COPY, parent, whiteboards);
 				INodeIOValue targetVal = parent.getIO(DEST);
 				WhiteboardRef target = targetVal.type() == Type.WHITEBOARD ? ((WhiteboardValue)targetVal).assignment() : null;
 				if(target == null)
@@ -103,10 +103,10 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 					if(!target.type().castableTo(value.type()))
 						return Result.FAILURE;
 					
-					local.setValue(target, value.as(target.type()));
+					whiteboards.local().setValue(target, value.as(target.type()));
 				}
 				else
-					local.setValue(target, target.type().blank());
+					whiteboards.local().setValue(target, target.type().blank());
 				
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
@@ -122,7 +122,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 						DEST, NodeInput.makeInput((var) -> !var.uncached() && !var.boardType().isReadOnly()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				INodeIOValue targetVal = parent.getIO(DEST);
 				if(targetVal.type() != Type.WHITEBOARD)
@@ -132,7 +132,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				if(target == null)
 					return Result.FAILURE;
 				
-				local.setValue(target, target.type().blank());
+				whiteboards.local().setValue(target, target.type().blank());
 				
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
@@ -155,20 +155,20 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 						INVERT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(), (new WhiteboardObj.Bool(false)).describe().get(0)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				INodeIOValue reference = parent.getIO(VAR_UNSORTED);
 				if(reference.type() != Type.WHITEBOARD)
 					return Result.FAILURE;
 				
-				IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, local, global);
+				IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, whiteboards);
 				if(value.isEmpty())
 					return Result.FAILURE;
 				
-				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
+				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
 				Vec3d origin = (pos.size() == 0 ? tricksy.getBlockPos() : pos.as(TFObjType.BLOCK).get()).toCenterPos();
 				
-				isInverted = getOrDefault(INVERT, parent, local, global).as(TFObjType.BOOL).get();
+				isInverted = getOrDefault(INVERT, parent, whiteboards).as(TFObjType.BOOL).get();
 				
 				IWhiteboardObject<?> sorted;
 				if(!value.isList() || value.size() < 2)
@@ -188,7 +188,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				else
 					return Result.FAILURE;
 				
-				local.setValue(((WhiteboardValue)reference).assignment(), sorted);
+				whiteboards.local().setValue(((WhiteboardValue)reference).assignment(), sorted);
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
@@ -346,17 +346,17 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 						INVERT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(), (new WhiteboardObj.Bool(false)).describe().get(0)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				INodeIOValue reference = parent.getIO(VAR_UNSORTED);
 				if(reference.type() != Type.WHITEBOARD)
 					return Result.FAILURE;
 				
-				IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, local, global);
+				IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, whiteboards);
 				if(value.isEmpty())
 					return Result.FAILURE;
 				
-				boolean inverted = getOrDefault(INVERT, parent, local, global).as(TFObjType.BOOL).get();
+				boolean inverted = getOrDefault(INVERT, parent, whiteboards).as(TFObjType.BOOL).get();
 				Vec3d origin = inverted ? new Vec3d(0, -1, 0) : new Vec3d(0, 1, 0);
 				
 				IWhiteboardObject<?> sorted;
@@ -377,7 +377,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				else
 					return Result.FAILURE;
 				
-				local.setValue(((WhiteboardValue)reference).assignment(), sorted);
+				whiteboards.local().setValue(((WhiteboardValue)reference).assignment(), sorted);
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
@@ -427,17 +427,17 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 					POSITION, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
 		}
 		
-		public default <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+		public default <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 		{
 			INodeIOValue reference = parent.getIO(VAR_UNSORTED);
 			if(reference.type() != Type.WHITEBOARD)
 				return Result.FAILURE;
 			
-			IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, local, global);
+			IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, whiteboards);
 			if(value.isEmpty())
 				return Result.FAILURE;
 			
-			IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
+			IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
 			Vec3d origin = (pos.size() == 0 ? tricksy.getBlockPos() : pos.as(TFObjType.BLOCK).get()).toCenterPos();
 			
 			IWhiteboardObject<?> sorted;
@@ -458,7 +458,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 			else
 				return Result.FAILURE;
 			
-			local.setValue(((WhiteboardValue)reference).assignment(), sorted);
+			whiteboards.local().setValue(((WhiteboardValue)reference).assignment(), sorted);
 			tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 			return Result.SUCCESS;
 		}

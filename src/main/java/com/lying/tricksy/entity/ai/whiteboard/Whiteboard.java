@@ -30,7 +30,7 @@ import net.minecraft.world.World;
  */
 public abstract class Whiteboard<T>
 {
-	public static final Whiteboard<?> CONSTANTS = new ConstantsWhiteboard().build();
+	public static final ConstantsWhiteboard CONSTANTS = (ConstantsWhiteboard)new ConstantsWhiteboard().build();
 	
 	private final Map<WhiteboardRef, T> values = new HashMap<>();
 	protected final Map<WhiteboardRef, IWhiteboardObject<?>> cache = new HashMap<>();
@@ -45,6 +45,8 @@ public abstract class Whiteboard<T>
 	}
 	
 	public void setWorld(World worldIn) { this.world = worldIn; }
+	
+	public final BoardType type() { return this.type; }
 	
 	/** Populates the whiteboard with its system values, post-construction */
 	public abstract Whiteboard<?> build();
@@ -68,6 +70,8 @@ public abstract class Whiteboard<T>
 		if(data.contains("Values", NbtElement.LIST_TYPE))
 			loadValues(data.getList("Values", NbtElement.COMPOUND_TYPE));
 	}
+	
+	public abstract Whiteboard<T> copy();
 	
 	/** Loads type-specific cachable values from NBT data */
 	protected void loadValues(NbtList list)
@@ -203,14 +207,17 @@ public abstract class Whiteboard<T>
 	
 	public static enum BoardType implements StringIdentifiable
 	{
-		CONSTANT(true),
-		LOCAL(false),
-		GLOBAL(true);
+		CONSTANT(0, true),
+		LOCAL(3, false),
+		GLOBAL(2, true),
+		COMMAND(1, true);
 		
 		private final boolean readOnly;
+		private final int index;
 		
-		private BoardType(boolean isReadOnly)
+		private BoardType(int indexIn, boolean isReadOnly)
 		{
+			index = indexIn;
 			readOnly = isReadOnly;
 		}
 		
@@ -228,20 +235,25 @@ public abstract class Whiteboard<T>
 					return type;
 			return null;
 		}
+		
+		public static List<BoardType> displayOrder()
+		{
+			List<BoardType> list = Lists.newArrayList();
+			for(BoardType type : values())
+				list.add(type);
+			list.sort((a,b) -> a.index < b.index ? -1 : a.index > b.index ? 1 : 0);
+			return list;
+		}
 	}
 	
-	public static final <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> get(WhiteboardRef nameIn, LocalWhiteboard<T> local, GlobalWhiteboard global)
+	public static final <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> get(WhiteboardRef nameIn, WhiteboardManager<T> whiteboards)
 	{
-		switch(nameIn.boardType())
-		{
-			case GLOBAL:
-				return global.getValue(nameIn);
-			case LOCAL:
-				return local.getValue(nameIn);
-			case CONSTANT:
-				return CONSTANTS.getValue(nameIn);
-		}
-		return TFObjType.EMPTY.blank();
+		if(nameIn.boardType() == BoardType.CONSTANT)
+			return ConstantsWhiteboard.CONSTANTS.getValue(nameIn);
+		else if(nameIn.boardType() != null)
+			return whiteboards.get(nameIn.boardType()).getValue(nameIn);
+		else
+			return TFObjType.EMPTY.blank();
 	}
 	
 	/** Returns a collection of all references stored in this whiteboard, without their values */
@@ -267,7 +279,12 @@ public abstract class Whiteboard<T>
 	/** Returns an uncached whiteboard reference of the given type and board with a corresponding translated name */
 	protected static WhiteboardRef makeSystemRef(String name, TFObjType<?> type, BoardType board)
 	{
+		return makeRef(name, type, board).noCache();
+	}
+	
+	protected static WhiteboardRef makeRef(String name, TFObjType<?> type, BoardType board)
+	{
 		name = name.replace(' ', '_').toLowerCase();
-		return new WhiteboardRef(name, type, board).noCache().displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+"."+name));
+		return new WhiteboardRef(name, type, board).displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+"."+name));
 	}
 }

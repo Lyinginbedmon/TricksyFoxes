@@ -10,8 +10,7 @@ import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.subtype.LeafSearch;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
@@ -47,14 +46,14 @@ public class MatchBlockSearchHandler extends GetterHandlerTyped<BlockPos>
 	
 	@Override
 	@Nullable
-	public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+	public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 	{
-		IWhiteboardObject<?> searchPos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
-		IWhiteboardObject<Integer> searchRange = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
+		IWhiteboardObject<?> searchPos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
+		IWhiteboardObject<Integer> searchRange = getOrDefault(CommonVariables.VAR_DIS, parent, whiteboards).as(TFObjType.INT);
 		Region searchArea = GetterHandlerTyped.getSearchArea(searchPos, searchRange, tricksy);
 		
 		WhiteboardObjBlock result = new WhiteboardObjBlock();
-		IWhiteboardObject<?> filter = getOrDefault(MATCH, parent, local, global);
+		IWhiteboardObject<?> filter = getOrDefault(MATCH, parent, whiteboards);
 		if(filter == null || filter.size() == 0)
 			return null;
 		

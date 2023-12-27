@@ -9,8 +9,7 @@ import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.ControlFlowNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -29,12 +28,12 @@ public class ControlFlowMisc implements ISubtypeGroup<ControlFlowNode>
 		List<NodeSubType<ControlFlowNode>> set = Lists.newArrayList();
 		set.add(new NodeSubType<ControlFlowNode>(VARIANT_SEQUENCE, new INodeTickHandler<ControlFlowNode>() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{
 				if(!parent.children().isEmpty())
 				{
 					TreeNode<?> child = parent.children().get(parent.index % parent.children().size());
-					switch(child.tick(tricksy, local, global))
+					switch(child.tick(tricksy, whiteboards))
 					{
 						case FAILURE:
 							return Result.FAILURE;
@@ -56,7 +55,7 @@ public class ControlFlowMisc implements ISubtypeGroup<ControlFlowNode>
 		}));
 		set.add(new NodeSubType<ControlFlowNode>(VARIANT_SELECTOR, new INodeTickHandler<ControlFlowNode>() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{
 				if(parent.children().isEmpty())
 					return Result.FAILURE;
@@ -67,7 +66,7 @@ public class ControlFlowMisc implements ISubtypeGroup<ControlFlowNode>
 					for(int i=0; i<parent.children().size(); i++)
 					{
 						TreeNode<?> child = parent.children().get(i);
-						Result result = child.tick(tricksy, local, global);
+						Result result = child.tick(tricksy, whiteboards);
 						if(result != Result.FAILURE)
 						{
 							parent.index = i;
@@ -80,13 +79,13 @@ public class ControlFlowMisc implements ISubtypeGroup<ControlFlowNode>
 				{
 					// Tick indexed node
 					TreeNode<?> child = parent.children().get(parent.index);
-					return child.tick(tricksy, local, global);
+					return child.tick(tricksy, whiteboards);
 				}
 			}
 		}));
 		set.add(new NodeSubType<ControlFlowNode>(VARIANT_REACTIVE, new INodeTickHandler<ControlFlowNode>() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{
 				/**
 				 * Parent result is equal to:
@@ -96,7 +95,7 @@ public class ControlFlowMisc implements ISubtypeGroup<ControlFlowNode>
 				 */
 				Result result = Result.SUCCESS;
 				for(TreeNode<?> child : parent.children())
-					switch(child.tick(tricksy, local, global))
+					switch(child.tick(tricksy, whiteboards))
 					{
 						case FAILURE:
 							result = Result.FAILURE;

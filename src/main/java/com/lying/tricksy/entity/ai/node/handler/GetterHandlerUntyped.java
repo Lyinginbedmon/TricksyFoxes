@@ -9,14 +9,14 @@ import org.jetbrains.annotations.Nullable;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
 import com.lying.tricksy.api.entity.ai.INodeIOValue;
-import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.api.entity.ai.INodeIOValue.Type;
 import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
@@ -48,7 +48,7 @@ public abstract class GetterHandlerUntyped implements INodeTickHandler<LeafNode>
 	
 	public Map<WhiteboardRef, INodeIO> ioSet() { return this.variableSet; }
 	
-	public <N extends PathAwareEntity & ITricksyMob<?>> Result doTick(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
+	public <N extends PathAwareEntity & ITricksyMob<?>> Result doTick(N tricksy, WhiteboardManager<N> whiteboards, LeafNode parent)
 	{
 		INodeIOValue target = parent.getIO(entry);
 		if(target.type() != Type.WHITEBOARD)
@@ -57,18 +57,18 @@ public abstract class GetterHandlerUntyped implements INodeTickHandler<LeafNode>
 		if(dest == null)
 			return Result.FAILURE;
 		
-		IWhiteboardObject<?> result = getResult(tricksy, local, global, parent);
+		IWhiteboardObject<?> result = getResult(tricksy, whiteboards, parent);
 		if(result == null || result.isEmpty() || result.size() == 0)
 			return Result.FAILURE;
 		
-		local.setValue(dest, result);
+		whiteboards.local().setValue(dest, result);
 		return Result.SUCCESS;
 	}
 	
 	public abstract void addInputVariables(Map<WhiteboardRef, INodeIO> set);
 	
 	@Nullable
-	public abstract <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent);
+	public abstract <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(N tricksy, WhiteboardManager<N> whiteboards, LeafNode parent);
 	
 	/** Returns a provided Region or generates one around a provided position */
 	@Nullable

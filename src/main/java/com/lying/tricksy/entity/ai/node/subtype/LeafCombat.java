@@ -19,8 +19,8 @@ import com.lying.tricksy.entity.ai.node.handler.CombatHandler;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.node.handler.RangedCombatHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
@@ -90,9 +90,9 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 				return Map.of(CommonVariables.TARGET_ENT, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
+				IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
 				if(value.size() == 0)
 				{
 					tricksy.setTarget(null);
@@ -191,10 +191,10 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 				set.put(DRAW, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				drawTicks = 20 * MathHelper.clamp(getOrDefault(DRAW, parent, local, global).as(TFObjType.INT).get(), 1, 3600);
-				return super.doTick(tricksy, local, global, parent);
+				drawTicks = 20 * MathHelper.clamp(getOrDefault(DRAW, parent, whiteboards).as(TFObjType.INT).get(), 1, 3600);
+				return super.doTick(tricksy, whiteboards, parent);
 			}
 			
 			public boolean isRangeWeapon(ItemStack bowStack) { return !bowStack.isEmpty() && bowStack.getItem() instanceof BowItem; }
@@ -346,13 +346,13 @@ public class LeafCombat implements ISubtypeGroup<LeafNode>
 						LocalWhiteboard.ATTACK_TARGET.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				if(!tricksy.getMainHandStack().isOf(Items.SHIELD))
 					return Result.FAILURE;
 				
 				tricksy.setCurrentHand(Hand.MAIN_HAND);
-				IWhiteboardObject<?> target = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global);
+				IWhiteboardObject<?> target = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards);
 				if(target.size() > 0)
 					if(target.type() == TFObjType.BLOCK)
 					{

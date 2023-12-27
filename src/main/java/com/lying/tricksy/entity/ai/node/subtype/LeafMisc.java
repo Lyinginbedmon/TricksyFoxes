@@ -18,9 +18,10 @@ import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.GetterHandlerTyped;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
+import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
@@ -53,6 +54,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_LOOK_AROUND = ISubtypeGroup.variant("look_around");
 	public static final Identifier VARIANT_LOOK_AT = ISubtypeGroup.variant("look_at");
 	public static final Identifier VARIANT_WANDER = ISubtypeGroup.variant("wander");
+	public static final Identifier VARIANT_ORDER_COMPLETE = ISubtypeGroup.variant("complete_order");
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_misc"); }
 	
@@ -70,9 +72,9 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				return Map.of(BARK, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				int index = MathHelper.clamp(getOrDefault(BARK, parent, local, global).as(TFObjType.INT).get(), 0, Bark.values().length - 1);
+				int index = MathHelper.clamp(getOrDefault(BARK, parent, whiteboards).as(TFObjType.INT).get(), 0, Bark.values().length - 1);
 				tricksy.bark(Bark.values()[index]);
 				return Result.SUCCESS;
 			}
@@ -88,9 +90,9 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT);
+				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT);
 				
 				if(!parent.isRunning())
 					parent.ticks = duration.get() * Reference.Values.TICKS_PER_SECOND;
@@ -106,9 +108,9 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<BlockPos> value = getOrDefault(CommonVariables.VAR_POS, parent, local, global).as(TFObjType.BLOCK);
+				IWhiteboardObject<BlockPos> value = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				if(value.size() == 0)
 					tricksy.clearPositionTarget();
 				else
@@ -116,6 +118,15 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				return Result.SUCCESS;
 			}
 		}));
+		set.add(new NodeSubType<LeafNode>(VARIANT_ORDER_COMPLETE, new INodeTickHandler<LeafNode>()
+				{
+					public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+					{
+						whiteboards.command().setValue(CommandWhiteboard.ACTIVE, new WhiteboardObj.Bool(false));
+						whiteboards.command().markDirty(true);
+						return Result.SUCCESS;
+					}	
+				}));
 		return set;
 	}
 	
@@ -130,12 +141,12 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				EntityNavigation navigator = tricksy.getNavigation();
 				if(!parent.isRunning())
 				{
-					IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
+					IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
 					if(targetObj.isEmpty())
 						return Result.FAILURE;
 					
@@ -159,7 +170,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				tricksy.getNavigation().stop();
 				return Result.SUCCESS;
@@ -180,10 +191,10 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 						CommonVariables.VAR_DIS, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal(String.valueOf(4))));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
-				IWhiteboardObject<Integer> targetRange = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
+				IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
+				IWhiteboardObject<Integer> targetRange = getOrDefault(CommonVariables.VAR_DIS, parent, whiteboards).as(TFObjType.INT);
 				Region area = GetterHandlerTyped.getSearchArea(targetObj, targetRange, tricksy, (mob) -> 
 				{
 					// Wander area based on region -> home position -> current position
@@ -236,7 +247,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 		{
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				if(!parent.isRunning())
 				{
@@ -285,9 +296,9 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 						LocalWhiteboard.ATTACK_TARGET.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<?> target = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global);
+				IWhiteboardObject<?> target = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards);
 				if(target.size() > 0)
 				{
 					if(target.type() == TFObjType.BLOCK)
@@ -319,11 +330,11 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal(String.valueOf(4))));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				if(!parent.isRunning())
 				{
-					int duration = getOrDefault(CommonVariables.VAR_NUM, parent, local, global).as(TFObjType.INT).get();
+					int duration = getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT).get();
 					parent.ticks = (duration + 1) * 20;
 					
 					Random rand = tricksy.getRandom();

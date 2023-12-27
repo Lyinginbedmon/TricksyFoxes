@@ -11,9 +11,9 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
 import com.lying.tricksy.api.entity.ai.INodeIOValue;
-import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.api.entity.ai.INodeIOValue.StaticValue;
 import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
+import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
@@ -21,8 +21,8 @@ import com.lying.tricksy.entity.ai.node.handler.CombatHandler;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.node.handler.SubTreeHandler;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
@@ -63,7 +63,7 @@ public class LeafSubTree implements ISubtypeGroup<LeafNode>
 				return Map.of(TARGET, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> TreeNode<?> generateSubTree(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> TreeNode<?> generateSubTree(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				INodeIOValue target;
 				if(parent.inputAssigned(TARGET))
@@ -116,7 +116,7 @@ public class LeafSubTree implements ISubtypeGroup<LeafNode>
 				return Map.of(TARGET, NodeInput.makeInput(NodeInput.ofType(type, false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> TreeNode<?> generateSubTree(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> TreeNode<?> generateSubTree(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				INodeIOValue target = parent.getIO(TARGET);
 				return TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SELECTOR)

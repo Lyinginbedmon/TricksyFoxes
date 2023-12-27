@@ -126,13 +126,13 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 	
 	public void updateTreeRender()
 	{
-		NodeRenderUtils.scaleAndPositionNode(handler.getTree().root(), 0, 0, this.displayPredicate, true);
+		NodeRenderUtils.scaleAndPositionNode(handler.root(), 0, 0, this.displayPredicate, true);
 		this.treeOffset = new Vec2f(currentNode.screenX + (currentNode.width / 2), currentNode.screenY + (currentNode.height / 2)).negate();
 		
 		int midWidth = this.width / 2;
 		int treeX = midWidth + (int)treeOffset.x;
 		int treeY = this.height / 2 + (int)treeOffset.y;
-		TreeNode<?> root = handler.getTree().root();
+		TreeNode<?> root = handler.root();
 		NodeRenderUtils.scaleAndPositionNode(root, treeX, treeY, this.displayPredicate, true);
 	}
 	
@@ -274,7 +274,7 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 	protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY)
 	{
 		renderBackground(context);
-		TreeNode<?> root = handler.getTree().root();
+		TreeNode<?> root = handler.root();
 		NodeRenderUtils.renderTree(root, context, textRenderer, this.ticksOpen, this.displayPredicate, true);
 		renderBackground(context);
 		

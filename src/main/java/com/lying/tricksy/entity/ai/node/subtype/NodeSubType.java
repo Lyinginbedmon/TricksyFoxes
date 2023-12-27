@@ -12,8 +12,7 @@ import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.reference.Reference;
 
@@ -62,12 +61,12 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public Map<WhiteboardRef, INodeIO> ioSet(){ return tickFunc.ioSet(); }
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, M parent)
+	public <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, WhiteboardManager<T> whiteboards, M parent)
 	{
 		if(!tickFunc.inputsSufficient(parent) || !isValidFor(tricksy.getType()))
 			return Result.FAILURE;
 		
-		return tickFunc.doTick(tricksy, local, global, parent);
+		return tickFunc.doTick(tricksy, whiteboards, parent);
 	}
 	
 	/** Performs any end-of-behaviour cleanup */

@@ -6,7 +6,9 @@ import java.util.function.Predicate;
 
 import com.google.common.base.Predicates;
 import com.lying.tricksy.TricksyFoxesClient;
+import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.node.TreeNode;
+import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard.Order;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.network.AddLocalReferencePacket;
@@ -60,7 +62,7 @@ public class TreeScreen extends TricksyScreenBase
 		}));
 		addDrawableChild(delNode = makeTexturedWidget(16, 16, 16, 184, (button) -> 
 		{
-			this.handler.getTree().root().removeChild(hoveredNode);
+			this.root().removeChild(hoveredNode);
 			this.handler.countNodes();
 		}));
 		
@@ -73,13 +75,17 @@ public class TreeScreen extends TricksyScreenBase
 		addDrawableChild(save = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.save"), (button) -> 
 		{
 			issueWhiteboardPackets(player, handler);
-			SaveTreePacket.send(player, handler.tricksyUUID(), handler.getTree());
+			SaveTreePacket.send(player, handler.tricksyUUID(), getTree());
 			client.currentScreen.close();
 		}).dimensions(midPoint + 70 - 20, 7, 40, 16).build());
 		addDrawableChild(whiteboards = makeTexturedWidget((this.width / 2) + 34, 18, 32, 184, (button) -> 
 		{
 			client.setScreen(new WhiteboardScreen(getScreenHandler(), this.playerInv, this.title));
 		}));
+		
+		addDrawableChild(ButtonWidget.builder(Text.literal("Idle"), (button) -> this.handler.showSubTree(null)).dimensions(0, 0, 25, 20).build());
+		for(Order order : Order.values())
+			addDrawableChild(ButtonWidget.builder(Text.literal(order.asString()), (button) -> this.handler.showSubTree(order)).dimensions(0, (1+order.ordinal()) * 22, 25, 20).build());
 		
 		if(position == null)
 			setPosition(-this.width / 4, -this.height / 4);
@@ -100,6 +106,10 @@ public class TreeScreen extends TricksyScreenBase
 	{
 		return this.position == null ? Vec2f.ZERO : this.position; 
 	}
+	
+	public BehaviourTree getTree() { return this.handler.getTree(); }
+	
+	public TreeNode<?> root() { return this.handler.root(); }
 	
 	public boolean mouseClicked(double x, double y, int mouseKey)
 	{
@@ -150,7 +160,7 @@ public class TreeScreen extends TricksyScreenBase
 		this.save.render(context, mouseX, mouseY, 0F);
 		this.whiteboards.render(context, mouseX, mouseY, 0F);
 		
-		TreeNode<?> root = handler.getTree().root();
+		TreeNode<?> root = root();
 		if(mouseY < 28 && Math.abs((this.width / 2) - mouseX) < 100)
 			hoveredNode = null;
 		else
@@ -178,10 +188,10 @@ public class TreeScreen extends TricksyScreenBase
 		if(hoveredNode == null)
 			this.addNode.visible = this.delNode.visible = false;
 		renderBackground(context);
-		if(handler.getTree() == null)
+		if(getTree() == null)
 			return;
 		
-		TreeNode<?> root = handler.getTree().root();
+		TreeNode<?> root = root();
 		int renderX = this.width / 2 + (int)position().x;
 		int renderY = this.height / 2 + (int)position().y;
 		if(isDragging())

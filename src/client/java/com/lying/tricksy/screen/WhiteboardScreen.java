@@ -46,9 +46,9 @@ public class WhiteboardScreen extends TricksyScreenBase implements INestedScreen
 			client.setScreen(new TreeScreen(this.handler, this.playerInv, this.title));
 		}));
 		
-		boardMap.put(BoardType.CONSTANT, makeBoardButton(BoardType.CONSTANT, 0));
-		boardMap.put(BoardType.GLOBAL, makeBoardButton(BoardType.GLOBAL, 20));
-		boardMap.put(BoardType.LOCAL, makeBoardButton(BoardType.LOCAL, 40));
+		int y=0;
+		for(BoardType type : BoardType.displayOrder())
+			boardMap.put(type, makeBoardButton(type, y++ * 20));
 		boardMap.values().forEach((button) -> addDrawableChild(button));
 		manageBoardButtons();
 		this.list.setRandSeed(this.player.getUuid().getLeastSignificantBits());
@@ -117,7 +117,7 @@ public class WhiteboardScreen extends TricksyScreenBase implements INestedScreen
 	
 	public void deleteReference(WhiteboardRef targetRef)
 	{
-		if(targetRef == null || targetRef.boardType() == BoardType.CONSTANT)
+		if(targetRef == null || targetRef.boardType().isReadOnly())
 			return;
 		
 		this.handler.markForDeletion(targetRef);

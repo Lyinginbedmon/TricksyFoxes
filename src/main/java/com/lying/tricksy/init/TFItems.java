@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.item.ISealableItem;
+import com.lying.tricksy.item.ItemSageFan;
 import com.lying.tricksy.item.ItemPresciencePeriapt;
 import com.lying.tricksy.item.ItemPrescientCandle;
 import com.lying.tricksy.item.ItemPrescientNote;
@@ -36,6 +37,8 @@ public class TFItems
     public static final List<Item> SEALABLES = Lists.newArrayList();
     
     public static final Item SAGE_HAT = register("sage_hat", new ItemSageHat(new FabricItemSettings()));
+    public static final Item SAGE_FAN = register("sage_fan", new ItemSageFan(new FabricItemSettings()));
+    
     public static final Item FOX_EGG = register("fox_spawn_egg", new SpawnEggItem(TFEntityTypes.TRICKSY_FOX, 13396256, 14005919, new FabricItemSettings()));
     public static final Item GOAT_EGG = register("goat_spawn_egg", new SpawnEggItem(TFEntityTypes.TRICKSY_GOAT, 5589310, 10851452, new FabricItemSettings()));
     
@@ -60,6 +63,7 @@ public class TFItems
     public static final ItemGroup TRICKSY_GROUP = FabricItemGroup.builder().icon(() -> new ItemStack(SAGE_HAT)).displayName(Text.translatable("itemGroup."+Reference.ModInfo.MOD_ID+".item_group")).entries((ctx,entries) -> 
 	    {
 			entries.add(SAGE_HAT);
+			entries.add(SAGE_FAN);
 			entries.add(PRESCIENCE_ITEM);
 			entries.add(PRESCIENT_CANDLE_ITEM);
 			entries.add(PERIAPT);

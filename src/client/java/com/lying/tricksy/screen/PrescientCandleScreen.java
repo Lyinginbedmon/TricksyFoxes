@@ -88,7 +88,6 @@ public class PrescientCandleScreen extends HandledScreen<PrescientCandleScreenHa
 	
 	protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY)
 	{
-		renderBackground(context);
 		this.theTricksy = getScreenHandler().getTricksyMob(client.world, client.player);
 		if(this.theTricksy.isEmpty())
 			return;
@@ -106,6 +105,7 @@ public class PrescientCandleScreen extends HandledScreen<PrescientCandleScreenHa
 			renderY += offsetY;
 		}
 		
+		// FIXME Display latest active tree instead of default
 		TreeNode<?> root = tricksy.getBehaviourTree().root();
 		NodeRenderUtils.scaleAndPositionNode(root, renderX, renderY, Predicates.alwaysFalse(), false);
 		NodeRenderUtils.renderTree(root, context, this.textRenderer, 0, Predicates.alwaysFalse(), false);

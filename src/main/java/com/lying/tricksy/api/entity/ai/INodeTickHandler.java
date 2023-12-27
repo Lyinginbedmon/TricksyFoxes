@@ -15,8 +15,7 @@ import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
@@ -105,17 +104,17 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 	
 	/** Returns the value associated with the given input by the given parent node, or its default value if it is optional */
 	@Nullable
-	public default IWhiteboardObject<?> getOrDefault(WhiteboardRef input, M parent, LocalWhiteboard<?> local, GlobalWhiteboard global)
+	public default IWhiteboardObject<?> getOrDefault(WhiteboardRef input, M parent, WhiteboardManager<?> whiteboards)
 	{
 		if(!parent.inputAssigned(input))
 			return ioCondition(input).isOptional() ? ioCondition(input).defaultValue().get() : null;
 		else
-			return parent.getIO(input).get(local, global);
+			return parent.getIO(input).get(whiteboards);
 	}
 	
 	/** Performs a single tick of this node */
 	@NotNull
-	public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, M parent);
+	public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, M parent);
 	
 	/** Performs any cleanup logic needed when the node stops */
 	public default <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, M parent) { }

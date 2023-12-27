@@ -14,6 +14,8 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
+import com.lying.tricksy.entity.ai.node.TreeNode;
+import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard.Order;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
@@ -32,6 +34,9 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 {
 	/** The mob's current behaviour tree */
 	private BehaviourTree tricksyTree = new BehaviourTree();
+	/** Displayed sub tree */
+	private Order showSubTree = null;
+	
 	/** All references available to the mob, categorised by their whiteboard type */
 	private Map<BoardType, Map<WhiteboardRef, IWhiteboardObject<?>>> references = new HashMap<>();
 	
@@ -45,7 +50,7 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	private PathAwareEntity tricksyMob = null;
 	private UUID tricksyID;
 	
-	/** Current size of the behaviour tree, cached */
+	/** Current size of the displayed behaviour tree, cached */
 	private int treeSize;
 	/** Server-set limit of how large the behaviour tree can get */
 	private int treeSizeCap;
@@ -112,6 +117,8 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	
 	public BehaviourTree getTree() { return tricksyTree; }
 	
+	public TreeNode<?> root() { return getTree().root(showSubTree); }
+	
 	public void sync(ITricksyMob<?> tricksyIn, PathAwareEntity mobIn)
 	{
 		this.tricksy = tricksyIn;
@@ -124,6 +131,12 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	
 	public void setUUID(UUID idIn) { this.tricksyID = idIn; }
 	
+	public void showSubTree(Order orderIn)
+	{
+		this.showSubTree = orderIn;
+		countNodes();
+	}
+	
 	public void setCap(int capIn)
 	{
 		this.treeSizeCap = capIn;
@@ -132,9 +145,7 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	public void setAvailableReferences(List<Pair<WhiteboardRef, IWhiteboardObject<?>>> refsIn)
 	{
 		references.clear();
-		references.put(BoardType.CONSTANT, new HashMap<>());
-		references.put(BoardType.GLOBAL, new HashMap<>());
-		references.put(BoardType.LOCAL, new HashMap<>());
+		BoardType.displayOrder().forEach(type -> references.put(type, new HashMap<>()));
 		refsIn.forEach((pair) -> references.get(pair.getLeft().boardType()).put(pair.getLeft(), pair.getRight()));
 	}
 	
@@ -152,7 +163,7 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	
 	public void countNodes()
 	{
-		this.treeSize = this.tricksyTree.size();
+		this.treeSize = this.root().branchSize();
 	}
 	
 	public UUID tricksyUUID() { return this.tricksyID; }

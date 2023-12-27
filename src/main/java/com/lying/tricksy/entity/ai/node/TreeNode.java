@@ -18,8 +18,7 @@ import com.lying.tricksy.api.entity.ai.INodeIOValue.StaticValue;
 import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFNodeTypes;
@@ -124,6 +123,19 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		return null;
 	}
 	
+	public final int branchSize()
+	{
+		return recursiveBranchSize(this);
+	}
+	
+	private final int recursiveBranchSize(TreeNode<?> node)
+	{
+		int tally = 1;
+		for(TreeNode<?> child : node.children())
+			tally += recursiveBranchSize(child);
+		return tally;
+	}
+	
 	public Random getRNG() { return new Random(getID().getLeastSignificantBits()); }
 	
 	/** Returns the unique ID of this node */
@@ -215,13 +227,13 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	}
 	
 	@SuppressWarnings("unchecked")
-	public final <T extends PathAwareEntity & ITricksyMob<?>> Result tick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global)
+	public final <T extends PathAwareEntity & ITricksyMob<?>> Result tick(T tricksy, WhiteboardManager<T> whiteboards)
 	{
 		if(!isRunnable())
 			return this.lastResult = Result.FAILURE;
 		
 		NodeSubType<N> subType = nodeType.getSubType(this.subType);
-		if(local.isNodeCoolingDown(subType))
+		if(whiteboards.local().isNodeCoolingDown(subType))
 		{
 			getLog().logCold(getID());
 			return Result.FAILURE;
@@ -234,23 +246,23 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		
 		@Nullable
 		Result result = Result.FAILURE;
-		if(subType.usesFlags().isEmpty() || subType.usesFlags().stream().allMatch(flag -> local.canUseFlag(flag)))
+		if(subType.usesFlags().isEmpty() || subType.usesFlags().stream().allMatch(flag -> whiteboards.local().canUseFlag(flag)))
 			try
 			{
-				result = subType.call(tricksy, local, global, (N)this);
+				result = subType.call(tricksy, whiteboards, (N)this);
 				if(result.isEnd())
 				{
 					subType.onEnd(tricksy, (N)this);
 					
 					int cooldown = subType.getCooldown(tricksy);
 					if(cooldown > 0)
-						local.setNodeCooldown(subType, cooldown);
+						whiteboards.local().setNodeCooldown(subType, cooldown);
 					
 					this.nodeRAM = new NbtCompound();
 				}
 				
 				if(!subType.usesFlags().isEmpty())
-					local.flagAction(subType.usesFlags());
+					whiteboards.local().flagAction(subType.usesFlags());
 			}
 			catch(Exception e) { }
 		

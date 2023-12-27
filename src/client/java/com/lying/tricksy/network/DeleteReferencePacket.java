@@ -2,7 +2,6 @@ package com.lying.tricksy.network;
 
 import java.util.UUID;
 
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 
@@ -17,7 +16,7 @@ public class DeleteReferencePacket
 {
 	public static <T extends PathAwareEntity & ITricksyMob<?>> void send(PlayerEntity player, UUID tricksyID, WhiteboardRef reference)
 	{
-		if(reference.boardType() == BoardType.CONSTANT || reference.uncached())
+		if(reference.boardType().isReadOnly() || reference.uncached())
 			return;
 		
 		PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());

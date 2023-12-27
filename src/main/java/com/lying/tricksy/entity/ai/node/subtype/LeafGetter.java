@@ -11,8 +11,8 @@ import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.handler.GetterHandlerTyped;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
@@ -50,9 +50,9 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				set.put(CommonVariables.TARGET_ENT, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<Entity> target = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
+				IWhiteboardObject<Entity> target = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
 				
 				Entity entity = target.size() == 0 ? tricksy : target.get();
 				if(!(entity instanceof LivingEntity))
@@ -72,10 +72,10 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				set.put(MAX, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<Entity> target = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
-				IWhiteboardObject<Boolean> isMax = getOrDefault(MAX, parent, local, global).as(TFObjType.BOOL);
+				IWhiteboardObject<Entity> target = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
+				IWhiteboardObject<Boolean> isMax = getOrDefault(MAX, parent, whiteboards).as(TFObjType.BOOL);
 				
 				Entity entity = target.size() == 0 ? tricksy : target.get();
 				if(!(entity instanceof LivingEntity) || !entity.isAlive())
@@ -95,10 +95,10 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				set.put(OFF, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<ItemStack> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<ItemStack> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<Entity> target = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
-				IWhiteboardObject<Boolean> isOff = getOrDefault(OFF, parent, local, global).as(TFObjType.BOOL);
+				IWhiteboardObject<Entity> target = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
+				IWhiteboardObject<Boolean> isOff = getOrDefault(OFF, parent, whiteboards).as(TFObjType.BOOL);
 				
 				Entity entity = target.size() == 0 ? tricksy : target.get();
 				if(!(entity instanceof LivingEntity))
@@ -116,21 +116,21 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				set.put(CommonVariables.VAR_POS_B, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				// Value A - mandatory
-				IWhiteboardObject<?> objPosA = getOrDefault(CommonVariables.VAR_POS_A, parent, local, global);
+				IWhiteboardObject<?> objPosA = getOrDefault(CommonVariables.VAR_POS_A, parent, whiteboards);
 				if(objPosA.isEmpty())
 					return null;
 				BlockPos posA = objPosA.as(TFObjType.BLOCK).get();
 				
 				// Value B - optional, defaults to mob's position
-				IWhiteboardObject<?> objPosB = getOrDefault(CommonVariables.VAR_POS_B, parent, local, global);
+				IWhiteboardObject<?> objPosB = getOrDefault(CommonVariables.VAR_POS_B, parent, whiteboards);
 				BlockPos posB;
 				if(objPosB.isEmpty())
 				{
 					if(objPosB.size() == 0)
-						posB = local.getValue(LocalWhiteboard.SELF).as(TFObjType.BLOCK).get();
+						posB = whiteboards.local().getValue(LocalWhiteboard.SELF).as(TFObjType.BLOCK).get();
 					else
 						return null;
 				}
@@ -147,9 +147,9 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				set.put(CommonVariables.TARGET_ENT, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<Entity> target = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
+				IWhiteboardObject<Entity> target = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
 				
 				Entity entity = target.size() == 0 ? tricksy : target.get();
 				if(!(entity instanceof ITricksyMob) || !entity.isAlive())

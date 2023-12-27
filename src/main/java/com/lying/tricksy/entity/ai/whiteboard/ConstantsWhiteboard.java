@@ -51,6 +51,11 @@ public class ConstantsWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?
 		return this;
 	}
 	
+	public Whiteboard<Supplier<IWhiteboardObject<?>>> copy()
+	{
+		return CONSTANTS;
+	}
+	
 	protected Supplier<IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return () -> object; }
 	
 	protected IWhiteboardObject<?> supplierToValue(Supplier<IWhiteboardObject<?>> supplier) { return supplier.get(); }

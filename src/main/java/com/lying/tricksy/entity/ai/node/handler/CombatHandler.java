@@ -14,8 +14,8 @@ import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
@@ -56,9 +56,9 @@ public abstract class CombatHandler implements INodeTickHandler<LeafNode>
 	
 	protected void addVariables(Map<WhiteboardRef, INodeIO> set) { }
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 	{
-		IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, local, global).as(TFObjType.ENT);
+		IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
 		
 		Entity ent = null;
 		if(!parent.inputAssigned(TARGET))
@@ -73,10 +73,11 @@ public abstract class CombatHandler implements INodeTickHandler<LeafNode>
 		tricksy.setAttacking(true);
 		
 		// Wait for attack cooldown to finish before starting attack
-		if(!local.canAttack())
+		
+		if(!whiteboards.local().canAttack())
 			return Result.RUNNING;
 		
-		return attack(tricksy, (LivingEntity)ent, local, parent);
+		return attack(tricksy, (LivingEntity)ent, whiteboards.local(), parent);
 	}
     
     public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)

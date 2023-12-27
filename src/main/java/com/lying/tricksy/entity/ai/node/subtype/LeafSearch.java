@@ -17,8 +17,7 @@ import com.lying.tricksy.entity.ai.node.handler.MatchBlockSearchHandler;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
@@ -60,11 +59,11 @@ public class LeafSearch implements ISubtypeGroup<LeafNode>
 				set.put(CommonVariables.VAR_ITEM, NodeInput.makeInput(NodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
 			
-			public <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getTypedResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
+			public <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getTypedResult(N tricksy, WhiteboardManager<N> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
-				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
-				IWhiteboardObject<ItemStack> filter = getOrDefault(CommonVariables.VAR_ITEM, parent, local, global).as(TFObjType.ITEM);
+				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
+				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, whiteboards).as(TFObjType.INT);
+				IWhiteboardObject<ItemStack> filter = getOrDefault(CommonVariables.VAR_ITEM, parent, whiteboards).as(TFObjType.ITEM);
 				
 				Region searchArea = GetterHandlerTyped.getSearchArea(pos, range, tricksy);
 				World world = tricksy.getWorld();
@@ -99,11 +98,11 @@ public class LeafSearch implements ISubtypeGroup<LeafNode>
 				set.put(FILTER, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, true), ConstantsWhiteboard.FILTER_MONSTER.copy(), ConstantsWhiteboard.ENT_MONSTERS.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getTypedResult(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, local, global);
-				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, local, global).as(TFObjType.INT);
-				IWhiteboardObject<Entity> filter = getOrDefault(FILTER, parent, local, global).as(TFObjType.ENT);
+				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
+				IWhiteboardObject<Integer> range = getOrDefault(CommonVariables.VAR_DIS, parent, whiteboards).as(TFObjType.INT);
+				IWhiteboardObject<Entity> filter = getOrDefault(FILTER, parent, whiteboards).as(TFObjType.ENT);
 				
 				Region searchArea = GetterHandlerTyped.getSearchArea(pos, range, tricksy);
 				World world = tricksy.getWorld();

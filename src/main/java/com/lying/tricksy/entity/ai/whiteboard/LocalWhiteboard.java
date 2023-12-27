@@ -16,6 +16,7 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.Direction;
 
 /** A whiteboard containing locally-accessible values set by a tricksy mob itself */
@@ -67,6 +68,13 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 		register(ATTACK_TARGET, (tricksy) -> tricksy.getAttacking() == null ? TFObjType.ENT.blank() : new WhiteboardObjEntity(tricksy.getAttacking()));
 		register(ON_GROUND, (tricksy) -> new WhiteboardObj.Bool(tricksy.isOnGround()));
 		return this;
+	}
+	
+	public Whiteboard<Function<T, IWhiteboardObject<?>>> copy()
+	{
+		LocalWhiteboard<T> copy = new LocalWhiteboard<T>(this.tricksy);
+		copy.readFromNbt(writeToNbt(new NbtCompound()));
+		return copy;
 	}
 	
 	protected IWhiteboardObject<?> supplierToValue(Function<T, IWhiteboardObject<?>> supplier) { return supplier.apply(tricksy); }

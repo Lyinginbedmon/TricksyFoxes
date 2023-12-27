@@ -122,7 +122,7 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 			this.reference = referenceIn;
 			this.valueSnapshot = valueIn;
 			
-			if(reference.boardType() != BoardType.CONSTANT && !reference.uncached())
+			if(!reference.boardType().isReadOnly() && !reference.uncached())
 				this.deleteButton = TreeScreen.makeTexturedWidget(0, 0, 16, 184, button -> 
 				{
 					WhiteboardList.this.parent.deleteReference(referenceIn);

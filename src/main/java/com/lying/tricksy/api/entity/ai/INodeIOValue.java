@@ -2,9 +2,8 @@ package com.lying.tricksy.api.entity.ai;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 
@@ -18,7 +17,7 @@ public interface INodeIOValue
 	public Type type();
 	
 	/** Retrieves the corresponding value in the appropriate whiteboard */
-	public IWhiteboardObject<?> get(LocalWhiteboard<?> local, GlobalWhiteboard global);
+	public IWhiteboardObject<?> get(WhiteboardManager<?> whiteboards);
 	
 	public String asString();
 	
@@ -72,9 +71,9 @@ public interface INodeIOValue
 		
 		public Text displayName() { return reference.displayName(); }
 		
-		public IWhiteboardObject<?> get(LocalWhiteboard<?> local, GlobalWhiteboard global)
+		public IWhiteboardObject<?> get(WhiteboardManager<?> whiteboards)
 		{
-			return Whiteboard.get(reference, local, global);
+			return Whiteboard.get(reference, whiteboards);
 		}
 		
 		public NbtCompound write(NbtCompound compound)
@@ -103,7 +102,7 @@ public interface INodeIOValue
 		
 		public String asString() { return type().name() + "[" + value.type().registryName().toString() + "]"; }
 		
-		public IWhiteboardObject<?> get(LocalWhiteboard<?> local, GlobalWhiteboard global) { return value.copy(); }
+		public IWhiteboardObject<?> get(WhiteboardManager<?> whiteboards) { return value.copy(); }
 		
 		public NbtCompound write(NbtCompound compound)
 		{

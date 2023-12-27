@@ -8,8 +8,7 @@ import com.lying.tricksy.api.entity.ai.INodeIOValue.Type;
 import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFObjType;
@@ -26,7 +25,7 @@ public abstract class GetterHandlerTyped<T> extends GetterHandlerUntyped
 		this.type = typeIn;
 	}
 	
-	public <N extends PathAwareEntity & ITricksyMob<?>> Result doTick(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
+	public <N extends PathAwareEntity & ITricksyMob<?>> Result doTick(N tricksy, WhiteboardManager<N> whiteboards, LeafNode parent)
 	{
 		INodeIOValue target = parent.getIO(entry);
 		if(target.type() != Type.WHITEBOARD)
@@ -35,22 +34,22 @@ public abstract class GetterHandlerTyped<T> extends GetterHandlerUntyped
 		if(dest == null)
 			return Result.FAILURE;
 		
-		IWhiteboardObject<T> result = getTypedResult(tricksy, local, global, parent);
+		IWhiteboardObject<T> result = getTypedResult(tricksy, whiteboards, parent);
 		if(result == null || result.isEmpty() || result.size() == 0)
 		{
-			local.setValue(dest, type.blank());
+			whiteboards.local().setValue(dest, type.blank());
 			return Result.FAILURE;
 		}
 		
-		local.setValue(dest, result);
+		whiteboards.local().setValue(dest, result);
 		return Result.SUCCESS;
 	}
 	
 	@Nullable
-	public abstract <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<T> getTypedResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent);
+	public abstract <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<T> getTypedResult(N tricksy, WhiteboardManager<N> whiteboards, LeafNode parent);
 	
 	@Nullable
-	public <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(N tricksy, LocalWhiteboard<N> local, GlobalWhiteboard global, LeafNode parent)
+	public <N extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(N tricksy, WhiteboardManager<N> whiteboards, LeafNode parent)
 	{
 		return TFObjType.EMPTY.blank();
 	}

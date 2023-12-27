@@ -26,6 +26,7 @@ public class SyncTreeScreenPacket
 		addBoardToList(refList, tricksy.getLocalWhiteboard());
 		addBoardToList(refList, tricksy.getGlobalWhiteboard());
 		addBoardToList(refList, Whiteboard.CONSTANTS);
+		addBoardToList(refList, tricksy.getBehaviourTree().command());
 		NbtCompound data = new NbtCompound();
 		data.put("References", refList);
 		buffer.writeNbt(data);
