@@ -5,18 +5,23 @@ import java.util.Collection;
 import com.google.gson.JsonObject;
 import com.lying.tricksy.api.entity.ITricksyMob;
 
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.Identifier;
 
 public interface EnlightenmentPath<T extends MobEntity, N extends PathAwareEntity & ITricksyMob<?>>
 {
+	public EntityType<N> resultType();
+	
 	@SuppressWarnings("unchecked")
 	public default N giveEnlightenment(MobEntity entityIn) { return enlighten((T)entityIn); }
 	
 	public N enlighten(T entityIn);
 	
 	public boolean conditionsMet(Collection<Accomplishment> accomplishments);
+	
+	public default boolean hasReachedMastery(Collection<Accomplishment> accomplishments) { return false; }
 	
 	public Identifier registryName();
 	

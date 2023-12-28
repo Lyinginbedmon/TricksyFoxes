@@ -51,6 +51,8 @@ public class TFEnlightenmentPaths implements SimpleResourceReloadListener<List<J
 	
 	public static final EnlightenmentPath<FoxEntity, EntityTricksyFox> FOX	= addEnlightenment(EntityType.FOX, new ConfigurablePath<FoxEntity, EntityTricksyFox>(EntityType.FOX, TFAccomplishments.VISIT_NETHER, TFAccomplishments.VISIT_OVERWORLD) 
 		{
+			public EntityType<EntityTricksyFox> resultType(){ return TFEntityTypes.TRICKSY_FOX; }
+			
 			public EntityTricksyFox enlighten(FoxEntity fox)
 			{
 				EntityTricksyFox tricksy = TFEntityTypes.TRICKSY_FOX.create(fox.getEntityWorld());
@@ -62,6 +64,8 @@ public class TFEnlightenmentPaths implements SimpleResourceReloadListener<List<J
 	
 	public static final EnlightenmentPath<GoatEntity, EntityTricksyGoat> GOAT	= addEnlightenment(EntityType.GOAT, new ConfigurablePath<GoatEntity, EntityTricksyGoat>(EntityType.GOAT, TFAccomplishments.CLOUDSEEKER, TFAccomplishments.JOURNEYMAN)
 			{
+				public EntityType<EntityTricksyGoat> resultType(){ return TFEntityTypes.TRICKSY_GOAT; }
+				
 				public EntityTricksyGoat enlighten(GoatEntity goat)
 				{
 					EntityTricksyGoat tricksy = TFEntityTypes.TRICKSY_GOAT.create(goat.getEntityWorld());
@@ -91,7 +95,14 @@ public class TFEnlightenmentPaths implements SimpleResourceReloadListener<List<J
 		DEFAULT_MAP.entrySet().forEach(entry -> PATHS_MAP.put(entry.getKey(), entry.getValue()));
 	}
 	
-	public boolean isEnlightenable(MobEntity entity) { return PATHS_MAP.containsKey(entity.getType()); }
+	/** Returns true if any enlightenment path exists for the given mob's entity type */
+	public boolean isEnlightenable(MobEntity entity) { return !ITricksyMob.class.isAssignableFrom(entity.getClass()) && PATHS_MAP.containsKey(entity.getType()); }
+	
+	/** Returns true if any enlightenment path ends in a mob with the same entity type as the given mob */
+	public boolean isEnlightened(MobEntity entity)
+	{
+		return ITricksyMob.class.isAssignableFrom(entity.getClass()) && PATHS_MAP.values().stream().anyMatch((path) -> entity.getType() == path.resultType());
+	}
 	
 	@Nullable
 	public EnlightenmentPath<?, ?> getPath(EntityType<?> entity) { return PATHS_MAP.getOrDefault(entity, null); }

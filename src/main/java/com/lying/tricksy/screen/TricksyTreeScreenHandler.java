@@ -34,6 +34,7 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 {
 	/** The mob's current behaviour tree */
 	private BehaviourTree tricksyTree = new BehaviourTree();
+	private boolean isMaster = false;
 	/** Displayed sub tree */
 	private Order showSubTree = null;
 	
@@ -119,6 +120,8 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	
 	public TreeNode<?> root() { return getTree().root(showSubTree); }
 	
+	public boolean showSubTrees() { return this.isMaster; }
+	
 	public void sync(ITricksyMob<?> tricksyIn, PathAwareEntity mobIn)
 	{
 		this.tricksy = tricksyIn;
@@ -130,6 +133,8 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	public EntityType<?> getTricksyType() { return this.tricksyMob != null ? this.tricksyMob.getType() : null; }
 	
 	public void setUUID(UUID idIn) { this.tricksyID = idIn; }
+	
+	public void setMaster(boolean bool) { this.isMaster = bool; }
 	
 	public void showSubTree(Order orderIn)
 	{

@@ -9,6 +9,7 @@ import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard.Order;
+import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.network.AddLocalReferencePacket;
@@ -43,6 +44,7 @@ public class TreeScreen extends TricksyScreenBase
 	public ButtonWidget save;
 	// Button to view whiteboards
 	public ButtonWidget whiteboards;
+	public ButtonWidget[] trees = new ButtonWidget[1 + CommandWhiteboard.Order.values().length];
 	
 	private Vec2f position = null;
 	private Vec2f moveStart = null;
@@ -84,9 +86,10 @@ public class TreeScreen extends TricksyScreenBase
 		}));
 		
 		// TODO Display available trees more aesthetically
-		addDrawableChild(ButtonWidget.builder(Text.translatable("order."+Reference.ModInfo.MOD_ID+".idle"), (button) -> this.handler.showSubTree(null)).dimensions(0, 0, 35, 20).build());
+		addDrawableChild(trees[0] = ButtonWidget.builder(Text.translatable("order."+Reference.ModInfo.MOD_ID+".idle"), (button) -> this.handler.showSubTree(null)).dimensions(0, 0, 35, 20).build());
 		for(Order order : Order.values())
-			addDrawableChild(ButtonWidget.builder(order.translate(), (button) -> this.handler.showSubTree(order)).dimensions(0, (1+order.ordinal()) * 22, 35, 20).build());
+			addDrawableChild(trees[order.ordinal() + 1] = ButtonWidget.builder(order.translate(), (button) -> this.handler.showSubTree(order)).dimensions(0, (1+order.ordinal()) * 22, 35, 20).build());
+		showSubTrees(handler.showSubTrees());
 		
 		if(position == null)
 			setPosition(-this.width / 4, -this.height / 4);
@@ -96,6 +99,15 @@ public class TreeScreen extends TricksyScreenBase
 	{
 		super.handledScreenTick();
 		save.active = handler.canSyncToServer();
+		
+		if(trees[0].visible != handler.showSubTrees())
+			showSubTrees(handler.showSubTrees());
+	}
+	
+	private void showSubTrees(boolean bool)
+	{
+		for(ButtonWidget tree : trees)
+			tree.active = tree.visible = bool;
 	}
 	
 	public void setPosition(int x, int y)

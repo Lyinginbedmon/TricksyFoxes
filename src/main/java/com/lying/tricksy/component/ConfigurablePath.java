@@ -16,47 +16,64 @@ import net.minecraft.util.Identifier;
 
 public abstract class ConfigurablePath<T extends MobEntity, N extends PathAwareEntity & ITricksyMob<?>> implements EnlightenmentPath<T, N>
 {
-	private final List<Accomplishment> steps = Lists.newArrayList();
+	private final List<Accomplishment> stepsApprentice = Lists.newArrayList();
+	private final List<Accomplishment> stepsMaster = Lists.newArrayList();
 	private final Identifier registryName;
 	
 	public ConfigurablePath(EntityType<? extends T> typeIn, Accomplishment... stepsIn)
 	{
 		this.registryName = EntityType.getId(typeIn);
 		for(Accomplishment step : stepsIn)
-			if(!steps.contains(step))
-				steps.add(step);
+			if(!stepsApprentice.contains(step))
+				stepsApprentice.add(step);
 	}
 	
 	public Identifier registryName() { return registryName; }
 	
-	public boolean conditionsMet(Collection<Accomplishment> accomplishments)
+	public boolean conditionsMet(Collection<Accomplishment> accomplishments) { return matchesNonEmptyList(accomplishments, this.stepsApprentice); }
+	
+	public boolean hasReachedMastery(Collection<Accomplishment> accomplishments) { return matchesNonEmptyList(accomplishments, this.stepsMaster); }
+	
+	private static boolean matchesNonEmptyList(Collection<Accomplishment> accomplishments, List<Accomplishment> list)
 	{
-		return !steps.isEmpty() && steps.stream().allMatch(acc -> accomplishments.contains(acc));
+		return !list.isEmpty() && list.stream().allMatch(acc -> accomplishments.contains(acc));
 	}
 	
 	public void readFromJson(JsonObject dataIn)
 	{
-		steps.clear();
+		stepsApprentice.clear();
 		if(dataIn.has("Accomplishments"))
-		{
-			JsonArray stepsIn = dataIn.getAsJsonArray("Accomplishments");
-			for(int i=0; i<stepsIn.size(); i++)
-			{
-				String entry = stepsIn.get(i).getAsString();
-				Accomplishment acc = TFAccomplishments.get(new Identifier(entry));
-				if(acc != null && !steps.contains(acc))
-					steps.add(acc);
-			}
-		}
+			readJsonToList(dataIn.getAsJsonArray("Accomplishments"), this.stepsApprentice);
+		
+		if(dataIn.has("Mastery"))
+			readJsonToList(dataIn.getAsJsonArray("Mastery"), this.stepsMaster);
 	}
 	
 	public JsonObject writeToJson(JsonObject obj)
 	{
 		EnlightenmentPath.super.writeToJson(obj);
 		
-		JsonArray steps = new JsonArray();
-		this.steps.forEach(acc -> steps.add(acc.registryName().toString()));
-		obj.add("Accomplishments", steps);
+		obj.add("Accomplishments", writeListToJson(this.stepsApprentice));
+		if(!this.stepsMaster.isEmpty())
+			obj.add("Mastery", writeListToJson(this.stepsMaster));
 		return obj;
+	}
+	
+	private static void readJsonToList(JsonArray stepsIn, List<Accomplishment> list)
+	{
+		for(int i=0; i<stepsIn.size(); i++)
+		{
+			String entry = stepsIn.get(i).getAsString();
+			Accomplishment acc = TFAccomplishments.get(new Identifier(entry));
+			if(acc != null && !list.contains(acc))
+				list.add(acc);
+		}
+	}
+	
+	private static JsonArray writeListToJson(List<Accomplishment> list)
+	{
+		JsonArray steps = new JsonArray();
+		list.forEach(acc -> steps.add(acc.registryName().toString()));
+		return steps;
 	}
 }

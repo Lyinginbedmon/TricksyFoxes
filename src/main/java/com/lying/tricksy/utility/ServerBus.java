@@ -6,7 +6,6 @@ import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
-import com.lying.tricksy.init.TFEnlightenmentPaths;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemPrescientNote;
 
@@ -33,11 +32,14 @@ public class ServerBus
 		
 		ServerEntityWorldChangeEvents.AFTER_ENTITY_CHANGE_WORLD.register((originalEntity, newEntity, origin, destination) -> 
 		{
-			if(!(newEntity instanceof MobEntity) || !TFEnlightenmentPaths.INSTANCE.isEnlightenable((MobEntity)newEntity))
+			TricksyComponent compOld;
+			if(!(newEntity instanceof MobEntity))
+				return;
+			else if(!(compOld = TFComponents.TRICKSY_TRACKING.get(originalEntity)).shouldTrackAccomplishments())
 				return;
 			
 			TricksyComponent compNew = TFComponents.TRICKSY_TRACKING.get(newEntity);
-			compNew.cloneFrom(TFComponents.TRICKSY_TRACKING.get(originalEntity));
+			compNew.cloneFrom(compOld);
 			
 			if(!compNew.hasAchieved(TFAccomplishments.DIMENSIONAL_TRAVEL))
 				compNew.addAccomplishment(TFAccomplishments.DIMENSIONAL_TRAVEL);
@@ -76,11 +78,9 @@ public class ServerBus
 				int minY = entity.getWorld().getBottomY();
 				if(bounds.minY < minY || bounds.maxY < minY)
 					bounds = new Box(bounds.minX, Math.max(minY, bounds.minY), bounds.minZ, bounds.maxX, Math.max(minY, bounds.maxY), bounds.maxZ);
-				for(MobEntity mob : entity.getWorld().getEntitiesByClass(MobEntity.class, bounds, (mob) -> mob.isAlive() && TFEnlightenmentPaths.INSTANCE.isEnlightenable(mob))) 
-				{
-					TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(mob);
-					comp.addAccomplishment(result);
-				};
+				
+				for(MobEntity mob : entity.getWorld().getEntitiesByClass(MobEntity.class, bounds, (mob) -> mob.isAlive() && TFComponents.TRICKSY_TRACKING.get(mob).shouldTrackAccomplishments()))
+					TFComponents.TRICKSY_TRACKING.get(mob).addAccomplishment(result);
 			}
 		});
 		
@@ -93,7 +93,6 @@ public class ServerBus
 				if(!world.isClient())
 				{
 					ItemPrescientNote.Ent.addEntityToStack(heldStack, (LivingEntity)entity);
-					System.out.println("Added "+entity.getName().getString()+" to scroll, size "+ItemPrescientNote.getVariable(heldStack).size());
 					player.setStackInHand(hand, heldStack);
 				}
 				return ActionResult.SUCCESS;

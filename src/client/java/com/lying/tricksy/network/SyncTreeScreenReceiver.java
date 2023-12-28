@@ -31,6 +31,7 @@ public class SyncTreeScreenReceiver implements ClientPlayNetworking.PlayChannelH
 	{
 		int syncId = buf.readInt();
 		UUID tricksyID = buf.readUuid();
+		boolean isMaster = buf.readBoolean();
 		List<Pair<WhiteboardRef, IWhiteboardObject<?>>> references = unpackReferences(buf.readNbt().getList("References", NbtElement.COMPOUND_TYPE));
 		int sizeCap = buf.readInt();
 		
@@ -45,6 +46,7 @@ public class SyncTreeScreenReceiver implements ClientPlayNetworking.PlayChannelH
 			{
 				TricksyTreeScreenHandler screen = (TricksyTreeScreenHandler)screenHandler;
 				screen.setUUID(tricksyID);
+				screen.setMaster(isMaster);
 				screen.setCap(sizeCap);
 				screen.setAvailableReferences(references);
 				

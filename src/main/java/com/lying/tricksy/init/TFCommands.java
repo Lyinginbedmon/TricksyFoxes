@@ -57,6 +57,8 @@ public class TFCommands
 						.then(literal("get")
 							.executes(context -> tryGetAccomplishments(EntityArgumentType.getEntity(context, TARGET_KEY), context.getSource())))
 						.then(literal("grant")
+								.then(literal("all")
+								.executes(context -> grantAll(EntityArgumentType.getEntity(context, TARGET_KEY), context.getSource())))
 							.then(argument(ACC_KEY, RegistryEntryArgumentType.registryEntry(registryAccess, TFRegistries.ACC_KEY))
 							.executes(context -> tryAddAccomplishment(EntityArgumentType.getEntity(context, TARGET_KEY), RegistryEntryArgumentType.getRegistryEntry(context, ACC_KEY, TFRegistries.ACC_KEY), context.getSource()))))
 						.then(literal("test")
@@ -111,6 +113,20 @@ public class TFCommands
 			message = Text.translatable(ACC_SLUG+".get.success", ent.getDisplayName(), listToText(set));
 		source.sendFeedback(() -> message, true);
 		return set.isEmpty() ? 0 : 1;
+	}
+	
+	private static int grantAll(Entity ent, ServerCommandSource source) throws CommandSyntaxException
+	{
+		boolean result = false;
+		try
+		{
+			TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(ent);
+			result = comp.grantAllAccomplishments();
+		}
+		catch(Exception e) { source.sendFeedback(() -> GENERIC_FAIL, true); return 0; }
+		Text message = Text.translatable(ACC_SLUG+".revoke.all", ent.getDisplayName());
+		source.sendFeedback(() -> message, true);
+		return result ? 1 : 0;
 	}
 	
 	private static int tryAddAccomplishment(Entity ent, RegistryEntry.Reference<Accomplishment> acc, ServerCommandSource source) throws CommandSyntaxException
