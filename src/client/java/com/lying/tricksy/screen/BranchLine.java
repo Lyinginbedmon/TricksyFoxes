@@ -21,7 +21,7 @@ import net.minecraft.util.math.Vec2f;
 
 public class BranchLine
 {
-	public static final Identifier BUSH_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree_foliage.png");
+	public static final Identifier BUSH_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree/tree_foliage.png");
 	
 	private final List<Quad> quadList = Lists.newArrayList();
 	private final List<Vec2f> bushList = Lists.newArrayList();
@@ -90,7 +90,7 @@ public class BranchLine
 	
 	private static class Quad
 	{
-		public static final Identifier LINE_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree_branch.png");
+		public static final Identifier LINE_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree/tree_branch.png");
 		
 		/**
 		 * a	d

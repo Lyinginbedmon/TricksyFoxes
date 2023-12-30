@@ -1,10 +1,14 @@
 package com.lying.tricksy.entity.ai.whiteboard;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
@@ -15,6 +19,7 @@ import com.lying.tricksy.reference.Reference;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 
 public class CommandWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
@@ -79,24 +84,57 @@ public class CommandWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>
 		return board;
 	}
 	
+	private static void optionalEntityPos(CommandWhiteboard board, IWhiteboardObject<?> obj)
+	{
+		board.setValue(CommandWhiteboard.POS, obj.as(TFObjType.BLOCK));
+		if(obj.type().castableTo(TFObjType.ENT))
+			board.setValue(CommandWhiteboard.TAR, obj.as(TFObjType.ENT));
+	}
+	
 	public static enum Order implements StringIdentifiable
 	{
-		GOTO((board,obj) -> board.setValue(CommandWhiteboard.POS, obj.as(TFObjType.BLOCK))),
-		GUARD((board,obj) -> board.setValue(CommandWhiteboard.POS, obj.as(TFObjType.BLOCK))),
-		ATTACK((board,obj) -> board.setValue(CommandWhiteboard.TAR, obj.as(TFObjType.ENT))),
-		INTERACT((board,obj) -> board.setValue(CommandWhiteboard.TAR, obj.as(TFObjType.ENT))),
-		BREAK((board,obj) -> board.setValue(CommandWhiteboard.POS, obj.as(TFObjType.BLOCK))),
-		ACTIVATE((board,obj) -> board.setValue(CommandWhiteboard.POS, obj.as(TFObjType.BLOCK))),
-		STOP((board,obj) -> {});
+		GOTO(0, (type) -> type.castableTo(TFObjType.BLOCK), CommandWhiteboard::optionalEntityPos),
+		GUARD(3, (type) -> type.castableTo(TFObjType.BLOCK), CommandWhiteboard::optionalEntityPos),
+		ATTACK(1, TFObjType.ENT, (board,obj) -> board.setValue(CommandWhiteboard.TAR, obj.as(TFObjType.ENT))),
+		INTERACT(2, TFObjType.ENT, (board,obj) -> board.setValue(CommandWhiteboard.TAR, obj.as(TFObjType.ENT))),
+		BREAK(5, TFObjType.BLOCK, (board,obj) -> board.setValue(CommandWhiteboard.POS, obj.as(TFObjType.BLOCK))),
+		ACTIVATE(4, TFObjType.BLOCK, (board,obj) -> board.setValue(CommandWhiteboard.POS, obj.as(TFObjType.BLOCK))),
+		STOP(Integer.MAX_VALUE, Predicates.alwaysTrue(), (board,obj) -> {});
 		
+		private final int index;
+		private final Predicate<TFObjType<?>> idealType;
 		private final BiConsumer<CommandWhiteboard, IWhiteboardObject<?>> commandFunc;
 		
-		private Order(BiConsumer<CommandWhiteboard, IWhiteboardObject<?>> funcIn)
+		private Order(int indexIn, Predicate<TFObjType<?>> typeIn, BiConsumer<CommandWhiteboard, IWhiteboardObject<?>> funcIn)
 		{
+			index = indexIn;
 			commandFunc = funcIn;
+			idealType = typeIn;
+		}
+		
+		private Order(int indexIn, TFObjType<?> typeIn, BiConsumer<CommandWhiteboard, IWhiteboardObject<?>> funcIn)
+		{
+			this(indexIn, (type) -> type == typeIn, funcIn);
 		}
 		
 		public String asString() { return name().toLowerCase(); }
+		
+		public Identifier texture() { return new Identifier(Reference.ModInfo.MOD_ID,"textures/gui/orders/"+asString()+".png"); }
+		
+		public MutableText translate() { return Text.translatable("order."+Reference.ModInfo.MOD_ID+"."+asString()); }
+		
+		public boolean validFor(TFObjType<?> typeIn) { return idealType == null || idealType.apply(typeIn); }
+		
+		/** Returns a sorted list of all valid orders for the given object type */
+		public static List<Order> getOrdersFor(TFObjType<?> typeIn)
+		{
+			List<Order> orders = Lists.newArrayList();
+			for(Order order : values())
+				if(order.validFor(typeIn))
+					orders.add(order);
+			orders.sort((a,b) -> a.index < b.index ? -1 : a.index > b.index ? 1 : 0);
+			return orders;
+		}
 		
 		public CommandWhiteboard create(IWhiteboardObject<?> obj)
 		{
@@ -104,8 +142,6 @@ public class CommandWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>
 			commandFunc.accept(command, obj);
 			return command;
 		}
-		
-		public MutableText translate() { return Text.translatable("order."+Reference.ModInfo.MOD_ID+"."+asString()); }
 		
 		public static Order fromString(String nameIn)
 		{

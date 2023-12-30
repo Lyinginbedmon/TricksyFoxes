@@ -43,8 +43,8 @@ import net.minecraft.util.math.Vec2f;
 
 public class NodeRenderUtils
 {
-	public static final Identifier TREE_TEXTURES = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/behaviour_tree.png");
-	public static final Identifier TREE_TEXTURES_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/behaviour_tree_overlay.png");
+	public static final Identifier TREE_TEXTURES = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree/behaviour_tree.png");
+	public static final Identifier TREE_TEXTURES_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree/behaviour_tree_overlay.png");
 	
 	public static final int NODE_SPACING = 10;
 	public static final int CONNECTOR_OFFSET = 20;

@@ -31,7 +31,7 @@ import net.minecraft.util.math.Vec2f;
 public class PrescientCandleScreen extends HandledScreen<PrescientCandleScreenHandler>
 {
 	public static final EnumSet<NodeRenderFlags> RENDER_FLAGS = EnumSet.of(NodeRenderFlags.TYPE, NodeRenderFlags.SUBTYPE, NodeRenderFlags.CHILDREN);
-	public static final Identifier COOLDOWN_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/result_cooldown.png");
+	public static final Identifier COOLDOWN_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/node_results/result_cooldown.png");
 	
 	private Vec2f position = Vec2f.ZERO;
 	private Vec2f moveStart = null;

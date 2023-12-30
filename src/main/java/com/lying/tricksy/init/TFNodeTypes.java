@@ -25,8 +25,8 @@ import net.minecraft.util.Identifier;
 
 public class TFNodeTypes
 {
-	public static final Identifier ROSE_FLOWER = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/branch_rose.png");
-	public static final Identifier GRAPE_FLOWER = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/branch_grapes.png");
+	public static final Identifier ROSE_FLOWER = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree/branch_rose.png");
+	public static final Identifier GRAPE_FLOWER = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree/branch_grapes.png");
 	
 	/**
 	 * NODE TYPES<br>

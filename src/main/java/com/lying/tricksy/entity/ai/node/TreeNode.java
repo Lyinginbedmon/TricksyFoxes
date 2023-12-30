@@ -516,7 +516,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		
 		public String asString() { return name().toLowerCase(); }
 		
-		public Identifier texture() { return new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/result_"+asString()+".png"); }
+		public Identifier texture() { return new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/node_results/result_"+asString()+".png"); }
 		
 		@Nullable
 		public static Result fromString(String nameIn)

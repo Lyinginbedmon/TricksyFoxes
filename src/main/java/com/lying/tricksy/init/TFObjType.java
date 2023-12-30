@@ -97,7 +97,7 @@ public class TFObjType<T>
 	
 	public int index() { return this.index; }
 	
-	public Identifier texture() { return new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/icon_"+toString()+".png"); }
+	public Identifier texture() { return new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/obj_types/icon_"+toString()+".png"); }
 	
 	public static void init()
 	{
