@@ -61,7 +61,10 @@ public class ServerBus
 		{
 			// Clear a tricksy mob's prescient candle value when they die
 			if(entity instanceof ITricksyMob<?>)
+			{
 				CandlePowers.getCandlePowers(entity.getServer()).remove(entity.getUuid());
+				BehaviourForest.getForest(entity.getServer()).remove(entity.getUuid());
+			}
 			
 			// Identify and award any appropriate accomplishment
 			Accomplishment result = null;

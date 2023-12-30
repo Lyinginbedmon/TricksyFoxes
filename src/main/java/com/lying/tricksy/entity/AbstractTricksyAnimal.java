@@ -19,13 +19,10 @@ import com.lying.tricksy.utility.ServerWhiteboards;
 
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.DyeItem;
@@ -48,7 +45,9 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 	public static final TrackedData<EntityPose> TREE_POSE = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.ENTITY_POSE);
 	public static final TrackedData<Integer> BARK = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.INTEGER);
 	
-	private BehaviourTree behaviourTree = new BehaviourTree();
+	public static final String TREE_KEY = "BehaviourTree";
+	
+	private BehaviourTree behaviourTree = new BehaviourTree(null);
 	
 	@SuppressWarnings("unchecked")
 	protected LocalWhiteboard<AbstractTricksyAnimal> boardLocal = (LocalWhiteboard<AbstractTricksyAnimal>)(new LocalWhiteboard<AbstractTricksyAnimal>(this)).build();
@@ -76,11 +75,6 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 	
 	protected void initGoals() { }
 	
-	public static DefaultAttributeContainer.Builder createMobAttributes()
-	{
-		return FoxEntity.createFoxAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20D).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2D);
-	}
-	
 	public void readCustomDataFromNbt(NbtCompound data)
 	{
 		super.readCustomDataFromNbt(data);
@@ -90,8 +84,15 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 			setSage(data.getUuid("MasterID"));
 		
 		boardLocal.readFromNbt(data.getCompound("Whiteboard"));
-		if(data.contains("BehaviourTree", NbtElement.COMPOUND_TYPE))
-			setBehaviourTree(data.getCompound("BehaviourTree"));
+		
+		if(data.contains(TREE_KEY, NbtElement.COMPOUND_TYPE))
+		{
+			this.behaviourTree = BehaviourTree.create(data.getCompound(TREE_KEY));
+			this.behaviourTree.syncWithForest(getWorld(), getUuid());
+			if(!getWorld().isClient())
+				this.getDataTracker().set(TREE_NBT, this.behaviourTree.storeTrees(new NbtCompound()));
+		}
+		
 		setTreePose(data.getBoolean("IsSleeping") ? EntityPose.SLEEPING : EntityPose.STANDING);
 		if(data.contains("Home", NbtElement.COMPOUND_TYPE))
 			setPositionTarget(NbtHelper.toBlockPos(data.getCompound("Home")), 6);
@@ -104,7 +105,10 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		getDataTracker().get(OWNER_UUID).ifPresent((uuid) -> data.putUuid("MasterID", uuid));
 		
 		data.put("Whiteboard", boardLocal.writeToNbt(new NbtCompound()));
-		data.put("BehaviourTree", this.behaviourTree.storeInNbt());
+		
+		behaviourTree.logInForest(getWorld(), getUuid());
+		data.put(TREE_KEY, this.behaviourTree.storeCommand(new NbtCompound()));
+		
 		data.putBoolean("IsSleeping", isTreeSleeping());
 		if(hasPositionTarget())
 			data.put("Home", NbtHelper.fromBlockPos(getPositionTarget()));
@@ -203,7 +207,8 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 	{
 		behaviourTree.root().stop(this);
 		getDataTracker().set(TREE_NBT, data);
-		behaviourTree = BehaviourTree.create(data);
+		behaviourTree.setTrees(data);
+		behaviourTree.logInForest(getWorld(), getUuid());
 	}
 	
 	public void setLatestLog(NodeStatusLog logIn) { this.getDataTracker().set(LOG_NBT, logIn.writeToNbt(new NbtCompound())); }

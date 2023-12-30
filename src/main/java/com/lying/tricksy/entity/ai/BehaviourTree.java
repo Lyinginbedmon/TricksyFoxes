@@ -24,12 +24,14 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.utility.BehaviourForest;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
+import net.minecraft.world.World;
 
 /**
  * AI framework used by {@link ITricksyMob} in concert with one or more {@link Whiteboard}
@@ -68,6 +70,7 @@ public class BehaviourTree
 	private static final String COMMAND_KEY = "Command";
 	
 	/** Primary tree, used when no recognised command is in effect */
+	@Nullable
 	private TreeNode<?> root;
 	
 	/** Executor trees, used to execute specific commands */
@@ -95,14 +98,19 @@ public class BehaviourTree
 	public TreeNode<?> root()
 	{
 		Order command = boardCommand.currentType();
-		TreeNode<?> root = commandNodes.getOrDefault(boardCommand.currentType(), (this.root == null ? (this.root = TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID())) : this.root));
+		TreeNode<?> root = root(boardCommand.currentType());
 		root.getLog().setTree(commandNodes.containsKey(command) ? command : null);
 		return root;
 	}
 	
 	public TreeNode<?> root(Order forOrder)
 	{
-		return commandNodes.getOrDefault(forOrder, this.root);
+		return commandNodes.getOrDefault(forOrder, treeRoot());
+	}
+	
+	private TreeNode<?> treeRoot()
+	{
+		return this.root == null ? (this.root = TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID())) : this.root;
 	}
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> void update(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global)
@@ -135,12 +143,23 @@ public class BehaviourTree
 		this.boardCommand = (CommandWhiteboard)commandIn.copy();
 	}
 	
-	// XXX Move tree storage out of entity NBT?
 	public NbtCompound storeInNbt()
 	{
-		NbtCompound data = new NbtCompound();
-		
-		data.put(TREE_KEY, this.root.write(new NbtCompound()));
+		NbtCompound data = storeTrees(new NbtCompound());
+		storeCommand(data);
+		return data;
+	}
+	
+	public NbtCompound storeCommand(NbtCompound data)
+	{
+		if(command().hasOrder())
+			data.put(COMMAND_KEY, this.boardCommand.writeToNbt(new NbtCompound()));
+		return data;
+	}
+	
+	public NbtCompound storeTrees(NbtCompound data)
+	{
+		data.put(TREE_KEY, this.treeRoot().write(new NbtCompound()));
 		
 		NbtList list = new NbtList();
 		this.commandNodes.forEach((type,tree) -> 
@@ -152,51 +171,82 @@ public class BehaviourTree
 		});
 		data.put(EXECUTOR_KEY, list);
 		
-		if(command().hasOrder())
-			data.put(COMMAND_KEY, this.boardCommand.writeToNbt(new NbtCompound()));
-		
 		return data;
 	}
 	
 	@Nullable
 	public static BehaviourTree create(NbtCompound data)
 	{
-		TreeNode<?> root;
-		if(data.contains(TREE_KEY, NbtElement.COMPOUND_TYPE))
-			root = TreeNode.create(data.getCompound(TREE_KEY));
-		else
-			root = TreeNode.create(data);
-		
-		BehaviourTree tree = (root == null || root.getType() != TFNodeTypes.CONTROL_FLOW) ? null : new BehaviourTree(root);
-		if(tree != null)
-		{
-			if(data.contains(COMMAND_KEY, NbtElement.COMPOUND_TYPE))
-				tree.command().readFromNbt(data.getCompound(COMMAND_KEY));
-			
-			if(data.contains(EXECUTOR_KEY, NbtElement.LIST_TYPE))
-			{
-				NbtList list = data.getList(EXECUTOR_KEY, NbtElement.COMPOUND_TYPE);
-				for(int i=0; i<list.size(); i++)
-				{
-					NbtCompound nbt = list.getCompound(i);
-					TreeNode<?> node = TreeNode.create(nbt.getCompound("Tree"));
-					Order order = Order.fromString(nbt.getString("Order"));
-					if(order != null)
-						tree.setExecutor(order, node);
-				}
-			}
-		}
+		BehaviourTree tree = new BehaviourTree(null);
+		tree.setTrees(data);
+		if(data.contains(COMMAND_KEY, NbtElement.COMPOUND_TYPE))
+			tree.command().readFromNbt(data.getCompound(COMMAND_KEY));
 		
 		return tree;
 	}
 	
-	/** Returns the total number of nodes in this behaviour tree's primary tree */
-	public int size()
+	public boolean hasTrees() { return this.root != null; }
+	
+	public void setTrees(NbtCompound data)
 	{
-		return this.root.branchSize();
+		TreeNode<?> root;
+		if(data.contains(TREE_KEY, NbtElement.COMPOUND_TYPE))
+			root = TreeNode.create(data.getCompound(TREE_KEY));
+		else	// Support for older data format, in which only the root node was stored
+			root = TreeNode.create(data);
+		
+		this.root = (root == null || root.getType() != TFNodeTypes.CONTROL_FLOW) ? null : root;
+		if(data.contains(EXECUTOR_KEY, NbtElement.LIST_TYPE))
+		{
+			NbtList list = data.getList(EXECUTOR_KEY, NbtElement.COMPOUND_TYPE);
+			for(int i=0; i<list.size(); i++)
+			{
+				NbtCompound nbt = list.getCompound(i);
+				TreeNode<?> node = TreeNode.create(nbt.getCompound("Tree"));
+				Order order = Order.fromString(nbt.getString("Order"));
+				if(order != null)
+					setExecutor(order, node);
+			}
+		}
 	}
 	
+	/** Returns the total number of nodes in this behaviour tree's primary tree */
+	public int size() { return this.root.branchSize(); }
+	
 	public boolean isRunning() { return this.waitTicks == 0; }
+	
+	public void logInForest(World world, UUID tricksy)
+	{
+		if(world.isClient())
+			return;
+		
+		BehaviourForest.getForest(world.getServer()).setTreeFor(tricksy, this);
+	}
+	
+	/** Loads this tree from the forest, or uses the default tree if none is logged */
+	public void tryLoadFromForest(World world, UUID tricksy)
+	{
+		if(world.isClient())
+			return;
+		
+		BehaviourForest forest = BehaviourForest.getForest(world.getServer());
+		if(forest.hasTreeFor(tricksy))
+			setTrees(forest.getTreeFor(tricksy));
+		else
+			setTrees(INITIAL_TREE.write(new NbtCompound()));
+	}
+	
+	/** Attempts to synchronise this tree with the one on file in the forest */
+	public void syncWithForest(World world, UUID tricksy)
+	{
+		if(world.isClient())
+			return;
+		
+		if(hasTrees())
+			logInForest(world, tricksy);
+		else
+			tryLoadFromForest(world, tricksy);
+	}
 	
 	public static enum ActionFlag
 	{

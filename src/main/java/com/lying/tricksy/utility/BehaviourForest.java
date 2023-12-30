@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.nbt.NbtCompound;
@@ -11,64 +12,65 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
 
-public class CandlePowers extends PersistentState
+public class BehaviourForest extends PersistentState
 {
-	private Map<UUID, Integer> powers = new HashMap<>();
+	private Map<UUID, NbtCompound> trees = new HashMap<>();
 	
-	public static CandlePowers getCandlePowers(MinecraftServer server)
+	public static BehaviourForest getForest(MinecraftServer server)
 	{
 		ServerWorld world = server.getWorld(World.OVERWORLD);
 		PersistentStateManager manager = world.getPersistentStateManager();
-		CandlePowers candles = manager.getOrCreate(CandlePowers::createFromNbt, CandlePowers::new, Reference.ModInfo.MOD_ID + ":candle_powers");
-		candles.markDirty();
-		return candles;
+		BehaviourForest forest = manager.getOrCreate(BehaviourForest::createFromNbt, BehaviourForest::new, Reference.ModInfo.MOD_ID + ":behaviour_forest");
+		forest.markDirty();
+		return forest;
 	}
 	
 	public NbtCompound writeNbt(NbtCompound nbt)
 	{
 		NbtList set = new NbtList();
-		powers.forEach((tricksy,power) -> 
+		trees.forEach((tricksy,power) -> 
 		{
 			NbtCompound compound = new NbtCompound();
 			compound.putUuid("ID", tricksy);
-			compound.putInt("Power", power);
+			compound.put("Tree", power);
 			set.add(compound);
 		});
 		nbt.put("Data", set);
 		return nbt;
 	}
 	
-	public static CandlePowers createFromNbt(NbtCompound nbt)
+	public static BehaviourForest createFromNbt(NbtCompound nbt)
 	{
-		CandlePowers boards = new CandlePowers();
+		BehaviourForest forest = new BehaviourForest();
 		NbtList set = nbt.getList("Data", NbtElement.COMPOUND_TYPE);
 		for(int i=0; i<set.size(); i++)
 		{
 			NbtCompound compound = set.getCompound(i);
-			boards.powers.put(compound.getUuid("ID"), compound.getInt("Power"));
+			forest.trees.put(compound.getUuid("ID"), compound.getCompound("Tree"));
 		}
-		return boards;
+		return forest;
 	}
 	
 	public void remove(UUID tricksyID)
 	{
-		powers.remove(tricksyID);
+		trees.remove(tricksyID);
 		markDirty();
 	}
 	
-	public int getPowerFor(UUID tricksyID)
+	public NbtCompound getTreeFor(UUID tricksyID)
 	{
-		return powers.getOrDefault(tricksyID, 0);
+		return trees.getOrDefault(tricksyID, new NbtCompound());
 	}
 	
-	public void setPowerFor(UUID tricksyID, int power)
+	public boolean hasTreeFor(UUID tricksyID) { return trees.containsKey(tricksyID); }
+	
+	public void setTreeFor(UUID tricksyID, BehaviourTree tree)
 	{
-		powers.put(tricksyID, MathHelper.clamp(power, 0, 15));
+		trees.put(tricksyID, tree.storeTrees(new NbtCompound()));
 		markDirty();
 	}
 }
