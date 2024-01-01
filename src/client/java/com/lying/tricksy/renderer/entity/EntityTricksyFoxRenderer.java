@@ -10,6 +10,7 @@ import com.lying.tricksy.model.entity.ModelTricksyFoxSleeping;
 import com.lying.tricksy.renderer.layer.AbstractOffsetHeldItemLayer;
 import com.lying.tricksy.renderer.layer.TricksyBarkLayer;
 import com.lying.tricksy.renderer.layer.TricksyFoxClothingLayer;
+import com.lying.tricksy.renderer.layer.TricksyFoxMaskLayer;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -41,6 +42,7 @@ public class EntityTricksyFoxRenderer extends MobEntityRenderer<EntityTricksyFox
 	{
 		super(ctx, new ModelTricksyFoxMain<EntityTricksyFox>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_FOX)), 0.5F);
 		this.addFeature(new TricksyFoxClothingLayer(this));
+		this.addFeature(new TricksyFoxMaskLayer(this));
 		this.addFeature(new AbstractOffsetHeldItemLayer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>(this, ctx.getHeldItemRenderer())
 		{
 			public void translateToHand(MatrixStack matrices, boolean isLeft)

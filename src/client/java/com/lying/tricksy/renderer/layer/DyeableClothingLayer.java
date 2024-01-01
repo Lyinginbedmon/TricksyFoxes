@@ -32,14 +32,21 @@ public abstract class DyeableClothingLayer<T extends PathAwareEntity & ITricksyM
 		this.textureOverlay = textureB;
 	}
 	
+	public boolean shouldRender(T living) { return true; }
+	
+	public Identifier getTextureFor(T living, boolean overlay)
+	{
+		return overlay ? textureOverlay : texture;
+	}
+	
 	public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, T living, float limbAngle, float limbDistance, float age, float headYaw, float headPitch, float tickDelta)
 	{
-		if(living.isInvisible())
+		if(living.isInvisible() || !shouldRender(living))
 			return;
 		
 		copyModelStateTo(getContextModel(), clothingModel);
 		
-        clothingModel.render(matrices, vertexConsumers.getBuffer(RenderLayer.getArmorCutoutNoCull(texture)), light, OverlayTexture.DEFAULT_UV, 1, 1, 1, 1);
+        clothingModel.render(matrices, vertexConsumers.getBuffer(RenderLayer.getArmorCutoutNoCull(getTextureFor(living, false))), light, OverlayTexture.DEFAULT_UV, 1, 1, 1, 1);
         
         float s, t, u;
         if (living.hasCustomName() && "jeb_".equals(living.getName().getString()))
@@ -63,7 +70,7 @@ public abstract class DyeableClothingLayer<T extends PathAwareEntity & ITricksyM
             u = ((color & 0xFF) >> 0) / 255F;
         }
         
-        clothingModel.render(matrices, vertexConsumers.getBuffer(RenderLayer.getArmorCutoutNoCull(textureOverlay)), light, OverlayTexture.DEFAULT_UV, s, t, u, 1F);
+        clothingModel.render(matrices, vertexConsumers.getBuffer(RenderLayer.getArmorCutoutNoCull(getTextureFor(living, true))), light, OverlayTexture.DEFAULT_UV, s, t, u, 1F);
 	}
 	
 	public abstract void copyModelStateTo(M contextModel, M clothingModel);

@@ -1,5 +1,6 @@
 package com.lying.tricksy.model.entity;
 
+import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.entity.EntityTricksyFox;
 
 import net.fabricmc.api.EnvType;
@@ -38,9 +39,11 @@ public class ModelTricksyFoxSleeping<T extends EntityTricksyFox> extends ModelTr
 		root.addChild(EntityModelPartNames.HAT, ModelPartBuilder.create(), ModelTransform.NONE);
 		
 		ModelPartData body = root.addChild("body", ModelPartBuilder.create().uv(24, 15).cuboid(-3.0F, -8.999F, -3.5F, 6.0F, 11.0F, 6.0F, dilation), ModelTransform.of(3.5F, 21.0F, 2.0F, 0.0F, 0.0F, -1.5708F));
+		
 		ModelPartData tail = body.addChild("tail", ModelPartBuilder.create(), ModelTransform.of(0.0F, 0.0F, -2.5F, -3.1416F, 0.2618F, -1.5708F));
-		tail.addChild("tail1", ModelPartBuilder.create().uv(30, 0).cuboid(-3.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.0F, 0.0F, 1.5708F, -0.6109F, 0.0F));
-		tail.addChild("tail0", ModelPartBuilder.create().uv(30, 0).cuboid(-1.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.0F, 0.0F, 1.5708F, 0.6109F, 0.0F));
+			tail.addChild("tail0", ModelPartBuilder.create().uv(30, 0).cuboid(-2.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.1736F, 0.9848F, 0.0F, 0.0F, 0.0F));
+			tail.addChild("tail1", ModelPartBuilder.create().uv(30, 0).cuboid(-2.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.1736F, 0.9848F, 0.0F, 0.0F, 0.0F));
+			tail.addChild("tail2", ModelPartBuilder.create().uv(30, 0).cuboid(-2.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.1736F, 0.9848F, 0.0F, 0.0F, 0.0F));
 		
 		root.addChild("left_leg", ModelPartBuilder.create().uv(13, 24).cuboid(-2.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(-1.0F, 18.0F, 0.0F));
 		root.addChild("right_leg", ModelPartBuilder.create().uv(13, 24).mirrored().cuboid(0.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation).mirrored(false), ModelTransform.pivot(1.0F, 18.0F, 0.0F));
@@ -63,5 +66,7 @@ public class ModelTricksyFoxSleeping<T extends EntityTricksyFox> extends ModelTr
 	{
 		this.head.pitch = 0.0f;
 		this.head.roll = MathHelper.cos((float)(ageInTicks * 0.027f)) / 22.0f;
+		
+		animateTails(TricksyComponent.isMobMaster(livingEntity) ? 3 : 2, ageInTicks);
 	}
 }

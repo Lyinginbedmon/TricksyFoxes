@@ -18,23 +18,28 @@ import net.minecraft.util.Identifier;
 @Environment(EnvType.CLIENT)
 public class TricksyFoxClothingLayer extends DyeableClothingLayer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>
 {
-	public static final Identifier TEXTURE_CLOTHING = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_fox.png");
-	public static final Identifier TEXTURE_CLOTHING_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_fox_overlay.png");
+	public static final Identifier TEXTURE_CLOTHING = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_fox/clothing.png");
+	public static final Identifier TEXTURE_CLOTHING_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_fox/clothing_overlay.png");
 	
 	private final ModelTricksyFoxBase<EntityTricksyFox> standing;
 	private final ModelTricksyFoxBase<EntityTricksyFox> crouching;
 	
 	public TricksyFoxClothingLayer(FeatureRendererContext<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>> context)
 	{
+		this(context, TEXTURE_CLOTHING, TEXTURE_CLOTHING_OVERLAY);
+	}
+	
+	public TricksyFoxClothingLayer(FeatureRendererContext<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>> context, Identifier clothing, Identifier overlay)
+	{
 		super(context, 
 				new ModelTricksyFoxMain<EntityTricksyFox>(MinecraftClient.getInstance().getEntityModelLoader().getModelPart(TFModelParts.TRICKSY_FOX_CLOTHING)), 
-				TEXTURE_CLOTHING, 
-				TEXTURE_CLOTHING_OVERLAY);
+				clothing, 
+				overlay);
 		
 		this.standing = this.clothingModel;
 		this.crouching = new ModelTricksyFoxCrouching<EntityTricksyFox>(MinecraftClient.getInstance().getEntityModelLoader().getModelPart(TFModelParts.TRICKSY_FOX_CROUCHING_CLOTHING));
 	}
-
+	
 	public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, EntityTricksyFox living, float limbAngle, float limbDistance, float age, float headYaw, float headPitch, float tickDelta)
 	{
 		switch(living.getTreePose())

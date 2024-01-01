@@ -15,8 +15,8 @@ import net.minecraft.util.Identifier;
 @Environment(EnvType.CLIENT)
 public class TricksyGoatClothingLayer extends DyeableClothingLayer<EntityTricksyGoat, ModelTricksyGoatBase<EntityTricksyGoat>>
 {
-	public static final Identifier TEXTURE_CLOTHING = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_goat.png");
-	public static final Identifier TEXTURE_CLOTHING_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_goat_overlay.png");
+	public static final Identifier TEXTURE_CLOTHING = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_goat/clothing.png");
+	public static final Identifier TEXTURE_CLOTHING_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_goat/clothing_overlay.png");
 	
 	public TricksyGoatClothingLayer(FeatureRendererContext<EntityTricksyGoat, ModelTricksyGoatBase<EntityTricksyGoat>> context)
 	{

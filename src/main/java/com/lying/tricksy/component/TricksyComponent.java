@@ -136,6 +136,8 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	
 	public boolean isMaster() { return ranking() == Rank.MASTER; }
 	
+	public static boolean isMobMaster(MobEntity mob) { return TFComponents.TRICKSY_TRACKING.get(mob).isMaster(); }
+	
 	public Rank ranking() { return this.ranking; }
 	
 	public void setRanking(Rank rankIn)

@@ -1,5 +1,6 @@
 package com.lying.tricksy.model.entity;
 
+import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.renderer.TFAnimations;
 import com.lying.tricksy.utility.TricksyUtils;
@@ -49,14 +50,44 @@ public class ModelTricksyFoxMain<T extends EntityTricksyFox> extends ModelTricks
 		ModelPartData body = root.addChild(EntityModelPartNames.BODY, ModelPartBuilder.create().uv(24, 15).cuboid(-3.0F, -8.999F, -3.5F, 6.0F, 11.0F, 6.0F, dilation), ModelTransform.pivot(0.0F, 16.0F, 0.0F));
 		
 		ModelPartData tail = body.addChild(EntityModelPartNames.TAIL, ModelPartBuilder.create(), ModelTransform.of(0.0F, -1.0F, 2.5F, 0.1745F, 0.0F, 0.0F));
-			tail.addChild("tail1", ModelPartBuilder.create().uv(30, 0).mirrored().cuboid(-3.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.0F, 0.0F, 1.5708F, -0.6109F, 0.0F));
-			tail.addChild("tail0", ModelPartBuilder.create().uv(30, 0).cuboid(-1.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.0F, 0.0F, 1.5708F, 0.6109F, 0.0F));
+			tail.addChild("tail0", ModelPartBuilder.create().uv(30, 0).cuboid(-2.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.1736F, 0.9848F, 0.0F, 0.0F, 0.0F));
+			tail.addChild("tail1", ModelPartBuilder.create().uv(30, 0).cuboid(-2.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.1736F, 0.9848F, 0.0F, 0.0F, 0.0F));
+			tail.addChild("tail2", ModelPartBuilder.create().uv(30, 0).cuboid(-2.0F, -0.5F, -3.0F, 4.0F, 9.0F, 5.0F, dilation), ModelTransform.of(0.0F, 0.1736F, 0.9848F, 0.0F, 0.0F, 0.0F));
 		
 		root.addChild(EntityModelPartNames.RIGHT_LEG, ModelPartBuilder.create().uv(13, 24).cuboid(-2.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(-1.0F, 18.0F, 0.0F));
 		root.addChild(EntityModelPartNames.LEFT_LEG, ModelPartBuilder.create().uv(13, 24).mirrored().cuboid(0.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(1.0F, 18.0F, 0.0F));
 		
 		root.addChild(EntityModelPartNames.RIGHT_ARM, ModelPartBuilder.create().uv(4, 24).mirrored().cuboid(-2.0F, -1.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(-3.0F, 10.0F, 0.0F));
 		root.addChild(EntityModelPartNames.LEFT_ARM, ModelPartBuilder.create().uv(4, 24).cuboid(0.0F, -1.0F, -1.0F, 2.0F, 6.0F, 2.0F, dilation), ModelTransform.pivot(3.0F, 10.0F, 0.0F));
+		
+		return TexturedModelData.of(meshdefinition, 48, 32);
+	}
+	
+	public static TexturedModelData getMaskModel()
+	{
+		Dilation dilation = new Dilation(0.25F);
+		ModelData meshdefinition = new ModelData();
+		ModelPartData modelRoot = meshdefinition.getRoot();
+		ModelPartData root = modelRoot.addChild(EntityModelPartNames.ROOT, ModelPartBuilder.create(), ModelTransform.pivot(0, 0, 0));
+		
+		root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create(), ModelTransform.pivot(0.0F, 7.0F, -2.0F));
+		
+		root.addChild(EntityModelPartNames.HAT, ModelPartBuilder.create()
+			.uv(1, 5).cuboid(-4.0F, -6.0F, -3.0F, 8.0F, 6.0F, 6.0F, dilation)
+			.uv(6, 18).cuboid(-2.0F, -2.01F, -6.0F, 4.0F, 2.0F, 3.0F, dilation), ModelTransform.pivot(0.0F, 7.0F, -2.0F));
+		
+		ModelPartData body = root.addChild(EntityModelPartNames.BODY, ModelPartBuilder.create(), ModelTransform.pivot(0.0F, 16.0F, 0.0F));
+		
+		ModelPartData tail = body.addChild(EntityModelPartNames.TAIL, ModelPartBuilder.create(), ModelTransform.of(0.0F, -1.0F, 2.5F, 0.1745F, 0.0F, 0.0F));
+			tail.addChild("tail0", ModelPartBuilder.create(), ModelTransform.of(0.0F, 0.1736F, 0.9848F, 0.0F, 0.0F, 0.0F));
+			tail.addChild("tail1", ModelPartBuilder.create(), ModelTransform.of(0.0F, 0.1736F, 0.9848F, 0.0F, 0.0F, 0.0F));
+			tail.addChild("tail2", ModelPartBuilder.create(), ModelTransform.of(0.0F, 0.1736F, 0.9848F, 0.0F, 0.0F, 0.0F));
+		
+		root.addChild(EntityModelPartNames.RIGHT_LEG, ModelPartBuilder.create(), ModelTransform.pivot(-1.0F, 18.0F, 0.0F));
+		root.addChild(EntityModelPartNames.LEFT_LEG, ModelPartBuilder.create(), ModelTransform.pivot(1.0F, 18.0F, 0.0F));
+		
+		root.addChild(EntityModelPartNames.RIGHT_ARM, ModelPartBuilder.create(), ModelTransform.pivot(-3.0F, 10.0F, 0.0F));
+		root.addChild(EntityModelPartNames.LEFT_ARM, ModelPartBuilder.create(), ModelTransform.pivot(3.0F, 10.0F, 0.0F));
 		
 		return TexturedModelData.of(meshdefinition, 48, 32);
 	}
@@ -79,13 +110,7 @@ public class ModelTricksyFoxMain<T extends EntityTricksyFox> extends ModelTricks
 		this.leftArm.pivotZ = 0.0f;
 		this.leftArm.pivotX = 3.0f;
 		
-		this.tailRoot.pitch = 0.1745F;
-		
-		this.tail0.pitch = 1.5708F + (float)(Math.sin(ageInTicks / 20) * 0.1F);
-		this.tail0.yaw = 0.6109F + (float)(Math.cos(ageInTicks / 30) * 0.1F);
-		
-		this.tail1.pitch = 1.5708F - (float)(Math.sin(ageInTicks / 20) * 0.1F);
-		this.tail1.yaw = -0.6109F - (float)(Math.cos(ageInTicks / 30) * 0.1F);;
+		animateTails(TricksyComponent.isMobMaster(livingEntity) ? 3 : 2, ageInTicks);
 		
 		float k = 1.0f;
 		if(bl)

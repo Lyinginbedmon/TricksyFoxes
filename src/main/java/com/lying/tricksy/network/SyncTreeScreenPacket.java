@@ -2,9 +2,9 @@ package com.lying.tricksy.network;
 
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
-import com.lying.tricksy.init.TFComponents;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -22,7 +22,7 @@ public class SyncTreeScreenPacket
 		PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
 		buffer.writeInt(syncId);
 		buffer.writeUuid(tricksy.getUuid());
-		boolean isMaster = TFComponents.TRICKSY_TRACKING.get(tricksy).isMaster();
+		boolean isMaster = TricksyComponent.isMobMaster(tricksy);
 		buffer.writeBoolean(isMaster);
 		
 		NbtList refList = new NbtList();
