@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
-import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard.Order;
+import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard.Order;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.nbt.NbtCompound;

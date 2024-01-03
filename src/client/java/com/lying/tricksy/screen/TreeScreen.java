@@ -8,8 +8,8 @@ import com.google.common.base.Predicates;
 import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.node.TreeNode;
-import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard.Order;
-import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard.Order;
+import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.network.AddLocalReferencePacket;
@@ -44,7 +44,7 @@ public class TreeScreen extends TricksyScreenBase
 	public ButtonWidget save;
 	// Button to view whiteboards
 	public ButtonWidget whiteboards;
-	public ButtonWidget[] trees = new ButtonWidget[1 + CommandWhiteboard.Order.values().length];
+	public ButtonWidget[] trees = new ButtonWidget[1 + OrderWhiteboard.Order.values().length];
 	
 	private Vec2f position = null;
 	private Vec2f moveStart = null;

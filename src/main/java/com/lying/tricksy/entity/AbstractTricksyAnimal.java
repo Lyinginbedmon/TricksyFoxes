@@ -10,7 +10,7 @@ import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
 import com.lying.tricksy.entity.ai.TricksyLookControl;
-import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.item.ITreeItem;
@@ -215,7 +215,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 	
 	public NodeStatusLog getLatestLog() { return NodeStatusLog.fromNbt(this.getDataTracker().get(LOG_NBT)); }
 	
-	public void giveCommand(CommandWhiteboard command)
+	public void giveCommand(OrderWhiteboard command)
 	{
 		getBehaviourTree().giveCommand(command, this);
 	}

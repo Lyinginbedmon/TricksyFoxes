@@ -1,4 +1,7 @@
 {
+	"category.tricksy.keybindinds": "Tricksy Foxes",
+	"key.tricksy.dec_order": "Decrement order",
+	"key.tricksy.inc_order": "Increment order",
 	"enum.tricksy.direction.up": "Up",
 	"enum.tricksy.direction.down": "Down",
 	"enum.tricksy.direction.north": "North",
@@ -66,7 +69,7 @@
 	"board.tricksy.constant": "Constants",
 	"board.tricksy.global": "Sage",
 	"board.tricksy.local": "Personal",
-	"board.tricksy.command": "Command",
+	"board.tricksy.order": "Order",
 	"node.tricksy.control_flow": "Control Flow",
 	"node.tricksy.control_flow.desc": "Control Flow nodes determine how updates move through the tree",
 	"node.tricksy.decorator": "Decorator",

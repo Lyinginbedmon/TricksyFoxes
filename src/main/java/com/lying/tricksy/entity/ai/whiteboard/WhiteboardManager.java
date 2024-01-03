@@ -8,11 +8,11 @@ import net.minecraft.entity.mob.PathAwareEntity;
 /** Handler object for passing all available whiteboards into tree nodes */
 public class WhiteboardManager<T extends PathAwareEntity & ITricksyMob<?>>
 {
-	private final CommandWhiteboard command;
+	private final OrderWhiteboard command;
 	private final GlobalWhiteboard global;
 	private final LocalWhiteboard<T> local;
 	
-	public WhiteboardManager(LocalWhiteboard<T> local, GlobalWhiteboard global, CommandWhiteboard command)
+	public WhiteboardManager(LocalWhiteboard<T> local, GlobalWhiteboard global, OrderWhiteboard command)
 	{
 		this.command = command;
 		this.global = global;
@@ -23,14 +23,14 @@ public class WhiteboardManager<T extends PathAwareEntity & ITricksyMob<?>>
 	
 	public GlobalWhiteboard global() { return this.global; }
 	
-	public CommandWhiteboard command() { return this.command; }
+	public OrderWhiteboard command() { return this.command; }
 	
 	public Whiteboard<?> get(BoardType type)
 	{
 		switch(type)
 		{
 			case CONSTANT:	return ConstantsWhiteboard.CONSTANTS;
-			case COMMAND:	return command();
+			case ORDER:	return command();
 			case GLOBAL:	return global();
 			case LOCAL:	return local();
 		}

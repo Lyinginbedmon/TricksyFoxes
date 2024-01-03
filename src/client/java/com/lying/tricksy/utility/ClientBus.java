@@ -1,8 +1,12 @@
 package com.lying.tricksy.utility;
 
+import com.lying.tricksy.init.TFKeybinds;
+import com.lying.tricksy.renderer.OrderOverlay;
 import com.lying.tricksy.renderer.layer.FoxPeriaptLayer;
 import com.lying.tricksy.renderer.layer.GoatPeriaptLayer;
 
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.model.FoxEntityModel;
@@ -22,6 +26,21 @@ public class ClientBus
 				registrationHelper.register(new FoxPeriaptLayer((FeatureRendererContext<FoxEntity, FoxEntityModel<FoxEntity>>)entityRenderer));
 			else if(entityType == EntityType.GOAT)
 				registrationHelper.register(new GoatPeriaptLayer((FeatureRendererContext<GoatEntity, GoatEntityModel<GoatEntity>>)entityRenderer));
+		});
+		
+		HudRenderCallback.EVENT.register((stack, partialTicks) -> OrderOverlay.drawHud(stack, partialTicks));
+		
+		ClientTickEvents.END_CLIENT_TICK.register(client -> 
+		{
+			while(TFKeybinds.keyIncOrder.wasPressed() && TricksyOrders.shouldRenderOrders())
+			{
+				TricksyOrders.incOrder(1);
+			}
+			
+			while(TFKeybinds.keyDecOrder.wasPressed() && TricksyOrders.shouldRenderOrders())
+			{
+				TricksyOrders.incOrder(-1);
+			}
 		});
 	}
 }

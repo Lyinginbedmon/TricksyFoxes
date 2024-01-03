@@ -19,6 +19,7 @@ public class TFPacketHandler
 	public static final Identifier SYNC_WORK_TABLE_ID	= make("sync_work_table_screen");
 	public static final Identifier SYNC_PRESCIENT_CANDLE_ID	= make("sync_prescient_candle_screen");
 	public static final Identifier TOGGLE_SCRIPTURE_ID	= make("toggle_scripture_overrule");
+	public static final Identifier GIVE_ORDER_ID		= make("give_order");
 	
 	private static Identifier make(String nameIn) { return new Identifier(Reference.ModInfo.MOD_ID, nameIn); }
 }

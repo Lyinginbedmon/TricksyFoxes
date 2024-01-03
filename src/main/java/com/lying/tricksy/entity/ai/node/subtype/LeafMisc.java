@@ -18,7 +18,7 @@ import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.GetterHandlerTyped;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
-import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
@@ -122,7 +122,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				{
 					public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 					{
-						whiteboards.command().setValue(CommandWhiteboard.ACTIVE, new WhiteboardObj.Bool(false));
+						whiteboards.command().setValue(OrderWhiteboard.ACTIVE, new WhiteboardObj.Bool(false));
 						return Result.SUCCESS;
 					}	
 				}));

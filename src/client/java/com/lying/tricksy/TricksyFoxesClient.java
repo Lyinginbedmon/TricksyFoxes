@@ -1,11 +1,14 @@
 package com.lying.tricksy;
 
+import org.lwjgl.glfw.GLFW;
+
 import com.lying.tricksy.config.ClientConfig;
 import com.lying.tricksy.entity.EntityFoxFire;
 import com.lying.tricksy.init.TFBlockEntities;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
+import com.lying.tricksy.init.TFKeybinds;
 import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.init.TFParticles;
 import com.lying.tricksy.init.TFScreenHandlerTypes;
@@ -47,6 +50,7 @@ import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.DyeableItem;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
@@ -72,6 +76,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		registerRenderers();
 		registerPacketReceivers();
 		registerScreens();
+		registerKeyBinds();
 	}
 	
 	private static void registerRenderers()
@@ -115,5 +120,11 @@ public class TricksyFoxesClient implements ClientModInitializer
 		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.REF_ADDED_ID, new RefAddedReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_WORK_TABLE_ID, new SyncWorkTableScreenReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_PRESCIENT_CANDLE_ID, new SyncPrescientCandleScreenReceiver());
+	}
+	
+	private static void registerKeyBinds()
+	{
+		TFKeybinds.keyIncOrder = TFKeybinds.make("inc_order", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UP);
+		TFKeybinds.keyDecOrder = TFKeybinds.make("dec_order", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_DOWN);
 	}
 }

@@ -14,8 +14,8 @@ import com.lying.tricksy.entity.ai.node.subtype.ConditionWhiteboard;
 import com.lying.tricksy.entity.ai.node.subtype.ControlFlowMisc;
 import com.lying.tricksy.entity.ai.node.subtype.DecoratorMisc;
 import com.lying.tricksy.entity.ai.node.subtype.LeafMisc;
-import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard.Order;
+import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard.Order;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
@@ -77,7 +77,7 @@ public class BehaviourTree
 	private Map<Order, TreeNode<?>> commandNodes = new HashMap<>();
 	
 	/** Whiteboard storing current command information */
-	protected CommandWhiteboard boardCommand = (CommandWhiteboard)(new CommandWhiteboard().build());
+	protected OrderWhiteboard boardCommand = (OrderWhiteboard)(new OrderWhiteboard().build());
 	
 	private NodeStatusLog latestLog = new NodeStatusLog();
 	private TreeNode<?> latestTicked = null;
@@ -132,15 +132,15 @@ public class BehaviourTree
 	/** Retrieves the status log of the tree most recently ticked */
 	public NodeStatusLog latestLog() { return this.latestLog; }
 	
-	public CommandWhiteboard command() { return this.boardCommand; }
+	public OrderWhiteboard command() { return this.boardCommand; }
 	
 	public void setExecutor(Order type, TreeNode<?> treeIn) { this.commandNodes.put(type, treeIn); }
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> void giveCommand(CommandWhiteboard commandIn, T tricksy)
+	public <T extends PathAwareEntity & ITricksyMob<?>> void giveCommand(OrderWhiteboard commandIn, T tricksy)
 	{
 		this.latestTicked.clearLog();
 		this.latestTicked.stop(tricksy);
-		this.boardCommand = (CommandWhiteboard)commandIn.copy();
+		this.boardCommand = (OrderWhiteboard)commandIn.copy();
 	}
 	
 	public NbtCompound storeInNbt()

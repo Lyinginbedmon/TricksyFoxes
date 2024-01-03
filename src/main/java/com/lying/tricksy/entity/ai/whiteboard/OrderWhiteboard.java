@@ -22,7 +22,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 
-public class CommandWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
+public class OrderWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 {
 	public static final WhiteboardRef ACTIVE = makeRef("is_active", TFObjType.BOOL).hidden();
 	public static final WhiteboardRef TYPE = makeRef("type", TFObjType.INT).hidden();
@@ -30,14 +30,14 @@ public class CommandWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>
 	public static final WhiteboardRef POS = makeRef("position", TFObjType.BLOCK);
 	public static final WhiteboardRef TAR = makeRef("target", TFObjType.ENT);
 	
-	public CommandWhiteboard()
+	public OrderWhiteboard()
 	{
-		super(BoardType.COMMAND, null);
+		super(BoardType.ORDER, null);
 	}
 	
 	private static WhiteboardRef makeRef(String name, TFObjType<?> type)
 	{
-		return makeRef(name, type, BoardType.COMMAND).displayName(Text.translatable("variable."+Reference.ModInfo.MOD_ID+".order_"+name));
+		return makeRef(name, type, BoardType.ORDER).displayName(Text.translatable("variable."+Reference.ModInfo.MOD_ID+".order_"+name));
 	}
 	
 	public Whiteboard<?> build()
@@ -52,7 +52,7 @@ public class CommandWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>
 	
 	public Whiteboard<Supplier<IWhiteboardObject<?>>> copy()
 	{
-		CommandWhiteboard copy = new CommandWhiteboard();
+		OrderWhiteboard copy = new OrderWhiteboard();
 		copy.readFromNbt(writeToNbt(new NbtCompound()));
 		return copy;
 	}
@@ -76,43 +76,43 @@ public class CommandWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>
 	}
 	
 	/** Creates a whiteboard set to the given command, with no other data */
-	public static CommandWhiteboard ofCommand(Order orderIn)
+	public static OrderWhiteboard ofOrder(Order orderIn)
 	{
-		CommandWhiteboard board = new CommandWhiteboard();
+		OrderWhiteboard board = new OrderWhiteboard();
 		board.setValue(ACTIVE, new WhiteboardObj.Bool(true));
 		board.setValue(TYPE, new WhiteboardObj.Int(orderIn.ordinal()));
 		return board;
 	}
 	
-	private static void optionalEntityPos(CommandWhiteboard board, IWhiteboardObject<?> obj)
+	private static void optionalEntityPos(OrderWhiteboard board, IWhiteboardObject<?> obj)
 	{
-		board.setValue(CommandWhiteboard.POS, obj.as(TFObjType.BLOCK));
+		board.setValue(OrderWhiteboard.POS, obj.as(TFObjType.BLOCK));
 		if(obj.type().castableTo(TFObjType.ENT))
-			board.setValue(CommandWhiteboard.TAR, obj.as(TFObjType.ENT));
+			board.setValue(OrderWhiteboard.TAR, obj.as(TFObjType.ENT));
 	}
 	
 	public static enum Order implements StringIdentifiable
 	{
-		GOTO(0, (type) -> type.castableTo(TFObjType.BLOCK), CommandWhiteboard::optionalEntityPos),
-		GUARD(3, (type) -> type.castableTo(TFObjType.BLOCK), CommandWhiteboard::optionalEntityPos),
-		ATTACK(1, TFObjType.ENT, (board,obj) -> board.setValue(CommandWhiteboard.TAR, obj.as(TFObjType.ENT))),
-		INTERACT(2, TFObjType.ENT, (board,obj) -> board.setValue(CommandWhiteboard.TAR, obj.as(TFObjType.ENT))),
-		BREAK(5, TFObjType.BLOCK, (board,obj) -> board.setValue(CommandWhiteboard.POS, obj.as(TFObjType.BLOCK))),
-		ACTIVATE(4, TFObjType.BLOCK, (board,obj) -> board.setValue(CommandWhiteboard.POS, obj.as(TFObjType.BLOCK))),
+		GOTO(0, (type) -> type.castableTo(TFObjType.BLOCK), OrderWhiteboard::optionalEntityPos),
+		GUARD(3, (type) -> type.castableTo(TFObjType.BLOCK), OrderWhiteboard::optionalEntityPos),
+		ATTACK(1, TFObjType.ENT, (board,obj) -> board.setValue(OrderWhiteboard.TAR, obj.as(TFObjType.ENT))),
+		INTERACT(2, TFObjType.ENT, (board,obj) -> board.setValue(OrderWhiteboard.TAR, obj.as(TFObjType.ENT))),
+		BREAK(5, TFObjType.BLOCK, (board,obj) -> board.setValue(OrderWhiteboard.POS, obj.as(TFObjType.BLOCK))),
+		ACTIVATE(4, TFObjType.BLOCK, (board,obj) -> board.setValue(OrderWhiteboard.POS, obj.as(TFObjType.BLOCK))),
 		STOP(Integer.MAX_VALUE, Predicates.alwaysTrue(), (board,obj) -> {});
 		
 		private final int index;
 		private final Predicate<TFObjType<?>> idealType;
-		private final BiConsumer<CommandWhiteboard, IWhiteboardObject<?>> commandFunc;
+		private final BiConsumer<OrderWhiteboard, IWhiteboardObject<?>> commandFunc;
 		
-		private Order(int indexIn, Predicate<TFObjType<?>> typeIn, BiConsumer<CommandWhiteboard, IWhiteboardObject<?>> funcIn)
+		private Order(int indexIn, Predicate<TFObjType<?>> typeIn, BiConsumer<OrderWhiteboard, IWhiteboardObject<?>> funcIn)
 		{
 			index = indexIn;
 			commandFunc = funcIn;
 			idealType = typeIn;
 		}
 		
-		private Order(int indexIn, TFObjType<?> typeIn, BiConsumer<CommandWhiteboard, IWhiteboardObject<?>> funcIn)
+		private Order(int indexIn, TFObjType<?> typeIn, BiConsumer<OrderWhiteboard, IWhiteboardObject<?>> funcIn)
 		{
 			this(indexIn, (type) -> type == typeIn, funcIn);
 		}
@@ -136,9 +136,9 @@ public class CommandWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>
 			return orders;
 		}
 		
-		public CommandWhiteboard create(IWhiteboardObject<?> obj)
+		public OrderWhiteboard create(IWhiteboardObject<?> obj)
 		{
-			CommandWhiteboard command = CommandWhiteboard.ofCommand(this);
+			OrderWhiteboard command = OrderWhiteboard.ofOrder(this);
 			commandFunc.accept(command, obj);
 			return command;
 		}

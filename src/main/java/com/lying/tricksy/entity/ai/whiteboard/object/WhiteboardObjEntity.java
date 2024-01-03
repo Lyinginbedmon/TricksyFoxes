@@ -270,7 +270,7 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 	    {
 	        EntityType<?> entityType = this.type;
 	        Identifier identifier = EntityType.getId(entityType);
-	        return !entityType.isSaveable() || identifier == null ? null : identifier.toString();
+	        return identifier == null ? null : identifier.toString();
 	    }
 	}
 }

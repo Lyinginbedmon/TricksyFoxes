@@ -1,17 +1,14 @@
 package com.lying.tricksy.item;
 
-import java.util.List;
+import com.lying.tricksy.utility.TricksyOrders;
 
-import com.lying.tricksy.api.entity.ITricksyMob;
-import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard.Order;
-import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
-
-import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.UseAction;
 import net.minecraft.world.World;
 
 public class ItemSageFan extends Item
@@ -24,23 +21,19 @@ public class ItemSageFan extends Item
 	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand)
 	{
 		ItemStack itemStack = user.getStackInHand(hand);
-		if(!world.isClient())
-		{
-			List<PathAwareEntity> tricksys = world.getEntitiesByClass(PathAwareEntity.class, user.getBoundingBox().expand(16D), (mob) -> mob.isAlive() && mob instanceof ITricksyMob<?>);
-			if(tricksys.isEmpty())
-				return TypedActionResult.fail(itemStack);
-			
-			tricksys.sort((mob1,mob2) -> 
-			{
-				double dist1 = mob1.distanceTo(user);
-				double dist2 = mob2.distanceTo(user);
-				return dist1 < dist2 ? -1 : dist1 > dist2 ? 1 : 0;
-			});
-			
-			ITricksyMob<?> tricksy = (ITricksyMob<?>)tricksys.get(0);
-			if(tricksy.isSage(user))
-				tricksy.giveCommand(Order.GOTO.create(new WhiteboardObjEntity(user)));
-		}
-		return TypedActionResult.success(itemStack, world.isClient());
+		if(world.isClient())
+			TricksyOrders.setTarget();
+		user.setCurrentHand(hand);
+		return TypedActionResult.consume(itemStack);
+	}
+	
+	public int getMaxUseTime(ItemStack stack) { return 72000; }
+	
+	public UseAction getUseAction(ItemStack stack) { return UseAction.SPYGLASS; }
+	
+	public void onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks)
+	{
+		if(world.isClient())
+			TricksyOrders.sendOrder((PlayerEntity)user);
 	}
 }

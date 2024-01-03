@@ -18,6 +18,7 @@ import com.lying.tricksy.init.TFSpecialRecipes;
 import com.lying.tricksy.network.AddGlobalRefReceiver;
 import com.lying.tricksy.network.AddLocalReferenceReceiver;
 import com.lying.tricksy.network.DeleteReferenceReceiver;
+import com.lying.tricksy.network.GiveOrderReceiver;
 import com.lying.tricksy.network.OpenTreeScreenReceiver;
 import com.lying.tricksy.network.RemoveUserReceiver;
 import com.lying.tricksy.network.SaveTreeReceiver;
@@ -62,5 +63,6 @@ public class TricksyFoxes implements ModInitializer
 		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.OPEN_TREE_ID, new OpenTreeScreenReceiver());
 		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.SAVE_TREE_ID, new SaveTreeReceiver());
 		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.TOGGLE_SCRIPTURE_ID, new ToggleScriptureOverruleReceiver());
+		ServerPlayNetworking.registerGlobalReceiver(TFPacketHandler.GIVE_ORDER_ID, new GiveOrderReceiver());
 	}
 }

@@ -51,7 +51,20 @@ public abstract class Whiteboard<T>
 	/** Populates the whiteboard with its system values, post-construction */
 	public abstract Whiteboard<?> build();
 	
-	protected void register(WhiteboardRef reference, T supplier) { values.put(reference, supplier); }
+	protected void register(WhiteboardRef reference, T supplier)
+	{
+		Map<WhiteboardRef, T> newValues = new HashMap<>();
+		values.entrySet().forEach(entry -> 
+		{
+			if(entry.getKey().isSameRef(reference))
+				return;
+			newValues.put(entry.getKey(), entry.getValue());
+		});
+		
+		values.clear();
+		newValues.entrySet().forEach(entry -> values.put(entry.getKey(), entry.getValue()));
+		values.put(reference, supplier);
+	}
 	
 	public final NbtCompound writeToNbt(NbtCompound data)
 	{
@@ -80,12 +93,13 @@ public abstract class Whiteboard<T>
 		{
 			NbtCompound data = list.getCompound(i);
 			WhiteboardRef ref = WhiteboardRef.fromNbt(data.getCompound("Ref"));
+			IWhiteboardObject<?> obj = IWhiteboardObject.createFromNbt(data.getCompound("Value"));
 			if(ref.boardType() != this.type)
 			{
 				TricksyFoxes.LOGGER.warn("Attempted to load reference value in wrong whiteboard: "+ref.name());
 				continue;
 			}
-			register(ref, objectToSupplier(IWhiteboardObject.createFromNbt(data.getCompound("Value"))));
+			register(ref, objectToSupplier(obj));
 		}
 	}
 	
@@ -210,7 +224,7 @@ public abstract class Whiteboard<T>
 		CONSTANT(0, true),
 		LOCAL(3, false),
 		GLOBAL(2, true),
-		COMMAND(1, true);
+		ORDER(1, true);
 		
 		private final boolean readOnly;
 		private final int index;

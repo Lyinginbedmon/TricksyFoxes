@@ -15,7 +15,7 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.node.TreeNode;
-import com.lying.tricksy.entity.ai.whiteboard.CommandWhiteboard.Order;
+import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard.Order;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
