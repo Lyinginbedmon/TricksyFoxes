@@ -20,6 +20,20 @@ import net.minecraft.util.math.Vec3d;
 
 public class TricksyUtils
 {
+	public static int componentsToColor(float[] comp)
+	{
+		int r = (int)(comp[0] * 255);
+		int g = (int)(comp[1] * 255);
+		int b = (int)(comp[2] * 255);
+		
+		// Recompose original decimal value of the dye colour from derived RGB values
+		int col = r;
+		col = (col << 8) + g;
+		col = (col << 8) + b;
+		
+		return col;
+	}
+	
 	public static int stringComparator(String name1, String name2)
 	{
 		List<String> names = Lists.newArrayList(name1, name2);

@@ -1,0 +1,6 @@
+{
+	"parent": "tricksy:item/dyed_fan_open",
+	"textures": {
+		"layer0": "tricksy:item/sage_fan_open"
+	}
+}

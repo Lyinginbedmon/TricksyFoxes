@@ -1,6 +1,14 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-      "layer0": "tricksy:item/sage_fan"
-  }
+	"parent": "tricksy:item/dyed_fan",
+	"textures": {
+		"layer0": "tricksy:item/sage_fan"
+	},
+	"overrides": [
+		{
+			"predicate": {
+				"tricksy:open": 1
+			},
+			"model": "tricksy:item/sage_fan_open"
+		}
+	]
 }

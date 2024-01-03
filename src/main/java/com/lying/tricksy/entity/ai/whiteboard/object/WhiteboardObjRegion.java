@@ -11,7 +11,7 @@ import com.lying.tricksy.utility.RegionSphere;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.text.Text;
+import net.minecraft.text.MutableText;
 import net.minecraft.util.math.BlockPos;
 
 public class WhiteboardObjRegion extends WhiteboardObj<Region, NbtCompound>
@@ -28,7 +28,7 @@ public class WhiteboardObjRegion extends WhiteboardObj<Region, NbtCompound>
 		value.add(RegionCuboid.between(posA, posB));
 	}
 	
-	public Text describeValue(Region value) { return value.describeValue(); }
+	public MutableText describeValue(Region value) { return value.describeValue(); }
 	
 	protected NbtCompound valueToNbt(Region val)
 	{

@@ -5,7 +5,6 @@ import java.util.List;
 import org.joml.Matrix4f;
 
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard.Order;
-import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.utility.TricksyOrders;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -18,7 +17,6 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 
 public class OrderOverlay
 {
@@ -34,15 +32,10 @@ public class OrderOverlay
 		final int height = mc.getWindow().getScaledHeight();
 		
 		Order order = TricksyOrders.currentOrder();
-		IWhiteboardObject<?> target = TricksyOrders.currentTarget();
-		
 		if(order == null)
 			return;
 		
-		MutableText orderTitle = Text.empty().append(order.translate());
-		if(!target.isEmpty() && order != Order.STOP)
-			orderTitle = orderTitle.append(" -> ").append(target.describe().get(0));
-		
+		MutableText orderTitle = order.translate(TricksyOrders.currentTarget());
 		context.drawText(mc.textRenderer, orderTitle, (width - mc.textRenderer.getWidth(orderTitle)) / 2, height / 2 - 20, -1, false);
 		
 		List<Order> options = TricksyOrders.options();

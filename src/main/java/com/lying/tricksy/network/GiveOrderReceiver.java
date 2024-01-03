@@ -20,12 +20,20 @@ public class GiveOrderReceiver implements PlayChannelHandler
 		board.setWorld(player.getWorld());
 		board.readFromNbt(buf.readNbt());
 		
+		int color = buf.readInt();
+		
 		World world = player.getWorld();
 		world.getEntitiesByClass(PathAwareEntity.class, player.getBoundingBox().expand(16D), (mob) -> mob instanceof ITricksyMob<?> && mob.isAlive()).forEach(mob -> 
 		{
 			ITricksyMob<?> tricksy = (ITricksyMob<?>)mob;
-			if(tricksy.isSage(player) && mob.canSee(player))
+			if(mob.canSee(player) && willReceiveOrder(tricksy, player, color))
 				tricksy.giveCommand(board);
 		});
+	}
+	
+	/** Returns true if the tricksy recognises the player as its sage and its color matches the fan color or is non-specific */
+	private static boolean willReceiveOrder(ITricksyMob<?> tricksy, ServerPlayerEntity player, int fanColor)
+	{
+		return tricksy.isSage(player) && (!tricksy.hasColor() || fanColor == tricksy.getColor());
 	}
 }

@@ -1,0 +1,15 @@
+{
+	"parent": "minecraft:item/handheld_rod",
+	"textures": {
+		"layer0": "tricksy:item/fan",
+		"layer1": "tricksy:item/fan_overlay"
+	},
+	"overrides": [
+		{
+			"predicate": {
+				"tricksy:open": 1
+			},
+			"model": "tricksy:item/dyed_fan_open"
+		}
+	]
+}

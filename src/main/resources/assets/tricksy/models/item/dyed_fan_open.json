@@ -1,0 +1,17 @@
+{
+	"parent": "minecraft:item/handheld",
+	"textures": {
+		"layer0": "tricksy:item/fan_open",
+		"layer1": "tricksy:item/fan_open_overlay"
+	},
+    "display": {
+        "firstperson_righthand": {
+            "rotation": [ 0, 180, 22.5 ],
+            "translation": [ -1, -5.5, -7.5 ]
+        },
+        "firstperson_lefthand": {
+            "rotation": [ 0, 0, -22.5 ],
+            "translation": [ 0  , -5.5, -7.5 ]
+        }
+    }
+}

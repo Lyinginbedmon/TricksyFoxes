@@ -8,6 +8,7 @@ import net.minecraft.nbt.NbtByte;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtInt;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 
 /** A whiteboard object which stores its values in the same form they are retreived */
@@ -42,7 +43,7 @@ public abstract class WhiteboardObj<T, G extends NbtElement> extends WhiteboardO
 		
 		protected NbtByte valueToNbt(Boolean val) { return NbtByte.of(val); }
 		protected Boolean valueFromNbt(NbtByte nbt) { return nbt.byteValue() > 0; }
-		protected Text describeValue(Boolean value) { return Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean."+(value ? "true" : "false")); }
+		protected MutableText describeValue(Boolean value) { return Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean."+(value ? "true" : "false")); }
 	}
 	
 	public static class Int extends WhiteboardObj<Integer, NbtInt>
@@ -59,7 +60,7 @@ public abstract class WhiteboardObj<T, G extends NbtElement> extends WhiteboardO
 		
 		protected NbtInt valueToNbt(Integer val) { return NbtInt.of(val); }
 		protected Integer valueFromNbt(NbtInt nbt) { return nbt.intValue(); }
-		protected Text describeValue(Integer value) { return Text.literal(String.valueOf(value)); }
+		protected MutableText describeValue(Integer value) { return Text.literal(String.valueOf(value)); }
 	}
 	
 	public static class Item extends WhiteboardObj<ItemStack, NbtCompound>
@@ -76,6 +77,6 @@ public abstract class WhiteboardObj<T, G extends NbtElement> extends WhiteboardO
 		
 		protected NbtCompound valueToNbt(ItemStack val) { return val.writeNbt(new NbtCompound()); }
 		protected ItemStack valueFromNbt(NbtCompound nbt) { return ItemStack.fromNbt(nbt); }
-		protected Text describeValue(ItemStack value) { return value.getName(); }
+		protected MutableText describeValue(ItemStack value) { return (MutableText)value.getName(); }
 	}
 }

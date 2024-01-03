@@ -11,6 +11,7 @@
 	"itemGroup.tricksy.item_group": "Tricksy Foxes",
 	"item.tricksy.sage_hat": "Sage Hat",
 	"item.tricksy.sage_hat.tooltip": "Use on a suitable mob to apprentice them",
+	"item.tricksy.sage_fan": "Sage Fan",
 	"item.tricksy.fox_spawn_egg": "Tricksy Fox Spawn Egg",
 	"item.tricksy.goat_spawn_egg": "Tricksy Goat Spawn Egg",
 	"item.tricksy.periapt_prescience": "Periapt O' Prescience",
@@ -383,10 +384,17 @@
 	"command.tricksy.accomplishments.test.failed": "Failed to find %s",
 	"order.tricksy.idle": "Idle",
 	"order.tricksy.goto": "Go To",
+	"order.tricksy.goto.desc": "Go to %s",
 	"order.tricksy.guard": "Guard",
+	"order.tricksy.guard.desc": "Guard %s",
 	"order.tricksy.attack": "Attack",
+	"order.tricksy.attack.desc": "Attack %s",
 	"order.tricksy.interact": "Interact",
+	"order.tricksy.interact.desc": "Interact with %s",
 	"order.tricksy.break": "Break",
+	"order.tricksy.break.desc": "Break the block at %s",
 	"order.tricksy.activate": "Activate",
-	"order.tricksy.stop": "Stop"
+	"order.tricksy.activate.desc": "Activate the block at %s",
+	"order.tricksy.stop": "Stop",
+	"order.tricksy.stop.desc": "Stop what you're doing"
 }

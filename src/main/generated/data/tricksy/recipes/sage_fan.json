@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "f": {
+      "item": "minecraft:feather"
+    },
+    "p": {
+      "item": "minecraft:paper"
+    },
+    "s": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "fp",
+    "sf"
+  ],
+  "result": {
+    "item": "tricksy:sage_fan"
+  },
+  "show_notification": true
+}

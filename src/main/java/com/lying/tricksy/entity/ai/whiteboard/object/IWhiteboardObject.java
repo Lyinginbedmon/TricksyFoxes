@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.init.TFObjType;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
@@ -56,6 +57,8 @@ public interface IWhiteboardObject<T>
 	}
 	
 	public List<Text> describe();
+	
+	public MutableText describe(int entry);
 	
 	/** Attempts to recache this object, usually to refresh an entity reference */
 	public default void refreshIfNecessary(World world) { }

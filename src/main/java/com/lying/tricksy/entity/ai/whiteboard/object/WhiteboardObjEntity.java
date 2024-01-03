@@ -17,6 +17,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -64,12 +65,12 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 		return description;
 	}
 	
-	public Text describeValue(WhiteboardObjEntity.EntityData value)
+	public MutableText describeValue(WhiteboardObjEntity.EntityData value)
 	{
 		if(value.valueName != null)
 			return value.valueName;
 		else if(value.isFilter())
-			return value.type.getName();
+			return (MutableText)value.type.getName();
 		return Text.translatable("value."+Reference.ModInfo.MOD_ID+".entity");
 	}
 	
@@ -154,7 +155,7 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 	public static class EntityData
 	{
 		private Entity value = null;
-		private Text valueName = null;
+		private MutableText valueName = null;
 		private BlockPos lastKnownPos = BlockPos.ORIGIN;
 		
 		@Nullable

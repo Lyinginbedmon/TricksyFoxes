@@ -10,6 +10,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 
@@ -21,7 +22,7 @@ public abstract class WhiteboardObjBase<T, N, G extends NbtElement> implements I
 	{
 		protected NbtString valueToNbt(Object val){ return NbtString.of(""); }
 		protected Object valueFromNbt(NbtString nbt) { return null; }
-		protected Text describeValue(Object value) { return Text.literal("N/A"); }
+		protected MutableText describeValue(Object value) { return Text.literal("N/A"); }
 	};
 	
 	private final TFObjType<T> objType;
@@ -56,12 +57,19 @@ public abstract class WhiteboardObjBase<T, N, G extends NbtElement> implements I
 		return description;
 	}
 	
+	public final MutableText describe(int entry)
+	{
+		return entry >= value.size() || entry < 0 ? Text.empty() : describeValue(value.get(entry));
+	}
+	
 	public final void add(WhiteboardObjBase<T,N,G> object)
 	{
 		this.value.addAll(object.value);
 	}
 	
-	protected abstract Text describeValue(N value);
+	protected abstract MutableText describeValue(N value);
+	
+	public final List<N> values() { return this.value; }
 	
 	protected abstract N storeValue(T val);
 	

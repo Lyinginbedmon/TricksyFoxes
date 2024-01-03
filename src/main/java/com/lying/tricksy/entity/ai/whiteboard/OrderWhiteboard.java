@@ -123,6 +123,10 @@ public class OrderWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 		
 		public MutableText translate() { return Text.translatable("order."+Reference.ModInfo.MOD_ID+"."+asString()); }
 		
+		public MutableText translate(MutableText target) { return Text.translatable("order."+Reference.ModInfo.MOD_ID+"."+asString()+".desc", target); }
+		
+		public MutableText translate(IWhiteboardObject<?> target) { return translate(target.size() == 0 ? Text.empty() : target.describe(0)); }
+		
 		public boolean validFor(TFObjType<?> typeIn) { return idealType == null || idealType.apply(typeIn); }
 		
 		/** Returns a sorted list of all valid orders for the given object type */

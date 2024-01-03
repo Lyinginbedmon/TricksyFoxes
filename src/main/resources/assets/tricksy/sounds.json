@@ -30,5 +30,11 @@
 		"sounds": [
 			"tricksy:snap0"
 		]
+	},
+	"fan": {
+		"subtitle": "sound.tricksy.fan",
+		"sounds": [
+			"tricksy:fan0"
+		]
 	}
 }

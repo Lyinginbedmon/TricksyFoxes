@@ -12,6 +12,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -49,7 +50,7 @@ public class RegionSphere extends Region
 	
 	public boolean containsPos(BlockPos pos) { return center.isWithinDistance(pos, radius); }
 	
-	public Text describeValue() { return Text.translatable("value."+Reference.ModInfo.MOD_ID+".region_sphere", center.toShortString(), radius); }
+	public MutableText describeValue() { return Text.translatable("value."+Reference.ModInfo.MOD_ID+".region_sphere", center.toShortString(), radius); }
 	
 	public BlockPos findRandomWithin(Random rand)
 	{

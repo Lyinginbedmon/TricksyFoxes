@@ -8,6 +8,8 @@ import com.lying.tricksy.renderer.layer.GoatPeriaptLayer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
+import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.model.FoxEntityModel;
 import net.minecraft.client.render.entity.model.GoatEntityModel;
@@ -17,6 +19,15 @@ import net.minecraft.entity.passive.GoatEntity;
 
 public class ClientBus
 {
+	/** Fired by MouseMixinClient before normal scroll handling is applied */
+	public static final Event<MouseScroll> MOUSE_SCROLL = EventFactory.createArrayBacked(MouseScroll.class, callbacks -> (client,vert,hori) -> 
+	{
+		for(MouseScroll event : callbacks)
+			if(event.onMouseScroll(client, vert, hori))
+				return true;
+		return false;
+	});
+	
 	@SuppressWarnings("unchecked")
 	public static void registerEventCallbacks()
 	{
@@ -28,7 +39,17 @@ public class ClientBus
 				registrationHelper.register(new GoatPeriaptLayer((FeatureRendererContext<GoatEntity, GoatEntityModel<GoatEntity>>)entityRenderer));
 		});
 		
-		HudRenderCallback.EVENT.register((stack, partialTicks) -> OrderOverlay.drawHud(stack, partialTicks));
+		ClientBus.MOUSE_SCROLL.register((client, vert, hori) -> 
+		{
+			if(TricksyOrders.shouldRenderOrders())
+			{
+				TricksyOrders.incOrder((int)vert);
+				return true;
+			}
+			return false;
+		});
+		
+		HudRenderCallback.EVENT.register((context, partialTicks) -> OrderOverlay.drawHud(context, partialTicks));
 		
 		ClientTickEvents.END_CLIENT_TICK.register(client -> 
 		{

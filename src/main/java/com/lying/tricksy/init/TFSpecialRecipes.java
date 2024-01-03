@@ -3,6 +3,7 @@ package com.lying.tricksy.init;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.lying.tricksy.data.recipe.RecipeFanDyeing;
 import com.lying.tricksy.data.recipe.RecipeNoteBool;
 import com.lying.tricksy.data.recipe.RecipeNoteEntity;
 import com.lying.tricksy.data.recipe.RecipeNoteInteger;
@@ -32,6 +33,7 @@ public class TFSpecialRecipes
 	public static final RecipeSerializer<RecipeNoteRegion1> NOTE_MAKE_REGION_SERIALIZER = makeSerializer("note_create_region", new SerializerSimple<RecipeNoteRegion1>(RecipeNoteRegion1::new));
 	public static final RecipeSerializer<RecipeNoteRegion2> NOTE_REGION_SERIALIZER = makeSerializer("note_region", new SerializerSimple<RecipeNoteRegion2>(RecipeNoteRegion2::new));
 	public static final RecipeSerializer<RecipeNoteSeal> NOTE_SEALING_SERIALIZER = makeSerializer("note_sealing", new SerializerSimple<RecipeNoteSeal>(RecipeNoteSeal::new));
+	public static final RecipeSerializer<RecipeFanDyeing> FAN_DYEING_SERIALIZER = makeSerializer("fan_dyeing", new SerializerSimple<RecipeFanDyeing>(RecipeFanDyeing::new));
 	
 	static <T extends Recipe<?>> RecipeSerializer<T> makeSerializer(String name, RecipeSerializer<T> serializer)
 	{

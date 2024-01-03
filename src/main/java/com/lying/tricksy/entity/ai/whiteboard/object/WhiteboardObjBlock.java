@@ -8,6 +8,7 @@ import com.lying.tricksy.reference.Reference;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -31,7 +32,7 @@ public class WhiteboardObjBlock extends WhiteboardObjBase<BlockPos, com.lying.tr
 		this(pos, Direction.UP);
 	}
 	
-	public Text describeValue(WhiteboardObjBlock.BlockData value)
+	public MutableText describeValue(WhiteboardObjBlock.BlockData value)
 	{
 		if(value.face != Direction.UP)
 			return Text.translatable("value."+Reference.ModInfo.MOD_ID+".blockpos_long", value.pos.toShortString(), value.face.getName());

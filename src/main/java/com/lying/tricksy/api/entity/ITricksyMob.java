@@ -9,12 +9,13 @@ import java.util.function.Predicate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.base.Predicates;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
-import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemSageHat;
 import com.lying.tricksy.network.SyncInventoryScreenPacket;
@@ -45,6 +46,7 @@ import net.minecraft.util.StringIdentifiable;
  */
 public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends Inventory, InventoryChangedListener
 {
+	public static final EquipmentSlot[] SAGE_SLOTS = new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.OFFHAND, EquipmentSlot.MAINHAND};
 	public static final Map<EquipmentSlot, Integer> SLOT_TO_INDEX_MAP = Map.of(
 			EquipmentSlot.FEET, 0,
 			EquipmentSlot.LEGS, 1,
@@ -74,24 +76,31 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 	 */
 	public default boolean isSage(LivingEntity living)
 	{
-		if(!hasSage())
-			return false;
-		
+		return hasSage() && checkSage(living, stack -> getSage().get().equals(ItemSageHat.getSageID(stack)));
+	}
+	
+	public static boolean isAnySage(LivingEntity living)
+	{
+		return checkSage(living, Predicates.alwaysTrue());
+	}
+	
+	public static boolean checkSage(LivingEntity living, Predicate<ItemStack> qualifier)
+	{
 		if(living.getType() == EntityType.PLAYER && ((PlayerEntity)living).isCreative())
 			return true;
 		else
-			for(EquipmentSlot slot : new EquipmentSlot[] { EquipmentSlot.HEAD, EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND })
+			for(EquipmentSlot slot : SAGE_SLOTS)
 			{
 				ItemStack hatStack = living.getEquippedStack(slot);
-				if(!hatStack.isEmpty() && hatStack.getItem() == TFItems.SAGE_HAT)
-					if(getSage().get().equals(ItemSageHat.getSageID(hatStack)))
-						return true;
+				if(!hatStack.isEmpty() && hatStack.getItem() == TFItems.SAGE_HAT && qualifier.test(hatStack))
+					return true;
 			}
-		
 		return false;
 	}
 	
 	public int getColor();
+	
+	public boolean hasColor();
 	
 	/** Returns the behaviour tree of this mob.<br>Note: This may not exactly match the structure stored in NBT, due to runtime value changes. */
 	public BehaviourTree getBehaviourTree();

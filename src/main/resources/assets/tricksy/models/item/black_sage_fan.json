@@ -1,0 +1,11 @@
+{
+	"parent": "tricksy:item/dyed_fan",
+	"overrides": [
+		{
+			"predicate": {
+				"tricksy:open": 1
+			},
+			"model": "tricksy:item/dyed_fan_open"
+		}
+	]
+}

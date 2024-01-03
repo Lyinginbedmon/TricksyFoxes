@@ -16,6 +16,7 @@ import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.item.ITreeItem;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.ServerWhiteboards;
+import com.lying.tricksy.utility.TricksyUtils;
 
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
@@ -47,7 +48,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 	
 	public static final String TREE_KEY = "BehaviourTree";
 	
-	private BehaviourTree behaviourTree = new BehaviourTree(null);
+	private BehaviourTree behaviourTree = new BehaviourTree();
 	
 	@SuppressWarnings("unchecked")
 	protected LocalWhiteboard<AbstractTricksyAnimal> boardLocal = (LocalWhiteboard<AbstractTricksyAnimal>)(new LocalWhiteboard<AbstractTricksyAnimal>(this)).build();
@@ -128,16 +129,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 				if(!isClient)
 				{
 					float[] comp = ((DyeItem)heldStack.getItem()).getColor().getColorComponents();
-					int r = (int)(comp[0] * 255);
-					int g = (int)(comp[1] * 255);
-					int b = (int)(comp[2] * 255);
-					
-					// Recompose original decimal value of the dye colour from derived RGB values
-					int col = r;
-					col = (col << 8) + g;
-					col = (col << 8) + b;
-					
-					getDataTracker().set(COLOR, OptionalInt.of(col));
+					getDataTracker().set(COLOR, OptionalInt.of(TricksyUtils.componentsToColor(comp)));
 					
 					if(!player.isCreative())
 						heldStack.decrement(1);
@@ -229,7 +221,9 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 					new GlobalWhiteboard(getEntityWorld());
 	}
 	
-	public int getColor() { return getDataTracker().get(COLOR).isPresent() ? getDataTracker().get(COLOR).getAsInt() : getDefaultColor(); }
+	public int getColor() { return hasColor() ? getDataTracker().get(COLOR).getAsInt() : getDefaultColor(); }
+	
+	public boolean hasColor() { return getDataTracker().get(COLOR).isPresent(); }
 	
 	public abstract int getDefaultColor();
 	

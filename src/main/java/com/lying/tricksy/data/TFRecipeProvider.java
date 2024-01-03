@@ -32,6 +32,7 @@ public class TFRecipeProvider extends FabricRecipeProvider
 		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_REGION_SERIALIZER).offerTo(exporter, "note_region");
 		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_MAKE_REGION_SERIALIZER).offerTo(exporter, "note_create_region");
 		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_SEALING_SERIALIZER).offerTo(exporter, "note_sealing");
+		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.FAN_DYEING_SERIALIZER).offerTo(exporter, "fan_dyeing");
 		
 		ShapedRecipeJsonBuilder.create(RecipeCategory.COMBAT, TFItems.SAGE_HAT)
 			.pattern("gag").pattern("l l")
@@ -40,6 +41,13 @@ public class TFRecipeProvider extends FabricRecipeProvider
 			.criterion(FabricRecipeProvider.hasItem(Items.AMETHYST_SHARD), FabricRecipeProvider.conditionsFromItem(Items.AMETHYST_SHARD))
 			.criterion(FabricRecipeProvider.hasItem(Items.GOLD_INGOT), FabricRecipeProvider.conditionsFromItem(Items.GOLD_INGOT))
 			.criterion(FabricRecipeProvider.hasItem(TFItems.SAGE_HAT), FabricRecipeProvider.conditionsFromItem(TFItems.SAGE_HAT)).offerTo(exporter);
+		
+		ShapedRecipeJsonBuilder.create(RecipeCategory.COMBAT, TFItems.SAGE_FAN)
+			.pattern("fp").pattern("sf")
+			.input('f', Items.FEATHER).input('s', Items.STICK).input('p', Items.PAPER)
+			.criterion(FabricRecipeProvider.hasItem(Items.FEATHER), FabricRecipeProvider.conditionsFromItem(Items.FEATHER))
+			.criterion(FabricRecipeProvider.hasItem(Items.PAPER), FabricRecipeProvider.conditionsFromItem(Items.PAPER))
+			.criterion(FabricRecipeProvider.hasItem(Items.STICK), FabricRecipeProvider.conditionsFromItem(Items.STICK)).offerTo(exporter);
 		
 		ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TFItems.PERIAPT).input(TFBlocks.PRESCIENCE).input(Items.LEAD)
 			.criterion(FabricRecipeProvider.hasItem(TFBlocks.PRESCIENCE), FabricRecipeProvider.conditionsFromItem(TFBlocks.PRESCIENCE))
