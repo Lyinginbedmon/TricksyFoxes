@@ -26,6 +26,9 @@
 		],
 		"cardinal-components": [
 			"com.lying.tricksy.init.TFComponents"
+		],
+		"rei_client": [ 
+			"com.lying.tricksy.integration.REICompat"
 		]
 	},
 	"mixins": [
