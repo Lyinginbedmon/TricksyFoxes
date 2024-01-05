@@ -1,5 +1,6 @@
 package com.lying.tricksy.utility;
 
+import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.init.TFKeybinds;
 import com.lying.tricksy.renderer.OrderOverlay;
 import com.lying.tricksy.renderer.layer.FoxPeriaptLayer;
@@ -43,7 +44,7 @@ public class ClientBus
 		{
 			if(TricksyOrders.shouldRenderOrders())
 			{
-				TricksyOrders.incOrder((int)vert);
+				TricksyOrders.incOrder((int)vert * (TricksyFoxesClient.config.scrollInverted() ? -1 : 1));
 				return true;
 			}
 			return false;

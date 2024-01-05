@@ -14,6 +14,7 @@ import com.lying.tricksy.item.IOrderGivingItem;
 import com.lying.tricksy.network.GiveOrderPacket;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -61,20 +62,29 @@ public class TricksyOrders
 	
 	public static void setTarget(int itemColorIn)
 	{
-		HitResult target = mc.player.raycast(TARGET_RANGE, 0, false);
-		switch(target.getType())
+		Entity ent = mc.getCameraEntity();
+		if(ent != null)
 		{
-			case BLOCK:
-				setTarget(new WhiteboardObjBlock(((BlockHitResult)target).getBlockPos()));
-				break;
-			case ENTITY:
-				setTarget(new WhiteboardObjEntity(((EntityHitResult)target).getEntity()));
-				break;
-			case MISS:
-			default:
-				setTarget(TFObjType.EMPTY.blank());
-				break;
+			// FIXME Raycast does not seem to ever hit entities even directly in its path
+			HitResult target = ent.raycast(TARGET_RANGE, 1F, false);
+			switch(target.getType())
+			{
+				case BLOCK:
+					System.out.println("Hit block");
+					setTarget(new WhiteboardObjBlock(((BlockHitResult)target).getBlockPos()));
+					break;
+				case ENTITY:
+					System.out.println("Hit entity");
+					setTarget(new WhiteboardObjEntity(((EntityHitResult)target).getEntity()));
+					break;
+				case MISS:
+					System.out.println("Miss");
+				default:
+					setTarget(TFObjType.EMPTY.blank());
+					break;
+			}
 		}
+		
 		showOrders = true;
 		itemColor = itemColorIn;
 	}

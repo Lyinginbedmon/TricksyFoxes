@@ -93,31 +93,34 @@ public class OrderWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 	
 	public static enum Order implements StringIdentifiable
 	{
-		GOTO(0, (type) -> type.castableTo(TFObjType.BLOCK), OrderWhiteboard::optionalEntityPos),
-		GUARD(3, (type) -> type.castableTo(TFObjType.BLOCK), OrderWhiteboard::optionalEntityPos),
-		ATTACK(1, TFObjType.ENT, (board,obj) -> board.setValue(OrderWhiteboard.TAR, obj.as(TFObjType.ENT))),
-		INTERACT(2, TFObjType.ENT, (board,obj) -> board.setValue(OrderWhiteboard.TAR, obj.as(TFObjType.ENT))),
-		BREAK(5, TFObjType.BLOCK, (board,obj) -> board.setValue(OrderWhiteboard.POS, obj.as(TFObjType.BLOCK))),
-		ACTIVATE(4, TFObjType.BLOCK, (board,obj) -> board.setValue(OrderWhiteboard.POS, obj.as(TFObjType.BLOCK))),
-		STOP(Integer.MAX_VALUE, Predicates.alwaysTrue(), (board,obj) -> {});
+		GOTO(0, 0xeb7418, (type) -> type.castableTo(TFObjType.BLOCK), OrderWhiteboard::optionalEntityPos),
+		GUARD(3, 0xeb7418, (type) -> type.castableTo(TFObjType.BLOCK), OrderWhiteboard::optionalEntityPos),
+		ATTACK(1, 0xd72b2b, TFObjType.ENT, (board,obj) -> board.setValue(OrderWhiteboard.TAR, obj.as(TFObjType.ENT))),
+		INTERACT(2, 0xd72b2b, TFObjType.ENT, (board,obj) -> board.setValue(OrderWhiteboard.TAR, obj.as(TFObjType.ENT))),
+		BREAK(5, 0x04a31e, TFObjType.BLOCK, (board,obj) -> board.setValue(OrderWhiteboard.POS, obj.as(TFObjType.BLOCK))),
+		ACTIVATE(4, 0x04a31e, TFObjType.BLOCK, (board,obj) -> board.setValue(OrderWhiteboard.POS, obj.as(TFObjType.BLOCK))),
+		STOP(Integer.MAX_VALUE, 0x7353e8, Predicates.alwaysTrue(), (board,obj) -> {});
 		
-		private final int index;
+		private final int index, borderColor;
 		private final Predicate<TFObjType<?>> idealType;
 		private final BiConsumer<OrderWhiteboard, IWhiteboardObject<?>> commandFunc;
 		
-		private Order(int indexIn, Predicate<TFObjType<?>> typeIn, BiConsumer<OrderWhiteboard, IWhiteboardObject<?>> funcIn)
+		private Order(int indexIn, int colorIn, Predicate<TFObjType<?>> typeIn, BiConsumer<OrderWhiteboard, IWhiteboardObject<?>> funcIn)
 		{
 			index = indexIn;
+			borderColor = colorIn;
 			commandFunc = funcIn;
 			idealType = typeIn;
 		}
 		
-		private Order(int indexIn, TFObjType<?> typeIn, BiConsumer<OrderWhiteboard, IWhiteboardObject<?>> funcIn)
+		private Order(int indexIn, int colorIn, TFObjType<?> typeIn, BiConsumer<OrderWhiteboard, IWhiteboardObject<?>> funcIn)
 		{
-			this(indexIn, (type) -> type == typeIn, funcIn);
+			this(indexIn, colorIn, (type) -> type == typeIn, funcIn);
 		}
 		
 		public String asString() { return name().toLowerCase(); }
+		
+		public int color() { return this.borderColor; }
 		
 		public Identifier texture() { return new Identifier(Reference.ModInfo.MOD_ID,"textures/gui/orders/"+asString()+".png"); }
 		

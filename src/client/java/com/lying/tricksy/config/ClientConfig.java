@@ -15,6 +15,8 @@ public class ClientConfig extends Config
 	/** Renders behaviour trees in a more fanciful fashion, but with much higher CPU costs */
 	private boolean fancyTrees = true;
 	
+	private boolean invertScroll = false;
+	
 	public ClientConfig(String fileIn)
 	{
 		super(fileIn);
@@ -26,21 +28,26 @@ public class ClientConfig extends Config
 	{
 		fancyTrees = parseBoolOr(valuesIn.getProperty("FancyTrees"), true);
 		nodeDisplayStyle = NodeDisplay.fromString(parseStringOr(valuesIn.getProperty("NodeDisplay"), NodeDisplay.HOVERED.asString()));
+		invertScroll = parseBoolOr(valuesIn.getProperty("InvertScroll"), false);
 	}
 	
 	protected void writeValues(FileWriter writer)
 	{
 		writeBool(writer, "FancyTrees", fancyTrees);
 		writeString(writer, "NodeDisplay", nodeDisplayStyle.asString());
+		writeBool(writer, "InvertScroll", invertScroll);
 	}
 	
 	public boolean fancyTrees() { return this.fancyTrees; }
 	
 	public NodeDisplay nodeDisplayStyle() { return this.nodeDisplayStyle; }
 	
+	public boolean scrollInverted() { return this.invertScroll; }
+	
 	static
 	{
 		DEFAULT_SETTINGS.setProperty("FancyTrees", "1");
 		DEFAULT_SETTINGS.setProperty("NodeDisplay", NodeDisplay.HOVERED.asString());
+		DEFAULT_SETTINGS.setProperty("InvertScroll", "0");
 	}
 }
