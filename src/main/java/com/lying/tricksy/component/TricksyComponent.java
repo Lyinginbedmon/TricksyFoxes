@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
 import com.lying.tricksy.init.TFEnlightenmentPaths;
+import com.lying.tricksy.init.TFParticles;
 import com.lying.tricksy.init.TFRegistries;
 import com.lying.tricksy.init.TFSoundEvents;
 
@@ -23,11 +24,13 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
@@ -257,22 +260,20 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 	public boolean enlighten()
 	{
 		World world = theMob.getWorld();
-		boolean success = false;
 		switch(ranking())
 		{
 			case APPRENTICE:
 				setRanking(Rank.MASTER);
 				if(!world.isClient())
-					doEnlightenmentFanfare(world, theMob.getBlockPos(), theMob.getRandom());
-				success = true;
-				break;
+					doEnlightenmentFanfare(world, theMob, theMob.getRandom());
+				return true;
 			case NASCENT:
 				EnlightenmentPath<?,?> pathTaken = getPath();
 				if(pathTaken.resultType() == theMob.getType())
 				{
 					setPathTaken(pathTaken.registryName());
-					success = true;
-					break;
+					doEnlightenmentFanfare(world, theMob, theMob.getRandom());
+					return true;
 				}
 				
 				PathAwareEntity tricksy = pathTaken.giveEnlightenment(theMob);
@@ -289,22 +290,28 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 				{
 					world.spawnEntity(tricksy);
 					theMob.discard();
+					
+					doEnlightenmentFanfare(world, tricksy, tricksy.getRandom());
 				}
-				success = true;
-				break;
+				return true;
 			case MASTER:
 			default:
 				return false;
 		}
-		if(success && !world.isClient())
-			doEnlightenmentFanfare(world, theMob.getBlockPos(), theMob.getRandom());
-		return success;
 	}
 	
-	private static void doEnlightenmentFanfare(World world, BlockPos pos, Random rand)
+	private static void doEnlightenmentFanfare(World world, MobEntity mob, Random rand)
 	{
-		// TODO Add particles to enlightenment event
-		world.playSound(null, pos, TFSoundEvents.TRICKSY_ENLIGHTENED, SoundCategory.NEUTRAL, 1F, 0.75F + rand.nextFloat());
+		world.playSound(null, mob.getBlockPos(), TFSoundEvents.TRICKSY_ENLIGHTENED, SoundCategory.NEUTRAL, 1F, 0.75F + rand.nextFloat());
+		
+		Box bounds = mob.getBoundingBox().expand(0.5D);
+		for(int i=8; i>0; i--)
+		{
+			double x = bounds.minX + bounds.getXLength() * rand.nextDouble();
+			double y = bounds.minY + bounds.getYLength() * rand.nextDouble();
+			double z = bounds.minZ + bounds.getZLength() * rand.nextDouble();
+			((ServerWorld)mob.getWorld()).spawnParticles(TFParticles.LEVELUP, x, y, z, 1, 0, 0, 0, 0);
+		}
 	}
 	
 	public void setPathTaken(Identifier id)

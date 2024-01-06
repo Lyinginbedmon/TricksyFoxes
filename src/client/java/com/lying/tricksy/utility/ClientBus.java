@@ -44,7 +44,7 @@ public class ClientBus
 		{
 			if(TricksyOrders.shouldRenderOrders())
 			{
-				TricksyOrders.incOrder((int)vert * (TricksyFoxesClient.config.scrollInverted() ? -1 : 1));
+				TricksyOrders.incOrder((int)vert * (TricksyFoxesClient.config.scrollInverted() ? 1 : -1));
 				return true;
 			}
 			return false;

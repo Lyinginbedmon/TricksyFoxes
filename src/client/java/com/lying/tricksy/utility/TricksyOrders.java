@@ -16,9 +16,12 @@ import com.lying.tricksy.network.GiveOrderPacket;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 
 public class TricksyOrders
 {
@@ -27,7 +30,6 @@ public class TricksyOrders
 	
 	private static IWhiteboardObject<?> orderTarget = null;
 	
-	// XXX Smoothly animate the transition between order indices?
 	private static List<Order> orderOptions = Lists.newArrayList();
 	private static int orderIndex = 0;
 	
@@ -60,30 +62,37 @@ public class TricksyOrders
 		return orderOptions.get(conformToAvailableOptions(orderIndex + step));
 	}
 	
-	public static void setTarget(int itemColorIn)
+	@Nullable
+	private static HitResult getTarget()
 	{
 		Entity ent = mc.getCameraEntity();
-		if(ent != null)
-		{
-			// FIXME Raycast does not seem to ever hit entities even directly in its path
-			HitResult target = ent.raycast(TARGET_RANGE, 1F, false);
+		if(ent == null)
+			return null;
+		Vec3d lookPos = ent.getCameraPosVec(0F);
+		Vec3d lookVec = ent.getRotationVec(1F);
+		Vec3d lookEnd = lookPos.add(lookVec.x * TARGET_RANGE,  lookVec.y * TARGET_RANGE,  lookVec.z * TARGET_RANGE);
+		Box box = ent.getBoundingBox().stretch(lookVec.multiply(TARGET_RANGE)).expand(1, 1, 1);
+		EntityHitResult entityHitResult = ProjectileUtil.raycast((Entity)ent, (Vec3d)lookPos, (Vec3d)lookEnd, (Box)box, entity -> !entity.isSpectator() && entity.canHit(), TARGET_RANGE * TARGET_RANGE);
+		return entityHitResult == null ? mc.getCameraEntity().raycast(TARGET_RANGE, 0F, false) : entityHitResult;
+	}
+	
+	public static void setTarget(int itemColorIn)
+	{
+		setTarget(TFObjType.EMPTY.blank());
+		HitResult target = getTarget();
+		if(target != null)
 			switch(target.getType())
 			{
 				case BLOCK:
-					System.out.println("Hit block");
 					setTarget(new WhiteboardObjBlock(((BlockHitResult)target).getBlockPos()));
 					break;
 				case ENTITY:
-					System.out.println("Hit entity");
 					setTarget(new WhiteboardObjEntity(((EntityHitResult)target).getEntity()));
 					break;
 				case MISS:
-					System.out.println("Miss");
 				default:
-					setTarget(TFObjType.EMPTY.blank());
 					break;
 			}
-		}
 		
 		showOrders = true;
 		itemColor = itemColorIn;
@@ -133,8 +142,13 @@ public class TricksyOrders
 	
 	public static void sendOrder()
 	{
-		if(showOrders && currentOrder() != null)
-			GiveOrderPacket.send(mc.player, orderTarget, currentOrder(), itemColor);
+		if(showOrders && currentOrder() != null && currentTarget() != null)
+		{
+			Order order = currentOrder();
+			IWhiteboardObject<?> val = currentTarget();
+			mc.player.sendMessage(order.translate(val), true);
+			GiveOrderPacket.send(mc.player, val, order, itemColor);
+		}
 		
 		clear();
 	}

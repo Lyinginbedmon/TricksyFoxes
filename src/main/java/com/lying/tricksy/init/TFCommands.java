@@ -83,7 +83,7 @@ public class TFCommands
 		}
 		catch(Exception e) { }
 		if(!result)
-			throw (new SimpleCommandExceptionType(Text.translatable(ACC_SLUG+".enlighten.failed", ent.getDisplayName()))).create();
+			throw (new SimpleCommandExceptionType(Text.translatable("command."+Reference.ModInfo.MOD_ID+".enlighten.failed", ent.getDisplayName()))).create();
 		Text message = Text.translatable("command."+Reference.ModInfo.MOD_ID+".enlighten.success", ent.getDisplayName());
 		source.sendFeedback(() -> message, true);
 		return result;

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicate;
@@ -128,7 +129,7 @@ public class OrderWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 		
 		public MutableText translate(MutableText target) { return Text.translatable("order."+Reference.ModInfo.MOD_ID+"."+asString()+".desc", target); }
 		
-		public MutableText translate(IWhiteboardObject<?> target) { return translate(target.size() == 0 ? Text.empty() : target.describe(0)); }
+		public MutableText translate(IWhiteboardObject<?> target) { return translate(target == null || target.size() == 0 ? Text.empty() : target.describe(0)); }
 		
 		public boolean validFor(TFObjType<?> typeIn) { return idealType == null || idealType.apply(typeIn); }
 		
@@ -143,7 +144,7 @@ public class OrderWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 			return orders;
 		}
 		
-		public OrderWhiteboard create(IWhiteboardObject<?> obj)
+		public OrderWhiteboard create(@NotNull IWhiteboardObject<?> obj)
 		{
 			OrderWhiteboard command = OrderWhiteboard.ofOrder(this);
 			commandFunc.accept(command, obj);

@@ -22,7 +22,6 @@ public class TFRecipeProvider extends FabricRecipeProvider
 		super(output);
 	}
 	
-	// XXX Recipe does not load or unlock ingame? Unreliable
 	public void generate(Consumer<RecipeJsonProvider> exporter)
 	{
 		ComplexRecipeJsonBuilder.create(TFSpecialRecipes.NOTE_INTEGER_SERIALIZER).offerTo(exporter, "note_integer");

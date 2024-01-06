@@ -78,7 +78,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				tricksy.bark(Bark.values()[index]);
 				return Result.SUCCESS;
 			}
-		}));
+		}, ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND / 2)));
 		set.add(new NodeSubType<LeafNode>(VARIANT_GOTO, leafGoTo()));
 		set.add(new NodeSubType<LeafNode>(VARIANT_STOP, leafStop()));
 		set.add(new NodeSubType<LeafNode>(VARIANT_WANDER, leafWander()));
