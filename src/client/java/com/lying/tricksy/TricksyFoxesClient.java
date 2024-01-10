@@ -27,6 +27,7 @@ import com.lying.tricksy.particle.PaperParticle;
 import com.lying.tricksy.renderer.block.ClockworkFriarBlockEntityRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyFoxRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyGoatRenderer;
+import com.lying.tricksy.renderer.entity.EntityTricksyWolfRenderer;
 import com.lying.tricksy.renderer.layer.SageHatRenderer;
 import com.lying.tricksy.screen.ClockworkFriarScreen;
 import com.lying.tricksy.screen.PrescientCandleScreen;
@@ -82,6 +83,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		ArmorRenderer.register(new SageHatRenderer(), TFItems.SAGE_HAT);
 		EntityRendererRegistry.register(TFEntityTypes.TRICKSY_FOX, EntityTricksyFoxRenderer::new);
 		EntityRendererRegistry.register(TFEntityTypes.TRICKSY_GOAT, EntityTricksyGoatRenderer::new);
+		EntityRendererRegistry.register(TFEntityTypes.TRICKSY_WOLF, EntityTricksyWolfRenderer::new);
 		EntityRendererRegistry.register(TFEntityTypes.FOX_FIRE, context -> new FlyingItemEntityRenderer<EntityFoxFire>(context, 0.75F, true));
 		
 		BlockEntityRendererFactories.register(TFBlockEntities.CLOCKWORK_FRIAR, ClockworkFriarBlockEntityRenderer::new);

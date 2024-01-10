@@ -351,6 +351,7 @@
 	"whiteboard.tricksy.bark": "Type",
 	"entity.tricksy.tricksy_fox": "Tricksy Fox",
 	"entity.tricksy.tricksy_goat": "Tricksy Goat",
+	"entity.tricksy.tricksy_wolf": "Tricksy Wolf",
 	"entity.tricksy.fox_fire": "Fox Fire",
 	"item.tricksy.sage_hat.master_set": "%s will now follow the ways of this sage",
 	"item.tricksy.sage_hat.master_set.fail": "%s already follows a sage!",

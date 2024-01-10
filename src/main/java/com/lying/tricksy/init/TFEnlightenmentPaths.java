@@ -20,6 +20,7 @@ import com.lying.tricksy.component.ConfigurablePath;
 import com.lying.tricksy.component.EnlightenmentPath;
 import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.entity.EntityTricksyGoat;
+import com.lying.tricksy.entity.EntityTricksyWolf;
 import com.lying.tricksy.reference.Reference;
 
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -30,6 +31,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.entity.passive.GoatEntity;
+import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
@@ -58,6 +60,7 @@ public class TFEnlightenmentPaths implements SimpleResourceReloadListener<List<J
 				EntityTricksyFox tricksy = TFEntityTypes.TRICKSY_FOX.create(fox.getEntityWorld());
 				tricksy.setVariant(fox.getVariant());
 				tricksy.equipStack(EquipmentSlot.MAINHAND, fox.getEquippedStack(EquipmentSlot.MAINHAND));
+				tricksy.equipStack(EquipmentSlot.OFFHAND, fox.getEquippedStack(EquipmentSlot.OFFHAND));
 				return tricksy;
 			}
 		});
@@ -72,6 +75,20 @@ public class TFEnlightenmentPaths implements SimpleResourceReloadListener<List<J
 					tricksy.setHorns(goat.hasLeftHorn(), goat.hasRightHorn());
 					tricksy.setScreaming(goat.isScreaming());
 					tricksy.equipStack(EquipmentSlot.MAINHAND, goat.getEquippedStack(EquipmentSlot.MAINHAND));
+					tricksy.equipStack(EquipmentSlot.OFFHAND, goat.getEquippedStack(EquipmentSlot.OFFHAND));
+					return tricksy;
+				}
+			});
+	
+	public static final EnlightenmentPath<WolfEntity, EntityTricksyWolf> WOLF 	= addEnlightenment(EntityType.WOLF, new ConfigurablePath<WolfEntity, EntityTricksyWolf>(EntityType.WOLF, TFAccomplishments.SCHOLAR, TFAccomplishments.ARCHAEOLOGIST)
+			{
+				public EntityType<EntityTricksyWolf> resultType() { return TFEntityTypes.TRICKSY_WOLF; }
+				
+				public EntityTricksyWolf enlighten(WolfEntity wolf)
+				{
+					EntityTricksyWolf tricksy = TFEntityTypes.TRICKSY_WOLF.create(wolf.getEntityWorld());
+					tricksy.equipStack(EquipmentSlot.MAINHAND, wolf.getEquippedStack(EquipmentSlot.MAINHAND));
+					tricksy.equipStack(EquipmentSlot.OFFHAND, wolf.getEquippedStack(EquipmentSlot.OFFHAND));
 					return tricksy;
 				}
 			});

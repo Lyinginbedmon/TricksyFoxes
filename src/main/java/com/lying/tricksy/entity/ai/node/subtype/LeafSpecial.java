@@ -78,6 +78,10 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_GOAT_BLOCKADE = ISubtypeGroup.variant("goat_blockade");
 	public static final Identifier VARIANT_GOAT_JUMP = ISubtypeGroup.variant("goat_jump");
 	
+	// TODO Implement wolf-specific actions
+	public static final Identifier VARIANT_WOLF_LEAD = ISubtypeGroup.variant("wolf_lead");
+	public static final Identifier VARIANT_WOLF_BLESS = ISubtypeGroup.variant("wolf_bless");
+	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_special"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()

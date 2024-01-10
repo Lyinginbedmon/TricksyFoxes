@@ -7,6 +7,7 @@ import com.lying.tricksy.model.entity.ModelTricksyFoxMain;
 import com.lying.tricksy.model.entity.ModelTricksyFoxSleeping;
 import com.lying.tricksy.model.entity.ModelTricksyGoatMain;
 import com.lying.tricksy.model.entity.ModelTricksyGoatSleeping;
+import com.lying.tricksy.model.entity.ModelTricksyWolfMain;
 import com.lying.tricksy.model.layer.ModelFoxPeriapt;
 import com.lying.tricksy.model.layer.ModelGoatPeriapt;
 import com.lying.tricksy.reference.Reference;
@@ -35,6 +36,9 @@ public class TFModelParts
 	public static final EntityModelLayer TRICKSY_GOAT_CLOTHING	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_goat"), "clothing");
 	public static final EntityModelLayer TRICKSY_GOAT_SLEEPING	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_goat"), "sleeping");
 	
+	public static final EntityModelLayer TRICKSY_WOLF	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_wolf"), "main");
+	public static final EntityModelLayer TRICKSY_WOLF_CLOTHING	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_wolf"), "clothing");
+	
 	public static final EntityModelLayer SAGE_HAT	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "sage_hat"), "main");
 	
 	public static final EntityModelLayer CLOCKWORK_FRIAR = new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "clockwork_friar"), "main");
@@ -52,6 +56,9 @@ public class TFModelParts
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_GOAT, ModelTricksyGoatMain::getMainModel);
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_GOAT_CLOTHING, ModelTricksyGoatMain::getOuterModel);
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_GOAT_SLEEPING, ModelTricksyGoatSleeping::getModelData);
+		
+		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_WOLF, ModelTricksyWolfMain::getMainModel);
+		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_WOLF_CLOTHING, ModelTricksyWolfMain::getOuterModel);
 		
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.SAGE_HAT, ModelSageHat::getTexturedModelData);
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.PERIAPT_FOX, ModelFoxPeriapt::getTexturedModelData);
