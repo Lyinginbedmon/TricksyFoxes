@@ -3,6 +3,7 @@ package com.lying.tricksy.model.entity;
 import java.util.EnumSet;
 import java.util.Set;
 
+import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.entity.EntityTricksyGoat;
 
 import net.fabricmc.api.EnvType;
@@ -40,8 +41,18 @@ public class ModelTricksyGoatSleeping<T extends EntityTricksyGoat> extends Model
 			.uv(23, 52).cuboid(0.0F, 2.0F, -8.0F, 0.0F, 7.0F, 5.0F, Dilation.NONE)
 			.uv(2, 61).cuboid(-5.5F, -5.0F, -2.75F, 3.0F, 2.0F, 1.0F, dilation)
 			.uv(2, 61).mirrored().cuboid(2.5F, -5.0F, -2.75F, 3.0F, 2.0F, 1.0F, dilation).mirrored(false), ModelTransform.pivot(0.0F, 7.0F, -1.0F));
-			head.addChild(EntityModelPartNames.LEFT_HORN, ModelPartBuilder.create().uv(12, 55).cuboid(0.49F, -10.0F, -2.5F, 2.0F, 7.0F, 2.0F, dilation), ModelTransform.pivot(0.0F, 0.0F, 0.0F));
-			head.addChild(EntityModelPartNames.RIGHT_HORN, ModelPartBuilder.create().uv(12, 55).cuboid(-2.49F, -10.0F, -2.5F, 2.0F, 7.0F, 2.0F, dilation), ModelTransform.pivot(0.0F, 0.0F, 0.0F));
+		
+		ModelPartData master_horns = head.addChild(MASTER_HORNS, ModelPartBuilder.create(), ModelTransform.pivot(0.0F, 0.5F, 0.0F));
+			ModelPartData left = master_horns.addChild(EntityModelPartNames.LEFT_HORN, ModelPartBuilder.create().uv(12, 55).cuboid(-1.01F, -4.5F, -1.0F, 2.0F, 7.0F, 2.0F, dilation.add(0.2F)), ModelTransform.of(1.5F, -6.0F, -1.5F, -0.7591F, 0.2217F, 0.083F));
+				left.addChild("cube_r1", ModelPartBuilder.create().uv(12, 55).cuboid(-1.0F, -7.0F, -2.5F, 2.0F, 4.0F, 2.0F, dilation), ModelTransform.of(0.0F, -4.0F, 0.0F, -0.8727F, 0.0F, 0.0F));
+				left.addChild("cube_r2", ModelPartBuilder.create().uv(12, 55).cuboid(-1.0F, -4.0F, -1.0F, 2.0F, 4.0F, 2.0F, dilation.add(0.1F)), ModelTransform.of(0.0F, -4.0F, 0.0F, -0.4363F, 0.0F, 0.0F));
+			ModelPartData right = master_horns.addChild(EntityModelPartNames.RIGHT_HORN, ModelPartBuilder.create().uv(12, 55).cuboid(-0.99F, -4.5F, -1.0F, 2.0F, 7.0F, 2.0F, dilation.add(0.2F)), ModelTransform.of(-1.5F, -6.0F, -1.5F, -0.7591F, -0.2217F, -0.083F));
+				right.addChild("cube_r3", ModelPartBuilder.create().uv(12, 55).cuboid(-1.0F, -7.0F, -2.5F, 2.0F, 4.0F, 2.0F, dilation), ModelTransform.of(0.0F, -4.0F, 0.0F, -0.8727F, 0.0F, 0.0F));
+				right.addChild("cube_r4", ModelPartBuilder.create().uv(12, 55).cuboid(-1.0F, -4.0F, -1.0F, 2.0F, 4.0F, 2.0F, dilation.add(0.1F)), ModelTransform.of(0.0F, -4.0F, 0.0F, -0.4363F, 0.0F, 0.0F));
+		
+		ModelPartData basic_horns = head.addChild(APPRENTICE_HORNS, ModelPartBuilder.create(), ModelTransform.pivot(0.0F, 0.0F, 0.0F));
+			basic_horns.addChild(EntityModelPartNames.LEFT_HORN, ModelPartBuilder.create().uv(12, 55).cuboid(0.49F, -10.0F, -2.5F, 2.0F, 7.0F, 2.0F, dilation), ModelTransform.pivot(0.0F, 0.0F, 0.0F));
+			basic_horns.addChild(EntityModelPartNames.RIGHT_HORN, ModelPartBuilder.create().uv(12, 55).cuboid(-2.49F, -10.0F, -2.5F, 2.0F, 7.0F, 2.0F, dilation), ModelTransform.pivot(0.0F, 0.0F, 0.0F));
 		
 		head.addChild(EntityModelPartNames.NOSE, ModelPartBuilder.create().uv(34, 46).cuboid(-4.0F, -11.2426F, -3.8284F, 5.0F, 7.0F, 10.0F, dilation), ModelTransform.of(1.5F, 6.0F, 1.0F, 0.7854F, 0.0F, 0.0F));
 		
@@ -74,8 +85,7 @@ public class ModelTricksyGoatSleeping<T extends EntityTricksyGoat> extends Model
 	
 	public void setAngles(T livingEntity, float limbSwing, float limbSwingAmount, float ageInTicks, float headYaw, float headPitch)
 	{
-		this.leftHorn.visible = livingEntity.hasLeftHorn();
-		this.rightHorn.visible = livingEntity.hasRightHorn();
+		setVisibleHorns(livingEntity.hasLeftHorn(), livingEntity.hasRightHorn(), TricksyComponent.isMobMaster(livingEntity));
 		
 		this.head.pitch = 0.0f;
 		this.head.roll = MathHelper.cos((float)(ageInTicks * 0.027f)) / 22.0f;

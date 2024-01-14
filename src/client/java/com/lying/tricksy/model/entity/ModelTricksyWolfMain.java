@@ -31,9 +31,30 @@ public class ModelTricksyWolfMain<T extends EntityTricksyWolf> extends ModelTric
 		Dilation dilation = new Dilation(0.5F);
 		ModelData meshdefinition = getModelData(0.5F);
 		ModelPartData root = meshdefinition.getRoot().getChild(EntityModelPartNames.ROOT);
-		root.addChild(EntityModelPartNames.LEFT_ARM, ModelPartBuilder.create().uv(43, 18).cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, dilation), ModelTransform.pivot(4.5F, 3.0F, 0.0F));
-		root.addChild(EntityModelPartNames.RIGHT_ARM, ModelPartBuilder.create().uv(43, 18).mirrored().cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, dilation).mirrored(false), ModelTransform.pivot(-4.5F, 3.0F, 0.0F));
-		return TexturedModelData.of(meshdefinition, 64, 32);
+		
+		root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create().uv(0, 0).cuboid(-3.0F, -3.0F, -3.0F, 6.0F, 6.0F, 4.0F, dilation)
+			.uv(21, 0).cuboid(-1.0F, 0.0F, -6.0F, 3.0F, 3.0F, 4.0F, dilation)
+			.uv(37, 4).cuboid(1.0F, -5.0F, -1.0F, 2.0F, 2.0F, 1.0F, dilation)
+			.uv(37, 4).cuboid(-3.0F, -5.0F, -1.0F, 2.0F, 2.0F, 1.0F, dilation), ModelTransform.pivot(0.0F, -0.5F, -1.5F));
+		
+		root.addChild(EntityModelPartNames.HAT, ModelPartBuilder.create(), ModelTransform.NONE);
+
+		ModelPartData torso = root.addChild(EntityModelPartNames.BODY, ModelPartBuilder.create().uv(18, 8).cuboid(-3.0F, -6.0F, -4.0F, 6.0F, 9.0F, 6.0F, dilation), ModelTransform.pivot(0.0F, 13.0F, 1.0F));
+			torso.addChild("cowl_r1", ModelPartBuilder.create().uv(31, 24).cuboid(-4.0F, -6.0F, -6.5F, 8.0F, 6.0F, 7.0F, dilation.add(0.15F))
+				.uv(0, 24).cuboid(-4.0F, -6.0F, -6.5F, 8.0F, 6.0F, 7.0F, dilation), ModelTransform.of(0.0F, -6.0F, 2.0F, 0.2618F, 0.0F, 0.0F));
+
+		ModelPartData tail = torso.addChild(EntityModelPartNames.TAIL, ModelPartBuilder.create(), ModelTransform.of(0.0F, 2.0F, 1.0F, -0.7854F, 0.0F, 0.0F));
+			tail.addChild("tail_r1", ModelPartBuilder.create().uv(9, 12).cuboid(-1.0F, -1.0F, -2.0F, 2.0F, 8.0F, 2.0F, dilation), ModelTransform.of(0.0F, -1.0F, 1.0F, 1.5708F, 0.0F, 0.0F));
+		
+		root.addChild(EntityModelPartNames.LEFT_ARM, ModelPartBuilder.create().uv(43, 12).cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, dilation)
+			.uv(52, 12).cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, dilation.add(0.15F)), ModelTransform.pivot(4.5F, 3.0F, 0.0F));
+		
+		root.addChild(EntityModelPartNames.RIGHT_ARM, ModelPartBuilder.create().uv(43, 12).mirrored().cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, dilation).mirrored(false)
+			.uv(52, 12).mirrored().cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, dilation.add(0.15F)).mirrored(false), ModelTransform.pivot(-4.5F, 3.0F, 0.0F));
+		
+		root.addChild(EntityModelPartNames.LEFT_LEG, ModelPartBuilder.create().uv(0, 12).cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, dilation), ModelTransform.pivot(1.5F, 16.0F, 0.0F));
+		root.addChild(EntityModelPartNames.RIGHT_LEG, ModelPartBuilder.create().uv(0, 12).mirrored().cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, dilation).mirrored(false), ModelTransform.pivot(-1.5F, 16.0F, 0.0F));
+		return TexturedModelData.of(meshdefinition, 64, 64);
 	}
 	
 	public static ModelData getModelData(float inflation)
