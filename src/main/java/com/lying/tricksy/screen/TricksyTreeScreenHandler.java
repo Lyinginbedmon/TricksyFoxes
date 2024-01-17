@@ -142,10 +142,9 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 		countNodes();
 	}
 	
-	public void setCap(int capIn)
-	{
-		this.treeSizeCap = capIn;
-	}
+	public void setCap(int capIn) { this.treeSizeCap = capIn; }
+	
+	public int getCap() { return this.treeSizeCap; }
 	
 	public void setAvailableReferences(List<Pair<WhiteboardRef, IWhiteboardObject<?>>> refsIn)
 	{
@@ -165,6 +164,8 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 		addedReferences.clear();
 		countNodes();
 	}
+	
+	public int nodeCount() { return this.treeSize; }
 	
 	public void countNodes()
 	{

@@ -23,10 +23,12 @@ import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 
 public class LeafGetter implements ISubtypeGroup<LeafNode>
 {
@@ -37,6 +39,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_GET_HEALTH = ISubtypeGroup.variant("get_health");
 	public static final Identifier VARIANT_GET_HELD = ISubtypeGroup.variant("get_held_item");
 	public static final Identifier VARIANT_GET_BARK = ISubtypeGroup.variant("get_bark");
+	public static final Identifier VARIANT_GET_LEASHED = ISubtypeGroup.variant("get_leashed");
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_getter"); }
 	
@@ -159,6 +162,44 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				return new WhiteboardObj.Int(living.currentBark().ordinal());
 			}
 		});
+		add(set, VARIANT_GET_LEASHED, new GetterHandlerTyped<Entity>(TFObjType.ENT)
+			{
+				private static final WhiteboardRef TARGET = CommonVariables.TARGET_ENT;
+				private static final WhiteboardRef INVERT = new WhiteboardRef("invert", TFObjType.BOOL).displayName(CommonVariables.translate("invert"));
+				
+				public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
+				{
+					set.put(TARGET, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
+					set.put(INVERT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(false), (new WhiteboardObj.Bool(false)).describe().get(0)));
+				}
+				
+				public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+				{
+					IWhiteboardObject<Entity> target = getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT);
+					if(parent.inputAssigned(TARGET) && target.isEmpty())
+						return null;
+					
+					Entity entity = parent.inputAssigned(TARGET) ? target.get() : tricksy;
+					if(!entity.isAlive())
+						return null;
+					
+					if(getOrDefault(INVERT, parent, whiteboards).as(TFObjType.BOOL).get())
+					{
+						WhiteboardObjEntity result = new WhiteboardObjEntity();
+						tricksy.getWorld().getNonSpectatingEntities(MobEntity.class, (new Box(tricksy.getBlockPos())).expand(7D)).forEach(mob -> 
+						{
+							Entity holder = mob.getHoldingEntity();
+							if(holder == entity)
+								result.add(mob);
+						});
+						return result;
+					}
+					else if(entity instanceof MobEntity)
+						return new WhiteboardObjEntity(((MobEntity)entity).getHoldingEntity());
+					else
+						return null;
+				}
+			});
 		return set;
 	}
 }

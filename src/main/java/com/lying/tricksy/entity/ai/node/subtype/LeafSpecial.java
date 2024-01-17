@@ -19,6 +19,7 @@ import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.EntityFoxFire;
 import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.entity.EntityTricksyGoat;
+import com.lying.tricksy.entity.EntityTricksyWolf;
 import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
@@ -28,11 +29,14 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.CandlePowers;
+import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -47,11 +51,14 @@ import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.decoration.LeashKnotEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -59,6 +66,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -80,6 +88,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 	
 	// TODO Implement wolf-specific actions
 	public static final Identifier VARIANT_WOLF_LEAD = ISubtypeGroup.variant("wolf_lead");
+	public static final Identifier VARIANT_WOLF_UNLEAD = ISubtypeGroup.variant("wolf_unlead");
 	public static final Identifier VARIANT_WOLF_BLESS = ISubtypeGroup.variant("wolf_bless");
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_special"); }
@@ -181,6 +190,39 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return list;
 					}
 				});
+		set.add(new NodeSubType<LeafNode>(VARIANT_WOLF_LEAD, leafWolfLead(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND))
+				{
+					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_WOLF; }
+					public List<MutableText> fullDescription()
+					{
+						List<MutableText> list = Lists.newArrayList();
+						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_WOLF.getName()));
+						list.addAll(super.fullDescription());
+						return list;
+					}
+				});
+		set.add(new NodeSubType<LeafNode>(VARIANT_WOLF_UNLEAD, leafWolfUnlead())
+				{
+					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_WOLF; }
+					public List<MutableText> fullDescription()
+					{
+						List<MutableText> list = Lists.newArrayList();
+						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_WOLF.getName()));
+						list.addAll(super.fullDescription());
+						return list;
+					}
+				});
+		set.add(new NodeSubType<LeafNode>(VARIANT_WOLF_BLESS, leafWolfBless(), UniformIntProvider.create(20 * Reference.Values.TICKS_PER_SECOND, 30 * Reference.Values.TICKS_PER_SECOND))
+		{
+			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_WOLF; }
+			public List<MutableText> fullDescription()
+			{
+				List<MutableText> list = Lists.newArrayList();
+				list.add(exclusivityDesc(TFEntityTypes.TRICKSY_WOLF.getName()));
+				list.addAll(super.fullDescription());
+				return list;
+			}
+		});
 		return set;
 	}
 	
@@ -634,6 +676,152 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 			{
 				if(tricksy.getType() == TFEntityTypes.TRICKSY_FOX)
 					((EntityTricksyFox)tricksy).clearAnimation(0);
+			}
+		};
+	}
+	
+	public static INodeTickHandler<LeafNode> leafWolfLead()
+	{
+		return new INodeTickHandler<LeafNode>()
+		{
+			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_wolf_lead");
+			private static final WhiteboardRef TARGET = CommonVariables.TARGET_ENT;
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }
+			
+			public Map<WhiteboardRef, INodeIO> ioSet()
+			{
+				return Map.of(
+						TARGET, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				IWhiteboardObject<Entity> target = getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT);
+				if(target.isEmpty() || !target.get().isAlive() || target.get().isSpectator() || (target.get().getType() == EntityType.PLAYER && ((PlayerEntity)target.get()).isCreative()) || !(target.get() instanceof MobEntity))
+					return Result.FAILURE;
+				
+				MobEntity mob = (MobEntity)target.get();
+				if(mob == tricksy || !INodeTickHandler.canInteractWithEntity(tricksy, mob) || !isLeashableMob(mob, tricksy))
+					return Result.FAILURE;
+				
+				Entity holder = mob.getHoldingEntity();
+				mob.attachLeash(tricksy, true);
+				if(holder != null && holder.getType() == EntityType.LEASH_KNOT)
+					if(tricksy.getWorld().getNonSpectatingEntities(MobEntity.class, (new Box(holder.getBlockPos())).expand(7D)).stream().noneMatch(held -> held.getHoldingEntity() == holder))
+						holder.discard();
+				
+				return mob.isLeashed() && mob.getHoldingEntity() == tricksy ? Result.SUCCESS : Result.FAILURE;
+			}
+			
+			private static <T extends PathAwareEntity & ITricksyMob<?>> boolean isLeashableMob(MobEntity mob, T tricksy)
+			{
+				if(mob.isLeashed() && mob.getHoldingEntity().getType() == EntityType.LEASH_KNOT)
+					return true;
+				else
+					return mob.canBeLeashedBy(ServerFakePlayer.makeForMob(tricksy, BUILDER_ID));
+			}
+		};
+	}
+	
+	public static INodeTickHandler<LeafNode> leafWolfUnlead()
+	{
+		return new INodeTickHandler<LeafNode>()
+		{
+			private static final WhiteboardRef FENCE = CommonVariables.VAR_POS;
+			private static final WhiteboardRef ENTITY = CommonVariables.TARGET_ENT;
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }
+			
+			public Map<WhiteboardRef, INodeIO> ioSet()
+			{
+				return Map.of(
+						FENCE, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock()),
+						ENTITY, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				BlockPos origin = tricksy.getBlockPos();
+				IWhiteboardObject<BlockPos> target = getOrDefault(FENCE, parent, whiteboards).as(TFObjType.BLOCK);
+				IWhiteboardObject<Entity> mobList = getOrDefault(ENTITY, parent, whiteboards).as(TFObjType.ENT);
+				if(!target.isEmpty())
+					origin = target.get();
+				
+				if(!INodeTickHandler.canInteractWithBlock(tricksy, origin))
+					return Result.FAILURE;
+				
+				if(parent.inputAssigned(ENTITY) && !mobList.isEmpty())
+					handleUnleashing(tricksy.getWorld(), origin, tricksy, mobList.getAll());
+				else
+					handleUnleashing(tricksy.getWorld(), origin, tricksy, tricksy.getWorld().getNonSpectatingEntities(MobEntity.class, (new Box(origin)).expand(7)));
+				return Result.SUCCESS;
+			}
+			
+			private static <C extends Entity> void handleUnleashing(World world, BlockPos origin, @Nullable Entity tricksy, List<C> mobs)
+			{
+				boolean isFence = world.getBlockState(origin).isIn(BlockTags.FENCES);
+				LeashKnotEntity knot = null;
+				for(C ent : mobs)
+				{
+					if(!(ent instanceof MobEntity)) continue;
+					
+					MobEntity mob = (MobEntity)ent;
+					if(!mob.isLeashed() || mob.getHoldingEntity() != tricksy) continue;
+					
+					if(isFence)
+					{
+						if(knot == null)
+						{
+							knot = LeashKnotEntity.getOrCreate(world, origin);
+							knot.onPlace();
+						}
+						mob.attachLeash(knot, true);
+					}
+					else
+						mob.detachLeash(true, false);
+				}
+			}
+		};
+	}
+	
+	public static INodeTickHandler<LeafNode> leafWolfBless()
+	{
+		return new INodeTickHandler<LeafNode>()
+		{
+			private static final int ANIMATION_END_TICK = Reference.Values.TICKS_PER_SECOND;
+			private static final WhiteboardRef TARGET = CommonVariables.TARGET_ENT;
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
+			
+			public Map<WhiteboardRef, INodeIO> ioSet()
+			{
+				return Map.of(
+						TARGET, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				IWhiteboardObject<Entity> target = getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT);
+				if(target.isEmpty() || !target.get().isAlive() || target.get().isSpectator() || !(target.get() instanceof LivingEntity))
+					return Result.FAILURE;
+				
+				StatusEffectInstance blessing = new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1);
+				LivingEntity ent = (LivingEntity)target.get();
+				if(!ent.canHaveStatusEffect(blessing) || ent.distanceTo(tricksy) > 16D || !tricksy.canSee(ent))
+					return Result.FAILURE;
+				else if(parent.ticksRunning() == ANIMATION_END_TICK)
+				{
+					ent.addStatusEffect(blessing, tricksy);
+					return Result.SUCCESS;
+				}
+				else
+				{
+					tricksy.getLookControl().lookAt(ent);
+					if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
+						((EntityTricksyWolf)tricksy).setBlessing();
+					return Result.RUNNING;
+				}
 			}
 		};
 	}

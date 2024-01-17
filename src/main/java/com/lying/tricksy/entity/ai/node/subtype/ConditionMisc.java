@@ -30,6 +30,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.CropBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
@@ -47,6 +48,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 	public static final Identifier VARIANT_CAN_MINE = ISubtypeGroup.variant("can_mine");
 	public static final Identifier VARIANT_IS_CROP = ISubtypeGroup.variant("is_crop");
 	public static final Identifier VARIANT_IS_MATURE = ISubtypeGroup.variant("is_mature_crop");
+	public static final Identifier VARIANT_IS_LEASHED_TO = ISubtypeGroup.variant("is_leashed_to");
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_misc"); }
 	
@@ -212,6 +214,30 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				BlockState state = tricksy.getWorld().getBlockState(pos.get());
 				return state.getBlock() instanceof CropBlock && ((CropBlock)state.getBlock()).isMature(state) ? Result.SUCCESS : Result.FAILURE;
+			}
+		}));
+		set.add(new NodeSubType<ConditionNode>(VARIANT_IS_LEASHED_TO, new INodeTickHandler<ConditionNode>()
+		{
+			public static final WhiteboardRef ENT_A = CommonVariables.VAR_A;
+			public static final WhiteboardRef ENT_B = CommonVariables.VAR_B;
+			
+			public Map<WhiteboardRef, INodeIO> ioSet()
+			{
+				return Map.of(
+						ENT_A, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false)),
+						ENT_B, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			{
+				IWhiteboardObject<Entity> leashed = getOrDefault(ENT_A, parent, whiteboards).as(TFObjType.ENT);
+				IWhiteboardObject<Entity> holder = parent.inputAssigned(ENT_B) ? getOrDefault(ENT_B, parent, whiteboards).as(TFObjType.ENT) : new WhiteboardObjEntity(tricksy);
+				
+				if(leashed.isEmpty() || !leashed.get().isAlive() || !(leashed.get() instanceof MobEntity))
+					return Result.FAILURE;
+				
+				MobEntity mob = (MobEntity)leashed.get();
+				return mob.getHoldingEntity() == holder.get() ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 		return set;

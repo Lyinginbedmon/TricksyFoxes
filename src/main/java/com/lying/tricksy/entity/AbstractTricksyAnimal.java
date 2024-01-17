@@ -10,9 +10,9 @@ import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
 import com.lying.tricksy.entity.ai.TricksyLookControl;
-import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 import com.lying.tricksy.item.ITreeItem;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.ServerWhiteboards;
@@ -39,6 +39,7 @@ import net.minecraft.world.World;
 
 public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITricksyMob<AbstractTricksyAnimal>, Inventory
 {
+    public static final TrackedData<Integer> ANIMATING = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.INTEGER);
 	public static final TrackedData<OptionalInt> COLOR = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.OPTIONAL_INT);
 	public static final TrackedData<Optional<UUID>> OWNER_UUID = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(AbstractTricksyAnimal.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
@@ -177,6 +178,8 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		}
 		super.tickMovement();
 	}
+	
+	public boolean canBeLeashedBy(PlayerEntity player) { return false; }
 	
 	/** Returns true if the behaviour tree is enforcing a sitting pose */
 	public boolean isTreeSleeping() { return this.getDataTracker().get(TREE_POSE) == EntityPose.SITTING; }

@@ -31,7 +31,6 @@ import net.minecraft.world.World;
 
 public class EntityTricksyGoat extends AbstractTricksyAnimal implements IAnimatedBiped
 {
-    private static final TrackedData<Integer> ANIMATING = DataTracker.registerData(EntityTricksyGoat.class, TrackedDataHandlerRegistry.INTEGER);
     /**
      * 0 - Blockading
      * 1 - Charging

@@ -1,11 +1,14 @@
 package com.lying.tricksy.entity;
 
+import java.util.EnumSet;
+
 import com.lying.tricksy.init.TFEntityTypes;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.WolfEntity;
@@ -14,12 +17,20 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.World;
 
-public class EntityTricksyWolf extends AbstractTricksyAnimal
+public class EntityTricksyWolf extends AbstractTricksyAnimal implements IAnimatedBiped
 {
+    public final AnimationManager<EntityTricksyWolf> animations = new AnimationManager<>(1);
+    
 	public EntityTricksyWolf(EntityType<? extends AnimalEntity> entityType, World world)
 	{
 		super(TFEntityTypes.TRICKSY_WOLF, world);
 		// TODO Auto-generated constructor stub
+	}
+	
+	public void initDataTracker()
+	{
+		super.initDataTracker();
+		this.getDataTracker().startTracking(ANIMATING, -1);
 	}
 	
 	public static DefaultAttributeContainer.Builder createMobAttributes()
@@ -43,7 +54,13 @@ public class EntityTricksyWolf extends AbstractTricksyAnimal
 	}
 	
 	public int getDefaultColor() { return 0x313030; }
-
+	
+	public void tick()
+	{
+		super.tick();
+		this.animations.tick(this);
+	}
+	
 	@Override
 	protected SoundEvent getAmbientSound()
 	{
@@ -64,5 +81,33 @@ public class EntityTricksyWolf extends AbstractTricksyAnimal
 	protected SoundEvent getDeathSound() { return SoundEvents.ENTITY_WOLF_DEATH; }
 	
 	protected float getSoundVolume() { return 0.4f; }
-
+	
+	public void setBlessing() { this.getDataTracker().set(ANIMATING, 0); }
+	
+	public void clearAnimation(int index)
+	{
+		if(index < 0 || this.animations.currentAnim() == index)
+			this.getDataTracker().set(ANIMATING, this.animations.stopAll());
+	}
+	
+	public void onTrackedDataSet(TrackedData<?> data)
+	{
+		if(ANIMATING.equals(data))
+			switch(getDataTracker().get(ANIMATING).intValue())
+			{
+				case -1:
+					this.animations.stopAll();
+					break;
+				default:
+					this.animations.start(getDataTracker().get(ANIMATING), this.age);
+					break;
+			}
+	}
+	
+	public EnumSet<BipedPart> getPartsAnimating()
+	{
+		if(this.animations.currentAnim() >= 0)
+			return EnumSet.allOf(BipedPart.class);
+		return IAnimatedBiped.super.getPartsAnimating();
+	}
 }

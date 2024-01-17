@@ -1,6 +1,7 @@
 package com.lying.tricksy.model.entity;
 
 import com.lying.tricksy.entity.EntityTricksyWolf;
+import com.lying.tricksy.renderer.TFAnimations;
 import com.lying.tricksy.utility.TricksyUtils;
 
 import net.minecraft.client.model.Dilation;
@@ -211,9 +212,8 @@ public class ModelTricksyWolfMain<T extends EntityTricksyWolf> extends ModelTric
 			this.rightLeg.pitch = MathHelper.lerp((float)this.leaningPitch, (float)this.rightLeg.pitch, (float)(0.3f * MathHelper.cos((float)(limbSwing * p))));
 		}
 		
-//		this.resetAnimatedParts(livingEntity.getPartsAnimating());
-//		this.updateAnimation(livingEntity.animations.get(0), TFAnimations.BLOCKADE, ageInTicks);
-//		this.updateAnimation(livingEntity.animations.get(1), TFAnimations.CHARGE, ageInTicks);
+		this.resetAnimatedParts(livingEntity.getPartsAnimating());
+		this.updateAnimation(livingEntity.animations.get(0), TFAnimations.BLESS, ageInTicks);
 		
 		this.hat.copyTransform(this.head);
 	}

@@ -8,8 +8,8 @@ import com.google.common.base.Predicates;
 import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.node.TreeNode;
-import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard.Order;
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard.Order;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.network.AddLocalReferencePacket;
@@ -26,6 +26,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec2f;
 
@@ -172,6 +173,11 @@ public class TreeScreen extends TricksyScreenBase
 		this.reset.render(context, mouseX, mouseY, 0F);
 		this.save.render(context, mouseX, mouseY, 0F);
 		this.whiteboards.render(context, mouseX, mouseY, 0F);
+		
+		MutableText tally = Text.translatable("gui.tricksy.tree_screen.node_tally", getScreenHandler().nodeCount(), getScreenHandler().getCap());
+		int tallyX = width - 5 - textRenderer.getWidth(tally);
+		int tallyY = height - 5 - textRenderer.fontHeight;
+		context.drawText(textRenderer, tally, tallyX, tallyY, -1, false);
 		
 		TreeNode<?> root = root();
 		if(mouseY < 28 && Math.abs((this.width / 2) - mouseX) < 100)

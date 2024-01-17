@@ -35,7 +35,6 @@ import net.minecraft.world.World;
 
 public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHolder<Type>, IAnimatedBiped
 {
-    private static final TrackedData<Integer> ANIMATING = DataTracker.registerData(EntityTricksyFox.class, TrackedDataHandlerRegistry.INTEGER);
     /**
      * 0 - Foxfire
      * 1 - Praying
