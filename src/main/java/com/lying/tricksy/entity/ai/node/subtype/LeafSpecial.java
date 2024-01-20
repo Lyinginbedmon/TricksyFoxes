@@ -212,7 +212,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return list;
 					}
 				});
-		set.add(new NodeSubType<LeafNode>(VARIANT_WOLF_BLESS, leafWolfBless(), UniformIntProvider.create(20 * Reference.Values.TICKS_PER_SECOND, 30 * Reference.Values.TICKS_PER_SECOND))
+		set.add(new NodeSubType<LeafNode>(VARIANT_WOLF_BLESS, leafWolfBless(), UniformIntProvider.create(10 * Reference.Values.TICKS_PER_SECOND, 15 * Reference.Values.TICKS_PER_SECOND))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_WOLF; }
 			public List<MutableText> fullDescription()
@@ -789,7 +789,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
-			private static final int ANIMATION_END_TICK = Reference.Values.TICKS_PER_SECOND;
+			private static final int ANIMATION_END_TICK = (int)(Reference.Values.TICKS_PER_SECOND * 1.5F);
 			private static final WhiteboardRef TARGET = CommonVariables.TARGET_ENT;
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
@@ -808,20 +808,27 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 				
 				StatusEffectInstance blessing = new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1);
 				LivingEntity ent = (LivingEntity)target.get();
-				if(!ent.canHaveStatusEffect(blessing) || ent.distanceTo(tricksy) > 16D || !tricksy.canSee(ent))
-					return Result.FAILURE;
-				else if(parent.ticksRunning() == ANIMATION_END_TICK)
-				{
-					ent.addStatusEffect(blessing, tricksy);
+				if(parent.ticksRunning() >= ANIMATION_END_TICK)
 					return Result.SUCCESS;
-				}
-				else
+				else if(parent.ticksRunning() < Reference.Values.TICKS_PER_SECOND)
 				{
+					if(!ent.canHaveStatusEffect(blessing) || ent.distanceTo(tricksy) > 16D || !tricksy.canSee(ent))
+						return Result.FAILURE;
+					else if(parent.ticksRunning() == Reference.Values.TICKS_PER_SECOND)
+						ent.addStatusEffect(blessing, tricksy);
+					
 					tricksy.getLookControl().lookAt(ent);
 					if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
 						((EntityTricksyWolf)tricksy).setBlessing();
-					return Result.RUNNING;
 				}
+				
+				return Result.RUNNING;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
+			{
+				if(tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
+					((EntityTricksyWolf)tricksy).clearAnimation(0);
 			}
 		};
 	}

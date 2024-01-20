@@ -34,7 +34,7 @@ public class ModelTricksyWolfMain<T extends EntityTricksyWolf> extends ModelTric
 		ModelPartData root = meshdefinition.getRoot().getChild(EntityModelPartNames.ROOT);
 		
 		root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create().uv(0, 0).cuboid(-3.0F, -3.0F, -3.0F, 6.0F, 6.0F, 4.0F, dilation)
-			.uv(21, 0).cuboid(-1.0F, 0.0F, -6.0F, 3.0F, 3.0F, 4.0F, dilation)
+			.uv(21, 0).cuboid(-1.5F, 0.0F, -6.0F, 3.0F, 3.0F, 4.0F, dilation)
 			.uv(37, 4).cuboid(1.0F, -5.0F, -1.0F, 2.0F, 2.0F, 1.0F, dilation)
 			.uv(37, 4).cuboid(-3.0F, -5.0F, -1.0F, 2.0F, 2.0F, 1.0F, dilation), ModelTransform.pivot(0.0F, -0.5F, -1.5F));
 		
@@ -45,7 +45,7 @@ public class ModelTricksyWolfMain<T extends EntityTricksyWolf> extends ModelTric
 				.uv(0, 24).cuboid(-4.0F, -6.0F, -6.5F, 8.0F, 6.0F, 7.0F, dilation), ModelTransform.of(0.0F, -6.0F, 2.0F, 0.2618F, 0.0F, 0.0F));
 
 		ModelPartData tail = torso.addChild(EntityModelPartNames.TAIL, ModelPartBuilder.create(), ModelTransform.of(0.0F, 2.0F, 1.0F, -0.7854F, 0.0F, 0.0F));
-			tail.addChild("tail_r1", ModelPartBuilder.create().uv(9, 12).cuboid(-1.0F, -1.0F, -2.0F, 2.0F, 8.0F, 2.0F, dilation), ModelTransform.of(0.0F, -1.0F, 1.0F, 1.5708F, 0.0F, 0.0F));
+			tail.addChild("tail_r1", ModelPartBuilder.create().uv(9, 12).cuboid(-1.0F, -1.0F, -2.0F, 2.0F, 8.0F, 2.0F, dilation), ModelTransform.of(0.0F, -1.0F, 1.0F, 0.7854F, 0.0F, 0.0F));
 		
 		root.addChild(EntityModelPartNames.LEFT_ARM, ModelPartBuilder.create().uv(43, 12).cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, dilation)
 			.uv(52, 12).cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, dilation.add(0.15F)), ModelTransform.pivot(4.5F, 3.0F, 0.0F));
@@ -66,7 +66,7 @@ public class ModelTricksyWolfMain<T extends EntityTricksyWolf> extends ModelTric
 		ModelPartData root = modelRoot.addChild(EntityModelPartNames.ROOT, ModelPartBuilder.create(), ModelTransform.pivot(0, 0, 0));
 		
 		root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create().uv(0, 0).cuboid(-3.0F, -3.0F, -3.0F, 6.0F, 6.0F, 4.0F, dilation)
-			.uv(0, 10).cuboid(-1.0F, 0.0F, -6.0F, 3.0F, 3.0F, 4.0F, dilation)
+			.uv(0, 10).cuboid(-1.5F, 0.0F, -6.0F, 3.0F, 3.0F, 4.0F, dilation)
 			.uv(16, 14).cuboid(1.0F, -5.0F, -1.0F, 2.0F, 2.0F, 1.0F, dilation)
 			.uv(16, 14).cuboid(-3.0F, -5.0F, -1.0F, 2.0F, 2.0F, 1.0F, dilation), ModelTransform.pivot(0.0F, -0.5F, -1.5F));
 		
@@ -75,7 +75,7 @@ public class ModelTricksyWolfMain<T extends EntityTricksyWolf> extends ModelTric
 		ModelPartData torso = root.addChild(EntityModelPartNames.BODY, ModelPartBuilder.create().uv(18, 14).cuboid(-3.0F, -6.0F, -4.0F, 6.0F, 9.0F, 6.0F, dilation), ModelTransform.pivot(0.0F, 13.0F, 1.0F));
 			torso.addChild("upper_r1", ModelPartBuilder.create().uv(21, 0).cuboid(-4.0F, -6.0F, -6.5F, 8.0F, 6.0F, 7.0F, dilation), ModelTransform.of(0.0F, -6.0F, 2.0F, 0.2618F, 0.0F, 0.0F));
 		ModelPartData tail = torso.addChild(EntityModelPartNames.TAIL, ModelPartBuilder.create(), ModelTransform.of(0.0F, 2.0F, 1.0F, -0.7854F, 0.0F, 0.0F));
-			tail.addChild("tail_r1", ModelPartBuilder.create().uv(9, 18).cuboid(-1.0F, -1.0F, -2.0F, 2.0F, 8.0F, 2.0F, dilation), ModelTransform.of(0.0F, -1.0F, 1.0F, 1.5708F, 0.0F, 0.0F));
+			tail.addChild("tail_r1", ModelPartBuilder.create().uv(9, 18).cuboid(-1.0F, -1.0F, -2.0F, 2.0F, 8.0F, 2.0F, dilation), ModelTransform.of(0.0F, -1.0F, 1.0F, 0.7854F, 0.0F, 0.0F));
 		
 		root.addChild(EntityModelPartNames.LEFT_ARM, ModelPartBuilder.create().uv(0, 18).cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, dilation), ModelTransform.pivot(4.5F, 3.0F, 0.0F));
 		root.addChild(EntityModelPartNames.RIGHT_ARM, ModelPartBuilder.create().uv(0, 18).mirrored().cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, dilation).mirrored(false), ModelTransform.pivot(-4.5F, 3.0F, 0.0F));
@@ -216,6 +216,7 @@ public class ModelTricksyWolfMain<T extends EntityTricksyWolf> extends ModelTric
 		this.updateAnimation(livingEntity.animations.get(0), TFAnimations.BLESS, ageInTicks);
 		
 		this.hat.copyTransform(this.head);
+		this.tail.pitch += (livingEntity.getHealth() / 20F) * Math.toRadians(45D);
 	}
 	
 	protected float method_2807(float f) { return -65.0f * f + f * f; }

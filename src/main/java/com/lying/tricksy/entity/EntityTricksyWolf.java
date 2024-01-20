@@ -106,8 +106,8 @@ public class EntityTricksyWolf extends AbstractTricksyAnimal implements IAnimate
 	
 	public EnumSet<BipedPart> getPartsAnimating()
 	{
-		if(this.animations.currentAnim() >= 0)
-			return EnumSet.allOf(BipedPart.class);
+		if(this.animations.currentAnim() == 0)
+			return EnumSet.complementOf(EnumSet.of(BipedPart.LEFT_LEG, BipedPart.RIGHT_LEG));
 		return IAnimatedBiped.super.getPartsAnimating();
 	}
 }
