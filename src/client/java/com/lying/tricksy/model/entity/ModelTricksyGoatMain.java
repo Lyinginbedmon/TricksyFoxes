@@ -1,17 +1,16 @@
 package com.lying.tricksy.model.entity;
 
 import java.util.EnumSet;
-import java.util.Set;
 
 import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.entity.EntityTricksyGoat;
+import com.lying.tricksy.model.ModelUtils;
 import com.lying.tricksy.renderer.TFAnimations;
 import com.lying.tricksy.utility.TricksyUtils;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.model.Dilation;
-import net.minecraft.client.model.ModelCuboidData;
 import net.minecraft.client.model.ModelData;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPartBuilder;
@@ -108,9 +107,9 @@ public class ModelTricksyGoatMain<T extends EntityTricksyGoat> extends ModelTric
 		ModelPartData body = root.addChild(EntityModelPartNames.BODY, ModelPartBuilder.create(), ModelTransform.pivot(-0.5F, 8.0F, 3.5F));
 			body.addChild("upper_body", ModelPartBuilder.create().uv(1, 1).cuboid(-8.0F, -6.0F, -2.0F, 9.0F, 11.0F, 16.0F, dilation), ModelTransform.of(3.5F, -4.0F, -0.5F, -1.5708F, 0.0F, 0.0F));
 		// Main body fur minus south cube face
-		body.addChild("fur_r1", cuboid(ModelPartBuilder.create().uv(0, 28), -5F, -2F, -6F, 11F, 14F, 11, dilation.add(0.5F), EnumSet.complementOf(EnumSet.of(Direction.SOUTH))), ModelTransform.of(0.5F, -5.0F, -0.5F, 0.0F, 3.1416F, 0.0F));
+		body.addChild("fur_r1", ModelUtils.cuboid(ModelPartBuilder.create().uv(0, 28), -5F, -2F, -6F, 11F, 14F, 11, dilation.add(0.5F), EnumSet.complementOf(EnumSet.of(Direction.SOUTH))), ModelTransform.of(0.5F, -5.0F, -0.5F, 0.0F, 3.1416F, 0.0F));
 		// Main body fur replacement south cube face
-		body.addChild("fur_front_r1", cuboid(ModelPartBuilder.create().uv(0, 39), -5.0F, -15.0F, -10.0F, 11.0F, 14.0F, 0.0F, dilation.add(0.5F), EnumSet.of(Direction.SOUTH)), ModelTransform.pivot(-0.5F, 8.0F, 3.5F));
+		body.addChild("fur_front_r1", ModelUtils.cuboid(ModelPartBuilder.create().uv(0, 39), -5.0F, -15.0F, -10.0F, 11.0F, 14.0F, 0.0F, dilation.add(0.5F), EnumSet.of(Direction.SOUTH)), ModelTransform.pivot(-0.5F, 8.0F, 3.5F));
 		
 		root.addChild(EntityModelPartNames.LEFT_LEG, ModelPartBuilder.create().uv(36, 29).cuboid(-1.5F, 0.0F, -2.5F, 3.0F, 6.0F, 3.0F, dilation), ModelTransform.pivot(2.5F, 18.0F, 4.5F));
 		
@@ -121,13 +120,6 @@ public class ModelTricksyGoatMain<T extends EntityTricksyGoat> extends ModelTric
 		root.addChild(EntityModelPartNames.LEFT_ARM, ModelPartBuilder.create().uv(49, 2).cuboid(0.0F, -2.0F, -1.5F, 3.0F, 10.0F, 3.0F, dilation), ModelTransform.pivot(4.0F, 4.0F, 2.0F));
 		
 		return meshdefinition;
-	}
-	
-	/** Adds a dilated cuboid with specified faces to the given part builder */
-	public static ModelPartBuilder cuboid(ModelPartBuilder builder, float offsetX, float offsetY, float offsetZ, float sizeX, float sizeY, float sizeZ, Dilation extra, Set<Direction> directions)
-	{
-		builder.cuboidData.add(new ModelCuboidData(null, builder.textureX, builder.textureY, offsetX, offsetY, offsetZ, sizeX, sizeY, sizeZ, extra, builder.mirror, 1.0f, 1.0f, directions));
-		return builder;
 	}
 	
 	public void setAngles(T livingEntity, float limbSwing, float limbSwingAmount, float ageInTicks, float headYaw, float headPitch)

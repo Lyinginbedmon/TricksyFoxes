@@ -2,6 +2,7 @@ package com.lying.tricksy.init;
 
 import com.lying.tricksy.model.armor.ModelSageHat;
 import com.lying.tricksy.model.block.ModelClockworkFriar;
+import com.lying.tricksy.model.entity.ModelOnryoji;
 import com.lying.tricksy.model.entity.ModelTricksyFoxCrouching;
 import com.lying.tricksy.model.entity.ModelTricksyFoxMain;
 import com.lying.tricksy.model.entity.ModelTricksyFoxSleeping;
@@ -38,6 +39,10 @@ public class TFModelParts
 	
 	public static final EntityModelLayer TRICKSY_WOLF	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_wolf"), "main");
 	public static final EntityModelLayer TRICKSY_WOLF_CLOTHING	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_wolf"), "clothing");
+	public static final EntityModelLayer TRICKSY_WOLF_BOOK	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_wolf"), "book");
+	
+	public static final EntityModelLayer ONRYOJI	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "onryoji"), "main");
+	public static final EntityModelLayer ONRYOJI_MASK	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "onryoji"), "mask");
 	
 	public static final EntityModelLayer SAGE_HAT	= new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, "sage_hat"), "main");
 	
@@ -59,6 +64,10 @@ public class TFModelParts
 		
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_WOLF, ModelTricksyWolfMain::getMainModel);
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_WOLF_CLOTHING, ModelTricksyWolfMain::getOuterModel);
+		EntityModelLayerRegistry.registerModelLayer(TFModelParts.TRICKSY_WOLF_BOOK, ModelTricksyWolfMain::getBookModel);
+		
+		EntityModelLayerRegistry.registerModelLayer(TFModelParts.ONRYOJI, ModelOnryoji::getMainModel);
+		EntityModelLayerRegistry.registerModelLayer(TFModelParts.ONRYOJI_MASK, ModelOnryoji::getMaskModel);
 		
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.SAGE_HAT, ModelSageHat::getTexturedModelData);
 		EntityModelLayerRegistry.registerModelLayer(TFModelParts.PERIAPT_FOX, ModelFoxPeriapt::getTexturedModelData);

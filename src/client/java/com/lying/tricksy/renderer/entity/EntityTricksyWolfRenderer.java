@@ -5,7 +5,9 @@ import com.lying.tricksy.entity.EntityTricksyWolf;
 import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.entity.ModelTricksyWolfBase;
 import com.lying.tricksy.model.entity.ModelTricksyWolfMain;
+import com.lying.tricksy.renderer.layer.AbstractOffsetHeldItemLayer;
 import com.lying.tricksy.renderer.layer.TricksyBarkLayer;
+import com.lying.tricksy.renderer.layer.TricksyWolfBookLayer;
 import com.lying.tricksy.renderer.layer.TricksyWolfClothingLayer;
 
 import net.fabricmc.api.EnvType;
@@ -33,13 +35,14 @@ public class EntityTricksyWolfRenderer extends MobEntityRenderer<EntityTricksyWo
 	{
 		super(ctx, new ModelTricksyWolfMain<EntityTricksyWolf>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_WOLF)), 0.5F);
 		this.addFeature(new TricksyWolfClothingLayer(this));
-//		this.addFeature(new AbstractOffsetHeldItemLayer<EntityTricksyWolf, ModelTricksyWolfBase<EntityTricksyWolf>>(this, ctx.getHeldItemRenderer())
-//		{
-//			public void translateToHand(MatrixStack matrices, boolean isLeft)
-//			{
-//				matrices.translate((float)(isLeft ? -1 : 1) / 16.0f * 1.7f, 0.025f, -0.525f);
-//			}
-//		});
+		this.addFeature(new TricksyWolfBookLayer(this));
+		this.addFeature(new AbstractOffsetHeldItemLayer<EntityTricksyWolf, ModelTricksyWolfBase<EntityTricksyWolf>>(this, ctx.getHeldItemRenderer())
+		{
+			public void translateToHand(MatrixStack matrices, boolean isLeft)
+			{
+				matrices.translate(0f, 0.045f, -0.575f);
+			}
+		});
 		
 //		this.standing = this.model;
 //		this.sleeping = new ModelTricksyGoatSleeping<EntityTricksyWolf>(ctx.getModelLoader().getModelPart(TFModelParts.TRICKSY_GOAT_SLEEPING));

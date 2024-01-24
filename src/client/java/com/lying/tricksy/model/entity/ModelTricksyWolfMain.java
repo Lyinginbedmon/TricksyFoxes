@@ -58,6 +58,28 @@ public class ModelTricksyWolfMain<T extends EntityTricksyWolf> extends ModelTric
 		return TexturedModelData.of(meshdefinition, 64, 64);
 	}
 	
+	public static TexturedModelData getBookModel()
+	{
+		Dilation dilation = new Dilation(0.6F);
+		ModelData meshdefinition = new ModelData();
+		ModelPartData modelRoot = meshdefinition.getRoot();
+		ModelPartData root = modelRoot.addChild(EntityModelPartNames.ROOT, ModelPartBuilder.create(), ModelTransform.pivot(0, 0, 0));
+		
+		root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create(), ModelTransform.pivot(0.0F, -0.5F, -1.5F));
+		root.addChild(EntityModelPartNames.HAT, ModelPartBuilder.create(), ModelTransform.NONE);
+		root.addChild(EntityModelPartNames.LEFT_ARM, ModelPartBuilder.create(), ModelTransform.pivot(4.5F, 3.0F, 0.0F));
+		root.addChild(EntityModelPartNames.RIGHT_ARM, ModelPartBuilder.create(), ModelTransform.pivot(-4.5F, 3.0F, 0.0F));
+		root.addChild(EntityModelPartNames.LEFT_LEG, ModelPartBuilder.create(), ModelTransform.pivot(1.5F, 16.0F, 0.0F));
+		root.addChild(EntityModelPartNames.RIGHT_LEG, ModelPartBuilder.create(), ModelTransform.pivot(-1.5F, 16.0F, 0.0F));
+		
+		ModelPartData torso = root.addChild(EntityModelPartNames.BODY, ModelPartBuilder.create(), ModelTransform.pivot(0.0F, 13.0F, 1.0F));
+		torso.addChild(EntityModelPartNames.TAIL, ModelPartBuilder.create(), ModelTransform.of(0.0F, 2.0F, 1.0F, -0.7854F, 0.0F, 0.0F));
+		ModelPartData mastery = torso.addChild("mastery", ModelPartBuilder.create().uv(0, 0).cuboid(-3.0F, -3.0F, -4.0F, 6.0F, 3.0F, 6.0F, dilation), ModelTransform.pivot(0.0F, 0.0F, 0.0F));
+		mastery.addChild("book_r1", ModelPartBuilder.create().uv(24, 0).cuboid(-2.0F, -1.5F, -3.0F, 2.0F, 4.0F, 6.0F, Dilation.NONE), ModelTransform.of(-3.0F, 0.0F, -1.0F, 0.2182F, 0.0F, 0.0F));
+		
+		return TexturedModelData.of(meshdefinition, 64, 32);
+	}
+	
 	public static ModelData getModelData(float inflation)
 	{
 		Dilation dilation = new Dilation(inflation);
@@ -214,6 +236,7 @@ public class ModelTricksyWolfMain<T extends EntityTricksyWolf> extends ModelTric
 		
 		this.resetAnimatedParts(livingEntity.getPartsAnimating());
 		this.updateAnimation(livingEntity.animations.get(0), TFAnimations.BLESS, ageInTicks);
+		this.updateAnimation(livingEntity.animations.get(1), TFAnimations.HOWL, ageInTicks);
 		
 		this.hat.copyTransform(this.head);
 		this.tail.pitch += (livingEntity.getHealth() / 20F) * Math.toRadians(45D);

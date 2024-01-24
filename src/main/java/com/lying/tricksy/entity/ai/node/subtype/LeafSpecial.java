@@ -36,6 +36,7 @@ import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.CandlePowers;
+import com.lying.tricksy.utility.Howls;
 import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
 
 import net.minecraft.block.BlockState;
@@ -90,6 +91,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 	public static final Identifier VARIANT_WOLF_LEAD = ISubtypeGroup.variant("wolf_lead");
 	public static final Identifier VARIANT_WOLF_UNLEAD = ISubtypeGroup.variant("wolf_unlead");
 	public static final Identifier VARIANT_WOLF_BLESS = ISubtypeGroup.variant("wolf_bless");
+	public static final Identifier VARIANT_WOLF_HOWL = ISubtypeGroup.variant("wolf_howl");
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_special"); }
 	
@@ -212,7 +214,18 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return list;
 					}
 				});
-		set.add(new NodeSubType<LeafNode>(VARIANT_WOLF_BLESS, leafWolfBless(), UniformIntProvider.create(10 * Reference.Values.TICKS_PER_SECOND, 15 * Reference.Values.TICKS_PER_SECOND))
+		set.add(new NodeSubType<LeafNode>(VARIANT_WOLF_BLESS, leafWolfBless(), UniformIntProvider.create(5 * Reference.Values.TICKS_PER_SECOND, 10 * Reference.Values.TICKS_PER_SECOND))
+		{
+			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_WOLF; }
+			public List<MutableText> fullDescription()
+			{
+				List<MutableText> list = Lists.newArrayList();
+				list.add(exclusivityDesc(TFEntityTypes.TRICKSY_WOLF.getName()));
+				list.addAll(super.fullDescription());
+				return list;
+			}
+		});
+		set.add(new NodeSubType<LeafNode>(VARIANT_WOLF_HOWL, leafWolfHowl(), ConstantIntProvider.create(0/*Reference.Values.TICKS_PER_DAY / 2*/))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_WOLF; }
 			public List<MutableText> fullDescription()
@@ -800,22 +813,28 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						TARGET, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false)));
 			}
 			
+			// TODO Add particles and SFX to highlight effect
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<Entity> target = getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT);
 				if(target.isEmpty() || !target.get().isAlive() || target.get().isSpectator() || !(target.get() instanceof LivingEntity))
 					return Result.FAILURE;
 				
-				StatusEffectInstance blessing = new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1);
 				LivingEntity ent = (LivingEntity)target.get();
 				if(parent.ticksRunning() >= ANIMATION_END_TICK)
 					return Result.SUCCESS;
-				else if(parent.ticksRunning() < Reference.Values.TICKS_PER_SECOND)
+				else
 				{
-					if(!ent.canHaveStatusEffect(blessing) || ent.distanceTo(tricksy) > 16D || !tricksy.canSee(ent))
-						return Result.FAILURE;
+					StatusEffectInstance blessing = new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1);
+					if(parent.ticksRunning() < Reference.Values.TICKS_PER_SECOND)
+					{
+						if(!ent.canHaveStatusEffect(blessing) || ent.distanceTo(tricksy) > 16D || !tricksy.canSee(ent))
+							return Result.FAILURE;
+					}
 					else if(parent.ticksRunning() == Reference.Values.TICKS_PER_SECOND)
+					{
 						ent.addStatusEffect(blessing, tricksy);
+					}
 					
 					tricksy.getLookControl().lookAt(ent);
 					if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
@@ -828,7 +847,40 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
 			{
 				if(tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
-					((EntityTricksyWolf)tricksy).clearAnimation(0);
+					((EntityTricksyWolf)tricksy).clearBlessing();
+			}
+		};
+	}
+	
+	public static INodeTickHandler<LeafNode> leafWolfHowl()
+	{
+		return new INodeTickHandler<LeafNode>()
+		{
+			private static final int ANIMATION_END_TICK = (int)(Reference.Values.TICKS_PER_SECOND * 4.0833F);
+			private static final int HOWL_ISSUE_TICK = (int)(Reference.Values.TICKS_PER_SECOND * 0.9167F);
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				if(parent.ticksRunning() >= ANIMATION_END_TICK)
+					return Result.SUCCESS;
+				else if(parent.ticksRunning() == HOWL_ISSUE_TICK)
+				{
+					tricksy.playSound(SoundEvents.ENTITY_WOLF_HOWL, 1F, tricksy.getSoundPitch());
+					Howls.getHowls((ServerWorld)tricksy.getWorld()).startHowl(tricksy);
+				}
+				
+				if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
+					((EntityTricksyWolf)tricksy).setHowling();
+				
+				return Result.RUNNING;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
+			{
+				if(tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
+					((EntityTricksyWolf)tricksy).clearHowling();
 			}
 		};
 	}

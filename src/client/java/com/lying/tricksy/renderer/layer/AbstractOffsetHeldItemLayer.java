@@ -46,5 +46,13 @@ public abstract class AbstractOffsetHeldItemLayer<T extends LivingEntity & ITric
 		matrices.pop();
 	}
 	
+	/**
+	 * Applies the necessary translation to properly position the rendered item.<br>
+	 * X axis = left -> right<br>
+	 * Y axis = back -> forward<br>
+	 * Z axis = down -> up<br>
+	 * @param matrices
+	 * @param isLeft
+	 */
 	public abstract void translateToHand(MatrixStack matrices, boolean isLeft);
 }

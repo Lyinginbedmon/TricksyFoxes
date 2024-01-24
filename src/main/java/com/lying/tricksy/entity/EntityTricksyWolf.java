@@ -19,7 +19,7 @@ import net.minecraft.world.World;
 
 public class EntityTricksyWolf extends AbstractTricksyAnimal implements IAnimatedBiped
 {
-    public final AnimationManager<EntityTricksyWolf> animations = new AnimationManager<>(1);
+    public final AnimationManager<EntityTricksyWolf> animations = new AnimationManager<>(2);
     
 	public EntityTricksyWolf(EntityType<? extends AnimalEntity> entityType, World world)
 	{
@@ -84,6 +84,12 @@ public class EntityTricksyWolf extends AbstractTricksyAnimal implements IAnimate
 	
 	public void setBlessing() { this.getDataTracker().set(ANIMATING, 0); }
 	
+	public void setHowling() { this.getDataTracker().set(ANIMATING, 1); }
+	
+	public void clearBlessing() { clearAnimation(0); }
+	
+	public void clearHowling() { clearAnimation(1); }
+	
 	public void clearAnimation(int index)
 	{
 		if(index < 0 || this.animations.currentAnim() == index)
@@ -106,8 +112,11 @@ public class EntityTricksyWolf extends AbstractTricksyAnimal implements IAnimate
 	
 	public EnumSet<BipedPart> getPartsAnimating()
 	{
-		if(this.animations.currentAnim() == 0)
-			return EnumSet.complementOf(EnumSet.of(BipedPart.LEFT_LEG, BipedPart.RIGHT_LEG));
-		return IAnimatedBiped.super.getPartsAnimating();
+		switch(this.animations.currentAnim())
+		{
+			case 0:	return EnumSet.complementOf(EnumSet.of(BipedPart.LEFT_LEG, BipedPart.RIGHT_LEG));
+			case 1:	return EnumSet.allOf(BipedPart.class);
+			default:	return IAnimatedBiped.super.getPartsAnimating();
+		}
 	}
 }

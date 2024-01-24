@@ -45,7 +45,12 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 	
 	public LocalWhiteboard(T tricksyIn)
 	{
-		super(BoardType.LOCAL, tricksyIn.getWorld());
+		this(BoardType.LOCAL, tricksyIn);
+	}
+	
+	public LocalWhiteboard(BoardType boardType, T tricksyIn)
+	{
+		super(boardType, tricksyIn.getWorld());
 		tricksy = tricksyIn;
 	}
 	

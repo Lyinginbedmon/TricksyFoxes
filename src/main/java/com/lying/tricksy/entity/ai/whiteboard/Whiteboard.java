@@ -224,7 +224,8 @@ public abstract class Whiteboard<T>
 		CONSTANT(0, true),
 		LOCAL(3, false),
 		GLOBAL(2, true),
-		ORDER(1, true);
+		ORDER(1, true),
+		HOWL(4, true);
 		
 		private final boolean readOnly;
 		private final int index;
