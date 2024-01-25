@@ -2,9 +2,9 @@ package com.lying.tricksy.network;
 
 import java.util.UUID;
 
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.init.TFWhiteboards;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -17,7 +17,7 @@ public class AddLocalReferencePacket
 {
 	public static <T extends PathAwareEntity & ITricksyMob<?>> void send(PlayerEntity player, UUID tricksyID, WhiteboardRef reference)
 	{
-		if(reference.boardType() != BoardType.LOCAL || reference.uncached())
+		if(reference.boardType() != TFWhiteboards.LOCAL || reference.uncached())
 			return;
 		
 		PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());

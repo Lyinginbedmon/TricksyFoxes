@@ -11,6 +11,8 @@ import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFWhiteboards;
+import com.lying.tricksy.init.TFWhiteboards.BoardType;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.ItemCooldownManager;
@@ -22,18 +24,18 @@ import net.minecraft.util.math.Direction;
 /** A whiteboard containing locally-accessible values set by a tricksy mob itself */
 public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends Whiteboard<Function<T, IWhiteboardObject<?>>>
 {
-	public static final WhiteboardRef SELF = makeSystemRef("self", TFObjType.ENT, BoardType.LOCAL);
-	public static final WhiteboardRef HP = makeSystemRef("health", TFObjType.INT, BoardType.LOCAL);
-	public static final WhiteboardRef ARMOUR = makeSystemRef("armor", TFObjType.INT, BoardType.LOCAL);
-	public static final WhiteboardRef USING = makeSystemRef("ticks_using", TFObjType.INT, BoardType.LOCAL);
-	public static final WhiteboardRef HANDS_FULL = makeSystemRef("hands_full", TFObjType.BOOL, BoardType.LOCAL);
-	public static final WhiteboardRef MAIN_ITEM = makeSystemRef("mainhand_item", TFObjType.ITEM, BoardType.LOCAL);
-	public static final WhiteboardRef OFF_ITEM = makeSystemRef("offhand_item", TFObjType.ITEM, BoardType.LOCAL);
-	public static final WhiteboardRef HOME = makeSystemRef("home_pos", TFObjType.BLOCK, BoardType.LOCAL);
-	public static final WhiteboardRef HAS_SAGE = makeSystemRef("has_sage", TFObjType.BOOL, BoardType.LOCAL);
-	public static final WhiteboardRef NEAREST_SAGE = makeSystemRef("nearest_sage", TFObjType.ENT, BoardType.LOCAL);
-	public static final WhiteboardRef ATTACK_TARGET = makeSystemRef("attack_target", TFObjType.ENT, BoardType.LOCAL);
-	public static final WhiteboardRef ON_GROUND = makeSystemRef("on_ground", TFObjType.BOOL, BoardType.LOCAL);
+	public static final WhiteboardRef SELF = makeSystemRef("self", TFObjType.ENT, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef HP = makeSystemRef("health", TFObjType.INT, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef ARMOUR = makeSystemRef("armor", TFObjType.INT, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef USING = makeSystemRef("ticks_using", TFObjType.INT, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef HANDS_FULL = makeSystemRef("hands_full", TFObjType.BOOL, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef MAIN_ITEM = makeSystemRef("mainhand_item", TFObjType.ITEM, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef OFF_ITEM = makeSystemRef("offhand_item", TFObjType.ITEM, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef HOME = makeSystemRef("home_pos", TFObjType.BLOCK, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef HAS_SAGE = makeSystemRef("has_sage", TFObjType.BOOL, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef NEAREST_SAGE = makeSystemRef("nearest_sage", TFObjType.ENT, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef ATTACK_TARGET = makeSystemRef("attack_target", TFObjType.ENT, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef ON_GROUND = makeSystemRef("on_ground", TFObjType.BOOL, TFWhiteboards.LOCAL);
 	
 	private final T tricksy;
 	
@@ -45,7 +47,7 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 	
 	public LocalWhiteboard(T tricksyIn)
 	{
-		this(BoardType.LOCAL, tricksyIn);
+		this(TFWhiteboards.LOCAL, tricksyIn);
 	}
 	
 	public LocalWhiteboard(BoardType boardType, T tricksyIn)

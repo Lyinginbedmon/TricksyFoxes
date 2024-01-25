@@ -6,6 +6,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.nbt.NbtCompound;
@@ -21,11 +22,11 @@ public class GlobalWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 	public static final WhiteboardRef DAY = makeSystemRef("current_day", TFObjType.INT);
 	public static final WhiteboardRef MOON = makeSystemRef("lunar_cycle", TFObjType.INT);
 	
-	protected static WhiteboardRef makeSystemRef(String name, TFObjType<?> type) { return makeSystemRef(name, type, BoardType.GLOBAL); }
+	protected static WhiteboardRef makeSystemRef(String name, TFObjType<?> type) { return makeSystemRef(name, type, TFWhiteboards.GLOBAL); }
 	
 	public GlobalWhiteboard(World worldIn)
 	{
-		super(BoardType.GLOBAL, worldIn);
+		super(TFWhiteboards.GLOBAL, worldIn);
 	}
 	
 	public Whiteboard<?> build()

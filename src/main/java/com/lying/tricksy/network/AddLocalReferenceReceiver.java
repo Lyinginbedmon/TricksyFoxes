@@ -6,6 +6,7 @@ import java.util.UUID;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.init.TFWhiteboards;
 
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayChannelHandler;
@@ -21,25 +22,23 @@ public class AddLocalReferenceReceiver implements PlayChannelHandler
 	{
 		UUID tricksyID = buf.readUuid();
 		WhiteboardRef reference = WhiteboardRef.fromNbt(buf.readNbt());
+		if(reference.boardType() == TFWhiteboards.GLOBAL)
+		{
+			TricksyFoxes.LOGGER.error("Received packet to add blank value to global whiteboard");
+			return;
+		}
+		else if(reference.boardType() == TFWhiteboards.CONSTANT)
+		{
+			TricksyFoxes.LOGGER.error("Received packet to add blank value to constants whiteboard");
+			return;
+		}
 		
 		List<PathAwareEntity> entities = player.getWorld().getEntitiesByClass(PathAwareEntity.class, player.getBoundingBox().expand(16D), (mob) -> mob instanceof ITricksyMob && mob.getUuid().equals(tricksyID));
 		if(!entities.isEmpty())
 		{
 			ITricksyMob<?> tricksy = (ITricksyMob<?>)entities.get(0);
-			switch(reference.boardType())
-			{
-				case GLOBAL:
-					TricksyFoxes.LOGGER.error("Received packet to add blank value to global whiteboard");
-					break;
-				case LOCAL:
-					tricksy.getLocalWhiteboard().addValue(reference, mob -> reference.type().blank());
-					break;
-				case CONSTANT:
-					TricksyFoxes.LOGGER.error("Received packet to add blank value to constants whiteboard");
-					break;
-				default:
-					break;
-			}
+			if(reference.boardType() == TFWhiteboards.LOCAL)
+				tricksy.getLocalWhiteboard().addValue(reference, mob -> reference.type().blank());
 		}
 	}
 }

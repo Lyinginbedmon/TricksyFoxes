@@ -5,8 +5,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.init.TFWhiteboards;
+import com.lying.tricksy.init.TFWhiteboards.BoardType;
 import com.lying.tricksy.screen.subscreen.CreateRefScreen;
 import com.lying.tricksy.screen.subscreen.NestedScreen;
 
@@ -23,7 +24,7 @@ public class WhiteboardScreen extends TricksyScreenBase implements INestedScreen
 	// Whiteboard tabs
 	public Map<BoardType, ButtonWidget> boardMap = new HashMap<>();
 	
-	private BoardType currentBoard = BoardType.LOCAL;
+	private BoardType currentBoard = TFWhiteboards.LOCAL;
 	
 	private WhiteboardList list;
 	
@@ -39,7 +40,7 @@ public class WhiteboardScreen extends TricksyScreenBase implements INestedScreen
 	{
 		addSelectableChild(list = new WhiteboardList(this, 200, this.height, 28, this.height));
 		list.setLeftPos((this.width - 200) / 2);
-		setBoard(BoardType.LOCAL);
+		setBoard(TFWhiteboards.LOCAL);
 		
 		addDrawableChild(tree = makeTexturedWidget((this.width / 2) + 34, 18, 48, 184, (button) -> 
 		{
@@ -47,7 +48,7 @@ public class WhiteboardScreen extends TricksyScreenBase implements INestedScreen
 		}));
 		
 		int y=0;
-		for(BoardType type : BoardType.displayOrder())
+		for(BoardType type : TFWhiteboards.displayOrder())
 			boardMap.put(type, makeBoardButton(type, y++ * 20));
 		boardMap.values().forEach((button) -> addDrawableChild(button));
 		manageBoardButtons();
@@ -95,7 +96,7 @@ public class WhiteboardScreen extends TricksyScreenBase implements INestedScreen
 	public void handledScreenTick()
 	{
 		super.handledScreenTick();
-		this.createButton.active = this.createButton.visible = this.currentBoard == BoardType.LOCAL;
+		this.createButton.active = this.createButton.visible = this.currentBoard == TFWhiteboards.LOCAL;
 		tickChild();
 	}
 	

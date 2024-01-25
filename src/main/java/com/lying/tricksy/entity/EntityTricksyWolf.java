@@ -19,6 +19,10 @@ import net.minecraft.world.World;
 
 public class EntityTricksyWolf extends AbstractTricksyAnimal implements IAnimatedBiped
 {
+	/**
+	 * 0 - Bless
+	 * 1 - Howl
+	 */
     public final AnimationManager<EntityTricksyWolf> animations = new AnimationManager<>(2);
     
 	public EntityTricksyWolf(EntityType<? extends AnimalEntity> entityType, World world)

@@ -6,14 +6,15 @@ import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
-import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFSoundEvents;
+import com.lying.tricksy.init.TFWhiteboards;
+import com.lying.tricksy.init.TFWhiteboards.BoardType;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.client.item.TooltipContext;
@@ -133,7 +134,7 @@ public class ItemPrescientNote extends Item
 			if(!isClient)
 			{
 				IWhiteboardObject<?> value = getVariable(stack);
-				WhiteboardRef name = createReference(stack, BoardType.LOCAL);
+				WhiteboardRef name = createReference(stack, TFWhiteboards.LOCAL);
 				LocalWhiteboard<?> whiteboard = tricksy.getLocalWhiteboard();
 				whiteboard.addValue(name, (mob) -> value);
 				

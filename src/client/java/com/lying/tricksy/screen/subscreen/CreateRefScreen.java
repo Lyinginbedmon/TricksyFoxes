@@ -7,9 +7,9 @@ import org.lwjgl.glfw.GLFW;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.NodeRenderUtils;
 import com.lying.tricksy.screen.WhiteboardScreen;
@@ -93,7 +93,7 @@ public class CreateRefScreen extends NestedScreen<WhiteboardScreen>
 		if(name.length() == 0 || name.length() > 50)
 			return null;
 		
-		return new WhiteboardRef(nameField.getText(), this.objType, BoardType.LOCAL);
+		return new WhiteboardRef(nameField.getText(), this.objType, TFWhiteboards.LOCAL);
 	}
 	
 	public void tick()

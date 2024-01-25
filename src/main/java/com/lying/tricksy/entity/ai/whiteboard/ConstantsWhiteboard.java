@@ -12,6 +12,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.TricksyUtils;
 
@@ -34,13 +35,13 @@ public class ConstantsWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?
 	
 	public static final Map<Direction, WhiteboardRef> DIRECTIONS = new HashMap<>();
 	
-	public ConstantsWhiteboard() { super(BoardType.CONSTANT, null); }
+	public ConstantsWhiteboard() { super(TFWhiteboards.CONSTANT, null); }
 	
 	public Whiteboard<?> build()
 	{
 		for(Direction dir : Direction.values())
 		{
-			WhiteboardRef ref = new WhiteboardRef("dir_"+dir.asString(), TFObjType.BLOCK, BoardType.CONSTANT).filter().displayName(TricksyUtils.translateDirection(dir));
+			WhiteboardRef ref = new WhiteboardRef("dir_"+dir.asString(), TFObjType.BLOCK, TFWhiteboards.CONSTANT).filter().displayName(TricksyUtils.translateDirection(dir));
 			DIRECTIONS.put(dir, ref);
 			register(ref, () -> new WhiteboardObjBlock(BlockPos.ORIGIN, dir));
 		}

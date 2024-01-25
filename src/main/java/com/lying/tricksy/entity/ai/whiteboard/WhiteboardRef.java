@@ -11,8 +11,9 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFWhiteboards;
+import com.lying.tricksy.init.TFWhiteboards.BoardType;
 import com.lying.tricksy.utility.TricksyUtils;
 
 import net.minecraft.nbt.NbtCompound;
@@ -81,7 +82,7 @@ public class WhiteboardRef
 	
 	private Text displayName = null;
 	
-	public WhiteboardRef(String nameIn, TFObjType<?> typeIn) { this(nameIn, typeIn, BoardType.CONSTANT); }
+	public WhiteboardRef(String nameIn, TFObjType<?> typeIn) { this(nameIn, typeIn, TFWhiteboards.CONSTANT); }
 	
 	public WhiteboardRef(String nameIn, TFObjType<?> typeIn, BoardType global)
 	{
@@ -160,7 +161,7 @@ public class WhiteboardRef
 	public static WhiteboardRef fromNbt(NbtCompound data)
 	{
 		String name = data.getString(NAME_KEY);
-		BoardType board = BoardType.fromString(data.getString(BOARD_KEY));
+		BoardType board = TFWhiteboards.fromString(data.getString(BOARD_KEY));
 		TFObjType<?> type = TFObjType.getType(new Identifier(data.getString(TYPE_KEY)));
 		WhiteboardRef ref = new WhiteboardRef(name, type, board);
 		

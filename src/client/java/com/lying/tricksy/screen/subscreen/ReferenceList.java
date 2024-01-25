@@ -9,10 +9,10 @@ import org.joml.Matrix4f;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
-import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFNodeTypes;
+import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.BranchLine;
 import com.lying.tricksy.screen.NodeRenderUtils;
@@ -138,7 +138,7 @@ public class ReferenceList extends ElementListWidget<ReferenceList.ReferenceEntr
 			namePos += ((entryWidth - 10) - mc.textRenderer.getWidth(name)) / 2;
 			context.drawText(mc.textRenderer, reference.displayName(), namePos, y + 3, 0x404040, false);
 			
-			if(reference.boardType() != BoardType.CONSTANT && valueSnapshot != null)
+			if(reference.boardType() != TFWhiteboards.CONSTANT && valueSnapshot != null)
 			{
 				List<Text> description = valueSnapshot.describe();
 				if(description.isEmpty()) return;

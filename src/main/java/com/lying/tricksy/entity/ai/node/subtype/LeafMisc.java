@@ -122,7 +122,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				{
 					public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 					{
-						whiteboards.command().setValue(OrderWhiteboard.ACTIVE, new WhiteboardObj.Bool(false));
+						whiteboards.order().setValue(OrderWhiteboard.ACTIVE, new WhiteboardObj.Bool(false));
 						return Result.SUCCESS;
 					}	
 				}));

@@ -16,10 +16,12 @@ import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard.Order;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
+import com.lying.tricksy.init.TFRegistries;
 import com.lying.tricksy.init.TFScreenHandlerTypes;
+import com.lying.tricksy.init.TFWhiteboards;
+import com.lying.tricksy.init.TFWhiteboards.BoardType;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -94,7 +96,7 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 					options.put(entry.getKey(), entry.getValue());
 			}
 		else
-			for(BoardType bd : BoardType.values())
+			for(BoardType bd : TFRegistries.BOARD_REGISTRY)
 				for(Entry<WhiteboardRef, IWhiteboardObject<?>> entry : getEntriesOnBoard(bd).entrySet())
 				{
 					if(predicate.test(entry.getKey()))
@@ -107,7 +109,7 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	{
 		Map<WhiteboardRef, IWhiteboardObject<?>> entries = new HashMap<>();
 		references.getOrDefault(board, new HashMap<>()).entrySet().forEach(entry -> entries.put(entry.getKey(), entry.getValue()));
-		if(board == BoardType.LOCAL)
+		if(board == TFWhiteboards.LOCAL)
 			addedReferences.forEach(ref -> entries.put(ref, ref.type().blank()));
 		return entries;
 	}
@@ -149,7 +151,7 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	public void setAvailableReferences(List<Pair<WhiteboardRef, IWhiteboardObject<?>>> refsIn)
 	{
 		references.clear();
-		BoardType.displayOrder().forEach(type -> references.put(type, new HashMap<>()));
+		TFWhiteboards.displayOrder().forEach(type -> references.put(type, new HashMap<>()));
 		refsIn.forEach((pair) -> references.get(pair.getLeft().boardType()).put(pair.getLeft(), pair.getRight()));
 	}
 	
@@ -177,7 +179,7 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	public void markForDeletion(WhiteboardRef reference)
 	{
 		/** Only permit removing references from the global or local whiteboards */
-		if(reference.boardType() == BoardType.CONSTANT)
+		if(reference.boardType() == TFWhiteboards.CONSTANT)
 			return;
 		
 		if(!isMarkedForDeletion(reference))
@@ -189,7 +191,7 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	public void addBlankReference(WhiteboardRef reference)
 	{
 		/** Only permit adding new cachable references to the local whiteboard */
-		if(reference.boardType() != BoardType.LOCAL || reference.uncached())
+		if(reference.boardType() != TFWhiteboards.LOCAL || reference.uncached())
 			return;
 		
 		/** If a reference matches one marked for deletion, unmark it */

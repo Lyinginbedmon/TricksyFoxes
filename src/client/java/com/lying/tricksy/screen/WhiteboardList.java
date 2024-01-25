@@ -9,10 +9,10 @@ import org.joml.Matrix4f;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
-import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFNodeTypes;
+import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.reference.Reference;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -149,7 +149,7 @@ public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEn
 			if(flagged)
 				strike(x, y + 3, context);
 			
-			if(reference.boardType() == BoardType.CONSTANT)
+			if(reference.boardType() == TFWhiteboards.CONSTANT)
 				return;
 			
 			if(valueSnapshot != null && valueSnapshot.size() > 0)

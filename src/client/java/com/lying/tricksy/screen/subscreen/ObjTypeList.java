@@ -8,9 +8,10 @@ import java.util.function.Predicate;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFRegistries;
+import com.lying.tricksy.init.TFWhiteboards.BoardType;
 import com.lying.tricksy.screen.SubTypeButton;
 
 import net.minecraft.client.MinecraftClient;
@@ -44,7 +45,7 @@ public class ObjTypeList extends ElementListWidget<ObjTypeList.ObjTypeEntry>
 		STATIC_TYPES.forEach((type) -> 
 		{
 			boolean pass = false;
-			for(BoardType board : BoardType.values())
+			for(BoardType board : TFRegistries.BOARD_REGISTRY)
 			{
 				WhiteboardRef ref = new WhiteboardRef("test", type, board);
 				if(condition.test(ref))

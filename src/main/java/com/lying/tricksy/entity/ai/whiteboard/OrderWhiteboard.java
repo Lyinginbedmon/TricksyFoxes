@@ -15,6 +15,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.nbt.NbtCompound;
@@ -33,12 +34,12 @@ public class OrderWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 	
 	public OrderWhiteboard()
 	{
-		super(BoardType.ORDER, null);
+		super(TFWhiteboards.ORDER, null);
 	}
 	
 	private static WhiteboardRef makeRef(String name, TFObjType<?> type)
 	{
-		return makeRef(name, type, BoardType.ORDER).displayName(Text.translatable("variable."+Reference.ModInfo.MOD_ID+".order_"+name));
+		return makeRef(name, type, TFWhiteboards.ORDER).displayName(Text.translatable("variable."+Reference.ModInfo.MOD_ID+".order_"+name));
 	}
 	
 	public Whiteboard<?> build()

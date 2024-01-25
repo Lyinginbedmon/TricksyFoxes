@@ -3,7 +3,8 @@ package com.lying.tricksy.screen.subscreen;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
+import com.lying.tricksy.init.TFRegistries;
+import com.lying.tricksy.init.TFWhiteboards.BoardType;
 import com.lying.tricksy.screen.BoardButton;
 import com.lying.tricksy.screen.WhiteboardList;
 
@@ -34,7 +35,7 @@ public class BoardList extends ElementListWidget<BoardList.BoardEntry>
 	public void refreshEntries()
 	{
 		this.clearEntries();
-		for(BoardType board : BoardType.values())
+		for(BoardType board : TFRegistries.BOARD_REGISTRY)
 			if(parent.hasValuesFor(board))
 				addEntry(new BoardEntry(board, parent, width));
 	}

@@ -1,6 +1,6 @@
 package com.lying.tricksy.screen;
 
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
+import com.lying.tricksy.init.TFWhiteboards.BoardType;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;

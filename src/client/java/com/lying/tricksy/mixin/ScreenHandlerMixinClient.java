@@ -9,10 +9,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
-import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFItems;
+import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.item.ISealableItem;
 import com.lying.tricksy.item.ItemPrescientNote;
 import com.lying.tricksy.item.ItemSageHat;
@@ -57,7 +57,7 @@ public abstract class ScreenHandlerMixinClient
 				{
 					UUID sageID = ItemSageHat.getSageID(stack);
 					IWhiteboardObject<?> value = ItemPrescientNote.getVariable(cursorStack);
-					WhiteboardRef name = ItemPrescientNote.createReference(cursorStack, BoardType.GLOBAL);
+					WhiteboardRef name = ItemPrescientNote.createReference(cursorStack, TFWhiteboards.GLOBAL);
 					AddGlobalRefPacket.send(player, sageID, name, value);
 				}
 				

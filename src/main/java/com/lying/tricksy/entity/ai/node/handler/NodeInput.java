@@ -8,10 +8,10 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicates;
 import com.lying.tricksy.api.entity.ai.INodeIO;
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFWhiteboards;
 
 import net.minecraft.text.Text;
 
@@ -26,7 +26,7 @@ public abstract class NodeInput implements INodeIO
 	public static Predicate<WhiteboardRef> any() { return Predicates.alwaysTrue(); }
 	
 	/** Accept any value from the local whiteboard */
-	public static Predicate<WhiteboardRef> anyLocal() { return (ref) -> ref.boardType() == BoardType.LOCAL; }
+	public static Predicate<WhiteboardRef> anyLocal() { return (ref) -> ref.boardType() == TFWhiteboards.LOCAL; }
 	
 	public static INodeIO makeInput(Predicate<WhiteboardRef> predicateIn) { return makeInput(predicateIn, null); }
 	

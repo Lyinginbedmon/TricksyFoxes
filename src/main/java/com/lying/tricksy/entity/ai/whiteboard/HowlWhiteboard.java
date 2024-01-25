@@ -6,6 +6,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFWhiteboards;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -13,12 +14,12 @@ import net.minecraft.util.math.Direction;
 
 public class HowlWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 {
-	public static final WhiteboardRef SENDER = makeRef("sender", TFObjType.ENT, BoardType.HOWL);
-	public static final WhiteboardRef POSITION = makeRef("position", TFObjType.BLOCK, BoardType.HOWL);
+	public static final WhiteboardRef SENDER = makeRef("sender", TFObjType.ENT, TFWhiteboards.HOWL);
+	public static final WhiteboardRef POSITION = makeRef("position", TFObjType.BLOCK, TFWhiteboards.HOWL);
 	
 	public HowlWhiteboard()
 	{
-		super(BoardType.HOWL, null);
+		super(TFWhiteboards.HOWL, null);
 	}
 	
 	public Whiteboard<?> build()

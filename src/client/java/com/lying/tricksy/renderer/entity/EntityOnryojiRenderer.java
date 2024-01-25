@@ -23,6 +23,7 @@ public class EntityOnryojiRenderer extends MobEntityRenderer<EntityOnryoji, Mode
 	public EntityOnryojiRenderer(Context ctx)
 	{
 		super(ctx, new ModelOnryoji<EntityOnryoji>(ctx.getModelLoader().getModelPart(TFModelParts.ONRYOJI)), 0F);
+		this.addFeature(new OnryojiMaskLayer(this));
 		this.addFeature(new EyesFeatureRenderer<EntityOnryoji, ModelOnryoji<EntityOnryoji>>(this)
 				{
 					public RenderLayer getEyesTexture()
@@ -30,7 +31,6 @@ public class EntityOnryojiRenderer extends MobEntityRenderer<EntityOnryoji, Mode
 						return RenderLayer.getEyes(TEXTURE_TRANSPARENT);
 					}
 				});
-		this.addFeature(new OnryojiMaskLayer(this));
 	}
 	
 	public Identifier getTexture(EntityOnryoji entity)

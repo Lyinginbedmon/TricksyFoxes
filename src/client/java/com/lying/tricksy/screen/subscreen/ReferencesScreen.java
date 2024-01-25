@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.lying.tricksy.entity.ai.whiteboard.Whiteboard.BoardType;
-import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
-import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
+import com.lying.tricksy.init.TFRegistries;
+import com.lying.tricksy.init.TFWhiteboards;
+import com.lying.tricksy.init.TFWhiteboards.BoardType;
+import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.NodeScreen;
 
 import net.minecraft.client.gui.DrawContext;
@@ -19,7 +21,7 @@ public class ReferencesScreen extends NestedScreen<NodeScreen>
 	private ReferenceList referenceList;
 	private BoardList boardList;
 	
-	private BoardType boardDisplayed = BoardType.LOCAL;
+	private BoardType boardDisplayed = TFWhiteboards.LOCAL;
 	
 	private Map<BoardType, Map<WhiteboardRef, IWhiteboardObject<?>>> availableValues = new HashMap<>();
 	
@@ -49,13 +51,13 @@ public class ReferencesScreen extends NestedScreen<NodeScreen>
 			this.staticScreen = Optional.of(screen);
 		}).dimensions(this.width / 2 - 20, this.height - 30, 40, 20).build());
 		
-		setBoard(BoardType.LOCAL);
+		setBoard(TFWhiteboards.LOCAL);
 	}
 	
 	private void populateReferences()
 	{
 		availableValues.clear();
-		for(BoardType type : BoardType.values())
+		for(BoardType type : TFRegistries.BOARD_REGISTRY)
 			availableValues.put(type, parent.getScreenHandler().getMatches(parent.targetInputPred(), type));
 		
 		this.boardList.refreshEntries();
