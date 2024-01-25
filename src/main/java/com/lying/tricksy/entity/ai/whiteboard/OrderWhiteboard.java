@@ -2,7 +2,6 @@ package com.lying.tricksy.entity.ai.whiteboard;
 
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,13 +17,12 @@ import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.reference.Reference;
 
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 
-public class OrderWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
+public class OrderWhiteboard extends InertWhiteboard
 {
 	public static final WhiteboardRef ACTIVE = makeRef("is_active", TFObjType.BOOL).hidden();
 	public static final WhiteboardRef TYPE = makeRef("type", TFObjType.INT).hidden();
@@ -51,17 +49,6 @@ public class OrderWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
 		register(TAR, () -> new WhiteboardObjEntity());
 		return this;
 	}
-	
-	public Whiteboard<Supplier<IWhiteboardObject<?>>> copy()
-	{
-		OrderWhiteboard copy = new OrderWhiteboard();
-		copy.readFromNbt(writeToNbt(new NbtCompound()));
-		return copy;
-	}
-	
-	protected IWhiteboardObject<?> supplierToValue(Supplier<IWhiteboardObject<?>> supplier) { return supplier.get(); }
-	
-	protected Supplier<IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return () -> object; }
 	
 	public boolean hasOrder() { return currentType() != null; }
 	

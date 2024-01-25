@@ -16,6 +16,7 @@ import com.lying.tricksy.entity.ai.NodeStatusLog;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemSageHat;
 import com.lying.tricksy.network.SyncInventoryScreenPacket;
@@ -116,6 +117,12 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 	
 	public GlobalWhiteboard getGlobalWhiteboard();
 	
+	/** Returns a fresh whiteboard manager object containing all whiteboards in use by this mob */
+	public default WhiteboardManager<T> getWhiteboards()
+	{
+		return new WhiteboardManager<T>(getLocalWhiteboard(), getGlobalWhiteboard());
+	}
+	
 	@SuppressWarnings("unchecked")
 	public static <T extends PathAwareEntity & ITricksyMob<?>> void updateBehaviourTree(T tricksy)
 	{
@@ -123,8 +130,8 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 			return;
 		
 		// Update whiteboards
-		LocalWhiteboard<T> local = (LocalWhiteboard<T>)tricksy.getLocalWhiteboard();
-		GlobalWhiteboard global = tricksy.getGlobalWhiteboard();
+		WhiteboardManager<T> whiteboards = (WhiteboardManager<T>)tricksy.getWhiteboards();
+		LocalWhiteboard<T> local = whiteboards.local();
 		
 		// Update local whiteboard
 		local.tick();
@@ -135,7 +142,7 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 		if(tree == null)
 			return;
 		
-		tree.update(tricksy, local, global);
+		tree.update(tricksy, whiteboards);
 		tricksy.setLatestLog(tree.latestLog());
 	}
 	

@@ -220,47 +220,21 @@ public abstract class Whiteboard<T>
 		cache.entrySet().removeIf(entry -> entry.getKey().isSameRef(reference));
 	}
 	
-//	public static enum BoardType implements StringIdentifiable
-//	{
-//		CONSTANT(0, true),
-//		LOCAL(3, false),
-//		GLOBAL(2, true),
-//		ORDER(1, true),
-//		HOWL(4, true);
-//		
-//		private final boolean readOnly;
-//		private final int index;
-//		
-//		private BoardType(int indexIn, boolean isReadOnly)
-//		{
-//			index = indexIn;
-//			readOnly = isReadOnly;
-//		}
-//		
-//		public String asString() { return name().toLowerCase(); }
-//		
-//		public Text translate() { return Text.translatable("board."+Reference.ModInfo.MOD_ID+"."+asString()); }
-//		
-//		public boolean isReadOnly() { return this.readOnly; }
-//		
-//		@Nullable
-//		public static BoardType fromString(String nameIn)
-//		{
-//			for(BoardType type : values())
-//				if(nameIn.equals(type.asString()))
-//					return type;
-//			return null;
-//		}
-//		
-//		public static List<BoardType> displayOrder()
-//		{
-//			List<BoardType> list = Lists.newArrayList();
-//			for(BoardType type : values())
-//				list.add(type);
-//			list.sort((a,b) -> a.index < b.index ? -1 : a.index > b.index ? 1 : 0);
-//			return list;
-//		}
-//	}
+	public NbtList addReferencesToList(NbtList list)
+	{
+		allReferences().forEach((ref) -> 
+		{
+			if(ref.isHidden())
+				return;
+			NbtCompound data = new NbtCompound();
+			data.put("Ref", ref.writeToNbt(new NbtCompound()));
+			IWhiteboardObject<?> value = getValue(ref);
+			if(!value.isEmpty())
+				data.put("Val", getValue(ref).writeToNbt(new NbtCompound()));
+			list.add(data);
+		});
+		return list;
+	}
 	
 	public static final <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> get(WhiteboardRef nameIn, WhiteboardManager<T> whiteboards)
 	{

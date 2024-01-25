@@ -3,11 +3,14 @@ package com.lying.tricksy.entity.ai.whiteboard;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.init.TFWhiteboards.BoardType;
 
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.nbt.NbtList;
 
 /** Handler object for passing all available whiteboards into tree nodes */
 public class WhiteboardManager<T extends PathAwareEntity & ITricksyMob<?>>
@@ -20,11 +23,13 @@ public class WhiteboardManager<T extends PathAwareEntity & ITricksyMob<?>>
 		whiteboards.put(TFWhiteboards.GLOBAL, global);
 		
 		for(Whiteboard<?> board : additional)
-			add(board);
+			if(board != null)
+				add(board);
 	}
 	
-	public void add(Whiteboard<?> board) { whiteboards.put(board.type, board); }
+	public WhiteboardManager<T> add(Whiteboard<?> board) { whiteboards.put(board.type, board); return this; }
 	
+	@Nullable
 	public Whiteboard<?> get(BoardType type)
 	{
 		return type == TFWhiteboards.CONSTANT ? ConstantsWhiteboard.CONSTANTS : whiteboards.getOrDefault(type, null);
@@ -36,4 +41,10 @@ public class WhiteboardManager<T extends PathAwareEntity & ITricksyMob<?>>
 	public GlobalWhiteboard global() { return (GlobalWhiteboard)get(TFWhiteboards.GLOBAL); }
 	
 	public OrderWhiteboard order() { return (OrderWhiteboard)get(TFWhiteboards.ORDER); }
+	
+	public NbtList addToList(NbtList list)
+	{
+		whiteboards.values().forEach(board -> board.addReferencesToList(list));
+		return list;
+	}
 }

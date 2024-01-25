@@ -105,9 +105,17 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 		return options;
 	}
 	
+	public boolean hasEntriesOnBoard(BoardType board)
+	{
+		return !references.getOrDefault(board, new HashMap<>()).isEmpty();
+	}
+	
 	public Map<WhiteboardRef,IWhiteboardObject<?>> getEntriesOnBoard(BoardType board)
 	{
 		Map<WhiteboardRef, IWhiteboardObject<?>> entries = new HashMap<>();
+		if(!hasEntriesOnBoard(board))
+			return entries;
+		
 		references.getOrDefault(board, new HashMap<>()).entrySet().forEach(entry -> entries.put(entry.getKey(), entry.getValue()));
 		if(board == TFWhiteboards.LOCAL)
 			addedReferences.forEach(ref -> entries.put(ref, ref.type().blank()));

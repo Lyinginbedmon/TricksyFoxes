@@ -7,6 +7,10 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ai.whiteboard.HowlWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.InertWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
+import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.LivingEntity;
@@ -61,7 +65,7 @@ public class Howls extends PersistentState
 	
 	// TODO Account for distance to exclude howls too far away to be heard
 	@Nullable
-	public HowlWhiteboard getCurrentHowl(BlockPos pos)
+	public InertWhiteboard getCurrentHowl(BlockPos pos)
 	{
 		long time = world.getTime();
 		Entry youngest = null;
@@ -75,18 +79,20 @@ public class Howls extends PersistentState
 				youngest = howl;
 		}
 		
-		return youngest.board();
+		return youngest == null ? new InertWhiteboard(TFWhiteboards.HOWL, world) : youngest.board();
 	}
 	
 	private static class Entry
 	{
 		private long startTick = -1;
-		private HowlWhiteboard howl = new HowlWhiteboard();
+		private final InertWhiteboard howl = new InertWhiteboard(TFWhiteboards.HOWL, null);
 		
 		public Entry(LivingEntity wolf, long start)
 		{
 			startTick = start;
-			howl.setToWolf(wolf);
+			
+			howl.addValue(HowlWhiteboard.SENDER, () -> new WhiteboardObjEntity(wolf));
+			howl.addValue(HowlWhiteboard.POSITION, () -> new WhiteboardObjBlock(wolf.getBlockPos()));
 		}
 		
 		private Entry() { }
@@ -95,7 +101,7 @@ public class Howls extends PersistentState
 		
 		public boolean isActive(long time) { return age(time) <= HOWL_DURATION; }
 		
-		public HowlWhiteboard board() { return this.howl; }
+		public InertWhiteboard board() { return this.howl; }
 		
 		public NbtCompound writeToNbt(NbtCompound compound)
 		{
@@ -108,7 +114,6 @@ public class Howls extends PersistentState
 		{
 			Entry entry = new Entry();
 			entry.startTick = compound.getLong("Start");
-			entry.howl = new HowlWhiteboard();
 			entry.howl.readFromNbt(compound.getCompound("Data"));
 			
 			return entry;

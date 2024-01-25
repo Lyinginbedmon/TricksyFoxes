@@ -31,17 +31,17 @@ public abstract class GetterHandlerTyped<T> extends GetterHandlerUntyped
 		if(target.type() != Type.WHITEBOARD)
 			return Result.FAILURE;
 		WhiteboardRef dest = ((WhiteboardValue)target).assignment();
-		if(dest == null)
+		if(dest == null || dest.boardType().isReadOnly())
 			return Result.FAILURE;
 		
 		IWhiteboardObject<T> result = getTypedResult(tricksy, whiteboards, parent);
 		if(result == null || result.isEmpty() || result.size() == 0)
 		{
-			whiteboards.local().setValue(dest, type.blank());
+			whiteboards.get(dest.boardType()).setValue(dest, type.blank());
 			return Result.FAILURE;
 		}
 		
-		whiteboards.local().setValue(dest, result);
+		whiteboards.get(dest.boardType()).setValue(dest, result);
 		return Result.SUCCESS;
 	}
 	

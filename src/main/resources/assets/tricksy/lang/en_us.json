@@ -71,6 +71,7 @@
 	"board.tricksy.global": "Sage",
 	"board.tricksy.local": "Personal",
 	"board.tricksy.order": "Order",
+	"board.tricksy.howl": "Howl",
 	"node.tricksy.control_flow": "Control Flow",
 	"node.tricksy.control_flow.desc": "Control Flow nodes determine how updates move through the tree",
 	"node.tricksy.decorator": "Decorator",

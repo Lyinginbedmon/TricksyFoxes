@@ -54,14 +54,14 @@ public abstract class GetterHandlerUntyped implements INodeTickHandler<LeafNode>
 		if(target.type() != Type.WHITEBOARD)
 			return Result.FAILURE;
 		WhiteboardRef dest = ((WhiteboardValue)target).assignment();
-		if(dest == null)
+		if(dest == null || dest.boardType().isReadOnly())
 			return Result.FAILURE;
 		
 		IWhiteboardObject<?> result = getResult(tricksy, whiteboards, parent);
 		if(result == null || result.isEmpty() || result.size() == 0)
 			return Result.FAILURE;
 		
-		whiteboards.local().setValue(dest, result);
+		whiteboards.get(dest.boardType()).setValue(dest, result);
 		return Result.SUCCESS;
 	}
 	

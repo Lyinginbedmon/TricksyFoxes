@@ -2,6 +2,8 @@ package com.lying.tricksy.entity;
 
 import java.util.EnumSet;
 
+import com.lying.tricksy.entity.ai.whiteboard.HowlWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.init.TFEntityTypes;
 
 import net.minecraft.entity.EntityType;
@@ -24,11 +26,12 @@ public class EntityTricksyWolf extends AbstractTricksyAnimal implements IAnimate
 	 * 1 - Howl
 	 */
     public final AnimationManager<EntityTricksyWolf> animations = new AnimationManager<>(2);
+	
+	protected HowlWhiteboard boardHowl = (HowlWhiteboard)(new HowlWhiteboard(this)).build();
     
 	public EntityTricksyWolf(EntityType<? extends AnimalEntity> entityType, World world)
 	{
 		super(TFEntityTypes.TRICKSY_WOLF, world);
-		// TODO Auto-generated constructor stub
 	}
 	
 	public void initDataTracker()
@@ -85,6 +88,8 @@ public class EntityTricksyWolf extends AbstractTricksyAnimal implements IAnimate
 	protected SoundEvent getDeathSound() { return SoundEvents.ENTITY_WOLF_DEATH; }
 	
 	protected float getSoundVolume() { return 0.4f; }
+	
+	public WhiteboardManager<AbstractTricksyAnimal> getWhiteboards() { return super.getWhiteboards().add(this.boardHowl); }
 	
 	public void setBlessing() { this.getDataTracker().set(ANIMATING, 0); }
 	

@@ -24,7 +24,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-public class ConstantsWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?>>>
+public class ConstantsWhiteboard extends InertWhiteboard
 {
 	public static final WhiteboardRef ENT_MONSTERS = new WhiteboardRef("entity_monster", TFObjType.ENT).filter().displayName(Text.translatable("constant."+Reference.ModInfo.MOD_ID+".entity_monster"));
 	public static final WhiteboardRef ENT_ANIMALS = new WhiteboardRef("entity_animal", TFObjType.ENT).filter().displayName(Text.translatable("constant."+Reference.ModInfo.MOD_ID+".entity_animal"));
@@ -52,14 +52,7 @@ public class ConstantsWhiteboard extends Whiteboard<Supplier<IWhiteboardObject<?
 		return this;
 	}
 	
-	public Whiteboard<Supplier<IWhiteboardObject<?>>> copy()
-	{
-		return CONSTANTS;
-	}
-	
-	protected Supplier<IWhiteboardObject<?>> objectToSupplier(IWhiteboardObject<?> object) { return () -> object; }
-	
-	protected IWhiteboardObject<?> supplierToValue(Supplier<IWhiteboardObject<?>> supplier) { return supplier.get(); }
+	public Whiteboard<Supplier<IWhiteboardObject<?>>> copy() { return CONSTANTS; }
 	
 	/** Called by the server when the server starts or the data pack finishes reloading */
 	public static void populateTagFilters()

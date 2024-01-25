@@ -4,7 +4,6 @@ import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -25,12 +24,11 @@ public class SyncTreeScreenPacket
 		boolean isMaster = TricksyComponent.isMobMaster(tricksy);
 		buffer.writeBoolean(isMaster);
 		
-		NbtList refList = new NbtList();
-		addBoardToList(refList, tricksy.getLocalWhiteboard());
-		addBoardToList(refList, tricksy.getGlobalWhiteboard());
-		addBoardToList(refList, Whiteboard.CONSTANTS);
+		NbtList refList = tricksy.getWhiteboards().addToList(new NbtList());
+		Whiteboard.CONSTANTS.addReferencesToList(refList);
 		if(isMaster)
-			addBoardToList(refList, tricksy.getBehaviourTree().command());
+			tricksy.getBehaviourTree().order().addReferencesToList(refList);
+		
 		NbtCompound data = new NbtCompound();
 		data.put("References", refList);
 		buffer.writeNbt(data);
@@ -38,24 +36,5 @@ public class SyncTreeScreenPacket
 		buffer.writeInt(TricksyFoxes.config.treeSizeCap());
 		
 		ServerPlayNetworking.send((ServerPlayerEntity)player, TFPacketHandler.SYNC_TREE_ID, buffer);
-	}
-	
-	private static void addBoardToList(NbtList refList, Whiteboard<?> board)
-	{
-		try
-		{
-			board.allReferences().forEach((ref) -> 
-			{
-				if(ref.isHidden())
-					return;
-				NbtCompound data = new NbtCompound();
-				data.put("Ref", ref.writeToNbt(new NbtCompound()));
-				IWhiteboardObject<?> value = board.getValue(ref);
-				if(!value.isEmpty())
-					data.put("Val", board.getValue(ref).writeToNbt(new NbtCompound()));
-				refList.add(data);
-			});
-		}
-		catch(Exception e) { }
 	}
 }

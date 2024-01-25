@@ -17,11 +17,11 @@ public class TFWhiteboards
 {
 	private static final Map<Identifier, BoardType> BOARD_TYPES = new HashMap<>();
 	
-	public static final BoardType CONSTANT = register(new BoardType("constant", 0, true));
-	public static final BoardType LOCAL = register(new BoardType("local", 3, false));
-	public static final BoardType GLOBAL = register(new BoardType("global", 2, true));
-	public static final BoardType ORDER = register(new BoardType("order", 1, true));
-	public static final BoardType HOWL = register(new BoardType("howl", 4, true));
+	public static final BoardType CONSTANT = register(new BoardType("constant", 0, true, true));
+	public static final BoardType LOCAL = register(new BoardType("local", 3, false, true));
+	public static final BoardType GLOBAL = register(new BoardType("global", 2, true, true));
+	public static final BoardType ORDER = register(new BoardType("order", 1, true, true));
+	public static final BoardType HOWL = register(new BoardType("howl", 4, true, false));
 	
 	private static BoardType register(BoardType typeIn)
 	{
@@ -55,15 +55,16 @@ public class TFWhiteboards
 	{
 		private final Identifier registryName;
 		private final String name;
-		private final boolean readOnly;
+		private final boolean readOnly, alwaysVisible;
 		private final int displayIndex;
 		
-		public BoardType(String nameIn, int indexIn, boolean isReadOnly)
+		public BoardType(String nameIn, int indexIn, boolean isReadOnly, boolean isAlwaysVisible)
 		{
 			name = nameIn;
 			registryName = new Identifier(Reference.ModInfo.MOD_ID, nameIn.toLowerCase());
 			displayIndex = indexIn;
 			readOnly = isReadOnly;
+			alwaysVisible = isAlwaysVisible;
 		}
 		
 		public Identifier registryName() { return registryName; }
@@ -72,6 +73,10 @@ public class TFWhiteboards
 		
 		public Text translate() { return Text.translatable("board."+Reference.ModInfo.MOD_ID+"."+asString()); }
 		
+		/** Returns true if mobs should be prevented from editing values in this whiteboard */
 		public boolean isReadOnly() { return this.readOnly; }
+		
+		/** Returns true if this whiteboard should be displayed on the whiteboard screen even if it is blank */
+		public boolean alwaysVisible() { return this.alwaysVisible; }
 	}
 }

@@ -124,7 +124,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 					{
 						whiteboards.order().setValue(OrderWhiteboard.ACTIVE, new WhiteboardObj.Bool(false));
 						return Result.SUCCESS;
-					}	
+					}
 				}));
 		return set;
 	}

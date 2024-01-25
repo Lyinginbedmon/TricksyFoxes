@@ -14,11 +14,10 @@ import com.lying.tricksy.entity.ai.node.subtype.ConditionWhiteboard;
 import com.lying.tricksy.entity.ai.node.subtype.ControlFlowMisc;
 import com.lying.tricksy.entity.ai.node.subtype.DecoratorMisc;
 import com.lying.tricksy.entity.ai.node.subtype.LeafMisc;
+import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
+import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard.Order;
-import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
-import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
-import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
@@ -114,17 +113,18 @@ public class BehaviourTree
 		return this.root == null ? (this.root = TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID())) : this.root;
 	}
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> void update(T tricksy, LocalWhiteboard<T> local, GlobalWhiteboard global)
+	public <T extends PathAwareEntity & ITricksyMob<?>> void update(T tricksy, WhiteboardManager<T> whiteboards)
 	{
 		if(waitTicks > 0)
 			--waitTicks;
 		
 		this.boardCommand.setWorld(tricksy.getWorld());
+		whiteboards.add(this.boardCommand);
 		
 		tricksy.setTreePose(tricksy.defaultPose());
 		TreeNode<?> root = (latestTicked = root());
 		root.tickLog();
-		if(root.tick(tricksy, new WhiteboardManager<T>(local, global, this.boardCommand)) == Result.FAILURE)
+		if(root.tick(tricksy, whiteboards) == Result.FAILURE)
 			waitTicks = Reference.Values.TICKS_PER_SECOND;
 		
 		this.latestLog = root.getLog();
@@ -133,7 +133,7 @@ public class BehaviourTree
 	/** Retrieves the status log of the tree most recently ticked */
 	public NodeStatusLog latestLog() { return this.latestLog; }
 	
-	public OrderWhiteboard command() { return this.boardCommand; }
+	public OrderWhiteboard order() { return this.boardCommand; }
 	
 	public void setExecutor(Order type, TreeNode<?> treeIn) { this.commandNodes.put(type, treeIn); }
 	
@@ -153,7 +153,7 @@ public class BehaviourTree
 	
 	public NbtCompound storeCommand(NbtCompound data)
 	{
-		if(command().hasOrder())
+		if(order().hasOrder())
 			data.put(COMMAND_KEY, this.boardCommand.writeToNbt(new NbtCompound()));
 		return data;
 	}
@@ -181,7 +181,7 @@ public class BehaviourTree
 		BehaviourTree tree = new BehaviourTree(null);
 		tree.setTrees(data);
 		if(data.contains(COMMAND_KEY, NbtElement.COMPOUND_TYPE))
-			tree.command().readFromNbt(data.getCompound(COMMAND_KEY));
+			tree.order().readFromNbt(data.getCompound(COMMAND_KEY));
 		
 		return tree;
 	}

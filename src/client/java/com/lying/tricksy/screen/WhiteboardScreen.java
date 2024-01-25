@@ -49,7 +49,8 @@ public class WhiteboardScreen extends TricksyScreenBase implements INestedScreen
 		
 		int y=0;
 		for(BoardType type : TFWhiteboards.displayOrder())
-			boardMap.put(type, makeBoardButton(type, y++ * 20));
+			if(type.alwaysVisible() || getScreenHandler().hasEntriesOnBoard(type))
+				boardMap.put(type, makeBoardButton(type, y++ * 20));
 		boardMap.values().forEach((button) -> addDrawableChild(button));
 		manageBoardButtons();
 		this.list.setRandSeed(this.player.getUuid().getLeastSignificantBits());
