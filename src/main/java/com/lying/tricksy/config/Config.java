@@ -113,7 +113,7 @@ public abstract class Config
 	{
 		try
 		{
-			writer.write(name+"="+value);
+			writer.write(name+"="+value+'\n');
 		}
 		catch(Exception e) { }
 	}

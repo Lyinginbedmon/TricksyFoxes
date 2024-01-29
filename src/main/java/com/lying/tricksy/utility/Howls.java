@@ -3,16 +3,17 @@ package com.lying.tricksy.utility;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ai.whiteboard.HowlWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.InertWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
+import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.reference.Reference;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -28,6 +29,7 @@ import net.minecraft.world.PersistentStateManager;
 public class Howls extends PersistentState
 {
 	public static final int HOWL_DURATION = Reference.Values.TICKS_PER_MINUTE;
+	public static final InertWhiteboard EMPTY_BOARD = new InertWhiteboard(TFWhiteboards.HOWL, null);
 	
 	private List<Entry> activeHowls = Lists.newArrayList();
 	private ServerWorld world = null;
@@ -64,9 +66,11 @@ public class Howls extends PersistentState
 	}
 	
 	// TODO Account for distance to exclude howls too far away to be heard
-	@Nullable
-	public InertWhiteboard getCurrentHowl(BlockPos pos)
+	public Howl getCurrentHowl(BlockPos pos)
 	{
+		if(activeHowls.isEmpty())
+			return new Howl();
+		
 		long time = world.getTime();
 		Entry youngest = null;
 		Iterator<Entry> iterator = activeHowls.iterator();
@@ -79,20 +83,18 @@ public class Howls extends PersistentState
 				youngest = howl;
 		}
 		
-		return youngest == null ? new InertWhiteboard(TFWhiteboards.HOWL, world) : youngest.board();
+		return youngest == null ? new Howl() : youngest.board();
 	}
 	
 	private static class Entry
 	{
 		private long startTick = -1;
-		private final InertWhiteboard howl = new InertWhiteboard(TFWhiteboards.HOWL, null);
+		private Howl howl = null;
 		
 		public Entry(LivingEntity wolf, long start)
 		{
 			startTick = start;
-			
-			howl.addValue(HowlWhiteboard.SENDER, () -> new WhiteboardObjEntity(wolf));
-			howl.addValue(HowlWhiteboard.POSITION, () -> new WhiteboardObjBlock(wolf.getBlockPos()));
+			howl = new Howl(wolf);
 		}
 		
 		private Entry() { }
@@ -101,7 +103,7 @@ public class Howls extends PersistentState
 		
 		public boolean isActive(long time) { return age(time) <= HOWL_DURATION; }
 		
-		public InertWhiteboard board() { return this.howl; }
+		public Howl board() { return this.howl; }
 		
 		public NbtCompound writeToNbt(NbtCompound compound)
 		{
@@ -118,5 +120,38 @@ public class Howls extends PersistentState
 			
 			return entry;
 		}
+	}
+	
+	public static class Howl
+	{
+		public IWhiteboardObject<BlockPos> position = new WhiteboardObjBlock();
+		public IWhiteboardObject<Entity> sender = new WhiteboardObjEntity();
+		
+		public Howl(LivingEntity wolf)
+		{
+			sender = new WhiteboardObjEntity(wolf);
+			position = new WhiteboardObjBlock(wolf.getBlockPos());
+		}
+		
+		public Howl() { }
+		
+		public NbtCompound writeToNbt(NbtCompound compound)
+		{
+			compound.put("Sender", sender.writeToNbt(new NbtCompound()));
+			compound.put("Position", position.writeToNbt(new NbtCompound()));
+			return compound;
+		}
+		
+		public void readFromNbt(NbtCompound compound)
+		{
+			position = IWhiteboardObject.createFromNbt(compound.getCompound("Position")).as(TFObjType.BLOCK);
+			sender = IWhiteboardObject.createFromNbt(compound.getCompound("Sender")).as(TFObjType.ENT);
+		}
+	}
+	
+	static
+	{
+		EMPTY_BOARD.addValue(HowlWhiteboard.POSITION, () -> new WhiteboardObjBlock());
+		EMPTY_BOARD.addValue(HowlWhiteboard.SENDER, () -> new WhiteboardObjEntity());
 	}
 }

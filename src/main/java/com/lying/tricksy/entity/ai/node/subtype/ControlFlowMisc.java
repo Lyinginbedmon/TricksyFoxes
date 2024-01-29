@@ -15,18 +15,20 @@ import com.lying.tricksy.reference.Reference;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.Identifier;
 
-public class ControlFlowMisc implements ISubtypeGroup<ControlFlowNode>
+public class ControlFlowMisc extends NodeGroupControlFlow
 {
 	public static final Identifier VARIANT_SEQUENCE = ISubtypeGroup.variant("sequence");
-	public static final Identifier VARIANT_SELECTOR = ISubtypeGroup.variant("selector");
-	public static final Identifier VARIANT_REACTIVE = ISubtypeGroup.variant("reactive");
+	
+	public static NodeSubType<ControlFlowNode> SEQUENCE;
+	public static NodeSubType<ControlFlowNode> SELECTOR;
+	public static NodeSubType<ControlFlowNode> REACTIVE;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "control_flow_misc"); }
 	
 	public Collection<NodeSubType<ControlFlowNode>> getSubtypes()
 	{
 		List<NodeSubType<ControlFlowNode>> set = Lists.newArrayList();
-		set.add(new NodeSubType<ControlFlowNode>(VARIANT_SEQUENCE, new INodeTickHandler<ControlFlowNode>() 
+		set.add(SEQUENCE = subtype(VARIANT_SEQUENCE, new INodeTickHandler<ControlFlowNode>() 
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{
@@ -53,7 +55,7 @@ public class ControlFlowMisc implements ISubtypeGroup<ControlFlowNode>
 				parent.index = 0;
 			}
 		}));
-		set.add(new NodeSubType<ControlFlowNode>(VARIANT_SELECTOR, new INodeTickHandler<ControlFlowNode>() 
+		set.add(SELECTOR = subtype(ISubtypeGroup.variant("selector"), new INodeTickHandler<ControlFlowNode>() 
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{
@@ -83,7 +85,7 @@ public class ControlFlowMisc implements ISubtypeGroup<ControlFlowNode>
 				}
 			}
 		}));
-		set.add(new NodeSubType<ControlFlowNode>(VARIANT_REACTIVE, new INodeTickHandler<ControlFlowNode>() 
+		set.add(REACTIVE = subtype(ISubtypeGroup.variant("reactive"), new INodeTickHandler<ControlFlowNode>() 
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{

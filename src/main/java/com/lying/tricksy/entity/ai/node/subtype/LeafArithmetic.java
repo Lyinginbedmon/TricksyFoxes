@@ -27,21 +27,21 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-public class LeafArithmetic implements ISubtypeGroup<LeafNode>
+public class LeafArithmetic extends NodeGroupLeaf
 {
-	public static final Identifier VARIANT_ADD = ISubtypeGroup.variant("addition");
-	public static final Identifier VARIANT_MUL = ISubtypeGroup.variant("multiplication");
-	public static final Identifier VARIANT_MOD = ISubtypeGroup.variant("modulus");
-	public static final Identifier VARIANT_GET_COORD = ISubtypeGroup.variant("get_coordinate");
-	public static final Identifier VARIANT_COMPOSE = ISubtypeGroup.variant("compose_position");
-	public static final Identifier VARIANT_OFFSET = ISubtypeGroup.variant("offset");
+	public static NodeSubType<LeafNode> ADD;
+	public static NodeSubType<LeafNode> MUL;
+	public static NodeSubType<LeafNode> MOD;
+	public static NodeSubType<LeafNode> GET_COORD;
+	public static NodeSubType<LeafNode> COMPOSE;
+	public static NodeSubType<LeafNode> OFFSET;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_arithmetic"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		add(set, VARIANT_ADD, new GetterHandlerUntyped(TFObjType.INT, TFObjType.BLOCK)
+		set.add(ADD = subtype(ISubtypeGroup.variant("addition"), new GetterHandlerUntyped(TFObjType.INT, TFObjType.BLOCK)
 		{
 			private static final WhiteboardRef SUBTRACT = new WhiteboardRef("subtract", TFObjType.BOOL).displayName(CommonVariables.translate("subtract"));
 			
@@ -74,8 +74,8 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 				
 				return null;
 			}
-		});
-		add(set, VARIANT_MUL, new GetterHandlerUntyped(TFObjType.INT, TFObjType.BLOCK)
+		}));
+		set.add(MUL = subtype(ISubtypeGroup.variant("multiplication"), new GetterHandlerUntyped(TFObjType.INT, TFObjType.BLOCK)
 		{
 			private static final WhiteboardRef DIV = new WhiteboardRef("divide", TFObjType.BOOL).displayName(CommonVariables.translate("divide"));
 			
@@ -121,8 +121,8 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 				
 				return null;
 			}
-		});
-		add(set, VARIANT_MOD, new GetterHandlerTyped<Integer>(TFObjType.INT)
+		}));
+		set.add(MOD = subtype(ISubtypeGroup.variant("modulus"), new GetterHandlerTyped<Integer>(TFObjType.INT)
 		{
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
@@ -136,8 +136,8 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 				int intB = getOrDefault(CommonVariables.VAR_B, parent, whiteboards).as(TFObjType.INT).get();
 				return new WhiteboardObj.Int(intA % intB);
 			}
-		});
-		add(set, VARIANT_GET_COORD, new GetterHandlerTyped<Integer>(TFObjType.INT)
+		}));
+		set.add(GET_COORD = subtype(ISubtypeGroup.variant("get_coordinate"), new GetterHandlerTyped<Integer>(TFObjType.INT)
 		{
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
@@ -151,8 +151,8 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 				int ind = Math.abs(getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT).get()) % 3;
 				return new WhiteboardObj.Int(new int[] {pos.getX(), pos.getY(), pos.getZ()}[ind]);
 			}
-		});
-		add(set, VARIANT_COMPOSE, new GetterHandlerTyped<BlockPos>(TFObjType.BLOCK)
+		}));
+		set.add(COMPOSE = subtype(ISubtypeGroup.variant("compose_position"), new GetterHandlerTyped<BlockPos>(TFObjType.BLOCK)
 		{
 			public static final WhiteboardRef X = new WhiteboardRef("x_coord", TFObjType.INT).displayName(Text.literal("X"));
 			public static final WhiteboardRef Y = new WhiteboardRef("y_coord", TFObjType.INT).displayName(Text.literal("Y"));
@@ -172,8 +172,8 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 				int z = getOrDefault(Z, parent, whiteboards).as(TFObjType.INT).get();
 				return new WhiteboardObjBlock(new BlockPos(x, y, z));
 			}
-		});
-		add(set, VARIANT_OFFSET, new GetterHandlerTyped<BlockPos>(TFObjType.BLOCK)
+		}));
+		set.add(OFFSET = subtype(ISubtypeGroup.variant("offset"), new GetterHandlerTyped<BlockPos>(TFObjType.BLOCK)
 		{
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
@@ -192,7 +192,7 @@ public class LeafArithmetic implements ISubtypeGroup<LeafNode>
 				Direction face = ((WhiteboardObjBlock)intB).direction();
 				return new WhiteboardObjBlock(pos.offset(face, num), ((WhiteboardObjBlock)intA).direction());
 			}
-		});
+		}));
 		return set;
 	}
 }

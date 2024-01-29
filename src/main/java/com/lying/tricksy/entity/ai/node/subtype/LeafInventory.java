@@ -48,22 +48,22 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
-public class LeafInventory implements ISubtypeGroup<LeafNode>
+public class LeafInventory extends NodeGroupLeaf
 {
-	public static final Identifier VARIANT_DROP = ISubtypeGroup.variant("drop_item");
-	public static final Identifier VARIANT_SWAP = ISubtypeGroup.variant("swap_items");
-	public static final Identifier VARIANT_PICK_UP = ISubtypeGroup.variant("pick_up");
-	public static final Identifier VARIANT_EQUIP = ISubtypeGroup.variant("equip_item");
-	public static final Identifier VARIANT_UNEQUIP = ISubtypeGroup.variant("unequip_item");
-	public static final Identifier VARIANT_INSERT_ITEM = ISubtypeGroup.variant("insert_item");
-	public static final Identifier VARIANT_EXTRACT_ITEM = ISubtypeGroup.variant("extract_item");
+	public static NodeSubType<LeafNode> DROP;
+	public static NodeSubType<LeafNode> SWAP;
+	public static NodeSubType<LeafNode> PICK_UP;
+	public static NodeSubType<LeafNode> EQUIP;
+	public static NodeSubType<LeafNode> UNEQUIP;
+	public static NodeSubType<LeafNode> INSERT_ITEM;
+	public static NodeSubType<LeafNode> EXTRACT_ITEM;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_inventory"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		add(set, VARIANT_DROP, new INodeTickHandler<LeafNode>()
+		set.add(DROP = subtype(ISubtypeGroup.variant("drop_item"), new INodeTickHandler<LeafNode>()
 		{
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }
 			
@@ -82,8 +82,8 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				tricksy.dropStack(heldStack.split(amount.size() == 0 ? heldStack.getCount() : amount.get()));
 				return Result.SUCCESS;
 			}
-		});
-		add(set, VARIANT_SWAP, new INodeTickHandler<LeafNode>()
+		}));
+		set.add(SWAP = subtype(ISubtypeGroup.variant("swap_items"), new INodeTickHandler<LeafNode>()
 		{
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }
 			
@@ -96,12 +96,12 @@ public class LeafInventory implements ISubtypeGroup<LeafNode>
 				tricksy.setStackInHand(Hand.OFF_HAND, mainStack);
 				return Result.SUCCESS;
 			}
-		});
-		add(set, VARIANT_INSERT_ITEM, insert());
-		add(set, VARIANT_EXTRACT_ITEM, extract());
-		add(set, VARIANT_PICK_UP, pickUp());
-		add(set, VARIANT_EQUIP, equip());
-		add(set, VARIANT_UNEQUIP, unequip());
+		}));
+		set.add(INSERT_ITEM = subtype(ISubtypeGroup.variant("insert_item"), insert()));
+		set.add(EXTRACT_ITEM = subtype(ISubtypeGroup.variant("extract_item"), extract()));
+		set.add(PICK_UP = subtype(ISubtypeGroup.variant("pick_up"), pickUp()));
+		set.add(EQUIP = subtype(ISubtypeGroup.variant("equip_item"), equip()));
+		set.add(UNEQUIP = subtype(ISubtypeGroup.variant("unequip_item"), unequip()));
 		return set;
 	}
 	

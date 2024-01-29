@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Function;
 
 import com.google.common.collect.Lists;
@@ -26,27 +25,26 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
-import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.Identifier;
 
-public class LeafSubTree implements ISubtypeGroup<LeafNode>
+public class LeafSubTree extends NodeGroupLeaf
 {
-	public static final Identifier VARIANT_COMBAT = ISubtypeGroup.variant("generic_combat");
-	public static final Identifier VARIANT_PICKUP = ISubtypeGroup.variant("generic_pickup");
-	public static final Identifier VARIANT_BREAK = ISubtypeGroup.variant("generic_break");
+	public static NodeSubType<LeafNode> COMBAT;
+	public static NodeSubType<LeafNode> PICKUP;
+	public static NodeSubType<LeafNode> BREAK;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_subtree"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		add(set, VARIANT_COMBAT, genericCombat());
-		add(set, VARIANT_PICKUP, goPickUp());
-		add(set, VARIANT_BREAK, goBreak());
+		set.add(COMBAT = subtype(ISubtypeGroup.variant("generic_combat"), genericCombat()));
+		set.add(PICKUP = subtype(ISubtypeGroup.variant("generic_pickup"), goPickUp()));
+		set.add(BREAK = subtype(ISubtypeGroup.variant("generic_break"), goBreak()));
 		return set;
 	}
 	
@@ -71,16 +69,15 @@ public class LeafSubTree implements ISubtypeGroup<LeafNode>
 				else
 					target = new WhiteboardValue(LocalWhiteboard.ATTACK_TARGET);
 				
-				return TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SELECTOR)
-					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_TRIDENT).assignIO(TARGET, target))
-					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_POTION).assignIO(TARGET, target))
-					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_CROSSBOW).assignIO(TARGET, target))
-					.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_BOW).assignIO(TARGET, target))
-					.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_REACTIVE)
-						.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID(), DecoratorMisc.VARIANT_FORCE_SUCCESS)
-							.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafCombat.VARIANT_ATTACK_MELEE).assignIO(TARGET, target)))
-						.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_GOTO)
-							.assignIO(CommonVariables.VAR_POS, target)));
+				return ControlFlowMisc.SELECTOR.create()
+					.child(LeafCombat.ATTACK_TRIDENT.create(Map.of(TARGET, target)))
+					.child(LeafCombat.ATTACK_POTION.create(Map.of(TARGET, target)))
+					.child(LeafCombat.ATTACK_CROSSBOW.create(Map.of(TARGET, target)))
+					.child(LeafCombat.ATTACK_BOW.create(Map.of(TARGET, target)))
+					.child(ControlFlowMisc.REACTIVE.create()
+						.child(DecoratorMisc.FORCE_SUCCESS.create()
+							.child(LeafCombat.ATTACK_MELEE.create(Map.of(TARGET, target))))
+						.child(LeafMisc.GOTO.create(Map.of(CommonVariables.VAR_POS, target))));
 			}
 		};
 	}
@@ -88,7 +85,7 @@ public class LeafSubTree implements ISubtypeGroup<LeafNode>
 	private static INodeTickHandler<LeafNode> goPickUp()
 	{
 		return goAnd(
-				val -> TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafInventory.VARIANT_PICK_UP).assignIO(CommonVariables.TARGET_ENT, val), 
+				val -> LeafInventory.PICK_UP.create(Map.of(CommonVariables.TARGET_ENT, val)), 
 				(int)INodeTickHandler.INTERACT_RANGE / 2, 
 				CommonVariables.TARGET_ENT, 
 				TFObjType.ENT);
@@ -97,7 +94,7 @@ public class LeafSubTree implements ISubtypeGroup<LeafNode>
 	private static INodeTickHandler<LeafNode> goBreak()
 	{
 		return goAnd(
-				val -> TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafInteraction.VARIANT_BREAK_BLOCK).assignIO(CommonVariables.VAR_POS, val), 
+				val -> LeafInteraction.BREAK_BLOCK.create(Map.of(CommonVariables.VAR_POS, val)), 
 				(int)INodeTickHandler.INTERACT_RANGE - 1, 
 				CommonVariables.VAR_POS, 
 				TFObjType.BLOCK);
@@ -119,16 +116,16 @@ public class LeafSubTree implements ISubtypeGroup<LeafNode>
 			public <T extends PathAwareEntity & ITricksyMob<?>> TreeNode<?> generateSubTree(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				INodeIOValue target = parent.getIO(TARGET);
-				return TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SELECTOR)
-					.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_REACTIVE)
-						.addChild(TFNodeTypes.DECORATOR.create(UUID.randomUUID(), DecoratorMisc.VARIANT_INVERTER)
-							.addChild(TFNodeTypes.CONDITION.create(UUID.randomUUID(), ConditionMisc.VARIANT_CLOSER_THAN)
-								.assignIO(CommonVariables.VAR_POS_A, target)
-								.assignIO(CommonVariables.VAR_DIS, new StaticValue(new WhiteboardObj.Int(Math.max(1, distance))))))
-						.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_GOTO).assignIO(CommonVariables.VAR_POS, target)))
-					.addChild(TFNodeTypes.CONTROL_FLOW.create(UUID.randomUUID(), ControlFlowMisc.VARIANT_SEQUENCE)
-						.addChild(TFNodeTypes.LEAF.create(UUID.randomUUID(), LeafMisc.VARIANT_STOP))
-						.addChild(action.apply(target)));
+				return ControlFlowMisc.SELECTOR.create()
+					.child(ControlFlowMisc.REACTIVE.create()
+						.child(DecoratorMisc.INVERTER.create()
+							.child(ConditionMisc.CLOSER_THAN.create(Map.of(
+								CommonVariables.VAR_POS_A, target, 
+								CommonVariables.VAR_DIS, new StaticValue(new WhiteboardObj.Int(Math.max(1, distance)))))))
+						.child(LeafMisc.GOTO.create(Map.of(CommonVariables.VAR_POS, target))))
+					.child(ControlFlowMisc.SEQUENCE.create()
+						.child(LeafMisc.STOP.create())
+						.child(action.apply(target)));
 			}
 		};
 	}

@@ -30,23 +30,23 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 
-public class LeafGetter implements ISubtypeGroup<LeafNode>
+public class LeafGetter extends NodeGroupLeaf
 {
-	public static final Identifier VARIANT_GET_DISTANCE = ISubtypeGroup.variant("distance_to");
+	public static NodeSubType<LeafNode> GET_DISTANCE;
 	
 	// Entity value getters
-	public static final Identifier VARIANT_GET_ASSAILANT = ISubtypeGroup.variant("get_assailant");
-	public static final Identifier VARIANT_GET_HEALTH = ISubtypeGroup.variant("get_health");
-	public static final Identifier VARIANT_GET_HELD = ISubtypeGroup.variant("get_held_item");
-	public static final Identifier VARIANT_GET_BARK = ISubtypeGroup.variant("get_bark");
-	public static final Identifier VARIANT_GET_LEASHED = ISubtypeGroup.variant("get_leashed");
+	public static NodeSubType<LeafNode> GET_ASSAILANT;
+	public static NodeSubType<LeafNode> GET_HEALTH;
+	public static NodeSubType<LeafNode> GET_HELD;
+	public static NodeSubType<LeafNode> GET_BARK;
+	public static NodeSubType<LeafNode> GET_LEASHED;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_getter"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		add(set, VARIANT_GET_ASSAILANT, new GetterHandlerTyped<Entity>(TFObjType.ENT)
+		set.add(GET_ASSAILANT = subtype(ISubtypeGroup.variant("get_assailant"), new GetterHandlerTyped<Entity>(TFObjType.ENT)
 		{
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
@@ -64,8 +64,8 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				Entity assailant = ((LivingEntity)entity).getAttacker();
 				return assailant == null || assailant == tricksy ? new WhiteboardObjEntity() : new WhiteboardObjEntity(assailant);
 			}
-		});
-		add(set, VARIANT_GET_HEALTH, new GetterHandlerTyped<Integer>(TFObjType.INT)
+		}));
+		set.add(GET_HEALTH = subtype(ISubtypeGroup.variant("get_health"), new GetterHandlerTyped<Integer>(TFObjType.INT)
 		{
 			private static final WhiteboardRef MAX = new WhiteboardRef("max_health", TFObjType.BOOL).displayName(CommonVariables.translate("max_health"));
 			
@@ -87,8 +87,8 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				LivingEntity living = (LivingEntity)entity;
 				return new WhiteboardObj.Int((int)(isMax.get() ? living.getMaxHealth() : living.getHealth()));
 			}
-		});
-		add(set, VARIANT_GET_HELD, new GetterHandlerTyped<ItemStack>(TFObjType.ITEM)
+		}));
+		set.add(GET_HELD = subtype(ISubtypeGroup.variant("get_held_item"), new GetterHandlerTyped<ItemStack>(TFObjType.ITEM)
 		{
 			private static final WhiteboardRef OFF = new WhiteboardRef("offhand", TFObjType.BOOL).displayName(CommonVariables.translate("offhand"));
 			
@@ -110,8 +110,8 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				LivingEntity living = (LivingEntity)entity;
 				return new WhiteboardObj.Item(isOff.get() ? living.getOffHandStack() : living.getMainHandStack());
 			}
-		});
-		add(set, VARIANT_GET_DISTANCE, new GetterHandlerTyped<Integer>(TFObjType.INT)
+		}));
+		set.add(GET_DISTANCE = subtype(ISubtypeGroup.variant("distance_to"), new GetterHandlerTyped<Integer>(TFObjType.INT)
 		{
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
@@ -142,8 +142,8 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				
 				return new WhiteboardObj.Int((int)Math.sqrt(posA.getSquaredDistance(posB)));
 			}
-		});
-		add(set, VARIANT_GET_BARK, new GetterHandlerTyped<Integer>(TFObjType.INT)
+		}));
+		set.add(GET_BARK = subtype(ISubtypeGroup.variant("get_bark"), new GetterHandlerTyped<Integer>(TFObjType.INT)
 		{
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
@@ -161,8 +161,8 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 				ITricksyMob<?> living = (ITricksyMob<?>)entity;
 				return new WhiteboardObj.Int(living.currentBark().ordinal());
 			}
-		});
-		add(set, VARIANT_GET_LEASHED, new GetterHandlerTyped<Entity>(TFObjType.ENT)
+		}));
+		set.add(GET_LEASHED = subtype(ISubtypeGroup.variant("get_leashed"), new GetterHandlerTyped<Entity>(TFObjType.ENT)
 			{
 				private static final WhiteboardRef TARGET = CommonVariables.TARGET_ENT;
 				private static final WhiteboardRef INVERT = new WhiteboardRef("invert", TFObjType.BOOL).displayName(CommonVariables.translate("invert"));
@@ -199,7 +199,7 @@ public class LeafGetter implements ISubtypeGroup<LeafNode>
 					else
 						return null;
 				}
-			});
+			}));
 		return set;
 	}
 }

@@ -38,17 +38,18 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class ConditionMisc implements ISubtypeGroup<ConditionNode>
+public class ConditionMisc extends NodeGroupCondition
 {
-	public static final Identifier VARIANT_CLOSER_THAN = ISubtypeGroup.variant("closer_than");
-	public static final Identifier VARIANT_BLOCK_POWERED = ISubtypeGroup.variant("block_powered");
-	public static final Identifier VARIANT_ON_FIRE = ISubtypeGroup.variant("on_fire");
-	public static final Identifier VARIANT_IS_ENTITY = ISubtypeGroup.variant("is_type");
-	public static final Identifier VARIANT_IS_ITEM = ISubtypeGroup.variant("is_item");
-	public static final Identifier VARIANT_CAN_MINE = ISubtypeGroup.variant("can_mine");
-	public static final Identifier VARIANT_IS_CROP = ISubtypeGroup.variant("is_crop");
-	public static final Identifier VARIANT_IS_MATURE = ISubtypeGroup.variant("is_mature_crop");
-	public static final Identifier VARIANT_IS_LEASHED_TO = ISubtypeGroup.variant("is_leashed_to");
+	public static NodeSubType<ConditionNode> BLOCK_POWERED;
+	public static NodeSubType<ConditionNode> ON_FIRE;
+	public static NodeSubType<ConditionNode> IS_ENTITY;
+	public static NodeSubType<ConditionNode> IS_ITEM;
+	public static NodeSubType<ConditionNode> CAN_MINE;
+	public static NodeSubType<ConditionNode> IS_CROP;
+	public static NodeSubType<ConditionNode> IS_MATURE;
+	public static NodeSubType<ConditionNode> IS_LEASHED_TO;
+	
+	public static NodeSubType<ConditionNode> CLOSER_THAN;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_misc"); }
 	
@@ -56,7 +57,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 	{
 		List<NodeSubType<ConditionNode>> set = Lists.newArrayList();
 		/** Performs a simple distance check from the mob to the given position and returns SUCCESS if the distance is less than a desired value */
-		set.add(new NodeSubType<ConditionNode>(VARIANT_CLOSER_THAN, new INodeTickHandler<ConditionNode>()
+		set.add(CLOSER_THAN = subtype(ISubtypeGroup.variant("closer_than"), new INodeTickHandler<ConditionNode>()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -91,7 +92,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 				return Math.sqrt(posA.getSquaredDistance(posB)) < dist ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
-		set.add(new NodeSubType<ConditionNode>(VARIANT_BLOCK_POWERED, new INodeTickHandler<ConditionNode>()
+		set.add(BLOCK_POWERED = subtype(ISubtypeGroup.variant("block_powered"), new INodeTickHandler<ConditionNode>()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -104,7 +105,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 				return tricksy.getEntityWorld().isReceivingRedstonePower(position) ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
-		set.add(new NodeSubType<ConditionNode>(VARIANT_ON_FIRE, new INodeTickHandler<ConditionNode>()
+		set.add(ON_FIRE = subtype(ISubtypeGroup.variant("on_fire"), new INodeTickHandler<ConditionNode>()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -122,7 +123,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 				return ((LivingEntity)ent).isOnFire() ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
-		set.add(new NodeSubType<ConditionNode>(VARIANT_CAN_MINE, new INodeTickHandler<ConditionNode>()
+		set.add(CAN_MINE = subtype(ISubtypeGroup.variant("can_mine"), new INodeTickHandler<ConditionNode>()
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "condition_mine");
 			
@@ -152,7 +153,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 				return result ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
-		set.add(new NodeSubType<ConditionNode>(VARIANT_IS_ITEM, new INodeTickHandler<ConditionNode>()
+		set.add(IS_ITEM = subtype(ISubtypeGroup.variant("is_item"), new INodeTickHandler<ConditionNode>()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -170,7 +171,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 				return InventoryHandler.matchesItemFilter(stack, filter) ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
-		set.add(new NodeSubType<ConditionNode>(VARIANT_IS_ENTITY, new INodeTickHandler<ConditionNode>()
+		set.add(IS_ENTITY = subtype(ISubtypeGroup.variant("is_type"), new INodeTickHandler<ConditionNode>()
 		{
 			public static final WhiteboardRef FILTER = new WhiteboardRef("entity_filter", TFObjType.ENT).displayName(CommonVariables.translate("item_filter"));
 			
@@ -189,7 +190,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 				return INodeTickHandler.matchesEntityFilter(ent, filter) ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
-		set.add(new NodeSubType<ConditionNode>(VARIANT_IS_CROP, new INodeTickHandler<ConditionNode>()
+		set.add(IS_CROP = subtype(ISubtypeGroup.variant("is_crop"), new INodeTickHandler<ConditionNode>()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -202,7 +203,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 				return tricksy.getWorld().getBlockState(pos.get()).getBlock() instanceof CropBlock ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
-		set.add(new NodeSubType<ConditionNode>(VARIANT_IS_MATURE, new INodeTickHandler<ConditionNode>()
+		set.add(IS_MATURE = subtype(ISubtypeGroup.variant("is_mature_crop"), new INodeTickHandler<ConditionNode>()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -216,7 +217,7 @@ public class ConditionMisc implements ISubtypeGroup<ConditionNode>
 				return state.getBlock() instanceof CropBlock && ((CropBlock)state.getBlock()).isMature(state) ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
-		set.add(new NodeSubType<ConditionNode>(VARIANT_IS_LEASHED_TO, new INodeTickHandler<ConditionNode>()
+		set.add(IS_LEASHED_TO = subtype(ISubtypeGroup.variant("is_leashed_to"), new INodeTickHandler<ConditionNode>()
 		{
 			public static final WhiteboardRef ENT_A = CommonVariables.VAR_A;
 			public static final WhiteboardRef ENT_B = CommonVariables.VAR_B;

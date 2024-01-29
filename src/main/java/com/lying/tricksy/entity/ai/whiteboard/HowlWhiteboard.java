@@ -3,6 +3,7 @@ package com.lying.tricksy.entity.ai.whiteboard;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.utility.Howls;
+import com.lying.tricksy.utility.Howls.Howl;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -22,8 +23,13 @@ public class HowlWhiteboard extends InertWhiteboard
 	
 	public Whiteboard<?> build()
 	{
-		register(SENDER, () -> Howls.getHowls((ServerWorld)tricksy.getWorld()).getCurrentHowl(tricksy.getBlockPos()).getValue(SENDER).as(TFObjType.ENT));
-		register(POSITION, () -> Howls.getHowls((ServerWorld)tricksy.getWorld()).getCurrentHowl(tricksy.getBlockPos()).getValue(POSITION).as(TFObjType.BLOCK));
+		register(SENDER, () -> getHowl().sender);
+		register(POSITION, () -> getHowl().position);
 		return this;
+	}
+	
+	private Howl getHowl()
+	{
+		return Howls.getHowls((ServerWorld)tricksy.getWorld()).getCurrentHowl(tricksy.getBlockPos());
 	}
 }

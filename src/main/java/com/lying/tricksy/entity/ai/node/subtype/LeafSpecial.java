@@ -33,6 +33,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
+import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.CandlePowers;
@@ -77,28 +78,28 @@ import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
-public class LeafSpecial implements ISubtypeGroup<LeafNode>
+public class LeafSpecial extends NodeGroupLeaf
 {
-	public static final Identifier VARIANT_FOX_PRAY = ISubtypeGroup.variant("fox_pray");
-	public static final Identifier VARIANT_FOX_STANCE = ISubtypeGroup.variant("fox_stance");
-	public static final Identifier VARIANT_FOX_FIRE = ISubtypeGroup.variant("fox_fire");
+	public static NodeSubType<LeafNode> FOX_PRAY;
+	public static NodeSubType<LeafNode> FOX_STANCE;
+	public static NodeSubType<LeafNode> FOX_FIRE;
 	
-	public static final Identifier VARIANT_GOAT_RAM = ISubtypeGroup.variant("goat_ram");
-	public static final Identifier VARIANT_GOAT_BLOCKADE = ISubtypeGroup.variant("goat_blockade");
-	public static final Identifier VARIANT_GOAT_JUMP = ISubtypeGroup.variant("goat_jump");
+	public static NodeSubType<LeafNode> GOAT_RAM;
+	public static NodeSubType<LeafNode> GOAT_BLOCKADE;
+	public static NodeSubType<LeafNode> GOAT_JUMP;
 	
 	// TODO Implement wolf-specific actions
-	public static final Identifier VARIANT_WOLF_LEAD = ISubtypeGroup.variant("wolf_lead");
-	public static final Identifier VARIANT_WOLF_UNLEAD = ISubtypeGroup.variant("wolf_unlead");
-	public static final Identifier VARIANT_WOLF_BLESS = ISubtypeGroup.variant("wolf_bless");
-	public static final Identifier VARIANT_WOLF_HOWL = ISubtypeGroup.variant("wolf_howl");
+	public static NodeSubType<LeafNode> WOLF_LEAD;
+	public static NodeSubType<LeafNode> WOLF_UNLEAD;
+	public static NodeSubType<LeafNode> WOLF_BLESS;
+	public static NodeSubType<LeafNode> WOLF_HOWL;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_special"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		set.add(new NodeSubType<LeafNode>(VARIANT_FOX_PRAY, leafFoxPray(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND))
+		set.add(FOX_PRAY = new NodeSubType<LeafNode>(ISubtypeGroup.variant("fox_pray"), TFNodeTypes.LEAF, leafFoxPray(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND))
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_FOX; }
 					public List<MutableText> fullDescription()
@@ -110,7 +111,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return list;
 					}
 				});
-		set.add(new NodeSubType<LeafNode>(VARIANT_GOAT_RAM, leafGoatRam())
+		set.add(GOAT_RAM = new NodeSubType<LeafNode>(ISubtypeGroup.variant("goat_ram"), TFNodeTypes.LEAF, leafGoatRam())
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_GOAT; }
 					public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
@@ -135,7 +136,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return list;
 					}
 				});
-		set.add(new NodeSubType<LeafNode>(VARIANT_FOX_STANCE, leafFoxStance())
+		set.add(FOX_STANCE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("fox_stance"), TFNodeTypes.LEAF, leafFoxStance())
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_FOX; }
 					public List<MutableText> fullDescription()
@@ -146,7 +147,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return list;
 					}
 				});
-		set.add(new NodeSubType<LeafNode>(VARIANT_FOX_FIRE, leafFoxFire())
+		set.add(FOX_FIRE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("fox_fire"), TFNodeTypes.LEAF, leafFoxFire())
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_FOX; }
 					public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
@@ -163,7 +164,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return list;
 					}
 				});
-		set.add(new NodeSubType<LeafNode>(VARIANT_GOAT_BLOCKADE, leafGoatBlockade())
+		set.add(GOAT_BLOCKADE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("goat_blockade"), TFNodeTypes.LEAF, leafGoatBlockade())
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_GOAT; }
 					public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy)
@@ -180,7 +181,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return list;
 					}
 				});
-		set.add(new NodeSubType<LeafNode>(VARIANT_GOAT_JUMP, leafGoatJump(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND))
+		set.add(GOAT_JUMP = new NodeSubType<LeafNode>(ISubtypeGroup.variant("goat_jump"), TFNodeTypes.LEAF, leafGoatJump(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND))
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_GOAT; }
 					public List<MutableText> fullDescription()
@@ -192,7 +193,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return list;
 					}
 				});
-		set.add(new NodeSubType<LeafNode>(VARIANT_WOLF_LEAD, leafWolfLead(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND))
+		set.add(WOLF_LEAD = new NodeSubType<LeafNode>(ISubtypeGroup.variant("wolf_lead"), TFNodeTypes.LEAF, leafWolfLead(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND))
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_WOLF; }
 					public List<MutableText> fullDescription()
@@ -203,7 +204,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return list;
 					}
 				});
-		set.add(new NodeSubType<LeafNode>(VARIANT_WOLF_UNLEAD, leafWolfUnlead())
+		set.add(WOLF_UNLEAD = new NodeSubType<LeafNode>(ISubtypeGroup.variant("wolf_unlead"), TFNodeTypes.LEAF, leafWolfUnlead())
 				{
 					public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_WOLF; }
 					public List<MutableText> fullDescription()
@@ -214,7 +215,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 						return list;
 					}
 				});
-		set.add(new NodeSubType<LeafNode>(VARIANT_WOLF_BLESS, leafWolfBless(), UniformIntProvider.create(5 * Reference.Values.TICKS_PER_SECOND, 10 * Reference.Values.TICKS_PER_SECOND))
+		set.add(WOLF_BLESS = new NodeSubType<LeafNode>(ISubtypeGroup.variant("wolf_bless"), TFNodeTypes.LEAF, leafWolfBless(), UniformIntProvider.create(5 * Reference.Values.TICKS_PER_SECOND, 10 * Reference.Values.TICKS_PER_SECOND))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_WOLF; }
 			public List<MutableText> fullDescription()
@@ -225,7 +226,7 @@ public class LeafSpecial implements ISubtypeGroup<LeafNode>
 				return list;
 			}
 		});
-		set.add(new NodeSubType<LeafNode>(VARIANT_WOLF_HOWL, leafWolfHowl(), ConstantIntProvider.create(0/*Reference.Values.TICKS_PER_DAY / 2*/))
+		set.add(WOLF_HOWL = new NodeSubType<LeafNode>(ISubtypeGroup.variant("wolf_howl"), TFNodeTypes.LEAF, leafWolfHowl(), ConstantIntProvider.create(0/*Reference.Values.TICKS_PER_DAY / 2*/))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_WOLF; }
 			public List<MutableText> fullDescription()

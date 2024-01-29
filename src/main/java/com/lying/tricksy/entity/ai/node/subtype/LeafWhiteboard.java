@@ -40,22 +40,22 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
-public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
+public class LeafWhiteboard extends NodeGroupLeaf
 {
-	public static final Identifier VARIANT_CYCLE = ISubtypeGroup.variant("cycle_value");
-	public static final Identifier VARIANT_SORT_NEAREST = ISubtypeGroup.variant("sort_nearest");
-	public static final Identifier VARIANT_SORT_CONTIGUOUS = ISubtypeGroup.variant("sort_contiguous");
-	public static final Identifier VARIANT_SORT_COLUMNAR = ISubtypeGroup.variant("sort_columnar");
-	public static final Identifier VARIANT_SORT_VERTICAL = ISubtypeGroup.variant("sort_vertical");
-	public static final Identifier VARIANT_COPY = ISubtypeGroup.variant("set_value");
-	public static final Identifier VARIANT_CLEAR = ISubtypeGroup.variant("clear_value");
+	public static NodeSubType<LeafNode> CYCLE;
+	public static NodeSubType<LeafNode> SORT_NEAREST;
+	public static NodeSubType<LeafNode> SORT_CONTIGUOUS;
+	public static NodeSubType<LeafNode> SORT_COLUMNAR;
+	public static NodeSubType<LeafNode> SORT_VERTICAL;
+	public static NodeSubType<LeafNode> COPY;
+	public static NodeSubType<LeafNode> CLEAR;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_whiteboard"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		add(set, VARIANT_CYCLE, new INodeTickHandler<LeafNode>()
+		set.add(CYCLE = subtype(ISubtypeGroup.variant("cycle_value"), new INodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef VAR_A = new WhiteboardRef("value_to_cycle", TFObjType.BOOL).displayName(CommonVariables.translate("to_cycle"));
 			
@@ -73,12 +73,12 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				value.cycle();
 				return Result.SUCCESS;
 			}
-		});
-		add(set, VARIANT_SORT_NEAREST, leafSortNearest(), Reference.Values.TICKS_PER_SECOND);
-		add(set, VARIANT_SORT_COLUMNAR, leafSortColumnar(), Reference.Values.TICKS_PER_SECOND);
-		add(set, VARIANT_SORT_CONTIGUOUS, leafSortContiguous(), Reference.Values.TICKS_PER_SECOND);
-		add(set, VARIANT_SORT_VERTICAL, leafSortVertical(), Reference.Values.TICKS_PER_SECOND);
-		add(set, VARIANT_COPY, new INodeTickHandler<LeafNode>()
+		}));
+		set.add(SORT_NEAREST = subtype(ISubtypeGroup.variant("sort_nearest"), leafSortNearest(), Reference.Values.TICKS_PER_SECOND));
+		set.add(SORT_COLUMNAR = subtype(ISubtypeGroup.variant("sort_columnar"), leafSortColumnar(), Reference.Values.TICKS_PER_SECOND));
+		set.add(SORT_CONTIGUOUS = subtype(ISubtypeGroup.variant("sort_contiguous"), leafSortContiguous(), Reference.Values.TICKS_PER_SECOND));
+		set.add(SORT_VERTICAL = subtype(ISubtypeGroup.variant("sort_vertical"), leafSortVertical(), Reference.Values.TICKS_PER_SECOND));
+		set.add(COPY = subtype(ISubtypeGroup.variant("set_value"), new INodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef COPY = new WhiteboardRef("value_to_copy", TFObjType.BOOL).displayName(CommonVariables.translate("to_copy"));
 			public static final WhiteboardRef DEST = new WhiteboardRef("target_reference", TFObjType.BOOL).displayName(CommonVariables.translate("ref_target"));
@@ -111,8 +111,8 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
-		});
-		add(set, VARIANT_CLEAR, new INodeTickHandler<LeafNode>()
+		}));
+		set.add(CLEAR = subtype(ISubtypeGroup.variant("clear_value"), new INodeTickHandler<LeafNode>()
 		{
 			public static final WhiteboardRef DEST = new WhiteboardRef("target_reference", TFObjType.BOOL).displayName(CommonVariables.translate("ref_target"));
 			
@@ -137,7 +137,7 @@ public class LeafWhiteboard implements ISubtypeGroup<LeafNode>
 				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
-		});
+		}));
 		return set;
 	}
 	

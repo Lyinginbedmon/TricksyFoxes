@@ -41,22 +41,22 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
-public class LeafInteraction implements ISubtypeGroup<LeafNode>
+public class LeafInteraction extends NodeGroupLeaf
 {
-	public static final Identifier VARIANT_ACTIVATE = ISubtypeGroup.variant("activate");
-	public static final Identifier VARIANT_USE_ITEM_ON = ISubtypeGroup.variant("use_item_on");
-	public static final Identifier VARIANT_BREAK_BLOCK = ISubtypeGroup.variant("break_block");
-	public static final Identifier VARIANT_USE_ITEM = ISubtypeGroup.variant("use_item");
+	public static NodeSubType<LeafNode> ACTIVATE;
+	public static NodeSubType<LeafNode> USE_ITEM_ON;
+	public static NodeSubType<LeafNode> BREAK_BLOCK;
+	public static NodeSubType<LeafNode> USE_ITEM;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_interaction"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		add(set, VARIANT_USE_ITEM, useItem());
-		add(set, VARIANT_ACTIVATE, activateBlock());
-		add(set, VARIANT_USE_ITEM_ON, useItemOn());
-		add(set, VARIANT_BREAK_BLOCK, breakBlock());
+		set.add(USE_ITEM = subtype(ISubtypeGroup.variant("use_item"), useItem()));
+		set.add(ACTIVATE = subtype(ISubtypeGroup.variant("activate"), activateBlock()));
+		set.add(USE_ITEM_ON = subtype(ISubtypeGroup.variant("use_item_on"), useItemOn()));
+		set.add(BREAK_BLOCK = subtype(ISubtypeGroup.variant("break_block"), breakBlock()));
 		return set;
 	}
 	

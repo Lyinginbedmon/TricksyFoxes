@@ -18,9 +18,9 @@ import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.GetterHandlerTyped;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
-import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
@@ -40,30 +40,31 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.intprovider.ConstantIntProvider;
 import net.minecraft.util.math.random.Random;
 
-public class LeafMisc implements ISubtypeGroup<LeafNode>
+public class LeafMisc extends NodeGroupLeaf
 {
-	public static final Identifier VARIANT_BARK = ISubtypeGroup.variant("bark");
 	public static final Identifier VARIANT_GOTO = ISubtypeGroup.variant("goto");
-	public static final Identifier VARIANT_STOP = ISubtypeGroup.variant("stop");
-	public static final Identifier VARIANT_WAIT = ISubtypeGroup.variant("wait");
-	public static final Identifier VARIANT_SLEEP = ISubtypeGroup.variant("sleep");
-	public static final Identifier VARIANT_SET_HOME = ISubtypeGroup.variant("set_home");
-	public static final Identifier VARIANT_LOOK_AROUND = ISubtypeGroup.variant("look_around");
-	public static final Identifier VARIANT_LOOK_AT = ISubtypeGroup.variant("look_at");
-	public static final Identifier VARIANT_WANDER = ISubtypeGroup.variant("wander");
-	public static final Identifier VARIANT_ORDER_COMPLETE = ISubtypeGroup.variant("complete_order");
+	
+	public static NodeSubType<LeafNode> BARK;
+	public static NodeSubType<LeafNode> GOTO;
+	public static NodeSubType<LeafNode> STOP;
+	public static NodeSubType<LeafNode> WAIT;
+	public static NodeSubType<LeafNode> SLEEP;
+	public static NodeSubType<LeafNode> SET_HOME;
+	public static NodeSubType<LeafNode> LOOK_AROUND;
+	public static NodeSubType<LeafNode> LOOK_AT;
+	public static NodeSubType<LeafNode> WANDER;
+	public static NodeSubType<LeafNode> ORDER_COMPLETE;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_misc"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		set.add(new NodeSubType<LeafNode>(VARIANT_LOOK_AT, leafLookAt()));
-		set.add(new NodeSubType<LeafNode>(VARIANT_LOOK_AROUND, leafLookAround()));
-		set.add(new NodeSubType<LeafNode>(VARIANT_BARK, new INodeTickHandler<LeafNode>() 
+		set.add(LOOK_AT = subtype(ISubtypeGroup.variant("look_at"), leafLookAt()));
+		set.add(LOOK_AROUND = subtype(ISubtypeGroup.variant("look_around"), leafLookAround()));
+		set.add(BARK = subtype(ISubtypeGroup.variant("bark"), new INodeTickHandler<LeafNode>() 
 		{
 			private static final WhiteboardRef BARK = CommonVariables.VAR_NUM;
 			
@@ -78,12 +79,12 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				tricksy.bark(Bark.values()[index]);
 				return Result.SUCCESS;
 			}
-		}, ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND / 2)));
-		set.add(new NodeSubType<LeafNode>(VARIANT_GOTO, leafGoTo()));
-		set.add(new NodeSubType<LeafNode>(VARIANT_STOP, leafStop()));
-		set.add(new NodeSubType<LeafNode>(VARIANT_WANDER, leafWander()));
-		set.add(new NodeSubType<LeafNode>(VARIANT_SLEEP, leafSleep(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND)));
-		set.add(new NodeSubType<LeafNode>(VARIANT_WAIT, new INodeTickHandler<LeafNode>()
+		}, Reference.Values.TICKS_PER_SECOND / 2));
+		set.add(GOTO = subtype(VARIANT_GOTO, leafGoTo()));
+		set.add(STOP = subtype(ISubtypeGroup.variant("stop"), leafStop()));
+		set.add(WANDER = subtype(ISubtypeGroup.variant("wander"), leafWander()));
+		set.add(SLEEP = subtype(ISubtypeGroup.variant("sleep"), leafSleep(), Reference.Values.TICKS_PER_SECOND));
+		set.add(WAIT = subtype(ISubtypeGroup.variant("wait"), new INodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -101,7 +102,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				return Result.RUNNING;
 			}
 		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_SET_HOME, new INodeTickHandler<LeafNode>()
+		set.add(SET_HOME = subtype(ISubtypeGroup.variant("set_home"), new INodeTickHandler<LeafNode>()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -118,7 +119,7 @@ public class LeafMisc implements ISubtypeGroup<LeafNode>
 				return Result.SUCCESS;
 			}
 		}));
-		set.add(new NodeSubType<LeafNode>(VARIANT_ORDER_COMPLETE, new INodeTickHandler<LeafNode>()
+		set.add(ORDER_COMPLETE = subtype(ISubtypeGroup.variant("complete_order"), new INodeTickHandler<LeafNode>()
 				{
 					public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 					{

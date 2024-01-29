@@ -33,8 +33,8 @@ public class LeafNode extends TreeNode<LeafNode>
 			new LeafGetter(), 
 			new LeafSearch(), 
 			new LeafSpecial(), 
-			new LeafSubTree(), 
-			new LeafWhiteboard());
+			new LeafWhiteboard(), 
+			new LeafSubTree());
 	
 	public LeafNode(UUID uuidIn)
 	{

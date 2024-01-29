@@ -36,21 +36,21 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class LeafSearch implements ISubtypeGroup<LeafNode>
+public class LeafSearch extends NodeGroupLeaf
 {
-	public static final Identifier VARIANT_GET_ITEMS = ISubtypeGroup.variant("get_items");
-	public static final Identifier VARIANT_GET_ENTITIES = ISubtypeGroup.variant("get_creatures");
-	public static final Identifier VARIANT_GET_INVENTORIES = ISubtypeGroup.variant("get_inventories");
-	public static final Identifier VARIANT_GET_MINEABLE = ISubtypeGroup.variant("get_minables");
-	public static final Identifier VARIANT_GET_REPLACEABLE = ISubtypeGroup.variant("get_replaceables");
-	public static final Identifier VARIANT_GET_MATCHES = ISubtypeGroup.variant("get_matches");
+	public static NodeSubType<LeafNode> GET_ITEMS;
+	public static NodeSubType<LeafNode> GET_ENTITIES;
+	public static NodeSubType<LeafNode> GET_INVENTORIES;
+	public static NodeSubType<LeafNode> GET_MINEABLE;
+	public static NodeSubType<LeafNode> GET_REPLACEABLE;
+	public static NodeSubType<LeafNode> GET_MATCHES;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_search"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		add(set, VARIANT_GET_ITEMS, new GetterHandlerTyped<Entity>(TFObjType.ENT)
+		set.add(GET_ITEMS = subtype(ISubtypeGroup.variant("get_items"), new GetterHandlerTyped<Entity>(TFObjType.ENT)
 		{
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
@@ -86,8 +86,8 @@ public class LeafSearch implements ISubtypeGroup<LeafNode>
 				items.forEach((mob) -> result.add(mob));
 				return result;
 			}
-		}, Reference.Values.TICKS_PER_SECOND);
-		add(set, VARIANT_GET_ENTITIES, new GetterHandlerTyped<Entity>(TFObjType.ENT)
+		}, Reference.Values.TICKS_PER_SECOND));
+		set.add(GET_ENTITIES = subtype(ISubtypeGroup.variant("get_creatures"), new GetterHandlerTyped<Entity>(TFObjType.ENT)
 		{
 			public static WhiteboardRef FILTER = new WhiteboardRef("entity_filter", TFObjType.ENT).displayName(CommonVariables.translate("item_filter"));
 			
@@ -125,11 +125,11 @@ public class LeafSearch implements ISubtypeGroup<LeafNode>
 				mobs.forEach((mob) -> result.add(mob));
 				return result;
 			}
-		}, Reference.Values.TICKS_PER_SECOND);
-		add(set, VARIANT_GET_INVENTORIES, new BlockSearchHandler((world, pos, state) -> state.hasBlockEntity() && world.getBlockEntity(pos) instanceof Inventory), Reference.Values.TICKS_PER_SECOND);
-		add(set, VARIANT_GET_MINEABLE, new BlockSearchHandler((world, pos, state) -> state.getHardness(world, pos) >= 0 && !state.getCollisionShape(world, pos).isEmpty()), Reference.Values.TICKS_PER_SECOND);
-		add(set, VARIANT_GET_REPLACEABLE, new BlockSearchHandler((world, pos, state) -> state.isReplaceable()), Reference.Values.TICKS_PER_SECOND);
-		add(set, VARIANT_GET_MATCHES, new MatchBlockSearchHandler(), Reference.Values.TICKS_PER_SECOND);
+		}, Reference.Values.TICKS_PER_SECOND));
+		set.add(GET_INVENTORIES = subtype(ISubtypeGroup.variant("get_inventories"), new BlockSearchHandler((world, pos, state) -> state.hasBlockEntity() && world.getBlockEntity(pos) instanceof Inventory), Reference.Values.TICKS_PER_SECOND));
+		set.add(GET_MINEABLE = subtype(ISubtypeGroup.variant("get_minables"), new BlockSearchHandler((world, pos, state) -> state.getHardness(world, pos) >= 0 && !state.getCollisionShape(world, pos).isEmpty()), Reference.Values.TICKS_PER_SECOND));
+		set.add(GET_REPLACEABLE = subtype(ISubtypeGroup.variant("get_replaceables"), new BlockSearchHandler((world, pos, state) -> state.isReplaceable()), Reference.Values.TICKS_PER_SECOND));
+		set.add(GET_MATCHES = subtype(ISubtypeGroup.variant("get_matches"), new MatchBlockSearchHandler(), Reference.Values.TICKS_PER_SECOND));
 		return set;
 	}
 	

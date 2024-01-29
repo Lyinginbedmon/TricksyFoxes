@@ -56,28 +56,28 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class LeafCombat implements ISubtypeGroup<LeafNode>
+public class LeafCombat extends NodeGroupLeaf
 {
-	public static final Identifier VARIANT_SET_ATTACK = ISubtypeGroup.variant("set_attack");
-	public static final Identifier VARIANT_ATTACK_MELEE = ISubtypeGroup.variant("melee_attack");
-	public static final Identifier VARIANT_ATTACK_BOW = ISubtypeGroup.variant("bow_attack");
-	public static final Identifier VARIANT_ATTACK_TRIDENT = ISubtypeGroup.variant("trident_attack");
-	public static final Identifier VARIANT_ATTACK_CROSSBOW = ISubtypeGroup.variant("crossbow_attack");
-	public static final Identifier VARIANT_ATTACK_POTION = ISubtypeGroup.variant("potion_attack");
-	public static final Identifier VARIANT_SHIELD = ISubtypeGroup.variant("shield_against");
+	public static NodeSubType<LeafNode> SET_ATTACK;
+	public static NodeSubType<LeafNode> ATTACK_MELEE;
+	public static NodeSubType<LeafNode> ATTACK_BOW;
+	public static NodeSubType<LeafNode> ATTACK_TRIDENT;
+	public static NodeSubType<LeafNode> ATTACK_CROSSBOW;
+	public static NodeSubType<LeafNode> ATTACK_POTION;
+	public static NodeSubType<LeafNode> SHIELD;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_combat"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
-		set.add(new NodeSubType<LeafNode>(VARIANT_SET_ATTACK, setAttackTarget()));
-		set.add(new NodeSubType<LeafNode>(VARIANT_ATTACK_MELEE, meleeAttack()));
-		set.add(new NodeSubType<LeafNode>(VARIANT_ATTACK_BOW, bowAttack()));
-		set.add(new NodeSubType<LeafNode>(VARIANT_ATTACK_TRIDENT, tridentAttack()));
-		set.add(new NodeSubType<LeafNode>(VARIANT_ATTACK_CROSSBOW, crossbowAttack()));
-		set.add(new NodeSubType<LeafNode>(VARIANT_ATTACK_POTION, potionAttack()));
-		set.add(new NodeSubType<LeafNode>(VARIANT_SHIELD, shieldAgainst()));
+		set.add(SET_ATTACK = subtype(ISubtypeGroup.variant("set_attack"), setAttackTarget()));
+		set.add(ATTACK_MELEE = subtype(ISubtypeGroup.variant("melee_attack"), meleeAttack()));
+		set.add(ATTACK_BOW = subtype(ISubtypeGroup.variant("bow_attack"), bowAttack()));
+		set.add(ATTACK_TRIDENT = subtype(ISubtypeGroup.variant("trident_attack"), tridentAttack()));
+		set.add(ATTACK_CROSSBOW = subtype(ISubtypeGroup.variant("crossbow_attack"), crossbowAttack()));
+		set.add(ATTACK_POTION = subtype(ISubtypeGroup.variant("potion_attack"), potionAttack()));
+		set.add(SHIELD = subtype(ISubtypeGroup.variant("shield_against"), shieldAgainst()));
 		return set;
 	}
 	

@@ -148,9 +148,11 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	public final boolean hasCustomName() { return this.customName != null && this.customName.getString().length() > 0; }
 	
-	public final TreeNode<N> setCustomName(Text nameIn) { this.customName = nameIn; return this; }
+	public final TreeNode<N> named(Text nameIn) { this.customName = nameIn; return this; }
 	
-	public final TreeNode<N> setDiscrete(boolean val) { this.hideChildren = val; return this; }
+	public final TreeNode<N> discrete(boolean val) { this.hideChildren = val; return this; }
+	
+	public final TreeNode<N> discrete() { return discrete(true); }
 	
 	/** Returns true if discretion is permitted and this node should not display its children */
 	public final boolean isDiscrete(boolean permitted) { return permitted && (this.hideChildren && hasChildren() && !isRoot()); }
@@ -194,12 +196,12 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		return assignedIO.entrySet().stream().anyMatch(entry -> entry.getKey().isSameRef(reference) && entry.getValue().isPresent());
 	}
 	
-	public final TreeNode<N> assignInputRef(WhiteboardRef variable, @Nullable WhiteboardRef value)
+	public final TreeNode<N> ioRef(WhiteboardRef variable, WhiteboardRef value)
 	{
 		return assignIO(variable, new WhiteboardValue(value));
 	}
 	
-	public final TreeNode<N> assignInputStatic(WhiteboardRef variable, @Nullable IWhiteboardObject<?> value)
+	public final TreeNode<N> ioStatic(WhiteboardRef variable, IWhiteboardObject<?> value)
 	{
 		return assignIO(variable, new StaticValue(value));
 	}
@@ -287,7 +289,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** Returns true if this node can accept the given child node */
 	public boolean canAddChild() { return true; }
 	
-	public final TreeNode<?> addChild(TreeNode<?> childIn) { return addChild(childIn, false); }
+	public final TreeNode<?> child(TreeNode<?> childIn) { return addChild(childIn, false); }
 	
 	public final TreeNode<?> addChild(TreeNode<?> childIn, boolean toStart)
 	{
@@ -413,7 +415,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			{
 				TreeNode<?> child = create(children.getCompound(i));
 				if(child != null && parent.canAddChild())
-					parent.addChild(child);
+					parent.child(child);
 			}
 			if(children.size() > 0)
 				parent.hideChildren = data.getBoolean("Discrete");

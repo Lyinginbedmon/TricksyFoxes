@@ -34,16 +34,16 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
-public class ConditionInventory implements ISubtypeGroup<ConditionNode>
+public class ConditionInventory extends NodeGroupCondition
 {
-	public static final Identifier VARIANT_INV_HAS = ISubtypeGroup.variant("inv_has");
+	public static NodeSubType<ConditionNode> INV_HAS;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_inventory"); }
 	
 	public Collection<NodeSubType<ConditionNode>> getSubtypes()
 	{
 		List<NodeSubType<ConditionNode>> set = Lists.newArrayList();
-		set.add(new NodeSubType<ConditionNode>(VARIANT_INV_HAS, new INodeTickHandler<ConditionNode>()
+		set.add(INV_HAS = subtype(ISubtypeGroup.variant("inv_has"), new INodeTickHandler<ConditionNode>()
 		{
 			public static final WhiteboardRef TILE = CommonVariables.VAR_POS;
 			public static final WhiteboardRef FACE = InventoryHandler.FACE;

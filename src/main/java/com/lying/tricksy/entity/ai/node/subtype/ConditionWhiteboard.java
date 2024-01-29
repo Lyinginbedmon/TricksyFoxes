@@ -23,13 +23,16 @@ import com.lying.tricksy.reference.Reference;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.Identifier;
 
-public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
+public class ConditionWhiteboard extends NodeGroupCondition
 {
 	public static final Identifier VARIANT_VALUE_TRUE = ISubtypeGroup.variant("value_true");
-	public static final Identifier VARIANT_VALUE_EXISTS = ISubtypeGroup.variant("value_exists");
-	public static final Identifier VARIANT_EQUALS = ISubtypeGroup.variant("value_equals");
-	public static final Identifier VARIANT_LESS_THAN = ISubtypeGroup.variant("less_than");
-	public static final Identifier VARIANT_GREATER_THAN = ISubtypeGroup.variant("greater_than");
+	
+	public static NodeSubType<ConditionNode> VALUE_TRUE;
+	public static NodeSubType<ConditionNode> VALUE_EXISTS;
+	public static NodeSubType<ConditionNode> LESS_THAN;
+	public static NodeSubType<ConditionNode> GREATER_THAN;
+	
+	public static NodeSubType<ConditionNode> EQUALS;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_whiteboard"); }
 	
@@ -37,7 +40,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 	{
 		List<NodeSubType<ConditionNode>> set = Lists.newArrayList();
 		/** Returns SUCCESS if the boolean value of the given object is TRUE */
-		set.add(new NodeSubType<ConditionNode>(VARIANT_VALUE_TRUE, new INodeTickHandler<ConditionNode>()
+		set.add(VALUE_TRUE = subtype(VARIANT_VALUE_TRUE, new INodeTickHandler<ConditionNode>()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -50,7 +53,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 			}
 		}));
 		/** Returns SUCCESS if the given object is not considered empty (this differs from VALUE_TRUE for several data types) */
-		set.add(new NodeSubType<ConditionNode>(VARIANT_VALUE_EXISTS, new INodeTickHandler<ConditionNode>()
+		set.add(VALUE_EXISTS = subtype(ISubtypeGroup.variant("value_exists"), new INodeTickHandler<ConditionNode>()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -64,7 +67,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 			}
 		}));
 		/** Returns SUCCESS if the given objects match */
-		set.add(new NodeSubType<ConditionNode>(VARIANT_EQUALS, new INodeTickHandler<ConditionNode>()
+		set.add(EQUALS = subtype(ISubtypeGroup.variant("value_equals"), new INodeTickHandler<ConditionNode>()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -80,7 +83,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 				return objA.type() == objB.type() && objA.get() == objB.get() ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
-		set.add(new NodeSubType<ConditionNode>(VARIANT_LESS_THAN, new INodeTickHandler<ConditionNode>() 
+		set.add(LESS_THAN = subtype(ISubtypeGroup.variant("less_than"), new INodeTickHandler<ConditionNode>() 
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -96,7 +99,7 @@ public class ConditionWhiteboard implements ISubtypeGroup<ConditionNode>
 				return objA < objB ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
-		set.add(new NodeSubType<ConditionNode>(VARIANT_GREATER_THAN, new INodeTickHandler<ConditionNode>() 
+		set.add(GREATER_THAN = subtype(ISubtypeGroup.variant("greater_than"), new INodeTickHandler<ConditionNode>() 
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{

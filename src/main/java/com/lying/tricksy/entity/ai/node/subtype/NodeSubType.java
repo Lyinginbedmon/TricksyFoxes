@@ -4,12 +4,15 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
+import com.lying.tricksy.api.entity.ai.INodeIOValue;
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
+import com.lying.tricksy.entity.ai.node.NodeType;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
@@ -28,20 +31,36 @@ import net.minecraft.util.math.intprovider.IntProvider;
 /** Contains the method and data pertaining to a given node subtype */
 public class NodeSubType<M extends TreeNode<?>>
 {
+	private final NodeType<M> parentType;
 	private final Identifier registryName;
 	private final INodeTickHandler<M> tickFunc;
 	private final IntProvider cooldown;
 	
-	public NodeSubType(Identifier nameIn, INodeTickHandler<M> func)
+	public NodeSubType(Identifier nameIn, @NotNull NodeType<M> parent, INodeTickHandler<M> func)
 	{
-		this(nameIn, func, ConstantIntProvider.create(0));
+		this(nameIn, parent, func, ConstantIntProvider.create(0));
 	}
 	
-	public NodeSubType(Identifier nameIn, INodeTickHandler<M> func, IntProvider cooldownIn)
+	public NodeSubType(Identifier nameIn, @NotNull NodeType<M> parent, INodeTickHandler<M> func, IntProvider cooldownIn)
 	{
+		if(parent == null)
+			throw new NullPointerException("Failed to create subtype instance of "+nameIn.toString());
+		this.parentType = parent;
 		this.registryName = nameIn;
 		this.tickFunc = func;
 		this.cooldown = cooldownIn;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final TreeNode<M> create(Map<WhiteboardRef, INodeIOValue> ios)
+	{
+		return (TreeNode<M>)parentType.create(getRegistryName(), ios);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final TreeNode<M> create()
+	{
+		return (TreeNode<M>)parentType.create(getRegistryName());
 	}
 	
 	public Identifier getRegistryName() { return this.registryName; }

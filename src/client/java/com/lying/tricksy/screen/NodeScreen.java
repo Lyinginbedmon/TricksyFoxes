@@ -92,7 +92,7 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 		
 		addDrawableChild(discreteButton = new DiscretionButton(midWidth + 60, MAIN_BAR_Y - 6, (button) -> 
 		{
-			this.currentNode.setDiscrete(!this.currentNode.isDiscrete(true));
+			this.currentNode.discrete(!this.currentNode.isDiscrete(true));
 			updateTreeRender();
 			generateParts();
 		}, this));
@@ -291,7 +291,7 @@ public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvid
 	
 	private void onRenamed(String name)
 	{
-		this.currentNode.setCustomName(name.isEmpty() ? null : Text.literal(name));
+		this.currentNode.named(name.isEmpty() ? null : Text.literal(name));
 	}
 	
 	/** Generates the parts shared by all nodes, ie. the type and subtype */

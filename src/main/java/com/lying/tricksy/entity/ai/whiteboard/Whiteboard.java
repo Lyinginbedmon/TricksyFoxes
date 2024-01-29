@@ -45,7 +45,11 @@ public abstract class Whiteboard<T>
 		this.world = worldIn;
 	}
 	
-	public void setWorld(World worldIn) { this.world = worldIn; }
+	public Whiteboard<T> setWorld(World worldIn)
+	{
+		this.world = worldIn;
+		return this;
+	}
 	
 	public final BoardType type() { return this.type; }
 	

@@ -3,6 +3,7 @@ package com.lying.tricksy.entity.ai.node;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -13,11 +14,13 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.api.entity.ITricksyMob;
+import com.lying.tricksy.api.entity.ai.INodeIOValue;
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.TricksyUtils;
 
@@ -31,7 +34,7 @@ import net.minecraft.util.Identifier;
 public class NodeType<M extends TreeNode<?>>
 {
 	public static final Identifier DUMMY_ID = new Identifier(Reference.ModInfo.MOD_ID, "dummy");
-	private final NodeSubType<M> dummy = new NodeSubType<M>(DUMMY_ID, new INodeTickHandler<M>()
+	private final NodeSubType<M> dummy = new NodeSubType<M>(DUMMY_ID, this, new INodeTickHandler<M>()
 	{
 		public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, M parent)
 		{
@@ -42,9 +45,10 @@ public class NodeType<M extends TreeNode<?>>
 	private Identifier registryName = null;
 	private final int displayColor;
 	private final Identifier flowerTexture;
+	private final Supplier<Collection<ISubtypeGroup<M>>> groupsBuilder;
 	
 	private List<ISubtypeGroup<M>> subTypeGroups = Lists.newArrayList();
-	private Identifier baseSubType;
+	private Identifier baseSubType = DUMMY_ID;
 	
 	private final BiFunction<UUID,NbtCompound, M> factory;
 	
@@ -59,8 +63,7 @@ public class NodeType<M extends TreeNode<?>>
 		flowerTexture = tex;
 		factory = factoryIn;
 		
-		subTypeGroups.addAll(subTypeBuilder.get());
-		baseSubType = subTypeGroups.isEmpty() ? DUMMY_ID : subTypes().get(0);
+		groupsBuilder = subTypeBuilder;
 	}
 	
 	public final void setRegistryName(Identifier idIn)
@@ -83,14 +86,24 @@ public class NodeType<M extends TreeNode<?>>
 	
 	public final M create(UUID uuidIn) { return create(uuidIn, new NbtCompound()); }
 	
+	public final M create(UUID uuidIn, NbtCompound data) { return factory.apply(uuidIn, data); }
+	
 	public final TreeNode<?> create(UUID uuidIn, Identifier subType) { return create(uuidIn).setSubType(subType); }
 	
-	public final M create(UUID uuidIn, NbtCompound data) { return factory.apply(uuidIn, data); }
+	public final TreeNode<?> create(Identifier subType){ return create(UUID.randomUUID(), subType); }
+	
+	public final TreeNode<?> create(Identifier subType, Map<WhiteboardRef, INodeIOValue> ios)
+	{
+		TreeNode<?> node = create(subType);
+		ios.forEach((ref,io) -> node.assignIO(ref, io));
+		return node;
+	}
 	
 	public final Identifier baseSubType() { return baseSubType; }
 	
 	public NodeType<M> setBaseSubType(Identifier nameIn) { this.baseSubType = nameIn; return this; }
 	
+	@NotNull
 	public final NodeSubType<M> getSubType(Identifier typeIn)
 	{
 		for(ISubtypeGroup<M> group : subTypeGroups)
@@ -98,6 +111,12 @@ public class NodeType<M extends TreeNode<?>>
 				if(subType.getRegistryName().equals(typeIn))
 					return subType;
 		return dummy;
+	}
+	
+	public void populateGroups()
+	{
+		subTypeGroups.clear();
+		subTypeGroups.addAll(groupsBuilder.get());
 	}
 	
 	public final List<ISubtypeGroup<M>> groups() { return this.subTypeGroups; }
