@@ -77,26 +77,27 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 			INodeIO qualifier = entry.getValue();
 			if(qualifier.isOptional() || qualifier.type() == Type.OUTPUT)
 				return false;
-			
-			INodeIOValue assigned = parent.getIO(entry.getKey());
-			if(assigned == null)
+			else if(parent.isIOAssigned(entry.getKey()))
+			{
+				// Ensure assigned value is appropriate for this input
+				INodeIOValue assigned = parent.getIO(entry.getKey());
+				switch(assigned.type())
+				{
+					// Static values are presumed to be appropriate at point of input
+					case STATIC:
+						return false;
+					case WHITEBOARD:
+						if(!qualifier.predicate().test(((WhiteboardValue)assigned).assignment()))
+						{
+							parent.logStatus(TFNodeStatus.BAD_IO, entry.getKey().displayName());
+							return true;
+						}
+				}
+			}
+			else
 			{
 				parent.logStatus(TFNodeStatus.MISSING_IO, entry.getKey().displayName());
 				return true;
-			}
-			
-			// Ensure assigned value is appropriate for this input
-			switch(assigned.type())
-			{
-				// Static values are presumed to be appropriate at point of input
-				case STATIC:
-					return false;
-				case WHITEBOARD:
-					if(!qualifier.predicate().test(((WhiteboardValue)assigned).assignment()))
-					{
-						parent.logStatus(TFNodeStatus.BAD_IO, entry.getKey().displayName());
-						return true;
-					}
 			}
 			
 			return false;

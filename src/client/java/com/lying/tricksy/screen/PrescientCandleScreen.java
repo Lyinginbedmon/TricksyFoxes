@@ -127,6 +127,11 @@ public class PrescientCandleScreen extends HandledScreen<PrescientCandleScreenHa
 			Identifier texture = latest.getLeft().texture();
 			int alpha = (int)(((float)latest.getRight() / (float)Log.DURATION) * 255F);
 			renderTransparentIcon(texture, iconX, iconY, alpha, context);
+			
+			latest.message().ifPresent(text -> 
+			{
+				context.drawText(textRenderer, text, iconX + 18, iconY + (16 - textRenderer.fontHeight) / 2, -1, false);
+			});
 		});
 	}
 	

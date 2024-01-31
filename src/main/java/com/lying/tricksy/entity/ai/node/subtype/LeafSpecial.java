@@ -33,6 +33,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
@@ -681,12 +682,18 @@ public class LeafSpecial extends NodeGroupLeaf
 			{
 				IWhiteboardObject<BlockPos> posIn = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				if(posIn.size() == 0)
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("No target"));
 					return Result.FAILURE;
+				}
 				
 				World world = tricksy.getEntityWorld();
 				BlockPos pos = posIn.get();
 				if(!tricksy.getBlockPos().isWithinDistance(pos, 16D) || !(FIRE.canPlaceAt(world, pos) || EntityFoxFire.canIgnite(world.getBlockState(pos))) || !INodeTickHandler.canSee(tricksy, pos.toCenterPos()))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				if(tricksy.getType() == TFEntityTypes.TRICKSY_FOX)
 					((EntityTricksyFox)tricksy).setFoxfire();
@@ -887,6 +894,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
 					((EntityTricksyWolf)tricksy).setHowling();
 				
+				parent.logStatus(TFNodeStatus.CASTING);
 				return Result.RUNNING;
 			}
 			
@@ -936,6 +944,7 @@ public class LeafSpecial extends NodeGroupLeaf
 					return Result.FAILURE;
 				else if(parent.ticksRunning() < Reference.Values.TICKS_PER_SECOND)
 				{
+					parent.logStatus(TFNodeStatus.CASTING);
 					// TODO Add visual flair to telegraph effect
 					return Result.RUNNING;
 				}

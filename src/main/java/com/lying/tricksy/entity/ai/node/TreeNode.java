@@ -279,7 +279,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 				if(!subType.usesFlags().isEmpty())
 					whiteboards.local().flagAction(subType.usesFlags());
 			}
-			catch(Exception e) { }
+			catch(Exception e) { logStatus(TFNodeStatus.FAILURE, Text.literal("Unknown error")); }
 		else
 			logStatus(TFNodeStatus.FLAGS_OCCUPIED);
 		
@@ -324,8 +324,9 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	public void logStatus(TFNodeStatus status)
 	{
-		if(!hasLogged())
+		if(!this.loggedThisTick)
 			getLog().logStatus(getID(), status);
+		
 		this.loggedThisTick = true;
 	}
 	

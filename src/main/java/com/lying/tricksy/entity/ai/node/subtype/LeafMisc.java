@@ -5,6 +5,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.ImmutableSet;
@@ -160,9 +161,15 @@ public class LeafMisc extends NodeGroupLeaf
 					
 					Path path = navigator.findPathToAny(ImmutableSet.of(dest), 100, false, 1, 128F);
 					if(path != null && navigator.startMovingAlong(path, 1D))
+					{
+						parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Pathing"+StringUtils.repeat('.', parent.ticksRunning()%3 + 1)));
 						return Result.RUNNING;
+					}
 					else
+					{
+						parent.logStatus(TFNodeStatus.FAILURE, Text.literal("Can't path to there"));
 						return Result.FAILURE;
+					}
 				}
 				else
 					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Lists;
@@ -212,28 +213,28 @@ public class LeafInteraction extends NodeGroupLeaf
 				World world = tricksy.getWorld();
 				if(!world.getGameRules().get(GameRules.DO_MOB_GRIEFING).get())
 				{
-					parent.logStatus(TFNodeStatus.INPUT_ERROR);
+					parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("No mob griefing"));
 					return Result.FAILURE;
 				}
 				
 				BlockPos pos = blockPos.get();
 				if(!INodeTickHandler.canInteractWithBlock(tricksy, pos))
 				{
-					parent.logStatus(TFNodeStatus.INPUT_ERROR);
+					parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("Not close enough"));
 					return Result.FAILURE;
 				}
 				
 				BlockState state = world.getBlockState(pos);
 				if(state.isAir() || state.getHardness(world, pos) < 0F || state.getBlock() instanceof FluidBlock)
 				{
-					parent.logStatus(TFNodeStatus.INPUT_ERROR);
+					parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("Unbreakable"));
 					return Result.FAILURE;
 				}
 				
 				ServerFakePlayer player = ServerFakePlayer.makeForMob(tricksy, BUILDER_ID);
 				if(!player.getMainHandStack().getItem().canMine(state, world, pos, player))
 				{
-					parent.logStatus(TFNodeStatus.INPUT_ERROR);
+					parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("Can't mine that"));
 					return Result.FAILURE;
 				}
 				
@@ -256,6 +257,7 @@ public class LeafInteraction extends NodeGroupLeaf
 				}
 				player.discard();
 				
+				parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Mining"+StringUtils.repeat(".", parent.ticksRunning()%3 + 1)));
 				return Result.RUNNING;
 			}
 		};

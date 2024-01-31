@@ -30,6 +30,7 @@ public class TFNodeStatus
 	
 	public static final TFNodeStatus ON_COOLDOWN = register(ofName("cooldown"));
 	public static final TFNodeStatus FLAGS_OCCUPIED = register(ofName("flags_occupied"));
+	public static final TFNodeStatus CASTING = register(ofName("casting"));
 	
 	public static TFNodeStatus ofName(String nameIn) { return new TFNodeStatus(new Identifier(Reference.ModInfo.MOD_ID, nameIn)); }
 	

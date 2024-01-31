@@ -116,13 +116,14 @@ public class LeafSubTree extends NodeGroupLeaf
 			public <T extends PathAwareEntity & ITricksyMob<?>> TreeNode<?> generateSubTree(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				INodeIOValue target = parent.getIO(TARGET);
-				return ControlFlowMisc.SELECTOR.create()
-					.child(ControlFlowMisc.REACTIVE.create()
-						.child(DecoratorMisc.INVERTER.create()
-							.child(ConditionMisc.CLOSER_THAN.create(Map.of(
-								CommonVariables.VAR_POS_A, target, 
-								CommonVariables.VAR_DIS, new StaticValue(new WhiteboardObj.Int(Math.max(1, distance)))))))
-						.child(LeafMisc.GOTO.create(Map.of(CommonVariables.VAR_POS, target))))
+				return ControlFlowMisc.SEQUENCE.create()
+					.child(DecoratorMisc.FORCE_SUCCESS.create()
+						.child(ControlFlowMisc.REACTIVE.create()
+							.child(DecoratorMisc.INVERTER.create()
+								.child(ConditionMisc.CLOSER_THAN.create(Map.of(
+									CommonVariables.VAR_POS_A, target, 
+									CommonVariables.VAR_DIS, new StaticValue(new WhiteboardObj.Int(Math.max(1, distance)))))))
+							.child(LeafMisc.GOTO.create(Map.of(CommonVariables.VAR_POS, target)))))
 					.child(ControlFlowMisc.SEQUENCE.create()
 						.child(LeafMisc.STOP.create())
 						.child(action.apply(target)));

@@ -172,6 +172,6 @@ public class NodeStatusLog
 			return log;
 		}
 		
-		public boolean onCooldown() { return this.getLeft() == TFNodeStatus.ON_COOLDOWN; }
+		public Optional<Text> message() { return this.message; }
 	}
 }

@@ -15,6 +15,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.utility.Region;
 
@@ -25,6 +26,7 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -55,7 +57,10 @@ public class MatchBlockSearchHandler extends GetterHandlerTyped<BlockPos>
 		WhiteboardObjBlock result = new WhiteboardObjBlock();
 		IWhiteboardObject<?> filter = getOrDefault(MATCH, parent, whiteboards);
 		if(filter == null || filter.size() == 0)
+		{
+			parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("No filter supplied"));
 			return null;
+		}
 		
 		World world = tricksy.getWorld();
 		LeafSearch.sortByDistanceTo(searchArea.center(), searchArea.getBlocks(world, (blockpos, blockstate) -> checkFilter(world, blockstate, filter))).forEach((block) -> result.add(block));

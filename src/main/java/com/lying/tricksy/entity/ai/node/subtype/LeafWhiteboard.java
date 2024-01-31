@@ -153,7 +153,7 @@ public class LeafWhiteboard extends NodeGroupLeaf
 				return Map.of(
 						VAR_UNSORTED, UNSORTED_INPUT,
 						POSITION, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()),
-						INVERT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(), (new WhiteboardObj.Bool(false)).describe().get(0)));
+						CommonVariables.INVERT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(), (new WhiteboardObj.Bool(false)).describe().get(0)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
@@ -182,7 +182,7 @@ public class LeafWhiteboard extends NodeGroupLeaf
 				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
 				Vec3d origin = (pos.size() == 0 ? tricksy.getBlockPos() : pos.as(TFObjType.BLOCK).get()).toCenterPos();
 				
-				isInverted = getOrDefault(INVERT, parent, whiteboards).as(TFObjType.BOOL).get();
+				isInverted = getOrDefault(CommonVariables.INVERT, parent, whiteboards).as(TFObjType.BOOL).get();
 				
 				IWhiteboardObject<?> sorted;
 				if(!value.isList() || value.size() < 2)
@@ -360,7 +360,7 @@ public class LeafWhiteboard extends NodeGroupLeaf
 			{
 				return Map.of(
 						VAR_UNSORTED, UNSORTED_INPUT,
-						INVERT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(), (new WhiteboardObj.Bool(false)).describe().get(0)));
+						CommonVariables.INVERT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(), (new WhiteboardObj.Bool(false)).describe().get(0)));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
@@ -386,7 +386,7 @@ public class LeafWhiteboard extends NodeGroupLeaf
 					return Result.FAILURE;
 				}
 				
-				boolean inverted = getOrDefault(INVERT, parent, whiteboards).as(TFObjType.BOOL).get();
+				boolean inverted = getOrDefault(CommonVariables.INVERT, parent, whiteboards).as(TFObjType.BOOL).get();
 				Vec3d origin = inverted ? new Vec3d(0, -1, 0) : new Vec3d(0, 1, 0);
 				
 				IWhiteboardObject<?> sorted;
@@ -451,7 +451,6 @@ public class LeafWhiteboard extends NodeGroupLeaf
 			public boolean allowStatic() { return false; }
 		};
 		public static final WhiteboardRef POSITION = CommonVariables.VAR_POS;
-		public static final WhiteboardRef INVERT = new WhiteboardRef("invert", TFObjType.BOOL).displayName(CommonVariables.translate("invert"));
 		
 		public default Map<WhiteboardRef, INodeIO> ioSet()
 		{
@@ -463,11 +462,6 @@ public class LeafWhiteboard extends NodeGroupLeaf
 		public default <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 		{
 			INodeIOValue reference = parent.getIO(VAR_UNSORTED);
-			if(reference.type() != Type.WHITEBOARD)
-			{
-				parent.logStatus(TFNodeStatus.INPUT_ERROR);
-				return Result.FAILURE;
-			}
 			WhiteboardRef dest = ((WhiteboardValue)reference).assignment();
 			if(dest == null || dest.boardType().isReadOnly())
 			{
@@ -478,7 +472,7 @@ public class LeafWhiteboard extends NodeGroupLeaf
 			IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, whiteboards);
 			if(value.isEmpty())
 			{
-				parent.logStatus(TFNodeStatus.INPUT_ERROR);
+				parent.logStatus(TFNodeStatus.BAD_RESULT);
 				return Result.FAILURE;
 			}
 			

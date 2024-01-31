@@ -29,6 +29,7 @@ public class CommonVariables
 	public static final WhiteboardRef Y = new WhiteboardRef("y_coord", TFObjType.INT).displayName(Text.literal("Y"));
 	public static final WhiteboardRef Z = new WhiteboardRef("z_coord", TFObjType.INT).displayName(Text.literal("Z"));
 	public static final WhiteboardRef SUBTRACT = new WhiteboardRef("subtract", TFObjType.BOOL).displayName(translate("subtract"));
+	public static final WhiteboardRef INVERT = new WhiteboardRef("invert", TFObjType.BOOL).displayName(translate("invert"));
 	
 	public static Text translate(String nameIn) { return Text.translatable("variable."+Reference.ModInfo.MOD_ID+"."+nameIn); }
 }
