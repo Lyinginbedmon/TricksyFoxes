@@ -26,6 +26,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.mixin.CrossbowItemInvoker;
 import com.lying.tricksy.reference.Reference;
@@ -106,7 +107,10 @@ public class LeafCombat extends NodeGroupLeaf
 					return Result.SUCCESS;
 				}
 				else
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 			}
 		};
 	}
@@ -122,6 +126,7 @@ public class LeafCombat extends NodeGroupLeaf
 					INodeTickHandler.swingHand(tricksy, Hand.MAIN_HAND);
 					return tricksy.tryAttack(target) ? Result.SUCCESS : Result.FAILURE;
 				}
+				parent.logStatus(TFNodeStatus.INPUT_ERROR);
 				return Result.FAILURE;
 			}
 		};
@@ -229,7 +234,10 @@ public class LeafCombat extends NodeGroupLeaf
 			{
 				ItemStack bowStack = tricksy.getMainHandStack();
 				if(bowStack.isEmpty() || !bowStack.isOf(Items.CROSSBOW))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				switch(getStage(bowStack, tricksy.getActiveItem().equals(bowStack)))
 				{

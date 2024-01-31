@@ -10,7 +10,6 @@ import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
 import com.lying.tricksy.entity.ai.NodeStatusLog.Log;
 import com.lying.tricksy.entity.ai.node.TreeNode;
-import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.NodeRenderUtils.NodeRenderFlags;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -31,7 +30,6 @@ import net.minecraft.util.math.Vec2f;
 public class PrescientCandleScreen extends HandledScreen<PrescientCandleScreenHandler>
 {
 	public static final EnumSet<NodeRenderFlags> RENDER_FLAGS = EnumSet.of(NodeRenderFlags.TYPE, NodeRenderFlags.SUBTYPE, NodeRenderFlags.CHILDREN);
-	public static final Identifier COOLDOWN_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/node_results/result_cooldown.png");
 	
 	private Vec2f position = Vec2f.ZERO;
 	private Vec2f moveStart = null;
@@ -121,9 +119,12 @@ public class PrescientCandleScreen extends HandledScreen<PrescientCandleScreenHa
 				return;
 			
 			Log latest = latestLog.getLog(id);
+			if(latest.getLeft() == null)
+				return;
+			
 			int iconX = node.screenX + node.width + 2;
 			int iconY = node.screenY + (node.height - 16) / 2;
-			Identifier texture = latest.onCooldown() ? COOLDOWN_TEXTURE : latest.getLeft().texture();
+			Identifier texture = latest.getLeft().texture();
 			int alpha = (int)(((float)latest.getRight() / (float)Log.DURATION) * 255F);
 			renderTransparentIcon(texture, iconX, iconY, alpha, context);
 		});

@@ -23,9 +23,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 
-/**
- * TODO Add HowlWhiteboard to available whiteboards for Tricksy Wolves
- */
 public class Howls extends PersistentState
 {
 	public static final int HOWL_DURATION = Reference.Values.TICKS_PER_MINUTE;

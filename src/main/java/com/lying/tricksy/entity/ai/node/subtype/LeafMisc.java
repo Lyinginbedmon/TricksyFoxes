@@ -27,6 +27,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.Region;
@@ -148,7 +149,10 @@ public class LeafMisc extends NodeGroupLeaf
 				{
 					IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
 					if(targetObj.isEmpty())
+					{
+						parent.logStatus(TFNodeStatus.INPUT_ERROR);
 						return Result.FAILURE;
+					}
 					
 					BlockPos dest = targetObj.as(TFObjType.BLOCK).get();
 					if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 0.3D)
@@ -220,7 +224,10 @@ public class LeafMisc extends NodeGroupLeaf
 					while(--attempts > 0 && path == null);
 					
 					if(path == null)
+					{
+						parent.logStatus(TFNodeStatus.INPUT_ERROR);
 						return Result.FAILURE;
+					}
 					else if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 1D)
 						return Result.SUCCESS;
 					

@@ -13,7 +13,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
-import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
@@ -48,6 +47,6 @@ public class TFEntityTypes
 		FabricDefaultAttributeRegistry.register(TRICKSY_FOX, EntityTricksyFox.createMobAttributes());
 		FabricDefaultAttributeRegistry.register(TRICKSY_GOAT, EntityTricksyGoat.createMobAttributes());
 		FabricDefaultAttributeRegistry.register(TRICKSY_WOLF, EntityTricksyWolf.createMobAttributes());
-		FabricDefaultAttributeRegistry.register(ONRYOJI, HostileEntity.createHostileAttributes());
+		FabricDefaultAttributeRegistry.register(ONRYOJI, EntityOnryoji.createOnryojiAttributes());
 	}
 }

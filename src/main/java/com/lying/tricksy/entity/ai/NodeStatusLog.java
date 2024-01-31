@@ -5,19 +5,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.entity.ai.node.TreeNode;
-import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard.Order;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 
 public class NodeStatusLog
@@ -47,14 +50,14 @@ public class NodeStatusLog
 		dead.forEach(id -> log.remove(id));
 	}
 	
-	public void logCold(UUID idIn)
+	public void logStatus(UUID idIn, TFNodeStatus resultIn)
 	{
-		putStatus(idIn, new Log());
+		putStatus(idIn, new Log(resultIn));
 	}
 	
-	public void logStatus(UUID idIn, Result resultIn)
+	public void logStatus(UUID idIn, TFNodeStatus resultIn, Text message)
 	{
-		putStatus(idIn, new Log(resultIn, false));
+		putStatus(idIn, new Log(resultIn, message));
 	}
 	
 	protected void putStatus(UUID idIn, Log logIn)
@@ -121,37 +124,54 @@ public class NodeStatusLog
 		return log;
 	}
 	
-	public static class Log extends Pair<Result, Integer>
+	public static class Log extends Pair<TFNodeStatus, Integer>
 	{
 		public static final int DURATION = Reference.Values.TICKS_PER_SECOND;
-		private final boolean isCold;
+		private Optional<Text> message = Optional.empty();
 		
 		public Log()
 		{
-			this(Result.FAILURE, true);
+			this(TFNodeStatus.FAILURE);
 		}
 		
-		public Log(Result resultIn, boolean isCold)
+		public Log(TFNodeStatus resultIn)
 		{
 			super(resultIn, DURATION);
-			this.isCold = isCold;
+		}
+		
+		public Log(TFNodeStatus resultIn, Text messageIn)
+		{
+			this(resultIn);
+			this.message = Optional.of(messageIn);
 		}
 		
 		public NbtCompound toNbt(NbtCompound data)
 		{
-			data.putString("Value", getLeft().asString());
-			data.putBoolean("Cold", isCold);
+			data.putString("Value", getLeft().name().toString());
 			data.putInt("Ticks", getRight());
+			if(message.isPresent())
+				data.putString("Message", Text.Serializer.toJson(message.get()));
 			return data;
 		}
 		
 		public static Log fromNbt(NbtCompound data)
 		{
-			Log log = new Log(Result.fromString(data.getString("Value")), data.getBoolean("Cold"));
+			Log log = new Log(TFNodeStatus.fromString(new Identifier(data.getString("Value"))));
 			log.setRight(data.getInt("Ticks"));
+			
+
+			if(data.contains("Message", NbtElement.STRING_TYPE))
+			{
+				String string = data.getString("Message");
+				try
+				{
+					log.message = Optional.of(Text.Serializer.fromJson(string));
+				}
+				catch(Exception e) { }
+			}
 			return log;
 		}
 		
-		public boolean onCooldown() { return this.isCold; }
+		public boolean onCooldown() { return this.getLeft() == TFNodeStatus.ON_COOLDOWN; }
 	}
 }

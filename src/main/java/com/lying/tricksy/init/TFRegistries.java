@@ -24,11 +24,15 @@ public class TFRegistries
 	public static final RegistryKey<Registry<NodeType<?>>> TYPE_KEY = RegistryKey.ofRegistry(new Identifier(Reference.ModInfo.MOD_ID, "node_supertype"));
 	public static final Registry<NodeType<?>> TYPE_REGISTRY = FabricRegistryBuilder.createSimple(TYPE_KEY).buildAndRegister();
 	
+	public static final RegistryKey<Registry<TFNodeStatus>> STATUS_KEY = RegistryKey.ofRegistry(new Identifier(Reference.ModInfo.MOD_ID, "node_status"));
+	public static final Registry<TFNodeStatus> STATUS_REGISTRY = FabricRegistryBuilder.createSimple(STATUS_KEY).buildAndRegister();
+	
 	public static void init()
 	{
 		TFAccomplishments.init();
 		TFWhiteboards.init();
 		TFObjType.init();
 		TFNodeTypes.init();
+		TFNodeStatus.init();
 	}
 }

@@ -41,6 +41,8 @@ public class LeafGetter extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> GET_BARK;
 	public static NodeSubType<LeafNode> GET_LEASHED;
 	
+	// TODO Implement GET_ALTITUDE getter
+	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_getter"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
@@ -176,10 +178,10 @@ public class LeafGetter extends NodeGroupLeaf
 				public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Entity> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 				{
 					IWhiteboardObject<Entity> target = getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT);
-					if(parent.inputAssigned(TARGET) && target.isEmpty())
+					if(parent.isIOAssigned(TARGET) && target.isEmpty())
 						return null;
 					
-					Entity entity = parent.inputAssigned(TARGET) ? target.get() : tricksy;
+					Entity entity = parent.isIOAssigned(TARGET) ? target.get() : tricksy;
 					if(!entity.isAlive())
 						return null;
 					

@@ -60,6 +60,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -88,11 +89,19 @@ public class LeafSpecial extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> GOAT_BLOCKADE;
 	public static NodeSubType<LeafNode> GOAT_JUMP;
 	
-	// TODO Implement wolf-specific actions
 	public static NodeSubType<LeafNode> WOLF_LEAD;
 	public static NodeSubType<LeafNode> WOLF_UNLEAD;
 	public static NodeSubType<LeafNode> WOLF_BLESS;
 	public static NodeSubType<LeafNode> WOLF_HOWL;
+	
+	// TODO Onryoji special actions
+	/*
+	 * Sealing Ofuda - Hurl a paper talisman which binds a struck target to stay within its proximity
+	 * Seclusion - Repel nearby mobs and projectiles from self for a period of self-healing
+	 * Twelve Heavenly Commanders - Incremented 1 step each use (total visible from user), at 12 all nearby mobs are scattered up to a kilometre from the user
+	 * Masked foxfire - Launch 3 large foxfire-esque entities that can follow targets
+	 */
+	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_special"); }
 	
@@ -226,7 +235,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				return list;
 			}
 		});
-		set.add(WOLF_HOWL = new NodeSubType<LeafNode>(ISubtypeGroup.variant("wolf_howl"), TFNodeTypes.LEAF, leafWolfHowl(), ConstantIntProvider.create(0/*Reference.Values.TICKS_PER_DAY / 2*/))
+		set.add(WOLF_HOWL = new NodeSubType<LeafNode>(ISubtypeGroup.variant("wolf_howl"), TFNodeTypes.LEAF, leafWolfHowl(), ConstantIntProvider.create(Reference.Values.TICKS_PER_DAY / 2))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.TRICKSY_WOLF; }
 			public List<MutableText> fullDescription()
@@ -236,6 +245,10 @@ public class LeafSpecial extends NodeGroupLeaf
 				list.addAll(super.fullDescription());
 				return list;
 			}
+		});
+		set.add(ONRYOJI_BALANCE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_balance"), TFNodeTypes.LEAF, leafOnryojiBalance(), ConstantIntProvider.create(Reference.Values.TICKS_PER_MINUTE))
+		{
+			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
 		});
 		return set;
 	}
@@ -331,7 +344,7 @@ public class LeafSpecial extends NodeGroupLeaf
 						parent.nodeRAM.putDouble("X", direction.getX());
 						parent.nodeRAM.putDouble("Z", direction.getZ());
 						
-						world.playSoundFromEntity(null, tricksy, goat.isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_PREPARE_RAM : SoundEvents.ENTITY_GOAT_PREPARE_RAM, SoundCategory.NEUTRAL, 1.0f, tricksy.getSoundPitch());
+						parent.playSoundFromEntity(null, tricksy, goat.isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_PREPARE_RAM : SoundEvents.ENTITY_GOAT_PREPARE_RAM, SoundCategory.NEUTRAL, 1.0f, tricksy.getSoundPitch());
 						return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
 					}
 					else
@@ -353,7 +366,7 @@ public class LeafSpecial extends NodeGroupLeaf
 						float h = struckTarget.blockedByShield(world.getDamageSources().mobAttack(goat)) ? 0.5f : 1.0f;
 						struckTarget.takeKnockback((double)(h * g) * 2.5D, direction.getX(), direction.getZ());
 						
-						world.playSoundFromEntity(null, tricksy, goat.isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_RAM_IMPACT : SoundEvents.ENTITY_GOAT_RAM_IMPACT, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+						parent.playSoundFromEntity(null, tricksy, goat.isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_RAM_IMPACT : SoundEvents.ENTITY_GOAT_RAM_IMPACT, SoundCategory.NEUTRAL, 1.0f, 1.0f);
 						return Result.SUCCESS;
 					}
 					return Result.RUNNING;
@@ -422,7 +435,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				if(tricksy.getType() == TFEntityTypes.TRICKSY_FOX)
 				{
 					((EntityTricksyFox)tricksy).setStance(getOrDefault(VAL, parent, whiteboards).as(TFObjType.BOOL).get());
-					tricksy.getWorld().playSoundFromEntity(null, tricksy, SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+					parent.playSoundFromEntity(null, tricksy, SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, SoundCategory.NEUTRAL, 1.0f, 1.0f);
 					return Result.SUCCESS;
 				}
 				return Result.FAILURE;
@@ -520,7 +533,7 @@ public class LeafSpecial extends NodeGroupLeaf
 								{
 									// Land on ground after launching
 									tricksy.setVelocity(tricksy.getVelocity().multiply(0.1F, 1F, 0.1F));
-									tricksy.getWorld().playSoundFromEntity(null, tricksy, SoundEvents.ENTITY_GOAT_STEP, SoundCategory.NEUTRAL, 2.0f, 1.0f);
+									parent.playSoundFromEntity(null, tricksy, SoundEvents.ENTITY_GOAT_STEP, SoundCategory.NEUTRAL, 2.0f, 1.0f);
 									
 									return Result.SUCCESS;
 								}
@@ -547,8 +560,7 @@ public class LeafSpecial extends NodeGroupLeaf
 								((Entity)tricksy).setVelocity(vel.multiply(e / d));
 								
 								if(tricksy.getType() == TFEntityTypes.TRICKSY_GOAT)
-									tricksy.getWorld().playSoundFromEntity(null, tricksy, ((EntityTricksyGoat)tricksy).isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_LONG_JUMP : SoundEvents.ENTITY_GOAT_LONG_JUMP, SoundCategory.NEUTRAL, 1.0f, 1.0f);
-								
+									parent.playSoundFromEntity(null, tricksy, ((EntityTricksyGoat)tricksy).isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_LONG_JUMP : SoundEvents.ENTITY_GOAT_LONG_JUMP, SoundCategory.NEUTRAL, 1.0f, 1.0f);
 							}
 						}
 						
@@ -765,7 +777,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				if(!INodeTickHandler.canInteractWithBlock(tricksy, origin))
 					return Result.FAILURE;
 				
-				if(parent.inputAssigned(ENTITY) && !mobList.isEmpty())
+				if(parent.isIOAssigned(ENTITY) && !mobList.isEmpty())
 					handleUnleashing(tricksy.getWorld(), origin, tricksy, mobList.getAll());
 				else
 					handleUnleashing(tricksy.getWorld(), origin, tricksy, tricksy.getWorld().getNonSpectatingEntities(MobEntity.class, (new Box(origin)).expand(7)));
@@ -868,7 +880,7 @@ public class LeafSpecial extends NodeGroupLeaf
 					return Result.SUCCESS;
 				else if(parent.ticksRunning() == HOWL_ISSUE_TICK)
 				{
-					tricksy.playSound(SoundEvents.ENTITY_WOLF_HOWL, 1F, tricksy.getSoundPitch());
+					parent.playSound(tricksy, SoundEvents.ENTITY_WOLF_HOWL, 1F, tricksy.getSoundPitch());
 					Howls.getHowls((ServerWorld)tricksy.getWorld()).startHowl(tricksy);
 				}
 				
@@ -882,6 +894,63 @@ public class LeafSpecial extends NodeGroupLeaf
 			{
 				if(tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
 					((EntityTricksyWolf)tricksy).clearHowling();
+			}
+		};
+	}
+	
+	public static INodeTickHandler<LeafNode> leafOnryojiBalance()
+	{
+		return new INodeTickHandler<LeafNode>()
+		{
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.MOVE, ActionFlag.HANDS); }
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				List<LivingEntity> mobs = tricksy.getWorld().getEntitiesByClass(LivingEntity.class, tricksy.getBoundingBox().expand(16D), EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR);
+				mobs.removeIf(living -> !living.isAlive() || living.getHealth() < 1F);
+				
+				LivingEntity mobA, mobB;
+				switch(mobs.size())
+				{
+					case 0:
+					case 1:
+						return Result.FAILURE;
+					case 2:
+						mobA = tricksy;
+						mobs.remove(tricksy);
+						mobB = mobs.get(0);
+						
+						// Never balance with self if we'd lose health in the exchange
+						if(tricksy.getHealth() >= mobB.getHealth())
+							return Result.FAILURE;
+						break;
+					default:
+						mobs.remove(tricksy);
+						mobs.sort((a,b) -> a.getHealth() < b.getHealth() ? -1 : a.getHealth() > b.getHealth() ? 1 : 0);
+						mobA = mobs.get(0);
+						mobB = mobs.get(mobs.size() - 1);
+				}
+				
+				int dif = Math.abs((int)mobA.getHealth() - (int)mobB.getHealth());
+				if(dif == 0)
+					return Result.FAILURE;
+				else if(parent.ticksRunning() < Reference.Values.TICKS_PER_SECOND)
+				{
+					// TODO Add visual flair to telegraph effect
+					return Result.RUNNING;
+				}
+				else if(mobA.getHealth() < mobB.getHealth())
+				{
+					mobA.heal(dif);
+					mobB.damage(tricksy.getWorld().getDamageSources().indirectMagic(tricksy, tricksy), dif);
+				}
+				else
+				{
+					mobB.heal(dif);
+					mobA.damage(tricksy.getWorld().getDamageSources().indirectMagic(tricksy, tricksy), dif);
+				}
+				
+				return Result.SUCCESS;
 			}
 		};
 	}

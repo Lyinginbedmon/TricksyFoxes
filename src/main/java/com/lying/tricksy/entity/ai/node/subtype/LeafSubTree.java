@@ -64,7 +64,7 @@ public class LeafSubTree extends NodeGroupLeaf
 			public <T extends PathAwareEntity & ITricksyMob<?>> TreeNode<?> generateSubTree(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				INodeIOValue target;
-				if(parent.inputAssigned(TARGET))
+				if(parent.isIOAssigned(TARGET))
 					target = parent.getIO(TARGET);
 				else
 					target = new WhiteboardValue(LocalWhiteboard.ATTACK_TARGET);

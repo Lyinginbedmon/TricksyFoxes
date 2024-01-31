@@ -23,6 +23,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
@@ -76,7 +77,10 @@ public class LeafInventory extends NodeGroupLeaf
 			{
 				ItemStack heldStack = tricksy.getMainHandStack();
 				if(heldStack.isEmpty())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				IWhiteboardObject<Integer> amount = getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT);
 				tricksy.dropStack(heldStack.split(amount.size() == 0 ? heldStack.getCount() : amount.get()));
@@ -137,12 +141,18 @@ public class LeafInventory extends NodeGroupLeaf
 				
 				BlockPos block = value.get();
 				if(!INodeTickHandler.canInteractWithBlock(tricksy, block))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				ItemStack heldStack = tricksy.getMainHandStack();
 				// Fail if we have nothing to insert OR we don't have enough items to insert
 				if(heldStack.isEmpty() || count.size() > 0 && count.as(TFObjType.INT).get() > heldStack.getCount())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				// Fail if our held stack doesn't meet a provided item filter
 				if(filter.size() > 0 && !InventoryHandler.matchesItemFilter(heldStack, filter.as(TFObjType.ITEM)))
@@ -193,12 +203,18 @@ public class LeafInventory extends NodeGroupLeaf
 				
 				BlockPos block = value.get();
 				if(!INodeTickHandler.canInteractWithBlock(tricksy, block))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				World world = tricksy.getWorld();
 				BlockEntity tile = world.getBlockEntity(block);
 				if(tile == null || !(tile instanceof Inventory))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				// Fail if we can't put the extracted item into our main hand
 				ItemStack heldStack = tricksy.getMainHandStack();
@@ -262,20 +278,32 @@ public class LeafInventory extends NodeGroupLeaf
 			{
 				IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
 				if(value.isEmpty())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				else if(value.get().getType() != EntityType.ITEM || !INodeTickHandler.canInteractWithEntity(tricksy, value.get()))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				ItemEntity itemEnt = (ItemEntity)value.get();
 				if(itemEnt.cannotPickup())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				tricksy.getLookControl().lookAt(itemEnt);
 				
 				ItemStack itemStack = itemEnt.getStack();
 				ItemStack heldStack = tricksy.getMainHandStack();
 				if(!heldStack.isEmpty() && !InventoryHandler.canMergeStacks(heldStack, itemStack))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				if(heldStack.isEmpty())
 				{
@@ -315,12 +343,18 @@ public class LeafInventory extends NodeGroupLeaf
 					return Result.FAILURE;
 				
 				if(!(heldStack.getItem() instanceof ArmorItem))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				ArmorItem armor = (ArmorItem)heldStack.getItem();
 				EquipmentSlot slot = armor.getSlotType();
 				if(!tricksy.getEquippedStack(slot).isEmpty())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				tricksy.equipStack(slot, heldStack.split(1));
 				tricksy.setStackInHand(Hand.MAIN_HAND, heldStack.getCount() > 0 ? heldStack : ItemStack.EMPTY);
@@ -365,7 +399,10 @@ public class LeafInventory extends NodeGroupLeaf
 				
 				ItemStack equipped = tricksy.getEquippedStack(equip);
 				if(equipped.isEmpty() || EnchantmentHelper.hasBindingCurse(equipped))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				tricksy.dropStack(equipped);
 				tricksy.equipStack(equip, ItemStack.EMPTY);

@@ -8,12 +8,20 @@ import org.jetbrains.annotations.Nullable;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
+import com.lying.tricksy.entity.ai.OnryojiTree;
+import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.control.FlightMoveControl;
+import net.minecraft.entity.ai.pathing.BirdNavigation;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -22,37 +30,68 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOnryoji>
 {
+	
     public static final TrackedData<Integer> ANIMATING = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
 	public static final TrackedData<NbtCompound> LOG_NBT = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
+	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	public static final TrackedData<EntityPose> TREE_POSE = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.ENTITY_POSE);
 	public static final TrackedData<Integer> BARK = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
 	public final AnimationManager<EntityOnryoji> animations = new AnimationManager<>(1);
-	
-	private BehaviourTree behaviourTree = new BehaviourTree();
+
+	private static final TreeNode<?> TREE = OnryojiTree.get();
+	private BehaviourTree behaviourTree = new BehaviourTree(TREE);
 	
 	@SuppressWarnings("unchecked")
-	protected LocalWhiteboard<EntityOnryoji> boardLocal = (LocalWhiteboard<EntityOnryoji>)(new LocalWhiteboard<EntityOnryoji>(this)).build();
+	protected LocalWhiteboard<EntityOnryoji> boardLocal = (LocalWhiteboard<EntityOnryoji>)(new OnryojiTree.OnryojiWhiteboard(this)).build();
 	
 	public EntityOnryoji(EntityType<? extends HostileEntity> entityType, World world)
 	{
 		super(entityType, world);
 		animations.start(0, this.age);
+		this.moveControl = new FlightMoveControl(this, 20, true);
 	}
 	
 	public void initDataTracker()
 	{
 		super.initDataTracker();
 		this.getDataTracker().startTracking(ANIMATING, 0);
+		this.getDataTracker().startTracking(TREE_NBT, TREE.write(new NbtCompound()));
 		this.getDataTracker().startTracking(LOG_NBT, new NbtCompound());
 		this.getDataTracker().startTracking(TREE_POSE, EntityPose.STANDING);
 		this.getDataTracker().startTracking(BARK, Bark.NONE.ordinal());
 	}
 	
+	public static DefaultAttributeContainer.Builder createOnryojiAttributes()
+	{
+		return HostileEntity.createHostileAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 300).add(EntityAttributes.GENERIC_FLYING_SPEED, 0.7f);
+	}
+	
 	public boolean hasNoGravity() { return true; }
+	
+	public void fall(double heightDifference, boolean onGround, BlockState state, BlockPos landedPosition) { }
+	
+	protected EntityNavigation createNavigation(World world)
+	{
+		BirdNavigation birdNavigation = new BirdNavigation(this, world)
+				{
+					public boolean isValidPosition(BlockPos pos)
+					{
+						for(int i=3; i>0; i--)
+							if(!world.getBlockState(pos.down(i)).isAir())
+								return false;
+						return true;
+					}
+				};
+		birdNavigation.setCanPathThroughDoors(true);
+		birdNavigation.setCanSwim(false);
+		birdNavigation.setCanEnterOpenDoors(true);
+		return birdNavigation;
+	}
 	
 	public ItemStack getStack(int slot) { return getEquippedStack(ITricksyMob.INDEX_TO_SLOT_MAP.get(slot)); }
 	
@@ -68,7 +107,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	
 	public boolean hasColor() { return false; }
 	
-	public BehaviourTree getBehaviourTree() { return this.behaviourTree; }
+	public BehaviourTree getBehaviourTree() { return getWorld().isClient() ? BehaviourTree.create(getDataTracker().get(TREE_NBT)) : this.behaviourTree; }
 	
 	public void setLatestLog(NodeStatusLog logIn) { this.getDataTracker().set(LOG_NBT, logIn.writeToNbt(new NbtCompound())); }
 	
@@ -108,5 +147,15 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 					this.animations.start(getDataTracker().get(ANIMATING), this.age);
 					break;
 			}
+	}
+	
+	public void tick()
+	{
+		super.tick();
+		if(!hasCustomer() && !isAiDisabled())
+			ITricksyMob.updateBehaviourTree(this);
+		
+//		if(this.barkTicks > 0 && --this.barkTicks == 0)
+//			getDataTracker().set(BARK, Bark.NONE.ordinal());
 	}
 }

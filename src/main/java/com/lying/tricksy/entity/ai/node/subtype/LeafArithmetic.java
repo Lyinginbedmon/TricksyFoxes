@@ -18,6 +18,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
@@ -26,6 +27,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.random.Random;
 
 public class LeafArithmetic extends NodeGroupLeaf
 {
@@ -35,6 +37,8 @@ public class LeafArithmetic extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> GET_COORD;
 	public static NodeSubType<LeafNode> COMPOSE;
 	public static NodeSubType<LeafNode> OFFSET;
+	public static NodeSubType<LeafNode> RANDOM;
+	public static NodeSubType<LeafNode> RANDOM_POS;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_arithmetic"); }
 	
@@ -43,20 +47,18 @@ public class LeafArithmetic extends NodeGroupLeaf
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
 		set.add(ADD = subtype(ISubtypeGroup.variant("addition"), new GetterHandlerUntyped(TFObjType.INT, TFObjType.BLOCK)
 		{
-			private static final WhiteboardRef SUBTRACT = new WhiteboardRef("subtract", TFObjType.BOOL).displayName(CommonVariables.translate("subtract"));
-			
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
 				set.put(CommonVariables.VAR_A, NUM_OR_POS);
-				set.put(CommonVariables.VAR_B, NUM_OR_POS);
-				set.put(SUBTRACT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
+				set.put(CommonVariables.VAR_B, NodeInput.makeInput(ref -> ref.type().castableTo(TFObjType.INT) || ref.type().castableTo(TFObjType.BLOCK)));
+				set.put(CommonVariables.SUBTRACT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<?> intA = getOrDefault(CommonVariables.VAR_A, parent, whiteboards);
 				IWhiteboardObject<?> intB = getOrDefault(CommonVariables.VAR_B, parent, whiteboards);
-				int mul = getOrDefault(SUBTRACT, parent, whiteboards).as(TFObjType.BOOL).get() ? -1 : 1;
+				int mul = getOrDefault(CommonVariables.SUBTRACT, parent, whiteboards).as(TFObjType.BOOL).get() ? -1 : 1;
 				
 				// Add an integer to all coordinates of a position
 				if(intA.type() != intB.type())
@@ -72,6 +74,7 @@ public class LeafArithmetic extends NodeGroupLeaf
 				else if(intA.type() == TFObjType.BLOCK)
 					return new WhiteboardObjBlock(intA.as(TFObjType.BLOCK).get().add(intB.as(TFObjType.BLOCK).get().multiply(mul)));
 				
+				parent.logStatus(TFNodeStatus.INPUT_ERROR);
 				return null;
 			}
 		}));
@@ -82,7 +85,7 @@ public class LeafArithmetic extends NodeGroupLeaf
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
 				set.put(CommonVariables.VAR_A, NUM_OR_POS);
-				set.put(CommonVariables.VAR_B, NUM_OR_POS);
+				set.put(CommonVariables.VAR_B, NodeInput.makeInput(ref -> ref.type().castableTo(TFObjType.INT) || ref.type().castableTo(TFObjType.BLOCK)));
 				set.put(DIV, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
 			}
 			
@@ -154,22 +157,18 @@ public class LeafArithmetic extends NodeGroupLeaf
 		}));
 		set.add(COMPOSE = subtype(ISubtypeGroup.variant("compose_position"), new GetterHandlerTyped<BlockPos>(TFObjType.BLOCK)
 		{
-			public static final WhiteboardRef X = new WhiteboardRef("x_coord", TFObjType.INT).displayName(Text.literal("X"));
-			public static final WhiteboardRef Y = new WhiteboardRef("y_coord", TFObjType.INT).displayName(Text.literal("Y"));
-			public static final WhiteboardRef Z = new WhiteboardRef("z_coord", TFObjType.INT).displayName(Text.literal("Z"));
-			
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
-				set.put(X, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
-				set.put(Y, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
-				set.put(Z, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
+				set.put(CommonVariables.X, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
+				set.put(CommonVariables.Y, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
+				set.put(CommonVariables.Z, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				int x = getOrDefault(X, parent, whiteboards).as(TFObjType.INT).get();
-				int y = getOrDefault(Y, parent, whiteboards).as(TFObjType.INT).get();
-				int z = getOrDefault(Z, parent, whiteboards).as(TFObjType.INT).get();
+				int x = getOrDefault(CommonVariables.X, parent, whiteboards).as(TFObjType.INT).get();
+				int y = getOrDefault(CommonVariables.Y, parent, whiteboards).as(TFObjType.INT).get();
+				int z = getOrDefault(CommonVariables.Z, parent, whiteboards).as(TFObjType.INT).get();
 				return new WhiteboardObjBlock(new BlockPos(x, y, z));
 			}
 		}));
@@ -191,6 +190,43 @@ public class LeafArithmetic extends NodeGroupLeaf
 				BlockPos pos = intA.get();
 				Direction face = ((WhiteboardObjBlock)intB).direction();
 				return new WhiteboardObjBlock(pos.offset(face, num), ((WhiteboardObjBlock)intA).direction());
+			}
+		}));
+		set.add(RANDOM = subtype(ISubtypeGroup.variant("random"), new GetterHandlerTyped<Integer>(TFObjType.INT)
+		{
+			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
+			{
+				set.put(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(3), Text.literal("3")));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				int range = Math.max(1, getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT).get());
+				return new WhiteboardObj.Int(tricksy.getRandom().nextInt(range));
+			}
+		}));
+		set.add(RANDOM_POS = subtype(ISubtypeGroup.variant("random_position"), new GetterHandlerTyped<BlockPos>(TFObjType.BLOCK) 
+		{
+			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
+			{
+				set.put(CommonVariables.X, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(3), Text.literal("3")));
+				set.put(CommonVariables.Y, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(3), Text.literal("3")));
+				set.put(CommonVariables.Z, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(3), Text.literal("3")));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				int x = getOrDefault(CommonVariables.X, parent, whiteboards).as(TFObjType.INT).get();
+				int y = getOrDefault(CommonVariables.Y, parent, whiteboards).as(TFObjType.INT).get();
+				int z = getOrDefault(CommonVariables.Z, parent, whiteboards).as(TFObjType.INT).get();
+				
+				Random rand = tricksy.getRandom();
+				x = x < 1 ? 0 : rand.nextBetween(-x, x);
+				y = y < 1 ? 0 : rand.nextBetween(-y, y);
+				z = z < 1 ? 0 : rand.nextBetween(-z, z);
+				BlockPos pos = new BlockPos(x, y, z);
+				
+				return new WhiteboardObjBlock(pos);
 			}
 		}));
 		return set;

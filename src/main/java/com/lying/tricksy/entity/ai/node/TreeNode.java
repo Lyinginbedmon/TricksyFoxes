@@ -21,16 +21,22 @@ import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.reference.Reference;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.math.BlockPos;
 
 /**
  * Base class for behaviour tree nodes.
@@ -48,6 +54,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	private Text customName = null;
 	private boolean hideChildren = false;
+	// TODO Implement isSilent, to prevent a node from emitting any sound events
+	private boolean isSilent = false;
 	
 	/** The primary node type */
 	private final NodeType<N> nodeType;
@@ -75,6 +83,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	public int width, height;
 	
 	private NodeStatusLog currentLog = new NodeStatusLog();
+	private boolean loggedThisTick = false;
 	
 	protected TreeNode(NodeType<N> typeIn, UUID uuidIn)
 	{
@@ -157,6 +166,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** Returns true if discretion is permitted and this node should not display its children */
 	public final boolean isDiscrete(boolean permitted) { return permitted && (this.hideChildren && hasChildren() && !isRoot()); }
 	
+	public final TreeNode<N> silent() { this.isSilent = true; return this; }
+	
 	public final NodeType<?> getType() { return this.nodeType; }
 	
 	public final void changeSubType(int dir)
@@ -191,7 +202,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	public final NodeSubType<N> getSubType() { return nodeType.getSubType(this.subType); }
 	
 	/** Returns true if any value is assigned to the given input */
-	public final boolean inputAssigned(WhiteboardRef reference)
+	public final boolean isIOAssigned(WhiteboardRef reference)
 	{
 		return assignedIO.entrySet().stream().anyMatch(entry -> entry.getKey().isSameRef(reference) && entry.getValue().isPresent());
 	}
@@ -223,7 +234,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	@Nullable
 	public final INodeIOValue getIO(WhiteboardRef reference)
 	{
-		if(inputAssigned(reference))
+		if(isIOAssigned(reference))
 			return assignedIO.entrySet().stream().filter(entry -> entry.getKey().isSameRef(reference)).findFirst().get().getValue().get();
 		return null;
 	}
@@ -234,10 +245,12 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		if(!isRunnable())
 			return this.lastResult = Result.FAILURE;
 		
+		this.loggedThisTick = false;
+		
 		NodeSubType<N> subType = nodeType.getSubType(this.subType);
 		if(whiteboards.local().isNodeCoolingDown(subType))
 		{
-			getLog().logCold(getID());
+			logStatus(TFNodeStatus.ON_COOLDOWN);
 			return Result.FAILURE;
 		}
 		
@@ -267,15 +280,63 @@ public abstract class TreeNode<N extends TreeNode<?>>
 					whiteboards.local().flagAction(subType.usesFlags());
 			}
 			catch(Exception e) { }
+		else
+			logStatus(TFNodeStatus.FLAGS_OCCUPIED);
 		
-		getLog().logStatus(getID(), result);
+		if(!this.loggedThisTick)
+			switch(result)
+			{
+				case SUCCESS:
+					logStatus(TFNodeStatus.SUCCESS);
+					break;
+				case FAILURE:
+					logStatus(TFNodeStatus.FAILURE);
+					break;
+				case RUNNING:
+					logStatus(TFNodeStatus.RUNNING);
+					break;
+			}
 		return this.lastResult = result;
+	}
+	
+	public void playSound(Entity tricksy, SoundEvent sound, float volume, float pitch)
+	{
+		if(isSilent) return;
+		tricksy.playSound(sound, volume, pitch);
+	}
+	
+	public void playSound(Entity tricksy, BlockPos position, SoundEvent sound, SoundCategory category, float volume, float pitch)
+	{
+		if(isSilent) return;
+		tricksy.getWorld().playSound(null, position, sound, category, volume, pitch);
+	}
+	
+	public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch)
+	{
+		if(isSilent) return;
+		entity.getWorld().playSoundFromEntity(null, entity, sound, category, volume, pitch);
 	}
 	
 	public NodeStatusLog getLog()
 	{
 		return isRoot() ? this.currentLog : this.parent().getLog();
 	}
+	
+	public void logStatus(TFNodeStatus status)
+	{
+		if(!hasLogged())
+			getLog().logStatus(getID(), status);
+		this.loggedThisTick = true;
+	}
+	
+	public void logStatus(TFNodeStatus status, Text message)
+	{
+		if(!hasLogged())
+			getLog().logStatus(getID(), status, message);
+		this.loggedThisTick = true;
+	}
+	
+	public boolean hasLogged() { return this.loggedThisTick; }
 	
 	public void tickLog() { this.currentLog.tick(); }
 	
@@ -420,6 +481,9 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			if(children.size() > 0)
 				parent.hideChildren = data.getBoolean("Discrete");
 			
+			if(data.contains("Silent"))
+				parent.isSilent = data.getBoolean("Silent");
+			
 			return parent;
 		}
 		return null;
@@ -479,6 +543,9 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			
 			data.putBoolean("Discrete", this.hideChildren);
 		}
+		
+		if(this.isSilent)
+			data.putBoolean("Silent", true);
 		
 		if(hasCustomName())
 			data.putString("CustomName", Text.Serializer.toJson(this.customName));

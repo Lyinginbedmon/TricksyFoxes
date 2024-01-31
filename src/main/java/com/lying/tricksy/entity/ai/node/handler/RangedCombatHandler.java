@@ -8,6 +8,7 @@ import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.LivingEntity;
@@ -39,7 +40,10 @@ public abstract class RangedCombatHandler extends CombatHandler
 			return Result.RUNNING;
 		
 		if(target.isInvulnerable())
+		{
+			parent.logStatus(TFNodeStatus.INPUT_ERROR);
 			return Result.FAILURE;
+		}
 		
 		if(tricksy.getItemUseTime() >= getDrawTime())
 		{

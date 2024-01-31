@@ -19,6 +19,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
 
 import net.minecraft.block.BlockState;
@@ -63,50 +64,50 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 	}
 	
 	/** Returns true if the operational needs of this handler have been met */
-	public default boolean inputsSufficient(M parent) { return !anyInputMissing(parent); }
+	public default boolean iosSufficient(M parent) { return !anyIOUnsatisfied(parent); }
 	
 	/**
 	 * Returns true if any variable in {@link inputSet} is unassigned in the given parent node<br>
 	 * Note: This does NOT account for whether a whiteboard target value is empty or not.
 	 */
-	public default boolean anyInputMissing(M parent)
+	public default boolean anyIOUnsatisfied(M parent)
 	{
-		if(ioSet().isEmpty())
-			return false;
-		
-		for(Entry<WhiteboardRef, INodeIO> entry : ioSet().entrySet())
+		return ioSet().isEmpty() ? false : ioSet().entrySet().stream().anyMatch(entry -> 
 		{
 			INodeIO qualifier = entry.getValue();
 			if(qualifier.isOptional() || qualifier.type() == Type.OUTPUT)
-				continue;
-			else
+				return false;
+			
+			INodeIOValue assigned = parent.getIO(entry.getKey());
+			if(assigned == null)
 			{
-				INodeIOValue assigned = parent.getIO(entry.getKey());
-				if(assigned == null)
-					return true;
-				
-				// Ensure assigned value is appropriate for this input
-				switch(assigned.type())
-				{
-					case STATIC:
-						// Static values are presumed to be appropriate at input
-						break;
-					case WHITEBOARD:
-						if(!qualifier.predicate().test(((WhiteboardValue)assigned).assignment()))
-							return true;
-						break;
-				}
+				parent.logStatus(TFNodeStatus.MISSING_IO, entry.getKey().displayName());
+				return true;
 			}
-		}
-		
-		return false;
+			
+			// Ensure assigned value is appropriate for this input
+			switch(assigned.type())
+			{
+				// Static values are presumed to be appropriate at point of input
+				case STATIC:
+					return false;
+				case WHITEBOARD:
+					if(!qualifier.predicate().test(((WhiteboardValue)assigned).assignment()))
+					{
+						parent.logStatus(TFNodeStatus.BAD_IO, entry.getKey().displayName());
+						return true;
+					}
+			}
+			
+			return false;
+		});
 	}
 	
 	/** Returns the value associated with the given input by the given parent node, or its default value if it is optional */
 	@Nullable
 	public default IWhiteboardObject<?> getOrDefault(WhiteboardRef input, M parent, WhiteboardManager<?> whiteboards)
 	{
-		if(!parent.inputAssigned(input))
+		if(!parent.isIOAssigned(input))
 			return ioCondition(input).isOptional() ? ioCondition(input).defaultValue().get() : null;
 		else
 			return parent.getIO(input).get(whiteboards);

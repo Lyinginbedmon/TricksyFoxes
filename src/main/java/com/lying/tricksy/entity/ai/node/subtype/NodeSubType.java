@@ -17,6 +17,7 @@ import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.EntityType;
@@ -82,8 +83,13 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, WhiteboardManager<T> whiteboards, M parent)
 	{
-		if(!tickFunc.inputsSufficient(parent) || !isValidFor(tricksy.getType()))
+		if(!tickFunc.iosSufficient(parent))
 			return Result.FAILURE;
+		else if(!isValidFor(tricksy.getType()))
+		{
+			parent.logStatus(TFNodeStatus.INVALID_USER);
+			return Result.FAILURE;
+		}
 		
 		return tickFunc.doTick(tricksy, whiteboards, parent);
 	}

@@ -19,6 +19,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
@@ -61,13 +62,16 @@ public abstract class CombatHandler implements INodeTickHandler<LeafNode>
 		IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
 		
 		Entity ent = null;
-		if(!parent.inputAssigned(TARGET))
+		if(!parent.isIOAssigned(TARGET))
 			ent = tricksy.getTarget();
 		else
 			ent = value.get();
 		
 		if(ent == tricksy || ent == null || !VALID_TARGET.apply(ent))
+		{
+			parent.logStatus(TFNodeStatus.INPUT_ERROR);
 			return Result.FAILURE;
+		}
 		
 		tricksy.lookAtEntity(ent, 10F, tricksy.getMaxLookPitchChange());
 		tricksy.setAttacking(true);

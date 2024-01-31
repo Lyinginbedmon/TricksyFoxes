@@ -25,6 +25,10 @@ public class CommonVariables
 	/** A receiver entity */
 	public static final WhiteboardRef TARGET_ENT = new WhiteboardRef("target", TFObjType.ENT).displayName(translate("ref_ent"));
 	public static final WhiteboardRef VAR_ITEM = new WhiteboardRef("item", TFObjType.ITEM).displayName(translate("item"));
+	public static final WhiteboardRef X = new WhiteboardRef("x_coord", TFObjType.INT).displayName(Text.literal("X"));
+	public static final WhiteboardRef Y = new WhiteboardRef("y_coord", TFObjType.INT).displayName(Text.literal("Y"));
+	public static final WhiteboardRef Z = new WhiteboardRef("z_coord", TFObjType.INT).displayName(Text.literal("Z"));
+	public static final WhiteboardRef SUBTRACT = new WhiteboardRef("subtract", TFObjType.BOOL).displayName(translate("subtract"));
 	
 	public static Text translate(String nameIn) { return Text.translatable("variable."+Reference.ModInfo.MOD_ID+"."+nameIn); }
 }

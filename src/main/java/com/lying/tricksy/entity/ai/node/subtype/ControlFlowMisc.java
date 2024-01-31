@@ -10,6 +10,7 @@ import com.lying.tricksy.entity.ai.node.ControlFlowNode;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -28,26 +29,22 @@ public class ControlFlowMisc extends NodeGroupControlFlow
 	public Collection<NodeSubType<ControlFlowNode>> getSubtypes()
 	{
 		List<NodeSubType<ControlFlowNode>> set = Lists.newArrayList();
-		set.add(SEQUENCE = subtype(VARIANT_SEQUENCE, new INodeTickHandler<ControlFlowNode>() 
+		set.add(SEQUENCE = subtype(VARIANT_SEQUENCE, new ControlFlowHandler() 
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{
-				if(!parent.children().isEmpty())
+				TreeNode<?> child = parent.children().get(parent.index % parent.children().size());
+				switch(child.tick(tricksy, whiteboards))
 				{
-					TreeNode<?> child = parent.children().get(parent.index % parent.children().size());
-					switch(child.tick(tricksy, whiteboards))
-					{
-						case FAILURE:
-							return Result.FAILURE;
-						case SUCCESS:
-							if(++parent.index == parent.children().size())
-								return Result.SUCCESS;
-						case RUNNING:
-						default:
-							return Result.RUNNING;
-					}
+					case FAILURE:
+						return Result.FAILURE;
+					case SUCCESS:
+						if(++parent.index == parent.children().size())
+							return Result.SUCCESS;
+					case RUNNING:
+					default:
+						return Result.RUNNING;
 				}
-				return Result.SUCCESS;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, ControlFlowNode parent)
@@ -55,13 +52,10 @@ public class ControlFlowMisc extends NodeGroupControlFlow
 				parent.index = 0;
 			}
 		}));
-		set.add(SELECTOR = subtype(ISubtypeGroup.variant("selector"), new INodeTickHandler<ControlFlowNode>() 
+		set.add(SELECTOR = subtype(ISubtypeGroup.variant("selector"), new ControlFlowHandler() 
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{
-				if(parent.children().isEmpty())
-					return Result.FAILURE;
-				
 				if(!parent.isRunning())
 				{
 					// Find first viable child node
@@ -85,7 +79,7 @@ public class ControlFlowMisc extends NodeGroupControlFlow
 				}
 			}
 		}));
-		set.add(REACTIVE = subtype(ISubtypeGroup.variant("reactive"), new INodeTickHandler<ControlFlowNode>() 
+		set.add(REACTIVE = subtype(ISubtypeGroup.variant("reactive"), new ControlFlowHandler() 
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{
@@ -117,5 +111,18 @@ public class ControlFlowMisc extends NodeGroupControlFlow
 			}
 		}));
 		return set;
+	}
+	
+	private abstract class ControlFlowHandler implements INodeTickHandler<ControlFlowNode>
+	{
+		public boolean iosSufficient(ControlFlowNode parent)
+		{
+			if(!parent.hasChildren())
+			{
+				parent.logStatus(TFNodeStatus.NO_CHILDREN);
+				return false;
+			}
+			return INodeTickHandler.super.iosSufficient(parent);
+		}
 	}
 }

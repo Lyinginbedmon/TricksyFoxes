@@ -20,6 +20,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
@@ -45,7 +46,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 	public Collection<NodeSubType<DecoratorNode>> getSubtypes()
 	{
 		List<NodeSubType<DecoratorNode>> set = Lists.newArrayList();
-		set.add(INVERTER = subtype(VARIANT_INVERTER, new INodeTickHandler<DecoratorNode>()
+		set.add(INVERTER = subtype(VARIANT_INVERTER, new DecoratorHandler()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
@@ -61,21 +62,21 @@ public class DecoratorMisc extends NodeGroupDecorator
 				return Result.FAILURE;
 			}
 		}));
-		set.add(FORCE_FAILURE = subtype(ISubtypeGroup.variant("force_failure"), new INodeTickHandler<DecoratorNode>()
+		set.add(FORCE_FAILURE = subtype(ISubtypeGroup.variant("force_failure"), new DecoratorHandler()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
 				return parent.child().tick(tricksy, whiteboards).isEnd() ? Result.FAILURE : Result.RUNNING;
 			}
 		}));
-		set.add(FORCE_SUCCESS = subtype(ISubtypeGroup.variant("force_success"), new INodeTickHandler<DecoratorNode>()
+		set.add(FORCE_SUCCESS = subtype(ISubtypeGroup.variant("force_success"), new DecoratorHandler()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
 				return parent.child().tick(tricksy, whiteboards).isEnd() ? Result.SUCCESS : Result.RUNNING;
 			}
 		}));
-		set.add(DELAY = subtype(ISubtypeGroup.variant("delay"), new INodeTickHandler<DecoratorNode>()
+		set.add(DELAY = subtype(ISubtypeGroup.variant("delay"), new DecoratorHandler()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -93,7 +94,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 				return Result.RUNNING;
 			}
 		}));
-		set.add(FOR_EACH = subtype(ISubtypeGroup.variant("for_each"), new INodeTickHandler<DecoratorNode>()
+		set.add(FOR_EACH = subtype(ISubtypeGroup.variant("for_each"), new DecoratorHandler()
 		{
 			public static final WhiteboardRef LIST = new WhiteboardRef("value_to_cycle", TFObjType.BOOL).displayName(CommonVariables.translate("to_cycle"));
 			
@@ -125,7 +126,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 				}
 			}
 		}));
-		set.add(REPEAT = subtype(ISubtypeGroup.variant("repeat"), new INodeTickHandler<DecoratorNode>()
+		set.add(REPEAT = subtype(ISubtypeGroup.variant("repeat"), new DecoratorHandler()
 		{
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -148,7 +149,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 				return Result.RUNNING;
 			}
 		}));
-		set.add(RETRY = subtype(ISubtypeGroup.variant("retry"), new INodeTickHandler<DecoratorNode>()
+		set.add(RETRY = subtype(ISubtypeGroup.variant("retry"), new DecoratorHandler()
 		{
 			public @NotNull Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -171,7 +172,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 				return Result.RUNNING;
 			}
 		}));
-		set.add(DO_ONCE = subtype(ISubtypeGroup.variant("do_once"), new INodeTickHandler<DecoratorNode>()
+		set.add(DO_ONCE = subtype(ISubtypeGroup.variant("do_once"), new DecoratorHandler()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
@@ -187,7 +188,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 				return Result.RUNNING;
 			}
 		}));
-		set.add(WAIT_FOR_COOLDOWN = subtype(ISubtypeGroup.variant("wait_for_cooldown"), new INodeTickHandler<DecoratorNode>()
+		set.add(WAIT_FOR_COOLDOWN = subtype(ISubtypeGroup.variant("wait_for_cooldown"), new DecoratorHandler()
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
@@ -210,5 +211,18 @@ public class DecoratorMisc extends NodeGroupDecorator
 			}
 		}));
 		return set;
+	}
+	
+	private abstract class DecoratorHandler implements INodeTickHandler<DecoratorNode>
+	{
+		public boolean iosSufficient(DecoratorNode parent)
+		{
+			if(!parent.hasChildren())
+			{
+				parent.logStatus(TFNodeStatus.NO_CHILDREN);
+				return false;
+			}
+			return INodeTickHandler.super.iosSufficient(parent);
+		}
 	}
 }

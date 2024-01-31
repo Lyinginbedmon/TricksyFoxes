@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
@@ -22,6 +23,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
@@ -49,6 +51,7 @@ public class ConditionMisc extends NodeGroupCondition
 	public static NodeSubType<ConditionNode> IS_MATURE;
 	public static NodeSubType<ConditionNode> IS_LEASHED_TO;
 	
+	public static NodeSubType<ConditionNode> CAN_PATH_TO;
 	public static NodeSubType<ConditionNode> CLOSER_THAN;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_misc"); }
@@ -70,26 +73,32 @@ public class ConditionMisc extends NodeGroupCondition
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				// Value A - mandatory
-				IWhiteboardObject<?> objPosA = getOrDefault(CommonVariables.VAR_POS_A, parent, whiteboards);
+				IWhiteboardObject<BlockPos> objPosA = getOrDefault(CommonVariables.VAR_POS_A, parent, whiteboards).as(TFObjType.BLOCK);
 				if(objPosA.isEmpty())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				BlockPos posA = objPosA.as(TFObjType.BLOCK).get();
 				
 				// Value B - optional, defaults to mob's position
-				IWhiteboardObject<?> objPosB = getOrDefault(CommonVariables.VAR_POS_B, parent, whiteboards);
 				BlockPos posB;
-				if(objPosB.isEmpty())
+				if(parent.isIOAssigned(CommonVariables.VAR_POS_B))
 				{
-					if(objPosB.size() == 0)
-						posB = tricksy.getBlockPos();
-					else
+					IWhiteboardObject<BlockPos> objPosB = getOrDefault(CommonVariables.VAR_POS_B, parent, whiteboards).as(TFObjType.BLOCK);
+					if(objPosB.isEmpty())
+					{
+						parent.logStatus(TFNodeStatus.INPUT_ERROR);
 						return Result.FAILURE;
+					}
+					else
+						posB = objPosB.get();
 				}
 				else
-					posB = objPosB.as(TFObjType.BLOCK).get();
+					posB = tricksy.getBlockPos();
 				
 				int dist = getOrDefault(CommonVariables.VAR_DIS, parent, whiteboards).as(TFObjType.INT).get();
-				return Math.sqrt(posA.getSquaredDistance(posB)) < dist ? Result.SUCCESS : Result.FAILURE;
+				return posA.getSquaredDistance(posB) < (dist * dist) ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 		set.add(BLOCK_POWERED = subtype(ISubtypeGroup.variant("block_powered"), new INodeTickHandler<ConditionNode>()
@@ -118,7 +127,10 @@ public class ConditionMisc extends NodeGroupCondition
 				
 				Entity ent = var.size() == 0 ? tricksy : var.get();
 				if(ent == null || !(ent instanceof LivingEntity))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				return ((LivingEntity)ent).isOnFire() ? Result.SUCCESS : Result.FAILURE;
 			}
@@ -144,7 +156,10 @@ public class ConditionMisc extends NodeGroupCondition
 				World world = tricksy.getWorld();
 				BlockState state = world.getBlockState(blockPos);
 				if(state.isAir() || state.getHardness(world, blockPos) < 0F)
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				ServerFakePlayer player = ServerFakePlayer.makeForMob(tricksy, BUILDER_ID);
 				player.setStackInHand(Hand.MAIN_HAND, stack.copy());
@@ -232,13 +247,29 @@ public class ConditionMisc extends NodeGroupCondition
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				IWhiteboardObject<Entity> leashed = getOrDefault(ENT_A, parent, whiteboards).as(TFObjType.ENT);
-				IWhiteboardObject<Entity> holder = parent.inputAssigned(ENT_B) ? getOrDefault(ENT_B, parent, whiteboards).as(TFObjType.ENT) : new WhiteboardObjEntity(tricksy);
+				IWhiteboardObject<Entity> holder = parent.isIOAssigned(ENT_B) ? getOrDefault(ENT_B, parent, whiteboards).as(TFObjType.ENT) : new WhiteboardObjEntity(tricksy);
 				
 				if(leashed.isEmpty() || !leashed.get().isAlive() || !(leashed.get() instanceof MobEntity))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				MobEntity mob = (MobEntity)leashed.get();
 				return mob.getHoldingEntity() == holder.get() ? Result.SUCCESS : Result.FAILURE;
+			}
+		}));
+		set.add(CAN_PATH_TO = subtype(ISubtypeGroup.variant("can_path_to"), new INodeTickHandler<ConditionNode>()
+		{
+			public Map<WhiteboardRef, INodeIO> ioSet()
+			{
+				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			{
+				BlockPos pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK).get();
+				return tricksy.getNavigation().findPathToAny(ImmutableSet.of(pos), 100, false, 1, 128F) != null ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 		return set;

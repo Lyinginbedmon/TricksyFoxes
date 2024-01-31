@@ -29,6 +29,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFSoundEvents;
 import com.lying.tricksy.reference.Reference;
@@ -92,23 +93,23 @@ public class LeafWhiteboard extends NodeGroupLeaf
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				IWhiteboardObject<?> value = getOrDefault(COPY, parent, whiteboards);
+				IWhiteboardObject<?> copiedValue = getOrDefault(COPY, parent, whiteboards);
 				INodeIOValue targetVal = parent.getIO(DEST);
-				WhiteboardRef target = targetVal.type() == Type.WHITEBOARD ? ((WhiteboardValue)targetVal).assignment() : null;
-				if(target == null || target.boardType().isReadOnly())
+				WhiteboardRef destination = targetVal.type() == Type.WHITEBOARD ? ((WhiteboardValue)targetVal).assignment() : null;
+				if(destination == null || destination.boardType().isReadOnly())
 					return Result.FAILURE;
 				
-				if(value.type() != TFObjType.EMPTY)
+				if(copiedValue.type() != TFObjType.EMPTY)
 				{
-					if(!target.type().castableTo(value.type()))
+					if(!copiedValue.type().castableTo(destination.type()))
 						return Result.FAILURE;
 					
-					whiteboards.get(target.boardType()).setValue(target, value.as(target.type()));
+					whiteboards.get(destination.boardType()).setValue(destination, copiedValue.as(destination.type()));
 				}
 				else
-					whiteboards.get(target.boardType()).setValue(target, target.type().blank());
+					whiteboards.get(destination.boardType()).setValue(destination, destination.type().blank());
 				
-				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
+				parent.playSound(tricksy, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
 		}));
@@ -159,15 +160,24 @@ public class LeafWhiteboard extends NodeGroupLeaf
 			{
 				INodeIOValue reference = parent.getIO(VAR_UNSORTED);
 				if(reference.type() != Type.WHITEBOARD)
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 
 				WhiteboardRef dest = ((WhiteboardValue)reference).assignment();
 				if(dest == null || dest.boardType().isReadOnly())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, whiteboards);
 				if(value.isEmpty())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
 				Vec3d origin = (pos.size() == 0 ? tricksy.getBlockPos() : pos.as(TFObjType.BLOCK).get()).toCenterPos();
@@ -190,10 +200,13 @@ public class LeafWhiteboard extends NodeGroupLeaf
 					sorted = result;
 				}
 				else
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				whiteboards.get(dest.boardType()).setValue(dest, sorted);
-				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
+				parent.playSound(tricksy, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
 			
@@ -354,15 +367,24 @@ public class LeafWhiteboard extends NodeGroupLeaf
 			{
 				INodeIOValue reference = parent.getIO(VAR_UNSORTED);
 				if(reference.type() != Type.WHITEBOARD)
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				WhiteboardRef dest = ((WhiteboardValue)reference).assignment();
 				if(dest == null || dest.boardType().isReadOnly())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, whiteboards);
 				if(value.isEmpty())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				boolean inverted = getOrDefault(INVERT, parent, whiteboards).as(TFObjType.BOOL).get();
 				Vec3d origin = inverted ? new Vec3d(0, -1, 0) : new Vec3d(0, 1, 0);
@@ -383,10 +405,13 @@ public class LeafWhiteboard extends NodeGroupLeaf
 					sorted = result;
 				}
 				else
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				whiteboards.get(dest.boardType()).setValue(dest, sorted);
-				tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
+				parent.playSound(tricksy, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 				return Result.SUCCESS;
 			}
 			
@@ -439,14 +464,23 @@ public class LeafWhiteboard extends NodeGroupLeaf
 		{
 			INodeIOValue reference = parent.getIO(VAR_UNSORTED);
 			if(reference.type() != Type.WHITEBOARD)
+			{
+				parent.logStatus(TFNodeStatus.INPUT_ERROR);
 				return Result.FAILURE;
+			}
 			WhiteboardRef dest = ((WhiteboardValue)reference).assignment();
 			if(dest == null || dest.boardType().isReadOnly())
+			{
+				parent.logStatus(TFNodeStatus.INPUT_ERROR);
 				return Result.FAILURE;
+			}
 			
 			IWhiteboardObject<?> value = getOrDefault(VAR_UNSORTED, parent, whiteboards);
 			if(value.isEmpty())
+			{
+				parent.logStatus(TFNodeStatus.INPUT_ERROR);
 				return Result.FAILURE;
+			}
 			
 			IWhiteboardObject<?> pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
 			Vec3d origin = (pos.size() == 0 ? tricksy.getBlockPos() : pos.as(TFObjType.BLOCK).get()).toCenterPos();
@@ -467,10 +501,13 @@ public class LeafWhiteboard extends NodeGroupLeaf
 				sorted = result;
 			}
 			else
+			{
+				parent.logStatus(TFNodeStatus.INPUT_ERROR);
 				return Result.FAILURE;
+			}
 			
 			whiteboards.get(dest.boardType()).setValue(dest, sorted);
-			tricksy.getWorld().playSound(null, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
+			parent.playSound(tricksy, tricksy.getBlockPos(), TFSoundEvents.WHITEBOARD_UPDATED, SoundCategory.NEUTRAL, 1F, 0.75F + tricksy.getRandom().nextFloat());
 			return Result.SUCCESS;
 		}
 		

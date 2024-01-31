@@ -21,6 +21,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 
@@ -67,7 +68,10 @@ public class ConditionInventory extends NodeGroupCondition
 				World world = tricksy.getWorld();
 				BlockEntity tile = world.getBlockEntity(block);
 				if(tile == null || !(tile instanceof Inventory))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				Inventory inv = (Inventory)tile;
 				int exitSlot = -1;

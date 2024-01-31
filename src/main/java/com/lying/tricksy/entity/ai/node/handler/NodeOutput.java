@@ -27,4 +27,6 @@ public class NodeOutput implements INodeIO
 	
 	/** Output IOs can only receive whiteboard references */
 	public final boolean allowStatic() { return false; }
+	
+	public boolean isOptional() { return false; }
 }

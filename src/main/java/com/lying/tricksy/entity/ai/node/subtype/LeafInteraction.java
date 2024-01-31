@@ -21,6 +21,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
+import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
@@ -119,7 +120,10 @@ public class LeafInteraction extends NodeGroupLeaf
 			{
 				IWhiteboardObject<?> value = getOrDefault(TARGET, parent, whiteboards);
 				if(value == null || value.isEmpty() || UNUSABLES.contains(tricksy.getMainHandStack().getItem()))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				if(whiteboards.local().isItemCoolingDown(tricksy.getMainHandStack().getItem()))
 					return Result.RUNNING;
@@ -137,7 +141,10 @@ public class LeafInteraction extends NodeGroupLeaf
 				{
 					Entity entity = value.as(TFObjType.ENT).get();
 					if(value.isEmpty() || !(entity instanceof LivingEntity) || !INodeTickHandler.canInteractWithEntity(tricksy, entity))
+					{
+						parent.logStatus(TFNodeStatus.INPUT_ERROR);
 						return Result.FAILURE;
+					}
 					tricksy.getLookControl().lookAt(entity);
 					result = INodeTickHandler.useHeldOnEntity((LivingEntity)entity, (ServerWorld)tricksy.getWorld(), tricksy, BUILDER_ID);
 				}
@@ -164,7 +171,10 @@ public class LeafInteraction extends NodeGroupLeaf
 			{
 				IWhiteboardObject<BlockPos> blockPos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				if(!INodeTickHandler.canInteractWithBlock(tricksy, blockPos.get()) || blockPos.isEmpty())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				if(whiteboards.local().isItemCoolingDown(tricksy.getMainHandStack().getItem()))
 					return Result.RUNNING;
@@ -194,23 +204,38 @@ public class LeafInteraction extends NodeGroupLeaf
 			{
 				IWhiteboardObject<BlockPos> blockPos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				if(blockPos.isEmpty())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				World world = tricksy.getWorld();
 				if(!world.getGameRules().get(GameRules.DO_MOB_GRIEFING).get())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				BlockPos pos = blockPos.get();
 				if(!INodeTickHandler.canInteractWithBlock(tricksy, pos))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				BlockState state = world.getBlockState(pos);
 				if(state.isAir() || state.getHardness(world, pos) < 0F || state.getBlock() instanceof FluidBlock)
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				ServerFakePlayer player = ServerFakePlayer.makeForMob(tricksy, BUILDER_ID);
 				if(!player.getMainHandStack().getItem().canMine(state, world, pos, player))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
 					return Result.FAILURE;
+				}
 				
 				tricksy.getLookControl().lookAt(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
 				INodeTickHandler.swingHand(tricksy, Hand.MAIN_HAND);
