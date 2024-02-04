@@ -1,10 +1,11 @@
 package com.lying.tricksy.init;
 
-import com.lying.tricksy.entity.EntityFoxFire;
 import com.lying.tricksy.entity.EntityOnryoji;
 import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.entity.EntityTricksyGoat;
 import com.lying.tricksy.entity.EntityTricksyWolf;
+import com.lying.tricksy.entity.projectile.EntityFoxFire;
+import com.lying.tricksy.entity.projectile.EntityOnryojiFire;
 import com.lying.tricksy.reference.Reference;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
@@ -28,11 +29,17 @@ public class TFEntityTypes
 	public static final EntityType<EntityTricksyWolf> TRICKSY_WOLF = register("tricksy_wolf",
 			FabricEntityTypeBuilder.create(SpawnGroup.CREATURE, EntityTricksyWolf::new).dimensions(EntityDimensions.fixed(0.6F, 1.7F)).build());
 	
+	public static final EntityType<EntityOnryoji> ONRYOJI = register("onryoji",
+			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOnryoji::new).dimensions(EntityDimensions.fixed(1.5F, 1.5F)).build());
+	
 	public static final EntityType<EntityFoxFire> FOX_FIRE = register("fox_fire",
 			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityFoxFire::new).dimensions(EntityDimensions.fixed(0.2F, 0.2F)).build());
 	
-	public static final EntityType<EntityOnryoji> ONRYOJI = register("onryoji",
-			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOnryoji::new).dimensions(EntityDimensions.fixed(1.5F, 1.5F)).build());
+	public static final EntityType<EntityOnryojiFire> ONRYOJI_FIRE = register("onryoji_fire",
+			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOnryojiFire::new).dimensions(EntityDimensions.fixed(0.6F, 0.6F)).build());
+	
+//	public static final EntityType<EntityOfuda> OFUDA = register("ofuda",
+//			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOfuda::new).dimensions(EntityDimensions.fixed(0.2F, 0.2F)).build());
 	
 	private static <T extends Entity> EntityType<T> register(String name, EntityType<T> entry)
 	{

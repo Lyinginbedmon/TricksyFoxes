@@ -3,7 +3,7 @@ package com.lying.tricksy;
 import org.lwjgl.glfw.GLFW;
 
 import com.lying.tricksy.config.ClientConfig;
-import com.lying.tricksy.entity.EntityFoxFire;
+import com.lying.tricksy.entity.projectile.EntityFoxFire;
 import com.lying.tricksy.init.TFBlockEntities;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
@@ -25,6 +25,7 @@ import com.lying.tricksy.particle.FoxfireParticle;
 import com.lying.tricksy.particle.LevelUpParticle;
 import com.lying.tricksy.particle.PaperParticle;
 import com.lying.tricksy.renderer.block.ClockworkFriarBlockEntityRenderer;
+import com.lying.tricksy.renderer.entity.EntityOnryojiFireRenderer;
 import com.lying.tricksy.renderer.entity.EntityOnryojiRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyFoxRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyGoatRenderer;
@@ -87,6 +88,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		EntityRendererRegistry.register(TFEntityTypes.TRICKSY_WOLF, EntityTricksyWolfRenderer::new);
 		EntityRendererRegistry.register(TFEntityTypes.ONRYOJI, EntityOnryojiRenderer::new);
 		EntityRendererRegistry.register(TFEntityTypes.FOX_FIRE, context -> new FlyingItemEntityRenderer<EntityFoxFire>(context, 0.75F, true));
+		EntityRendererRegistry.register(TFEntityTypes.ONRYOJI_FIRE, EntityOnryojiFireRenderer::new);
 		
 		BlockEntityRendererFactories.register(TFBlockEntities.CLOCKWORK_FRIAR, ClockworkFriarBlockEntityRenderer::new);
 		

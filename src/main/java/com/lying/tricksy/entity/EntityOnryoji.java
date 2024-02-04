@@ -35,7 +35,6 @@ import net.minecraft.world.World;
 
 public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOnryoji>
 {
-	
     public static final TrackedData<Integer> ANIMATING = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
 	public static final TrackedData<NbtCompound> LOG_NBT = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
