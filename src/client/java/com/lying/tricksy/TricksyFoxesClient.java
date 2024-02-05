@@ -25,6 +25,8 @@ import com.lying.tricksy.particle.FoxfireParticle;
 import com.lying.tricksy.particle.LevelUpParticle;
 import com.lying.tricksy.particle.PaperParticle;
 import com.lying.tricksy.renderer.block.ClockworkFriarBlockEntityRenderer;
+import com.lying.tricksy.renderer.entity.EntityOfudaStuckRenderer;
+import com.lying.tricksy.renderer.entity.EntityOfudaThrownRenderer;
 import com.lying.tricksy.renderer.entity.EntityOnryojiFireRenderer;
 import com.lying.tricksy.renderer.entity.EntityOnryojiRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyFoxRenderer;
@@ -89,6 +91,8 @@ public class TricksyFoxesClient implements ClientModInitializer
 		EntityRendererRegistry.register(TFEntityTypes.ONRYOJI, EntityOnryojiRenderer::new);
 		EntityRendererRegistry.register(TFEntityTypes.FOX_FIRE, context -> new FlyingItemEntityRenderer<EntityFoxFire>(context, 0.75F, true));
 		EntityRendererRegistry.register(TFEntityTypes.ONRYOJI_FIRE, EntityOnryojiFireRenderer::new);
+		EntityRendererRegistry.register(TFEntityTypes.OFUDA_STUCK, EntityOfudaStuckRenderer::new);
+		EntityRendererRegistry.register(TFEntityTypes.OFUDA_THROWN, EntityOfudaThrownRenderer::new);
 		
 		BlockEntityRendererFactories.register(TFBlockEntities.CLOCKWORK_FRIAR, ClockworkFriarBlockEntityRenderer::new);
 		

@@ -5,6 +5,8 @@ import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.entity.EntityTricksyGoat;
 import com.lying.tricksy.entity.EntityTricksyWolf;
 import com.lying.tricksy.entity.projectile.EntityFoxFire;
+import com.lying.tricksy.entity.projectile.EntityOfudaStuck;
+import com.lying.tricksy.entity.projectile.EntityOfudaThrown;
 import com.lying.tricksy.entity.projectile.EntityOnryojiFire;
 import com.lying.tricksy.reference.Reference;
 
@@ -38,8 +40,11 @@ public class TFEntityTypes
 	public static final EntityType<EntityOnryojiFire> ONRYOJI_FIRE = register("onryoji_fire",
 			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOnryojiFire::new).dimensions(EntityDimensions.fixed(0.6F, 0.6F)).build());
 	
-//	public static final EntityType<EntityOfuda> OFUDA = register("ofuda",
-//			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOfuda::new).dimensions(EntityDimensions.fixed(0.2F, 0.2F)).build());
+	public static final EntityType<EntityOfudaThrown> OFUDA_THROWN = register("ofuda_thrown",
+			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOfudaThrown::new).dimensions(EntityDimensions.fixed(0.2F, 0.2F)).build());
+	
+	public static final EntityType<EntityOfudaStuck> OFUDA_STUCK = register("ofuda_stuck",
+			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOfudaStuck::new).dimensions(EntityDimensions.fixed(0.2F, 0.2F)).build());
 	
 	private static <T extends Entity> EntityType<T> register(String name, EntityType<T> entry)
 	{
@@ -55,5 +60,6 @@ public class TFEntityTypes
 		FabricDefaultAttributeRegistry.register(TRICKSY_GOAT, EntityTricksyGoat.createMobAttributes());
 		FabricDefaultAttributeRegistry.register(TRICKSY_WOLF, EntityTricksyWolf.createMobAttributes());
 		FabricDefaultAttributeRegistry.register(ONRYOJI, EntityOnryoji.createOnryojiAttributes());
+		FabricDefaultAttributeRegistry.register(OFUDA_STUCK, EntityOfudaStuck.createOfudaAttributes());
 	}
 }

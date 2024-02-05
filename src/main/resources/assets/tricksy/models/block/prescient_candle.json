@@ -1,5 +1,4 @@
 {
-	"credit": "Made with Blockbench",
 	"parent": "block",
 	"textures": {
 		"0": "tricksy:block/prescient_candle_lit",

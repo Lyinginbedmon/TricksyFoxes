@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import com.lying.tricksy.block.BlockClockworkFriar;
 import com.lying.tricksy.block.BlockFoxFire;
+import com.lying.tricksy.block.BlockOfuda;
 import com.lying.tricksy.block.BlockPrescience;
 import com.lying.tricksy.block.BlockPrescientCandle;
 import com.lying.tricksy.block.BlockWorkTable;
@@ -43,6 +44,7 @@ public class TFBlocks
 	public static final Block CLOCKWORK_FRIAR = register("clockwork_friar", new BlockClockworkFriar(FabricBlockSettings.create().mapColor(MapColor.SPRUCE_BROWN).instrument(Instrument.BASS).pistonBehavior(PistonBehavior.BLOCK).nonOpaque().strength(2.5F).sounds(BlockSoundGroup.WOOD)));
 	public static final Block PRESCIENT_CANDLE = register("prescient_candle", new BlockPrescientCandle(FabricBlockSettings.create().strength(0.1F).sounds(BlockSoundGroup.CANDLE).pistonBehavior(PistonBehavior.DESTROY).luminance(BlockPrescientCandle.LIGHT_LEVEL).nonOpaque().allowsSpawning(TFBlocks::never).solidBlock(TFBlocks::never).suffocates(TFBlocks::never).blockVision(TFBlocks::never)));
 	public static final Block FOX_FIRE = register("fox_fire", new BlockFoxFire(FabricBlockSettings.create().ticksRandomly().replaceable().nonOpaque().noCollision().pistonBehavior(PistonBehavior.DESTROY).luminance(15).allowsSpawning(TFBlocks::never).solidBlock(TFBlocks::never).suffocates(TFBlocks::never).blockVision(TFBlocks::never)));
+	public static final Block OFUDA = register("ofuda", new BlockOfuda(FabricBlockSettings.create().breakInstantly().sounds(BlockSoundGroup.VINE)));
 	
 	private static Block register(String nameIn, Block blockIn)
 	{
