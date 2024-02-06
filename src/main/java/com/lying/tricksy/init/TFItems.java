@@ -7,10 +7,11 @@ import java.util.Map.Entry;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.item.ISealableItem;
-import com.lying.tricksy.item.ItemSageFan;
+import com.lying.tricksy.item.ItemOfuda;
 import com.lying.tricksy.item.ItemPresciencePeriapt;
 import com.lying.tricksy.item.ItemPrescientCandle;
 import com.lying.tricksy.item.ItemPrescientNote;
+import com.lying.tricksy.item.ItemSageFan;
 import com.lying.tricksy.item.ItemSageHat;
 import com.lying.tricksy.item.ItemScripture;
 import com.lying.tricksy.reference.Reference;
@@ -65,7 +66,7 @@ public class TFItems
     public static final Item PERIAPT = register("periapt_prescience", new ItemPresciencePeriapt(new FabricItemSettings().rarity(Rarity.RARE)));
     public static final Item WORK_TABLE_ITEM = register("work_table", new BlockItem(TFBlocks.WORK_TABLE, new FabricItemSettings()));
     public static final Item CLOCKWORK_FRIAR_ITEM = register("clockwork_friar", new BlockItem(TFBlocks.CLOCKWORK_FRIAR, new FabricItemSettings()));
-    public static final Item OFUDA_ITEM = register("ofuda", new BlockItem(TFBlocks.OFUDA, new FabricItemSettings()));
+    public static final Item OFUDA_ITEM = register("ofuda", new ItemOfuda(new FabricItemSettings()));
     
     public static final Item NOTE = register("prescient_note", new ItemPrescientNote(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
     public static final Item NOTE_POS = register("prescient_note_block", new ItemPrescientNote.Block(new FabricItemSettings().rarity(Rarity.UNCOMMON)));

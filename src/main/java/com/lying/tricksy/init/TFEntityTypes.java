@@ -41,7 +41,7 @@ public class TFEntityTypes
 			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOnryojiFire::new).dimensions(EntityDimensions.fixed(0.6F, 0.6F)).build());
 	
 	public static final EntityType<EntityOfudaThrown> OFUDA_THROWN = register("ofuda_thrown",
-			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOfudaThrown::new).dimensions(EntityDimensions.fixed(0.2F, 0.2F)).build());
+			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOfudaThrown::new).dimensions(EntityDimensions.fixed(0.5F, 0.5F)).build());
 	
 	public static final EntityType<EntityOfudaStuck> OFUDA_STUCK = register("ofuda_stuck",
 			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOfudaStuck::new).dimensions(EntityDimensions.fixed(0.2F, 0.2F)).build());
