@@ -23,6 +23,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageSources;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -32,12 +33,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.predicate.entity.EntityPredicates;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Arm;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Direction.Axis;
 import net.minecraft.util.math.Direction.Type;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
 
@@ -131,18 +134,30 @@ public class EntityOfudaStuck extends LivingEntity
 		if(hasTarget())
 		{
 			Optional<Entity> target = getTarget();
-			if(!target.isEmpty())
+			if(target.isEmpty())
+				return;
+			
+			Entity bound = target.get();
+			if(!bound.isAlive())
+				setTarget(null);
+			else if(bound instanceof LivingEntity)
 			{
-				Entity bound = target.get();
-				if(!bound.isAlive())
-					getDataTracker().set(TARGET, Optional.empty());
-				else if(bound instanceof LivingEntity)
+				Vec3d origin = getPos();
+				Vec3d dest = bound.getPos();
+				Vec3d offset = origin.subtract(dest);
+				if(offset.length() > 6D)
 				{
-					if(this.age%Reference.Values.TICKS_PER_SECOND == 0)
-					{
-						((LivingEntity)bound).addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, Reference.Values.TICKS_PER_SECOND * 3, 1, false, false));
-						((LivingEntity)bound).addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, Reference.Values.TICKS_PER_SECOND * 3));
-					}
+					setTarget(null);
+					this.playSound(SoundEvents.ENTITY_ITEM_BREAK, 1F, getSoundPitch());
+					return;
+				}
+				else if(offset.length() > 0.5D)
+					bound.addVelocity(offset.normalize().multiply(offset.length() * 0.05D));
+				
+				if(this.age%Reference.Values.TICKS_PER_SECOND == 0)
+				{
+					((LivingEntity)bound).addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, Reference.Values.TICKS_PER_SECOND * 3, 0, false, false));
+					((LivingEntity)bound).addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, Reference.Values.TICKS_PER_SECOND * 3));
 				}
 			}
 		}
@@ -151,6 +166,13 @@ public class EntityOfudaStuck extends LivingEntity
 	public boolean hasNoGravity()
 	{
 		return super.hasNoGravity() || isStuck();
+	}
+	
+	/** Returns true if a stuck ofuda within 20 blocks of the entity is bound to it */
+	public static boolean isBoundToOfuda(Entity ent)
+	{
+		return ent.getWorld().getEntitiesByType(TFEntityTypes.OFUDA_STUCK, ent.getBoundingBox().expand(20D), EntityPredicates.VALID_ENTITY.and(ofuda -> ((EntityOfudaStuck)ofuda).hasTarget())).stream()
+				.anyMatch(ofuda -> ofuda.getTargetId().equals(ent.getUuid()));
 	}
 	
 	public boolean isStuck()
@@ -173,10 +195,11 @@ public class EntityOfudaStuck extends LivingEntity
 	
 	public boolean isInvulnerableTo(DamageSource damageSource)
 	{
+		DamageSources sources = getWorld().getDamageSources();
 		return 
-				damageSource == getWorld().getDamageSources().inWall() ||
-				damageSource == getWorld().getDamageSources().drown() ||
-				damageSource == getWorld().getDamageSources().fall();
+				damageSource == sources.inWall() ||
+				damageSource == sources.drown() ||
+				damageSource == sources.fall();
 	}
 	
 	protected float getActiveEyeHeight(EntityPose pose, EntityDimensions dimensions)

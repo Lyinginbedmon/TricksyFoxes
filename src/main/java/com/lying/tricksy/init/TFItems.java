@@ -66,7 +66,7 @@ public class TFItems
     public static final Item PERIAPT = register("periapt_prescience", new ItemPresciencePeriapt(new FabricItemSettings().rarity(Rarity.RARE)));
     public static final Item WORK_TABLE_ITEM = register("work_table", new BlockItem(TFBlocks.WORK_TABLE, new FabricItemSettings()));
     public static final Item CLOCKWORK_FRIAR_ITEM = register("clockwork_friar", new BlockItem(TFBlocks.CLOCKWORK_FRIAR, new FabricItemSettings()));
-    public static final Item OFUDA_ITEM = register("ofuda", new ItemOfuda(new FabricItemSettings()));
+    public static final Item OFUDA = register("ofuda", new ItemOfuda(new FabricItemSettings()));
     
     public static final Item NOTE = register("prescient_note", new ItemPrescientNote(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
     public static final Item NOTE_POS = register("prescient_note_block", new ItemPrescientNote.Block(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
@@ -92,6 +92,7 @@ public class TFItems
 			entries.add(SCRIPTURE);
 			entries.add(WORK_TABLE_ITEM);
 			entries.add(CLOCKWORK_FRIAR_ITEM);
+			entries.add(OFUDA);
 	    }).build();
     
     private static Item register(String nameIn, Item itemIn)

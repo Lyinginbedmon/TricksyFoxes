@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,6 +32,9 @@ import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.entity.projectile.EntityFoxFire;
+import com.lying.tricksy.entity.projectile.EntityOfudaStuck;
+import com.lying.tricksy.entity.projectile.EntityOfudaThrown;
+import com.lying.tricksy.entity.projectile.EntityOnryojiFire;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFNodeStatus;
@@ -59,6 +63,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.predicate.entity.EntityPredicates;
@@ -103,6 +108,8 @@ public class LeafSpecial extends NodeGroupLeaf
 	 * Masked foxfire - Launch 3 large foxfire-esque entities that can follow targets
 	 */
 	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;
+	public static NodeSubType<LeafNode> ONRYOJI_OFUDA;
+	public static NodeSubType<LeafNode> ONRYOJI_FOXFIRE;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_special"); }
 	
@@ -248,6 +255,14 @@ public class LeafSpecial extends NodeGroupLeaf
 			}
 		});
 		set.add(ONRYOJI_BALANCE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_balance"), TFNodeTypes.LEAF, leafOnryojiBalance(), ConstantIntProvider.create(Reference.Values.TICKS_PER_MINUTE))
+		{
+			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
+		});
+		set.add(ONRYOJI_OFUDA = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_ofuda"), TFNodeTypes.LEAF, leafOnryojiSealingOfuda(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 10))
+		{
+			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
+		});
+		set.add(ONRYOJI_FOXFIRE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_fireball"), TFNodeTypes.LEAF, leafOnryojiFoxfire(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 7))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
 		});
@@ -960,6 +975,147 @@ public class LeafSpecial extends NodeGroupLeaf
 				}
 				
 				return Result.SUCCESS;
+			}
+		};
+	}
+	
+	public static INodeTickHandler<LeafNode> leafOnryojiSealingOfuda()
+	{
+		return new INodeTickHandler<LeafNode>()
+		{
+			private static final int FIRE_RATE = (int)(Reference.Values.TICKS_PER_SECOND * 0.75D);
+			private final Predicate<Entity> IS_SEALED = EntityOfudaStuck::isBoundToOfuda;
+			private final Predicate<Entity> IS_NOT_SEALED = IS_SEALED.negate();
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS, ActionFlag.LOOK); }
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				if(!parent.isRunning())
+				{
+					if(validTargets(tricksy).isEmpty())
+						return Result.FAILURE;
+					
+					// TODO Implement casting animation
+					
+					parent.nodeRAM.putInt("Count", tricksy.getRandom().nextBetween(1, 3));
+					return Result.RUNNING;
+				}
+				else if(parent.ticksRunning() > Reference.Values.TICKS_PER_SECOND * 4)
+				{
+					parent.logStatus(TFNodeStatus.FAILURE, Text.literal("Couldn't find enough targets"));
+					return Result.FAILURE;
+				}
+				else if(parent.ticksRunning()%FIRE_RATE == 0)
+				{
+					List<LivingEntity> targets = validTargets(tricksy);
+					int count = parent.nodeRAM.getInt("Count");
+					if(!targets.isEmpty())
+						for(LivingEntity target : targets)
+							if(bindTarget(target, tricksy))
+							{
+								--count;
+								tricksy.lookAtEntity(target, 30F, 30F);
+								parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Targeted "+target.getName().getString()));
+								parent.playSound(tricksy, SoundEvents.ENTITY_SNOWBALL_THROW, 1F, tricksy.getSoundPitch());
+								break;
+							}
+					
+					// TODO Store previous targets to exclude from later attacks
+					// TODO Look at most recent target
+					
+					parent.nodeRAM.putInt("Count", count);
+					if(count <= 0)
+						return Result.SUCCESS;
+				}
+				
+				return Result.RUNNING;
+			}
+			
+			public List<LivingEntity> validTargets(LivingEntity tricksy)
+			{
+				List<LivingEntity> targets = Lists.newArrayList();
+				
+				World world = tricksy.getWorld();
+				Box bounds = tricksy.getBoundingBox();
+				targets.addAll(world.getEntitiesByType(EntityType.PLAYER, bounds.expand(45D), EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)));
+				targets.addAll(world.getEntitiesByClass(VillagerEntity.class, bounds.expand(20D), EntityPredicates.VALID_ENTITY));
+				
+				targets.removeIf(IS_SEALED.or(ent -> !tricksy.canSee(ent)));
+				if(targets.size() > 1)
+					targets.sort((a,b) -> 
+					{
+						double distA = a.distanceTo(tricksy);
+						double distB = b.distanceTo(tricksy);
+						return distA < distB ? -1 : distA > distB ? 1 : 0;
+					});
+				return targets;
+			}
+			
+			private boolean bindTarget(LivingEntity target, Entity tricksy)
+			{
+				if(!IS_NOT_SEALED.test(target))
+					return false;
+				
+				EntityOfudaThrown ofuda = TFEntityTypes.OFUDA_THROWN.create(tricksy.getWorld());
+				ofuda.setPosition(tricksy.getX(), tricksy.getEyeY() - 0.1D, tricksy.getZ());
+				
+				double offsetX = target.getX() - ofuda.getX();
+				double offsetY = target.getBodyY(0.25D) - ofuda.getY();
+				double offsetZ = target.getZ() - ofuda.getZ();
+				ofuda.setVelocity(offsetX, offsetY, offsetZ, 1.6f, 0F);
+				
+				tricksy.getWorld().spawnEntity(ofuda);
+				return true;
+			}
+		};
+	}
+	
+	public static INodeTickHandler<LeafNode> leafOnryojiFoxfire()
+	{
+		return new INodeTickHandler<LeafNode>()
+		{
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS, ActionFlag.MOVE); }
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				List<LivingEntity> targets = validTargets(tricksy);
+				if(targets.isEmpty())
+					return Result.FAILURE;
+				
+				EntityOnryojiFire fireball = TFEntityTypes.ONRYOJI_FIRE.create(tricksy.getWorld());
+				fireball.setPosition(tricksy.getX(), tricksy.getBodyY(1.2D), tricksy.getZ());
+				fireball.setOwner(tricksy);
+				
+				LivingEntity target = targets.get(0);
+				double offsetX = target.getX() - fireball.getX();
+				double offsetY = target.getBodyY(0.5D) - fireball.getY();
+				double offsetZ = target.getZ() - fireball.getZ();
+				fireball.setVelocity(offsetX, offsetY, offsetZ, 0.8f, 0F);
+				parent.playSound(tricksy, SoundEvents.ENTITY_BLAZE_SHOOT, 1F, tricksy.getSoundPitch());
+				tricksy.getWorld().spawnEntity(fireball);
+				
+				return Result.FAILURE;
+			}
+			
+			public List<LivingEntity> validTargets(LivingEntity tricksy)
+			{
+				List<LivingEntity> targets = Lists.newArrayList();
+				
+				World world = tricksy.getWorld();
+				Box bounds = tricksy.getBoundingBox();
+				targets.addAll(world.getEntitiesByType(EntityType.PLAYER, bounds.expand(45D), EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)));
+				targets.addAll(world.getEntitiesByClass(VillagerEntity.class, bounds.expand(20D), EntityPredicates.VALID_ENTITY));
+				
+				targets.removeIf(ent -> !tricksy.canSee(ent));
+				if(targets.size() > 1)
+					targets.sort((a,b) -> 
+					{
+						double distA = a.distanceTo(tricksy);
+						double distB = b.distanceTo(tricksy);
+						return distA < distB ? -1 : distA > distB ? 1 : 0;
+					});
+				return targets;
 			}
 		};
 	}

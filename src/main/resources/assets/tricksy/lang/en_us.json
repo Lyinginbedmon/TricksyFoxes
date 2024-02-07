@@ -27,6 +27,7 @@
 	"item.tricksy.scripture.tooltip_paste": "Sneak + Right-click on a mob to paste this behaviour",
 	"item.tricksy.scripture.tooltip_overrule": "Will ignore node exclusivity for the next mob",
 	"item.tricksy.sealed_item": "Sealed %s",
+	"item.tricksy.ofuda": "Sealing Ofuda",
 	"block.tricksy.bottle_prescience": "Bottle O' Prescience",
 	"block.tricksy.work_table": "Work Table",
 	"block.tricksy.clockwork_friar": "Clockwork Friar",
