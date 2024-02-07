@@ -1,5 +1,6 @@
 package com.lying.tricksy.entity;
 
+import java.util.EnumSet;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,15 +34,26 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOnryoji>
+public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOnryoji>, IAnimatedBiped
 {
     public static final TrackedData<Integer> ANIMATING = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
 	public static final TrackedData<NbtCompound> LOG_NBT = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	public static final TrackedData<EntityPose> TREE_POSE = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.ENTITY_POSE);
 	public static final TrackedData<Integer> BARK = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
-	public final AnimationManager<EntityOnryoji> animations = new AnimationManager<>(1);
-
+	public static final TrackedData<Integer> OFUDA = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
+	public static final TrackedData<Integer> COMM = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
+	/*
+	 * 0 - Idle
+	 * 1 - Balance
+	 * 2 - Sealing Ofuda
+	 * 3 - Foxfire
+	 * 4 - Seclusion
+	 * 5 - Twelve Heavenly Commanders
+	 * 6 - Death
+	 */
+	public final AnimationManager<EntityOnryoji> animations = new AnimationManager<>(7);
+	
 	private static final TreeNode<?> TREE = OnryojiTree.get();
 	private BehaviourTree behaviourTree = new BehaviourTree(TREE);
 	
@@ -59,6 +71,9 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	{
 		super.initDataTracker();
 		this.getDataTracker().startTracking(ANIMATING, 0);
+		this.getDataTracker().startTracking(OFUDA, 0);
+		this.getDataTracker().startTracking(COMM, 0);
+		
 		this.getDataTracker().startTracking(TREE_NBT, TREE.write(new NbtCompound()));
 		this.getDataTracker().startTracking(LOG_NBT, new NbtCompound());
 		this.getDataTracker().startTracking(TREE_POSE, EntityPose.STANDING);
@@ -156,5 +171,19 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		
 //		if(this.barkTicks > 0 && --this.barkTicks == 0)
 //			getDataTracker().set(BARK, Bark.NONE.ordinal());
+	}
+	
+	public EnumSet<BipedPart> getPartsAnimating()
+	{
+		switch(this.animations.currentAnim())
+		{
+			case 0:		return EnumSet.of(BipedPart.BODY, BipedPart.LEFT_ARM, BipedPart.RIGHT_ARM, BipedPart.HEAD);
+			case 1:
+			case 2:
+			case 3:
+			case 4:
+						return EnumSet.allOf(BipedPart.class);
+			default:	return EnumSet.noneOf(BipedPart.class);
+		}
 	}
 }

@@ -1,7 +1,6 @@
 package com.lying.tricksy.entity.projectile;
 
-import java.util.List;
-
+import com.lying.tricksy.init.TFDamageTypes;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.reference.Reference;
 
@@ -17,6 +16,7 @@ import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.sound.SoundEvents;
@@ -33,6 +33,7 @@ public class EntityOnryojiFire extends PersistentProjectileEntity
     public static final int FUSE_TIME = Reference.Values.TICKS_PER_SECOND * 2;
     
 	public final AnimationState animation_idle = new AnimationState();
+	public final AnimationState animation_fuse = new AnimationState();
 	
 	public EntityOnryojiFire(EntityType<? extends ProjectileEntity> entityType, World world)
 	{
@@ -52,14 +53,19 @@ public class EntityOnryojiFire extends PersistentProjectileEntity
 	{
 		super.writeCustomDataToNbt(nbt);
 		nbt.putInt("Lifespan", getDataTracker().get(LIFESPAN));
-		nbt.putInt("Fuse", fuseTicks());
+		if(ignited())
+			nbt.putInt("Fuse", fuseTicks());
 	}
 	
 	public void readCustomDataFromNbt(NbtCompound nbt)
 	{
 		super.readCustomDataFromNbt(nbt);
 		getDataTracker().set(LIFESPAN, nbt.getInt("Lifespan"));
-		getDataTracker().set(FUSE, nbt.getInt("Fuse"));
+		if(nbt.contains("Fuse", NbtElement.INT_TYPE))
+		{
+			ignite();
+			getDataTracker().set(FUSE, nbt.getInt("Fuse"));
+		}
 	}
 	
 	public boolean canHit() { return false; }
@@ -74,7 +80,7 @@ public class EntityOnryojiFire extends PersistentProjectileEntity
 			Vec3d pos = new Vec3d(this.getParticleX(0.3F), this.getRandomBodyY(), this.getParticleZ(0.3F)).subtract(lookVec.multiply(0.3D));
 			getWorld().addParticle(ParticleTypes.FLAME, pos.x, pos.y, pos.z, 0.0, 0.0, 0.0);
 			
-			if(fuseTicks() >= 0)
+			if(ignited())
 			{
 				int timeLit = FUSE_TIME - fuseTicks();
 				Vec3d core = this.getPos().add(0D, getHeight() * 0.5D,  0D);
@@ -90,56 +96,78 @@ public class EntityOnryojiFire extends PersistentProjectileEntity
 		}
 		else
 		{
-			if(fuseTicks() >= 0)
+			if(ignited())
 			{
 				int fuse = fuseTicks();
 				if(fuse > 0)
 					getDataTracker().set(FUSE, fuse - 1);
 				else
-				{
-					// Do explosion
-					List<LivingEntity> hits = getWorld().getEntitiesByClass(LivingEntity.class, getBoundingBox().expand(3D), EntityPredicates.VALID_ENTITY);
-					for(LivingEntity hit : hits)
-					{
-						hit.damage(getWorld().getDamageSources().inFire(), 3F);
-						hit.damage(getWorld().getDamageSources().magic(), 3F);
-					}
-					
-					playSound(SoundEvents.ENTITY_GENERIC_EXPLODE, 1F, random.nextFloat());
-					discard();
-				}
+					explode();
 			}
 			else
 			{
+				// Despawn after 7 seconds of not hitting anything
 				int lifespan = getDataTracker().get(LIFESPAN) - 1;
 				if(lifespan < 0)
 					discard();
 				else
 					getDataTracker().set(LIFESPAN, lifespan);
+				
+				super.tick();
 			}
 		}
+	}
+	
+	public void explode()
+	{
+		for(LivingEntity hit : getWorld().getEntitiesByClass(LivingEntity.class, getBoundingBox().expand(3D), EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)))
+			explode(hit);
 		
-		super.tick();
+		playSound(SoundEvents.ENTITY_GENERIC_EXPLODE, 1F, 0.6F + random.nextFloat() * 0.4F);
+		discard();
+	}
+	
+	public void explode(LivingEntity hit)
+	{
+		// FIXME Apply at least 1 damage type that bypasses damage cooldown ticks
+		if(hit.damage(getWorld().getDamageSources().inFire(), 2F))
+			hit.setOnFireFor(5);
+		hit.damage(TFDamageTypes.of(getWorld(), TFDamageTypes.FOXFIRE), 4F);
 	}
 	
 	public int fuseTicks() { return getDataTracker().get(FUSE); }
 	
-	public void lightFuse()
+	public boolean ignited() { return fuseTicks() >= 0; }
+	
+	public void ignite()
 	{
-		playSound(SoundEvents.ENTITY_TNT_PRIMED, 1F, 0.5F + random.nextFloat());
 		getDataTracker().set(FUSE, FUSE_TIME);
 		setVelocity(Vec3d.ZERO);
 		
+		this.animation_idle.stop();
+		this.animation_fuse.start(this.age);
+		playSound(SoundEvents.ENTITY_TNT_PRIMED, 1F, 0.5F + random.nextFloat());
+	}
+	
+	public void setVelocity(Vec3d velocity)
+	{
+		if(ignited())
+			super.setVelocity(Vec3d.ZERO);
+		else
+			super.setVelocity(velocity);
 	}
 	
 	protected void onBlockHit(BlockHitResult blockHitResult)
 	{
-		lightFuse();
+		ignite();
 	}
 	
 	protected void onEntityHit(EntityHitResult entityHitResult)
 	{
-		lightFuse();
+		if(entityHitResult.getEntity() instanceof LivingEntity)
+			explode();
+		else
+			ignite();
 	}
 	
 	protected ItemStack asItemStack() { return ItemStack.EMPTY; }

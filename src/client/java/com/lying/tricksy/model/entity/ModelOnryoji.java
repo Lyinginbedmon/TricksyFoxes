@@ -1,8 +1,11 @@
 package com.lying.tricksy.model.entity;
 
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.lying.tricksy.entity.EntityOnryoji;
+import com.lying.tricksy.entity.IAnimatedBiped.BipedPart;
 import com.lying.tricksy.model.ModelUtils;
 import com.lying.tricksy.renderer.TFAnimations;
 
@@ -34,6 +37,8 @@ public class ModelOnryoji<T extends EntityOnryoji> extends SinglePartEntityModel
 	private final ModelPart tailRoot;
 	private final ModelPart[] tails = new ModelPart[3];
 	
+	protected final Map<BipedPart, ModelPart> partsMap = new HashMap<>();
+	
 	public ModelOnryoji(ModelPart data)
 	{
 		this.root = data.getChild(EntityModelPartNames.ROOT);
@@ -48,6 +53,11 @@ public class ModelOnryoji<T extends EntityOnryoji> extends SinglePartEntityModel
 		this.tails[0] = this.tailRoot.getChild("tail0");
 		this.tails[1] = this.tailRoot.getChild("tail1");
 		this.tails[2] = this.tailRoot.getChild("tail2");
+		
+		partsMap.put(BipedPart.HEAD, this.head);
+		partsMap.put(BipedPart.BODY, this.body);
+		partsMap.put(BipedPart.LEFT_ARM, this.leftArm);
+		partsMap.put(BipedPart.RIGHT_ARM, this.rightArm);
 	}
 	
 	public static TexturedModelData getMainModel()
@@ -110,7 +120,19 @@ public class ModelOnryoji<T extends EntityOnryoji> extends SinglePartEntityModel
 		this.resetAllParts();
 		animateTails(ageInTicks);
 		
+		this.resetAnimatedParts(livingEntity.getPartsAnimating());
 		this.updateAnimation(livingEntity.animations.get(0), TFAnimations.ONRYOJI_IDLE, ageInTicks);
+//		this.updateAnimation(livingEntity.animations.get(1), TFAnimations.ONRYOJI_BALANCE, ageInTicks);
+//		this.updateAnimation(livingEntity.animations.get(2), TFAnimations.ONRYOJI_OFUDA, ageInTicks);
+//		this.updateAnimation(livingEntity.animations.get(3), TFAnimations.ONRYOJI_FOXFIRE, ageInTicks);
+//		this.updateAnimation(livingEntity.animations.get(4), TFAnimations.ONRYOJI_SECLUSION, ageInTicks);
+//		this.updateAnimation(livingEntity.animations.get(5), TFAnimations.ONRYOJI_COMMANDERS, ageInTicks);
+//		this.updateAnimation(livingEntity.animations.get(6), TFAnimations.ONRYOJI_DEATH, ageInTicks);
+	}
+	
+	public void resetAnimatedParts(EnumSet<BipedPart> parts)
+	{
+		parts.stream().forEach(part -> { if(partsMap.containsKey(part)) partsMap.get(part).resetTransform(); });
 	}
     
     protected void animateTails(float ageInTicks)

@@ -8,6 +8,7 @@ import com.lying.tricksy.data.TFRecipeProvider;
 import com.lying.tricksy.init.TFBlockEntities;
 import com.lying.tricksy.init.TFBlocks;
 import com.lying.tricksy.init.TFCommands;
+import com.lying.tricksy.init.TFDamageTypes;
 import com.lying.tricksy.init.TFEnlightenmentPaths;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
@@ -46,6 +47,7 @@ public class TricksyFoxes implements ModInitializer
 		ServerBus.registerEventCallbacks();
 		TFRegistries.init();
 		TFCommands.init();
+		TFDamageTypes.init();
 		TFEnlightenmentPaths.init();
 		TFBlocks.init();
 		TFBlockEntities.init();
