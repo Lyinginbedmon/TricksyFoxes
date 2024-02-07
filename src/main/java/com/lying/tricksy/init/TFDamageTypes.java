@@ -29,9 +29,8 @@ public class TFDamageTypes
 		return type;
 	}
 	
-	public static void init()
-	{
-		// ???
+	public static void bootstrap(Registerable<DamageType> registerable){
+		registerable.register(FOXFIRE, TYPES.get(FOXFIRE));
 	}
 	
 	public static Collection<DamageType> sources() { return TYPES.values(); }
