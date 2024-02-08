@@ -1,6 +1,6 @@
 {
   "death_message_type": "default",
-  "effects": "hurt",
+  "effects": "burning",
   "exhaustion": 0.0,
   "message_id": "foxfire",
   "scaling": "never"

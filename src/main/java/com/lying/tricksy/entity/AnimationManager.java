@@ -29,7 +29,7 @@ public class AnimationManager<T extends Entity>
 			AnimationState state = states.get(i);
 			if(i == index)
 			{
-				state.start(age);
+				state.startIfNotRunning(age);
 				currentAnim = index;
 			}
 			else

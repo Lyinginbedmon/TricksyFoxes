@@ -428,5 +428,6 @@
 	"order.tricksy.activate": "Activate",
 	"order.tricksy.activate.desc": "Activate the block at %s",
 	"order.tricksy.stop": "Stop",
-	"order.tricksy.stop.desc": "Stop what you're doing"
+	"order.tricksy.stop.desc": "Stop what you're doing",
+	"death.attack.foxfire": "%s was scorched by foxfire"
 }

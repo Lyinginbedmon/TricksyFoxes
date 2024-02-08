@@ -10,6 +10,7 @@ import net.minecraft.entity.damage.DamageEffects;
 import net.minecraft.entity.damage.DamageScaling;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageType;
+import net.minecraft.registry.Registerable;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
@@ -29,9 +30,11 @@ public class TFDamageTypes
 		return type;
 	}
 	
-	public static void init()
+	public static void init() { }
+	
+	public static void bootstrap(Registerable<DamageType> registerable)
 	{
-		// ???
+		registerable.register(FOXFIRE, TYPES.get(FOXFIRE));
 	}
 	
 	public static Collection<DamageType> sources() { return TYPES.values(); }

@@ -72,6 +72,7 @@ public class TFAnimations
 				new Keyframe(0.5F, AnimationHelper.createTranslationalVector(0.0F, -0.5F, 0.0F), Transformation.Interpolations.LINEAR)
 			))
 			.build();
+	
 	public static final Animation CHARGE = Animation.Builder.create(0.5F).looping()
 			.addBoneAnimation(EntityModelPartNames.HEAD, new Transformation(Transformation.Targets.ROTATE,
 				new Keyframe(0F, AnimationHelper.createRotationalVector(30.867F, -12.952F, -7.63F), Transformation.Interpolations.LINEAR),
@@ -128,6 +129,7 @@ public class TFAnimations
 				new Keyframe(0.25F, AnimationHelper.createTranslationalVector(0F, -1F, -6F), Transformation.Interpolations.LINEAR),
 				new Keyframe(0.5F, AnimationHelper.createTranslationalVector(0F, -1F, -1F), Transformation.Interpolations.LINEAR)))
 			.build();
+	
 	public static final Animation PRAYER = Animation.Builder.create(1.5F)
 			.addBoneAnimation(EntityModelPartNames.BODY, new Transformation(Transformation.Targets.ROTATE,
 				new Keyframe(0F, AnimationHelper.createRotationalVector(0F, 0F, 0F), Transformation.Interpolations.LINEAR),
@@ -189,6 +191,7 @@ public class TFAnimations
 				new Keyframe(1.33F, AnimationHelper.createTranslationalVector(0F, 0F, -2F), Transformation.Interpolations.LINEAR),
 				new Keyframe(1.5F, AnimationHelper.createTranslationalVector(0F, 0F, 0F), Transformation.Interpolations.LINEAR)))
 			.build();
+	
 	public static final Animation FOXFIRE = Animation.Builder.create(1.5F)
 			.addBoneAnimation(EntityModelPartNames.HEAD, new Transformation(Transformation.Targets.ROTATE, 
 				new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
@@ -258,6 +261,7 @@ public class TFAnimations
 				new Keyframe(0.25F, AnimationHelper.createTranslationalVector(-1.0F, 0.0F, 1.0F), Transformation.Interpolations.LINEAR)
 			))
 			.build();
+	
 	public static final Animation BLESS = Animation.Builder.create(1.5F)
 			.addBoneAnimation(EntityModelPartNames.HEAD, new Transformation(Transformation.Targets.ROTATE, 
 				new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
@@ -303,6 +307,7 @@ public class TFAnimations
 				new Keyframe(1.2917F, AnimationHelper.createRotationalVector(-7.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
 			))
 			.build();
+	
 	public static final Animation HOWL = Animation.Builder.create(4.0833F)
 		.addBoneAnimation(EntityModelPartNames.HEAD, new Transformation(Transformation.Targets.ROTATE, 
 			new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
@@ -385,6 +390,7 @@ public class TFAnimations
 			new Keyframe(4.0833F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
 		))
 		.build();
+	
 	public static final Animation ONRYOJI_IDLE = Animation.Builder.create(2.0F).looping()
 			.addBoneAnimation(EntityModelPartNames.BODY, new Transformation(Transformation.Targets.TRANSLATE, 
 				new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
@@ -425,6 +431,7 @@ public class TFAnimations
 				new Keyframe(2.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
 			))
 			.build();
+	
 	public static final Animation ONRYOJI_FIRE_IDLE = Animation.Builder.create(3.0F).looping()
 			.addBoneAnimation("head", new Transformation(Transformation.Targets.ROTATE, 
 				new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.CUBIC),
@@ -451,6 +458,27 @@ public class TFAnimations
 				new Keyframe(1.3333F, AnimationHelper.createTranslationalVector(0.0F, 2.0F, 0.0F), Transformation.Interpolations.CUBIC),
 				new Keyframe(2.125F, AnimationHelper.createTranslationalVector(1.0F, 1.05F, 0.0F), Transformation.Interpolations.CUBIC),
 				new Keyframe(3.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.CUBIC)
+			))
+			.build();
+	
+	public static final Animation ONRYOJI_FIRE_IGNITED = Animation.Builder.create(2.0F)
+			.addBoneAnimation("root", new Transformation(Transformation.Targets.TRANSLATE, 
+				new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(2.0F, AnimationHelper.createTranslationalVector(0.0F, 5.0F, 0.0F), Transformation.Interpolations.LINEAR)
+			))
+			.addBoneAnimation("root", new Transformation(Transformation.Targets.SCALE, 
+				new Keyframe(0.0F, AnimationHelper.createScalingVector(1.0F, 1.0F, 1.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(2.0F, AnimationHelper.createScalingVector(1.3F, 1.3F, 1.3F), Transformation.Interpolations.LINEAR)
+			))
+			.addBoneAnimation("head", new Transformation(Transformation.Targets.ROTATE, 
+				new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(0.625F, AnimationHelper.createRotationalVector(-7.9315F, 9.9062F, -1.373F), Transformation.Interpolations.CUBIC),
+				new Keyframe(1.375F, AnimationHelper.createRotationalVector(-17.5971F, -12.2063F, 4.608F), Transformation.Interpolations.CUBIC),
+				new Keyframe(2.0F, AnimationHelper.createRotationalVector(-25.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+			))
+			.addBoneAnimation("jaw", new Transformation(Transformation.Targets.ROTATE, 
+				new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(2.0F, AnimationHelper.createRotationalVector(42.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
 			))
 			.build();
 }

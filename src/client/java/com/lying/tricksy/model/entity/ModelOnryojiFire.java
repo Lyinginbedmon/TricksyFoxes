@@ -64,17 +64,13 @@ public class ModelOnryojiFire<T extends EntityOnryojiFire> extends SinglePartEnt
 	{
 		this.resetAllParts();
 		this.updateAnimation(entity.animation_idle, TFAnimations.ONRYOJI_FIRE_IDLE, ageInTicks);
+		this.updateAnimation(entity.animation_fuse, TFAnimations.ONRYOJI_FIRE_IGNITED, ageInTicks);
 	}
-
+	
 	public void copyModelStateTo(ModelOnryojiFire<EntityOnryojiFire> maskModel)
 	{
-		maskModel.root.setPivot(this.root.pivotX, this.root.pivotY, this.root.pivotZ);
-		maskModel.root.setAngles(this.root.pitch, this.root.yaw, this.root.roll);
-		
-		maskModel.head.setPivot(this.head.pivotX, this.head.pivotY, this.head.pivotZ);
-		maskModel.head.setAngles(this.head.pitch, this.head.yaw, this.head.roll);
-		
-		maskModel.jaw.setPivot(this.jaw.pivotX, this.jaw.pivotY, this.jaw.pivotZ);
-		maskModel.jaw.setAngles(this.jaw.pitch, this.jaw.yaw, this.jaw.roll);
+		maskModel.root.copyTransform(this.root);
+		maskModel.head.copyTransform(this.head);
+		maskModel.jaw.copyTransform(this.jaw);
 	}
 }

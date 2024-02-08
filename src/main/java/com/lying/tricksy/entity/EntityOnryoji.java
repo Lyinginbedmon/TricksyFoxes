@@ -1,11 +1,13 @@
 package com.lying.tricksy.entity;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
@@ -16,8 +18,10 @@ import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.control.FlightMoveControl;
 import net.minecraft.entity.ai.pathing.BirdNavigation;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
@@ -31,7 +35,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 
 public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOnryoji>, IAnimatedBiped
@@ -149,20 +155,6 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	
 	public Inventory getMainInventory() { return this; }
 	
-	public void onTrackedDataSet(TrackedData<?> data)
-	{
-		if(ANIMATING.equals(data))
-			switch(getDataTracker().get(ANIMATING).intValue())
-			{
-				case -1:
-					this.animations.stopAll();
-					break;
-				default:
-					this.animations.start(getDataTracker().get(ANIMATING), this.age);
-					break;
-			}
-	}
-	
 	public void tick()
 	{
 		super.tick();
@@ -171,6 +163,58 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		
 //		if(this.barkTicks > 0 && --this.barkTicks == 0)
 //			getDataTracker().set(BARK, Bark.NONE.ordinal());
+	}
+	
+	public static List<LivingEntity> getAttackTargets(LivingEntity tricksy, List<Entity> ignore)
+	{
+		List<LivingEntity> targets = Lists.newArrayList();
+		
+		World world = tricksy.getWorld();
+		Box bounds = tricksy.getBoundingBox().expand(tricksy.getAttributeValue(EntityAttributes.GENERIC_FOLLOW_RANGE));
+		
+		if(tricksy.getAttacking() != null && EntityPredicates.VALID_ENTITY.test(tricksy.getAttacking()))
+			targets.add(tricksy.getAttacking());
+		
+		if(tricksy.getAttacker() != null && EntityPredicates.VALID_ENTITY.test(tricksy.getAttacker()))
+			targets.add(tricksy.getAttacker());
+		
+		targets.addAll(world.getEntitiesByType(EntityType.PLAYER, bounds, EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)));
+		targets.addAll(world.getEntitiesByType(EntityType.VILLAGER, bounds, EntityPredicates.VALID_ENTITY));
+		
+		targets.removeIf(ent -> ignore.contains(ent));
+		return targets;
+	}
+	
+	public void clearAnimation() { this.getDataTracker().set(ANIMATING, 0); }
+	public void setAnimationBalance() { this.getDataTracker().set(ANIMATING, 1); }
+	public void setAnimationOfuda() { this.getDataTracker().set(ANIMATING, 2); }
+	public void setAnimationFoxfire() { this.getDataTracker().set(ANIMATING, 3); }
+	public void setAnimationSeclusion() { this.getDataTracker().set(ANIMATING, 4); }
+	public void setAnimationCommanders() { this.getDataTracker().set(ANIMATING, 5); }
+	
+	public void setOfuda(int count) { this.getDataTracker().set(OFUDA, count); }
+	
+	public void onTrackedDataSet(TrackedData<?> data)
+	{
+		if(ANIMATING.equals(data))
+			switch(getDataTracker().get(ANIMATING).intValue())
+			{
+				case -1:
+				case 0:
+					this.animations.stopAll();
+					this.animations.start(0, this.age);
+					break;
+				case 1:
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+				case 6:
+				default:
+					this.animations.stopAll();
+					this.animations.start(getDataTracker().get(ANIMATING), this.age);
+					break;
+			}
 	}
 	
 	public EnumSet<BipedPart> getPartsAnimating()
