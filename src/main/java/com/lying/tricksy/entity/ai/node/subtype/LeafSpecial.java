@@ -107,7 +107,6 @@ public class LeafSpecial extends NodeGroupLeaf
 	
 	// TODO Onryoji special actions
 	/*
-	 * Sealing Ofuda - Hurl a paper talisman which binds a struck target to stay within its proximity
 	 * Seclusion - Repel nearby mobs and projectiles from self for a period of self-healing
 	 * Twelve Heavenly Commanders - Incremented 1 step each use (total visible from user), at 12 all nearby mobs are scattered up to a kilometre from the user
 	 * Masked foxfire - Launch 3 large foxfire-esque entities that can follow targets
@@ -115,6 +114,8 @@ public class LeafSpecial extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;
 	public static NodeSubType<LeafNode> ONRYOJI_OFUDA;
 	public static NodeSubType<LeafNode> ONRYOJI_FOXFIRE;
+	public static NodeSubType<LeafNode> ONRYOJI_SECLUSION;
+	public static NodeSubType<LeafNode> ONRYOJI_COMMANDERS;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_special"); }
 	
@@ -1022,7 +1023,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				}
 				
 				// Initial casting phase
-				if(parent.ticksRunning() < CAST_TIME)
+				if(parent.ticksRunning() <= CAST_TIME)
 				{
 					parent.logStatus(TFNodeStatus.CASTING);
 					return Result.RUNNING;
@@ -1034,8 +1035,6 @@ public class LeafSpecial extends NodeGroupLeaf
 					int count = parent.nodeRAM.getInt("Count");
 					if(count == 0)
 						return Result.SUCCESS;
-					else if(tricksy.getType() == TFEntityTypes.ONRYOJI)
-						((EntityOnryoji)tricksy).setOfuda(count);
 					
 					List<LivingEntity> targets = validTargets(tricksy, prevTargets);
 					if(!targets.isEmpty())
@@ -1052,6 +1051,9 @@ public class LeafSpecial extends NodeGroupLeaf
 								parent.playSound(tricksy, SoundEvents.ENTITY_SNOWBALL_THROW, 1F, tricksy.getSoundPitch());
 								break;
 							}
+					
+					if(tricksy.getType() == TFEntityTypes.ONRYOJI)
+						((EntityOnryoji)tricksy).setOfuda(count);
 				}
 				
 				if(!prevTargets.isEmpty())

@@ -59,6 +59,12 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	 * 6 - Death
 	 */
 	public final AnimationManager<EntityOnryoji> animations = new AnimationManager<>(7);
+	public static final int ANIM_IDLE = 0;
+	public static final int ANIM_BALANCE = 1;
+	public static final int ANIM_OFUDA = 2;
+	public static final int ANIM_FOXFIRE = 3;
+	public static final int ANIM_SECLUSION = 4;
+	public static final int ANIM_COMMANDERS = 5;
 	
 	private static final TreeNode<?> TREE = OnryojiTree.get();
 	private BehaviourTree behaviourTree = new BehaviourTree(TREE);
@@ -185,12 +191,12 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		return targets;
 	}
 	
-	public void clearAnimation() { this.getDataTracker().set(ANIMATING, 0); }
-	public void setAnimationBalance() { this.getDataTracker().set(ANIMATING, 1); }
-	public void setAnimationOfuda() { this.getDataTracker().set(ANIMATING, 2); }
-	public void setAnimationFoxfire() { this.getDataTracker().set(ANIMATING, 3); }
-	public void setAnimationSeclusion() { this.getDataTracker().set(ANIMATING, 4); }
-	public void setAnimationCommanders() { this.getDataTracker().set(ANIMATING, 5); }
+	public void clearAnimation() { this.getDataTracker().set(ANIMATING, ANIM_IDLE); }
+	public void setAnimationBalance() { this.getDataTracker().set(ANIMATING, ANIM_BALANCE); }
+	public void setAnimationOfuda() { this.getDataTracker().set(ANIMATING, ANIM_OFUDA); }
+	public void setAnimationFoxfire() { this.getDataTracker().set(ANIMATING, ANIM_FOXFIRE); }
+	public void setAnimationSeclusion() { this.getDataTracker().set(ANIMATING, ANIM_SECLUSION); }
+	public void setAnimationCommanders() { this.getDataTracker().set(ANIMATING, ANIM_COMMANDERS); }
 	
 	public void setOfuda(int count) { this.getDataTracker().set(OFUDA, count); }
 	
@@ -200,15 +206,15 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 			switch(getDataTracker().get(ANIMATING).intValue())
 			{
 				case -1:
-				case 0:
+				case ANIM_IDLE:
 					this.animations.stopAll();
 					this.animations.start(0, this.age);
 					break;
-				case 1:
-				case 2:
-				case 3:
-				case 4:
-				case 5:
+				case ANIM_BALANCE:
+				case ANIM_OFUDA:
+				case ANIM_FOXFIRE:
+				case ANIM_SECLUSION:
+				case ANIM_COMMANDERS:
 				case 6:
 				default:
 					this.animations.stopAll();
@@ -221,11 +227,12 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	{
 		switch(this.animations.currentAnim())
 		{
-			case 0:		return EnumSet.of(BipedPart.BODY, BipedPart.LEFT_ARM, BipedPart.RIGHT_ARM, BipedPart.HEAD);
-			case 1:
-			case 2:
-			case 3:
-			case 4:
+			case ANIM_IDLE:		return EnumSet.of(BipedPart.BODY, BipedPart.LEFT_ARM, BipedPart.RIGHT_ARM, BipedPart.HEAD);
+			case ANIM_OFUDA:		return EnumSet.of(BipedPart.BODY, BipedPart.LEFT_ARM, BipedPart.RIGHT_ARM);
+			case ANIM_BALANCE:
+			case ANIM_FOXFIRE:
+			case ANIM_SECLUSION:
+			case ANIM_COMMANDERS:
 						return EnumSet.allOf(BipedPart.class);
 			default:	return EnumSet.noneOf(BipedPart.class);
 		}

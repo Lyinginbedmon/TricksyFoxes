@@ -22,6 +22,8 @@ public class TFDamageTypeTagProvider extends FabricTagProvider<DamageType>
 	protected void configure(RegistryWrapper.WrapperLookup lookup)
 	{
 		this.getOrCreateTagBuilder(DamageTypeTags.BYPASSES_COOLDOWN).add(TFDamageTypes.FOXFIRE);
+		this.getOrCreateTagBuilder(DamageTypeTags.BYPASSES_ARMOR).add(TFDamageTypes.FOXFIRE);
+		this.getOrCreateTagBuilder(DamageTypeTags.WITCH_RESISTANT_TO).add(TFDamageTypes.FOXFIRE);
 	}
 	
 	public String getName()

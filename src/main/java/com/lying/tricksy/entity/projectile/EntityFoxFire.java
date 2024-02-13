@@ -50,7 +50,7 @@ public class EntityFoxFire extends ProjectileEntity implements FlyingItemEntity
 	
 	public static EntityFoxFire fromMob(Entity shooter)
 	{
-		EntityFoxFire fire = TFEntityTypes.FOX_FIRE.create(shooter.getEntityWorld());
+		EntityFoxFire fire = TFEntityTypes.FOX_FIRE.create(shooter.getWorld());
 		fire.setOwner(shooter);
 		fire.setPos(shooter.getX(), shooter.getEyeY() + 0.5D, shooter.getZ());
 		return fire;
