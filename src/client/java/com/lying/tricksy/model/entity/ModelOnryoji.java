@@ -122,10 +122,10 @@ public class ModelOnryoji<T extends EntityOnryoji> extends SinglePartEntityModel
 		animateTails(ageInTicks);
 		
 		this.resetAnimatedParts(livingEntity.getPartsAnimating());
-		this.updateAnimation(livingEntity.animations.get(0), TFAnimations.ONRYOJI_IDLE, ageInTicks);
+		this.updateAnimation(livingEntity.animations.get(EntityOnryoji.ANIM_IDLE), TFAnimations.ONRYOJI_IDLE, ageInTicks);
 //		this.updateAnimation(livingEntity.animations.get(1), TFAnimations.ONRYOJI_BALANCE, ageInTicks);
-		this.updateAnimation(livingEntity.animations.get(2), TFAnimations.ONRYOJI_OFUDA, ageInTicks);
-//		this.updateAnimation(livingEntity.animations.get(3), TFAnimations.ONRYOJI_FOXFIRE, ageInTicks);
+		this.updateAnimation(livingEntity.animations.get(EntityOnryoji.ANIM_OFUDA), TFAnimations.ONRYOJI_OFUDA, ageInTicks);
+		this.updateAnimation(livingEntity.animations.get(EntityOnryoji.ANIM_FOXFIRE), TFAnimations.ONRYOJI_FOXFIRE, ageInTicks);
 //		this.updateAnimation(livingEntity.animations.get(4), TFAnimations.ONRYOJI_SECLUSION, ageInTicks);
 //		this.updateAnimation(livingEntity.animations.get(5), TFAnimations.ONRYOJI_COMMANDERS, ageInTicks);
 //		this.updateAnimation(livingEntity.animations.get(6), TFAnimations.ONRYOJI_DEATH, ageInTicks);

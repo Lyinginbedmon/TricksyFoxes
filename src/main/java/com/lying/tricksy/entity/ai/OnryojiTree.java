@@ -81,8 +81,8 @@ public class OnryojiTree
 				.child(attackControl())
 //				.child(DecoratorMisc.FORCE_SUCCESS.create()
 //					.child(motionControl()))
-//				.child(DecoratorMisc.FORCE_SUCCESS.create()
-//					.child(LeafMisc.LOOK_AT.create(Map.of(CommonVariables.TARGET_ENT, new WhiteboardValue(OnryojiWhiteboard.NEAREST_PLAYER)))))
+				.child(DecoratorMisc.FORCE_SUCCESS.create()
+					.child(LeafMisc.LOOK_AT.create(Map.of(CommonVariables.TARGET_ENT, new WhiteboardValue(OnryojiWhiteboard.NEAREST_PLAYER)))))
 		;
 	}
 	
@@ -90,8 +90,10 @@ public class OnryojiTree
 	{
 		return ControlFlowMisc.SELECTOR.create().named(Text.literal("Attack control"))
 				.child(LeafSpecial.ONRYOJI_OFUDA.create())
-//				.child(LeafSpecial.ONRYOJI_BALANCE.create())
-//				.child(LeafSpecial.ONRYOJI_FOXFIRE.create())
+				.child(LeafSpecial.ONRYOJI_BALANCE.create())
+				.child(LeafSpecial.ONRYOJI_FOXFIRE.create())
+				.child(LeafSpecial.ONRYOJI_SECLUSION.create())
+				.child(LeafSpecial.ONRYOJI_COMMANDERS.create())
 				.child(LeafMisc.WAIT.create());
 	}
 	

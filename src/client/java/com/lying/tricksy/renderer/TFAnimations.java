@@ -534,6 +534,47 @@ public class TFAnimations
 		))
 		.build();
 	
+	public static final Animation ONRYOJI_FOXFIRE = Animation.Builder.create(2.0F)
+			.addBoneAnimation("left_arm", new Transformation(Transformation.Targets.ROTATE, 
+				new Keyframe(0.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, -35.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(0.375F, AnimationHelper.createRotationalVector(-120.6672F, 46.038F, -13.2898F), Transformation.Interpolations.LINEAR),
+				new Keyframe(0.875F, AnimationHelper.createRotationalVector(-118.1672F, -46.038F, 13.2898F), Transformation.Interpolations.LINEAR),
+				new Keyframe(1.25F, AnimationHelper.createRotationalVector(-85.62F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(1.4583F, AnimationHelper.createRotationalVector(-85.62F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(1.5417F, AnimationHelper.createRotationalVector(-72.5F, 0.0F, 17.5F), Transformation.Interpolations.LINEAR)
+			))
+			.addBoneAnimation("left_arm", new Transformation(Transformation.Targets.TRANSLATE, 
+				new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(0.375F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -2.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(0.875F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -2.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(1.25F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -2.0F), Transformation.Interpolations.LINEAR)
+			))
+			.addBoneAnimation("right_arm", new Transformation(Transformation.Targets.ROTATE, 
+				new Keyframe(0.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, 35.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(0.7083F, AnimationHelper.createRotationalVector(-49.7574F, 5.7385F, 39.8371F), Transformation.Interpolations.LINEAR),
+				new Keyframe(1.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, 35.0F), Transformation.Interpolations.LINEAR)
+			))
+			.addBoneAnimation("root", new Transformation(Transformation.Targets.TRANSLATE, 
+				new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(0.7083F, AnimationHelper.createTranslationalVector(0.0F, 1.0F, 0.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(2.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+			))
+			.addBoneAnimation("head", new Transformation(Transformation.Targets.ROTATE, 
+				new Keyframe(0.0F, AnimationHelper.createRotationalVector(17.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(0.375F, AnimationHelper.createRotationalVector(-21.7847F, 32.1586F, -4.9731F), Transformation.Interpolations.LINEAR),
+				new Keyframe(0.875F, AnimationHelper.createRotationalVector(-21.7847F, -32.1586F, 4.9731F), Transformation.Interpolations.LINEAR),
+				new Keyframe(1.25F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(1.4583F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(1.5417F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 5.0F), Transformation.Interpolations.LINEAR)
+			))
+			.addBoneAnimation("legs", new Transformation(Transformation.Targets.ROTATE, 
+				new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+				new Keyframe(0.8333F, AnimationHelper.createRotationalVector(7.4299F, -1.7082F, 4.6999F), Transformation.Interpolations.LINEAR),
+				new Keyframe(1.5417F, AnimationHelper.createRotationalVector(2.9194F, 0.6591F, -2.9736F), Transformation.Interpolations.LINEAR),
+				new Keyframe(2.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+			))
+			.build();
+	
 	public static final Animation ONRYOJI_FIRE_IDLE = Animation.Builder.create(3.0F).looping()
 		.addBoneAnimation(EntityModelPartNames.HEAD, new Transformation(Transformation.Targets.ROTATE, 
 			new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.CUBIC),

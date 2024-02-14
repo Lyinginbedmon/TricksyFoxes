@@ -88,6 +88,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.math.intprovider.ConstantIntProvider;
 import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.Heightmap.Type;
 import net.minecraft.world.World;
 
 public class LeafSpecial extends NodeGroupLeaf
@@ -105,17 +106,11 @@ public class LeafSpecial extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> WOLF_BLESS;
 	public static NodeSubType<LeafNode> WOLF_HOWL;
 	
-	// TODO Onryoji special actions
-	/*
-	 * Seclusion - Repel nearby mobs and projectiles from self for a period of self-healing
-	 * Twelve Heavenly Commanders - Incremented 1 step each use (total visible from user), at 12 all nearby mobs are scattered up to a kilometre from the user
-	 * Masked foxfire - Launch 3 large foxfire-esque entities that can follow targets
-	 */
-	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;
-	public static NodeSubType<LeafNode> ONRYOJI_OFUDA;
+	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;	// TODO Needs animation & affected visuals
+	public static NodeSubType<LeafNode> ONRYOJI_OFUDA;		// TODO Needs finalised ammo visuals
 	public static NodeSubType<LeafNode> ONRYOJI_FOXFIRE;
-	public static NodeSubType<LeafNode> ONRYOJI_SECLUSION;
-	public static NodeSubType<LeafNode> ONRYOJI_COMMANDERS;
+	public static NodeSubType<LeafNode> ONRYOJI_SECLUSION;	// TODO Needs dedicated entity & animation
+	public static NodeSubType<LeafNode> ONRYOJI_COMMANDERS;	// TODO Needs animation & stage display
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_special"); }
 	
@@ -269,6 +264,14 @@ public class LeafSpecial extends NodeGroupLeaf
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
 		});
 		set.add(ONRYOJI_FOXFIRE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_fireball"), TFNodeTypes.LEAF, leafOnryojiFoxfire(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 7))
+		{
+			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
+		});
+		set.add(ONRYOJI_SECLUSION = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_seclusion"), TFNodeTypes.LEAF, leafOnryojiSeclusion(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 15))
+		{
+			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
+		});
+		set.add(ONRYOJI_COMMANDERS = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_commanders"), TFNodeTypes.LEAF, leafOnryojiCommanders(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 5))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
 		});
@@ -1143,7 +1146,9 @@ public class LeafSpecial extends NodeGroupLeaf
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
-			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
+			public static final int CASTING_TIME = (int)(Reference.Values.TICKS_PER_SECOND * 1.5F);
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.complementOf(EnumSet.of(ActionFlag.MOVE)); }
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
@@ -1154,21 +1159,58 @@ public class LeafSpecial extends NodeGroupLeaf
 				if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.ONRYOJI)
 					((EntityOnryoji)tricksy).setAnimationFoxfire();
 				
-				// TODO Add casting period, then shoot 3 fireballs at once
+				List<EntityOnryojiFire> fireballs = getFireballs(tricksy, parent.nodeRAM.getList("Fireballs", NbtElement.INT_ARRAY_TYPE));
+				if(parent.ticksRunning() < CASTING_TIME)
+				{
+					parent.logStatus(TFNodeStatus.CASTING);
+					
+					if(parent.ticksRunning()%(CASTING_TIME / 3) == 0 && fireballs.size() < 3)
+					{
+						EntityOnryojiFire fireball = TFEntityTypes.ONRYOJI_FIRE.create(tricksy.getWorld());
+						fireball.setPosition(tricksy.getX(), tricksy.getY(), tricksy.getZ());
+						fireball.setOwner(tricksy, fireballs.size());
+						
+						parent.playSound(tricksy, SoundEvents.ENTITY_BLAZE_SHOOT, 1F, tricksy.getSoundPitch());
+						tricksy.getWorld().spawnEntity(fireball);
+						
+						fireballs.add(fireball);
+						storeFireballs(fireballs, parent.nodeRAM);
+					}
+					
+					return Result.RUNNING;
+				}
 				
-				EntityOnryojiFire fireball = TFEntityTypes.ONRYOJI_FIRE.create(tricksy.getWorld());
-				fireball.setPosition(tricksy.getX(), tricksy.getBodyY(1.2D), tricksy.getZ());
-				fireball.setOwner(tricksy);
+				int targetIndex = 0;
+				for(EntityOnryojiFire fireball : fireballs)
+					fireball.shoot(targets.get(targetIndex++%targets.size()));
 				
-				LivingEntity target = targets.get(0);
-				double offsetX = target.getX() - fireball.getX();
-				double offsetY = target.getBodyY(0.5D) - fireball.getY();
-				double offsetZ = target.getZ() - fireball.getZ();
-				fireball.setVelocity(offsetX, offsetY, offsetZ, 0.8f, 0F);
-				parent.playSound(tricksy, SoundEvents.ENTITY_BLAZE_SHOOT, 1F, tricksy.getSoundPitch());
-				tricksy.getWorld().spawnEntity(fireball);
+				return Result.SUCCESS;
+			}
+			
+			private static List<EntityOnryojiFire> getFireballs(LivingEntity tricksy, NbtList ids)
+			{
+				List<EntityOnryojiFire> fireballs = Lists.newArrayList();
+				if(ids.isEmpty())
+					return fireballs;
 				
-				return Result.FAILURE;
+				World world = tricksy.getWorld();
+				Box bounds = tricksy.getBoundingBox().expand(16D);
+				for(int i=0; i<ids.size(); i++)
+				{
+					UUID id = NbtHelper.toUuid(ids.get(i));
+					List<EntityOnryojiFire> candidates = world.getEntitiesByType(TFEntityTypes.ONRYOJI_FIRE, bounds, EntityPredicates.VALID_ENTITY.and(ent -> ent.getUuid().equals(id)));
+					if(!candidates.isEmpty())
+						fireballs.add(candidates.get(0));
+				}
+				
+				return fireballs;
+			}
+			
+			private static void storeFireballs(List<EntityOnryojiFire> fireballs, NbtCompound nbt)
+			{
+				NbtList list = new NbtList();
+				fireballs.forEach(ent -> list.add(NbtHelper.fromUuid(ent.getUuid())));
+				nbt.put("Fireballs", list);
 			}
 			
 			private static List<LivingEntity> validTargets(LivingEntity tricksy)
@@ -1184,6 +1226,108 @@ public class LeafSpecial extends NodeGroupLeaf
 						return distA < distB ? -1 : distA > distB ? 1 : 0;
 					});
 				return targets;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
+			{
+				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
+					((EntityOnryoji)tricksy).clearAnimation();
+			}
+		};
+	}
+	
+	public static INodeTickHandler<LeafNode> leafOnryojiSeclusion()
+	{
+		return new INodeTickHandler<LeafNode>()
+		{
+			public static final int CASTING_TIME = Reference.Values.TICKS_PER_SECOND * 2;
+			public static final int DURATION = Reference.Values.TICKS_PER_SECOND * 12;
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				if(!parent.isRunning() && tricksy.getHealth() > (tricksy.getMaxHealth() * 0.8F))
+					return Result.FAILURE;
+				
+				if(parent.ticksRunning() < CASTING_TIME)
+				{
+					if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.ONRYOJI)
+						((EntityOnryoji)tricksy).setAnimationSeclusion();
+					
+					parent.logStatus(TFNodeStatus.CASTING);
+					return Result.RUNNING;
+				}
+				else if(tricksy.getType() == TFEntityTypes.ONRYOJI)
+					((EntityOnryoji)tricksy).clearAnimation();
+				
+				// FIXME Fail out of action if any damage taken
+				if(parent.ticksRunning() > DURATION)
+					return Result.SUCCESS;
+				
+				return Result.RUNNING;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
+			{
+				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
+					((EntityOnryoji)tricksy).clearAnimation();
+			}
+		};
+	}
+	
+	public static INodeTickHandler<LeafNode> leafOnryojiCommanders()
+	{
+		return new INodeTickHandler<LeafNode>()
+		{
+			public static final int CASTING_TIME = Reference.Values.TICKS_PER_SECOND * 2;
+			public static final int RANGE = 1000;
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				if(tricksy.getWorld().getEntitiesByType(EntityType.PLAYER, tricksy.getBoundingBox().expand(32D), EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)).isEmpty())
+					return Result.FAILURE;
+				
+				if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.ONRYOJI)
+					((EntityOnryoji)tricksy).setAnimationCommanders();
+				
+				if(parent.ticksRunning() < CASTING_TIME)
+				{
+					parent.logStatus(TFNodeStatus.CASTING);
+					return Result.RUNNING;
+				}
+				else if(tricksy.getType() == TFEntityTypes.ONRYOJI)
+				{
+					int stage = tricksy.getDataTracker().get(EntityOnryoji.COMM) + 1;
+					if(stage == 12)
+					{
+						// Scatter
+						tricksy.getDataTracker().set(EntityOnryoji.COMM, 0);
+						whiteboards.local().setNodeCooldown(parent.getSubType(), Reference.Values.TICKS_PER_MINUTE * 5);
+						
+						BlockPos origin = tricksy.getBlockPos();
+						Random rand = tricksy.getRandom();
+						World world = tricksy.getWorld();
+						world.getEntitiesByType(EntityType.PLAYER, tricksy.getBoundingBox().expand(32D), EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)).forEach(player -> 
+						{
+							int x = rand.nextBetween((int)(RANGE * 0.5D), RANGE) * (rand.nextBoolean() ? 1 : -1);
+							int z = rand.nextBetween((int)(RANGE * 0.5D), RANGE) * (rand.nextBoolean() ? 1 : -1);
+							BlockPos destination = origin.add(x, 0, z);
+							BlockPos dest = world.getTopPosition(Type.WORLD_SURFACE, destination);
+							player.teleport(dest.getX() + 0.5D, dest.getY(), dest.getZ() + 0.5D);
+						});
+						return Result.SUCCESS;
+					}
+					else
+					{
+						parent.logStatus(TFNodeStatus.SUCCESS, Text.literal(String.valueOf(stage)));
+						tricksy.getDataTracker().set(EntityOnryoji.COMM, stage);
+						return Result.SUCCESS;
+					}
+				}
+				return Result.FAILURE;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
