@@ -108,8 +108,6 @@ public class TricksyFoxesClient implements ClientModInitializer
 	
 	private static void registerScreens()
 	{
-		TFScreenHandlerTypes.init();
-		
 		HandledScreens.register(TFScreenHandlerTypes.SCRIPTURE_SCREEN_HANDLER, ScriptureScreen::new);
 		HandledScreens.register(TFScreenHandlerTypes.TREE_SCREEN_HANDLER, TreeScreen::new);
 		HandledScreens.register(TFScreenHandlerTypes.INVENTORY_SCREEN_HANDLER, TricksyInventoryScreen::new);

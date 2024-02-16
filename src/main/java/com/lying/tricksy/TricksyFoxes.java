@@ -14,6 +14,7 @@ import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.init.TFParticles;
 import com.lying.tricksy.init.TFRegistries;
+import com.lying.tricksy.init.TFScreenHandlerTypes;
 import com.lying.tricksy.init.TFSoundEvents;
 import com.lying.tricksy.init.TFSpecialRecipes;
 import com.lying.tricksy.network.AddGlobalRefReceiver;
@@ -38,9 +39,6 @@ public class TricksyFoxes implements ModInitializer
     
 	public void onInitialize()
 	{
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
 		config = new ServerConfig("config/TricksyFoxesServer.cfg");
 		config.read();
 		
@@ -55,6 +53,7 @@ public class TricksyFoxes implements ModInitializer
 		TFEntityTypes.init();
 		TFSpecialRecipes.init();
 		TFRecipeProvider.addBrewingRecipes();
+		TFScreenHandlerTypes.init();
 		TFParticles.init();
 		TFSoundEvents.init();
 		
