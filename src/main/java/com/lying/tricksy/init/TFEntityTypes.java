@@ -1,6 +1,7 @@
 package com.lying.tricksy.init;
 
 import com.lying.tricksy.entity.EntityOnryoji;
+import com.lying.tricksy.entity.EntitySeclusion;
 import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.entity.EntityTricksyGoat;
 import com.lying.tricksy.entity.EntityTricksyWolf;
@@ -45,6 +46,9 @@ public class TFEntityTypes
 	
 	public static final EntityType<EntityOfudaStuck> OFUDA_STUCK = register("ofuda_stuck",
 			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntityOfudaStuck::new).dimensions(EntityDimensions.fixed(0.2F, 0.2F)).build());
+	
+	public static final EntityType<EntitySeclusion> SECLUSION = register("seclusion", 
+			FabricEntityTypeBuilder.create(SpawnGroup.MISC, EntitySeclusion::new).dimensions(EntityDimensions.fixed(0.5F, 0.5F)).build());
 	
 	private static <T extends Entity> EntityType<T> register(String name, EntityType<T> entry)
 	{

@@ -16,7 +16,6 @@ import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
-import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -31,18 +30,14 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOnryoji>, IAnimatedBiped
@@ -174,33 +169,6 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		
 //		if(this.barkTicks > 0 && --this.barkTicks == 0)
 //			getDataTracker().set(BARK, Bark.NONE.ordinal());
-		
-		// TODO Extract to temporary entity and spawn with leaf node
-		if(getDataTracker().get(ANIMATING).intValue() == ANIM_SECLUSION)
-		{
-			this.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, Reference.Values.TICKS_PER_SECOND, 1));
-			double RANGE = 6D;
-			
-			Vec3d origin = getPos();
-			Box bounds = getBoundingBox().expand(RANGE);
-			getWorld().getEntitiesByClass(ProjectileEntity.class, bounds, EntityPredicates.VALID_ENTITY).forEach(arrow -> 
-			{
-				Vec3d pos = arrow.getPos();
-				Vec3d nextPos = pos.add(arrow.getVelocity());
-				if(pos.distanceTo(origin) > nextPos.distanceTo(origin))
-					arrow.setVelocity(arrow.getVelocity().multiply(-0.5D));
-			});
-			
-			getWorld().getEntitiesByClass(LivingEntity.class, bounds, EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR).and(ent -> ent != this)).forEach(mob -> 
-			{
-				Vec3d offset = origin.subtract(mob.getPos());
-				if(offset.length() < RANGE)
-				{
-					Vec3d push = offset.normalize().multiply(Math.pow(offset.length() - RANGE, 3D)).multiply(0.05D);
-					mob.addVelocity(push);
-				}
-			});
-		}
 	}
 	
 	public static List<LivingEntity> getAttackTargets(LivingEntity tricksy, List<Entity> ignore)

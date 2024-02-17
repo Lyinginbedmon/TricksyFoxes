@@ -279,7 +279,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 				if(!subType.usesFlags().isEmpty())
 					whiteboards.local().flagAction(subType.usesFlags());
 			}
-			catch(Exception e) { logStatus(TFNodeStatus.FAILURE, Text.literal("Unknown error")); }
+			catch(Exception e) { logStatus(TFNodeStatus.FAILURE, Text.literal(e.getLocalizedMessage())); }
 		else
 			logStatus(TFNodeStatus.FLAGS_OCCUPIED);
 		

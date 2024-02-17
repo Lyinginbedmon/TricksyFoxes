@@ -19,6 +19,7 @@ import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.EntityOnryoji;
+import com.lying.tricksy.entity.EntitySeclusion;
 import com.lying.tricksy.entity.EntityTricksyFox;
 import com.lying.tricksy.entity.EntityTricksyGoat;
 import com.lying.tricksy.entity.EntityTricksyWolf;
@@ -1250,28 +1251,54 @@ public class LeafSpecial extends NodeGroupLeaf
 				if(!parent.isRunning() && tricksy.getHealth() > (tricksy.getMaxHealth() * 0.8F))
 					return Result.FAILURE;
 				
-				if(parent.ticksRunning() < CASTING_TIME)
+				switch((int)Math.signum(parent.ticksRunning() - CASTING_TIME))
 				{
-					if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.ONRYOJI)
-						((EntityOnryoji)tricksy).setAnimationSeclusion();
-					
-					parent.logStatus(TFNodeStatus.CASTING);
-					return Result.RUNNING;
+					case -1:
+						if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.ONRYOJI)
+							((EntityOnryoji)tricksy).setAnimationSeclusion();
+						
+						parent.logStatus(TFNodeStatus.CASTING);
+						return Result.RUNNING;
+					case 0:
+						// Spawn seclusion entity attached to mob
+						EntitySeclusion zone = EntitySeclusion.makeFor(tricksy);
+						zone.setPosition(tricksy.getPos());
+						zone.setOwner(tricksy);
+						tricksy.getWorld().spawnEntity(zone);
+						
+						return Result.RUNNING;
+					case 1:
+						// Check for seclusion entity, fail if missing
+						if(tricksy.getWorld().getEntitiesByType(TFEntityTypes.SECLUSION, tricksy.getBoundingBox().expand(32D), (field) -> field.getOwnerId().equals(tricksy.getUuid())).isEmpty())
+						{
+							parent.logStatus(TFNodeStatus.BAD_RESULT, Text.literal("Zone missing or destroyed"));
+							return Result.FAILURE;
+						}
+						
+						// Fail out of action if any damage taken
+						if(tricksy.getDamageTracker().getTimeSinceLastAttack() == 0)
+						{
+							parent.logStatus(TFNodeStatus.FAILURE, Text.literal("Concentration broken!"));
+							return Result.FAILURE;
+						}
+						
+						if(parent.ticksRunning() > DURATION)
+							return Result.SUCCESS;
+						
+						if(tricksy.getType() == TFEntityTypes.ONRYOJI)
+							((EntityOnryoji)tricksy).clearAnimation();
+					default:
+						return Result.RUNNING;
 				}
-				else if(tricksy.getType() == TFEntityTypes.ONRYOJI)
-					((EntityOnryoji)tricksy).clearAnimation();
-				
-				// FIXME Fail out of action if any damage taken
-				if(parent.ticksRunning() > DURATION)
-					return Result.SUCCESS;
-				
-				return Result.RUNNING;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
 			{
 				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
 					((EntityOnryoji)tricksy).clearAnimation();
+				
+				// Kill seclusion entity if still present
+				tricksy.getWorld().getEntitiesByType(TFEntityTypes.SECLUSION, tricksy.getBoundingBox().expand(32D), (field) -> field.getOwnerId().equals(tricksy.getUuid())).forEach(Entity::discard);
 			}
 		};
 	}

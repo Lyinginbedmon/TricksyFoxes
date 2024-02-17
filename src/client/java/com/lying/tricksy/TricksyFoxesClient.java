@@ -29,6 +29,7 @@ import com.lying.tricksy.renderer.entity.EntityOfudaStuckRenderer;
 import com.lying.tricksy.renderer.entity.EntityOfudaThrownRenderer;
 import com.lying.tricksy.renderer.entity.EntityOnryojiFireRenderer;
 import com.lying.tricksy.renderer.entity.EntityOnryojiRenderer;
+import com.lying.tricksy.renderer.entity.EntitySeclusionRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyFoxRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyGoatRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyWolfRenderer;
@@ -93,6 +94,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		EntityRendererRegistry.register(TFEntityTypes.ONRYOJI_FIRE, EntityOnryojiFireRenderer::new);
 		EntityRendererRegistry.register(TFEntityTypes.OFUDA_STUCK, EntityOfudaStuckRenderer::new);
 		EntityRendererRegistry.register(TFEntityTypes.OFUDA_THROWN, EntityOfudaThrownRenderer::new);
+		EntityRendererRegistry.register(TFEntityTypes.SECLUSION, EntitySeclusionRenderer::new);
 		
 		BlockEntityRendererFactories.register(TFBlockEntities.CLOCKWORK_FRIAR, ClockworkFriarBlockEntityRenderer::new);
 		

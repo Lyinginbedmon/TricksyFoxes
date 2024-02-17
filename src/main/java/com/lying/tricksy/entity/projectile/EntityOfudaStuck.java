@@ -211,6 +211,8 @@ public class EntityOfudaStuck extends LivingEntity
 	
 	protected boolean shouldSetPositionOnLoad() { return false; }
 	
+	public boolean collidesWith(Entity other) { return false; }
+	
 	public boolean isPushable() { return false; }
 	
 	public void pushAwayFrom(Entity entity) { }
