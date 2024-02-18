@@ -58,7 +58,7 @@ public class ConditionInventory extends NodeGroupCondition
 						FILTER, NodeInput.makeInput(NodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				IWhiteboardObject<BlockPos> value = getOrDefault(TILE, parent, whiteboards).as(TFObjType.BLOCK);
 				IWhiteboardObject<BlockPos> face = getOrDefault(FACE, parent, whiteboards).as(TFObjType.BLOCK);

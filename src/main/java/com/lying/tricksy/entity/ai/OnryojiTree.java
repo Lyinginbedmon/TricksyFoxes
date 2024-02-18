@@ -89,14 +89,14 @@ public class OnryojiTree
 	private static TreeNode<?> attackControl()
 	{
 		return ControlFlowMisc.SEQUENCE.create().named(Text.literal("Attack control"))
-				.child(LeafMisc.WAIT.create()
-				.child(ControlFlowMisc.SELECTOR.create().named(Text.literal("Attack control"))
+				.child(LeafMisc.WAIT.create())
+				.child(ControlFlowMisc.SELECTOR.create()
 					.child(LeafSpecial.ONRYOJI_OFUDA.create())
-					.child(LeafSpecial.ONRYOJI_BALANCE.create())
+//					.child(LeafSpecial.ONRYOJI_BALANCE.create())
 					.child(LeafSpecial.ONRYOJI_FOXFIRE.create())
 					.child(LeafSpecial.ONRYOJI_SECLUSION.create())
-					.child(LeafSpecial.ONRYOJI_COMMANDERS.create())
-					));
+//					.child(LeafSpecial.ONRYOJI_COMMANDERS.create())
+					);
 	}
 	
 	private static TreeNode<?> motionControl()

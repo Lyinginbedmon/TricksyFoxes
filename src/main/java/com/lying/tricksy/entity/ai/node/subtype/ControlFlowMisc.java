@@ -31,7 +31,7 @@ public class ControlFlowMisc extends NodeGroupControlFlow
 		List<NodeSubType<ControlFlowNode>> set = Lists.newArrayList();
 		set.add(SEQUENCE = subtype(VARIANT_SEQUENCE, new ControlFlowHandler() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{
 				TreeNode<?> child = parent.children().get(parent.index % parent.children().size());
 				switch(child.tick(tricksy, whiteboards))
@@ -54,7 +54,7 @@ public class ControlFlowMisc extends NodeGroupControlFlow
 		}));
 		set.add(SELECTOR = subtype(ISubtypeGroup.variant("selector"), new ControlFlowHandler() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{
 				if(!parent.isRunning())
 				{
@@ -81,7 +81,7 @@ public class ControlFlowMisc extends NodeGroupControlFlow
 		}));
 		set.add(REACTIVE = subtype(ISubtypeGroup.variant("reactive"), new ControlFlowHandler() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{
 				/**
 				 * Parent result is equal to:

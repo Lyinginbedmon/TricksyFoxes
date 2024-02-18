@@ -81,7 +81,7 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public Map<WhiteboardRef, INodeIO> ioSet(){ return tickFunc.ioSet(); }
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, WhiteboardManager<T> whiteboards, M parent)
+	public final <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, WhiteboardManager<T> whiteboards, M parent)
 	{
 		if(!tickFunc.iosSufficient(parent))
 			return Result.FAILURE;
@@ -91,7 +91,23 @@ public class NodeSubType<M extends TreeNode<?>>
 			return Result.FAILURE;
 		}
 		
-		return tickFunc.doTick(tricksy, whiteboards, parent);
+		if(!parent.isRunning() && !tickFunc.validityCheck(tricksy, whiteboards, parent))
+			return Result.FAILURE;
+		else if(tickFunc.castingTime() > 0)
+			switch((int)Math.signum(parent.ticksRunning() - tickFunc.castingTime()))
+			{
+				case -1:	
+					Result result = tickFunc.doCasting(tricksy, whiteboards, parent);
+					parent.logStatus(TFNodeStatus.CASTING);
+					return result;
+				case 0:		
+					return tickFunc.onCast(tricksy, whiteboards, parent);
+				case 1:
+				default:	
+					return tickFunc.onTick(tricksy, whiteboards, parent);
+			}
+		else
+			return parent.ticksRunning() == 0 ? tickFunc.onCast(tricksy, whiteboards, parent) : tickFunc.onTick(tricksy, whiteboards, parent);
 	}
 	
 	/** Performs any end-of-behaviour cleanup */

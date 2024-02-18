@@ -48,7 +48,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 		List<NodeSubType<DecoratorNode>> set = Lists.newArrayList();
 		set.add(INVERTER = subtype(VARIANT_INVERTER, new DecoratorHandler()
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
 				switch(parent.child().tick(tricksy, whiteboards))
 				{
@@ -64,14 +64,14 @@ public class DecoratorMisc extends NodeGroupDecorator
 		}));
 		set.add(FORCE_FAILURE = subtype(ISubtypeGroup.variant("force_failure"), new DecoratorHandler()
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
 				return parent.child().tick(tricksy, whiteboards).isEnd() ? Result.FAILURE : Result.RUNNING;
 			}
 		}));
 		set.add(FORCE_SUCCESS = subtype(ISubtypeGroup.variant("force_success"), new DecoratorHandler()
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
 				return parent.child().tick(tricksy, whiteboards).isEnd() ? Result.SUCCESS : Result.RUNNING;
 			}
@@ -83,7 +83,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.any(), new WhiteboardObj.Int(1)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
 				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT);
 				
@@ -103,7 +103,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 				return Map.of(LIST, NodeInput.makeInput(NodeInput.any()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
 				IWhiteboardObject<?> value = getOrDefault(LIST, parent, whiteboards);
 				if(value.size() == 0)
@@ -133,7 +133,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
 				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT);
 				if(!parent.isRunning())
@@ -156,7 +156,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
 				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT);
 				if(!parent.isRunning())
@@ -174,7 +174,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 		}));
 		set.add(DO_ONCE = subtype(ISubtypeGroup.variant("do_once"), new DecoratorHandler()
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
 				if(parent.ticks > 0)
 					return Result.FAILURE;
@@ -190,7 +190,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 		}));
 		set.add(WAIT_FOR_COOLDOWN = subtype(ISubtypeGroup.variant("wait_for_cooldown"), new DecoratorHandler()
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent)
 			{
 				if(isCoolingDownRecursive(parent.child(), whiteboards.local()))
 					return Result.RUNNING;

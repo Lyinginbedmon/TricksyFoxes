@@ -114,9 +114,22 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 			return parent.getIO(input).get(whiteboards);
 	}
 	
-	/** Performs a single tick of this node */
+	public default <T extends PathAwareEntity & ITricksyMob<?>> boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, M parent) { return true; }
+	
+	/** How long it takes to use this action before it actually takes effect */
+	public default int castingTime() { return -1; }
+	
+	/** Called while the node is within the {@link castingTime} period */
 	@NotNull
-	public <T extends PathAwareEntity & ITricksyMob<?>> Result doTick(T tricksy, WhiteboardManager<T> whiteboards, M parent);
+	public default <T extends PathAwareEntity & ITricksyMob<?>> Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, M parent) { parent.logStatus(TFNodeStatus.CASTING); return Result.RUNNING; }
+	
+	/** Called when the node first exits the {@link castingTime} period */
+	@NotNull
+	public default <T extends PathAwareEntity & ITricksyMob<?>> Result onCast(T tricksy, WhiteboardManager<T> whiteboards, M parent) { return onTick(tricksy, whiteboards, parent); }
+	
+	/** Called each tick after the {@link castingTime} period, in {@link onCast} did not return an end state */
+	@NotNull
+	public default <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, M parent) { return Result.FAILURE; }
 	
 	/** Performs any cleanup logic needed when the node stops */
 	public default <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, M parent) { }

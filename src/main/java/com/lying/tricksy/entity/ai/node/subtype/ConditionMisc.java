@@ -70,7 +70,7 @@ public class ConditionMisc extends NodeGroupCondition
 						CommonVariables.VAR_DIS, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(8)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				// Value A - mandatory
 				IWhiteboardObject<BlockPos> objPosA = getOrDefault(CommonVariables.VAR_POS_A, parent, whiteboards).as(TFObjType.BLOCK);
@@ -108,7 +108,7 @@ public class ConditionMisc extends NodeGroupCondition
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				BlockPos position = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK).get();
 				return tricksy.getEntityWorld().isReceivingRedstonePower(position) ? Result.SUCCESS : Result.FAILURE;
@@ -121,7 +121,7 @@ public class ConditionMisc extends NodeGroupCondition
 				return Map.of(CommonVariables.TARGET_ENT, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), TFObjType.ENT.blank(), LocalWhiteboard.SELF.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				IWhiteboardObject<Entity> var = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
 				
@@ -146,7 +146,7 @@ public class ConditionMisc extends NodeGroupCondition
 						CommonVariables.VAR_ITEM, NodeInput.makeInput(NodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item(), LocalWhiteboard.MAIN_ITEM.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				IWhiteboardObject<ItemStack> item = getOrDefault(CommonVariables.VAR_ITEM, parent, whiteboards).as(TFObjType.ITEM);
@@ -177,7 +177,7 @@ public class ConditionMisc extends NodeGroupCondition
 						InventoryHandler.FILTER, NodeInput.makeInput(NodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				IWhiteboardObject<ItemStack> item = getOrDefault(CommonVariables.VAR_ITEM, parent, whiteboards).as(TFObjType.ITEM);
 				IWhiteboardObject<ItemStack> filter = getOrDefault(InventoryHandler.FILTER, parent, whiteboards).as(TFObjType.ITEM);
@@ -197,7 +197,7 @@ public class ConditionMisc extends NodeGroupCondition
 						FILTER, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, true), new WhiteboardObjEntity()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				IWhiteboardObject<Entity> entity = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
 				IWhiteboardObject<Entity> filter = getOrDefault(FILTER, parent, whiteboards).as(TFObjType.ENT);
@@ -212,7 +212,7 @@ public class ConditionMisc extends NodeGroupCondition
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				return tricksy.getWorld().getBlockState(pos.get()).getBlock() instanceof CropBlock ? Result.SUCCESS : Result.FAILURE;
@@ -225,7 +225,7 @@ public class ConditionMisc extends NodeGroupCondition
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				IWhiteboardObject<BlockPos> pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				BlockState state = tricksy.getWorld().getBlockState(pos.get());
@@ -244,7 +244,7 @@ public class ConditionMisc extends NodeGroupCondition
 						ENT_B, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				IWhiteboardObject<Entity> leashed = getOrDefault(ENT_A, parent, whiteboards).as(TFObjType.ENT);
 				IWhiteboardObject<Entity> holder = parent.isIOAssigned(ENT_B) ? getOrDefault(ENT_B, parent, whiteboards).as(TFObjType.ENT) : new WhiteboardObjEntity(tricksy);
@@ -266,7 +266,7 @@ public class ConditionMisc extends NodeGroupCondition
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				BlockPos pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK).get();
 				return tricksy.getNavigation().findPathToAny(ImmutableSet.of(pos), 100, false, 1, 128F) != null ? Result.SUCCESS : Result.FAILURE;
