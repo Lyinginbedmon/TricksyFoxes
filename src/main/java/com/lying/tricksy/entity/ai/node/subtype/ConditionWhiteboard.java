@@ -47,7 +47,7 @@ public class ConditionWhiteboard extends NodeGroupCondition
 				return Map.of(CommonVariables.VAR, NodeInput.makeInput(NodeInput.any()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				return getOrDefault(CommonVariables.VAR, parent, whiteboards).as(TFObjType.BOOL).get() ? Result.SUCCESS : Result.FAILURE;
 			}
@@ -60,7 +60,7 @@ public class ConditionWhiteboard extends NodeGroupCondition
 				return Map.of(CommonVariables.VAR, NodeInput.makeInput(NodeInput.any()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				IWhiteboardObject<?> value = getOrDefault(CommonVariables.VAR, parent, whiteboards);
 				return (value == null || value.isEmpty()) ? Result.FAILURE : Result.SUCCESS;
@@ -76,7 +76,7 @@ public class ConditionWhiteboard extends NodeGroupCondition
 						CommonVariables.VAR_B, NodeInput.makeInput(NodeInput.any()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				IWhiteboardObject<?> objA = getOrDefault(CommonVariables.VAR_A, parent, whiteboards);
 				IWhiteboardObject<?> objB = getOrDefault(CommonVariables.VAR_B, parent, whiteboards);
@@ -92,7 +92,7 @@ public class ConditionWhiteboard extends NodeGroupCondition
 						CommonVariables.VAR_B, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				int objA = getOrDefault(CommonVariables.VAR_A, parent, whiteboards).as(TFObjType.INT).get();
 				int objB = getOrDefault(CommonVariables.VAR_B, parent, whiteboards).as(TFObjType.INT).get();
@@ -108,7 +108,7 @@ public class ConditionWhiteboard extends NodeGroupCondition
 						CommonVariables.VAR_B, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				int objA = getOrDefault(CommonVariables.VAR_A, parent, whiteboards).as(TFObjType.INT).get();
 				int objB = getOrDefault(CommonVariables.VAR_B, parent, whiteboards).as(TFObjType.INT).get();

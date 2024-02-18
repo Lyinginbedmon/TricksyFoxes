@@ -21,6 +21,7 @@ import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
 import com.lying.tricksy.entity.ai.node.handler.NodeOutput;
+import com.lying.tricksy.entity.ai.node.subtype.NodeSubType.CooldownBehaviour;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
@@ -65,7 +66,7 @@ public class LeafWhiteboard extends NodeGroupLeaf
 				return Map.of(VAR_A, NodeInput.makeInput(NodeInput.anyLocal()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<?> value = getOrDefault(VAR_A, parent, whiteboards);
 				if(!value.isList())
@@ -91,7 +92,7 @@ public class LeafWhiteboard extends NodeGroupLeaf
 						DEST, new NodeOutput(TFObjType.types().toArray(new TFObjType[0])));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<?> copiedValue = getOrDefault(COPY, parent, whiteboards);
 				INodeIOValue targetVal = parent.getIO(DEST);
@@ -123,7 +124,7 @@ public class LeafWhiteboard extends NodeGroupLeaf
 						DEST, NodeInput.makeInput((var) -> !var.uncached() && !var.boardType().isReadOnly()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				INodeIOValue targetVal = parent.getIO(DEST);
 				if(targetVal.type() != Type.WHITEBOARD)
@@ -156,7 +157,7 @@ public class LeafWhiteboard extends NodeGroupLeaf
 						CommonVariables.INVERT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(), (new WhiteboardObj.Bool(false)).describe().get(0)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				INodeIOValue reference = parent.getIO(VAR_UNSORTED);
 				if(reference.type() != Type.WHITEBOARD)
@@ -363,7 +364,7 @@ public class LeafWhiteboard extends NodeGroupLeaf
 						CommonVariables.INVERT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(), (new WhiteboardObj.Bool(false)).describe().get(0)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				INodeIOValue reference = parent.getIO(VAR_UNSORTED);
 				if(reference.type() != Type.WHITEBOARD)
@@ -459,7 +460,9 @@ public class LeafWhiteboard extends NodeGroupLeaf
 					POSITION, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName()));
 		}
 		
-		public default <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+		public default CooldownBehaviour cooldownBehaviour() { return CooldownBehaviour.ALWAYS; }
+		
+		public default <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 		{
 			INodeIOValue reference = parent.getIO(VAR_UNSORTED);
 			WhiteboardRef dest = ((WhiteboardValue)reference).assignment();

@@ -58,7 +58,21 @@ public class ConditionInventory extends NodeGroupCondition
 						FILTER, NodeInput.makeInput(NodeInput.ofType(TFObjType.ITEM, true), new WhiteboardObj.Item()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
+			{
+				IWhiteboardObject<BlockPos> value = getOrDefault(TILE, parent, whiteboards).as(TFObjType.BLOCK);
+				BlockPos block = value.get();
+				World world = tricksy.getWorld();
+				BlockEntity tile = world.getBlockEntity(block);
+				if(tile == null || !(tile instanceof Inventory))
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
+					return false;
+				}
+				return true;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				IWhiteboardObject<BlockPos> value = getOrDefault(TILE, parent, whiteboards).as(TFObjType.BLOCK);
 				IWhiteboardObject<BlockPos> face = getOrDefault(FACE, parent, whiteboards).as(TFObjType.BLOCK);
@@ -67,12 +81,6 @@ public class ConditionInventory extends NodeGroupCondition
 				BlockPos block = value.get();
 				World world = tricksy.getWorld();
 				BlockEntity tile = world.getBlockEntity(block);
-				if(tile == null || !(tile instanceof Inventory))
-				{
-					parent.logStatus(TFNodeStatus.INPUT_ERROR);
-					return Result.FAILURE;
-				}
-				
 				Inventory inv = (Inventory)tile;
 				int exitSlot = -1;
 				if(tile instanceof SidedInventory)

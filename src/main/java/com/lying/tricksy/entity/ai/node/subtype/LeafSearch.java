@@ -15,6 +15,7 @@ import com.lying.tricksy.entity.ai.node.handler.GetterHandlerTyped;
 import com.lying.tricksy.entity.ai.node.handler.InventoryHandler;
 import com.lying.tricksy.entity.ai.node.handler.MatchBlockSearchHandler;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
+import com.lying.tricksy.entity.ai.node.subtype.NodeSubType.CooldownBehaviour;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
@@ -52,6 +53,8 @@ public class LeafSearch extends NodeGroupLeaf
 		List<NodeSubType<LeafNode>> set = Lists.newArrayList();
 		set.add(GET_ITEMS = subtype(ISubtypeGroup.variant("get_items"), new GetterHandlerTyped<Entity>(TFObjType.ENT)
 		{
+			public CooldownBehaviour cooldownBehaviour() { return CooldownBehaviour.ALWAYS; }
+			
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{
 				set.put(CommonVariables.VAR_POS, GetterHandlerTyped.POS_OR_REGION);
@@ -90,6 +93,8 @@ public class LeafSearch extends NodeGroupLeaf
 		set.add(GET_ENTITIES = subtype(ISubtypeGroup.variant("get_creatures"), new GetterHandlerTyped<Entity>(TFObjType.ENT)
 		{
 			public static WhiteboardRef FILTER = new WhiteboardRef("entity_filter", TFObjType.ENT).displayName(CommonVariables.translate("item_filter"));
+			
+			public CooldownBehaviour cooldownBehaviour() { return CooldownBehaviour.ALWAYS; }
 			
 			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 			{

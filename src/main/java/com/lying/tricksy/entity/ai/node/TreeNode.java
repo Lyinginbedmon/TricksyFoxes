@@ -270,7 +270,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 					subType.onEnd(tricksy, (N)this);
 					
 					int cooldown = subType.getCooldown(tricksy);
-					if(cooldown > 0)
+					if(cooldown > 0 && subType.shouldCooldown(ticksRunning, result))
 						whiteboards.local().setNodeCooldown(subType, cooldown);
 					
 					this.nodeRAM = new NbtCompound();

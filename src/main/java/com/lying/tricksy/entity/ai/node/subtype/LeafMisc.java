@@ -19,6 +19,7 @@ import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
 import com.lying.tricksy.entity.ai.node.handler.GetterHandlerTyped;
 import com.lying.tricksy.entity.ai.node.handler.NodeInput;
+import com.lying.tricksy.entity.ai.node.subtype.NodeSubType.CooldownBehaviour;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
@@ -69,6 +70,8 @@ public class LeafMisc extends NodeGroupLeaf
 		set.add(BARK = subtype(ISubtypeGroup.variant("bark"), new INodeTickHandler<LeafNode>() 
 		{
 			private static final WhiteboardRef BARK = CommonVariables.VAR_NUM;
+			
+			public CooldownBehaviour cooldownBehaviour() { return CooldownBehaviour.ALWAYS; }
 			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
@@ -261,30 +264,28 @@ public class LeafMisc extends NodeGroupLeaf
 		{
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
 			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				if(canSleep(tricksy))
+				{
+					tricksy.setTreePose(EntityPose.SITTING);
+					return Result.RUNNING;
+				}
+				
+				return Result.FAILURE;
+			}
+			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				if(!parent.isRunning())
-				{
-					if(canSleep(tricksy))
-					{
-						tricksy.setTreePose(EntityPose.SITTING);
-						return Result.RUNNING;
-					}
-					else
-						return Result.FAILURE;
-				}
-				else
-				{
-					Result result = Result.RUNNING;
-					
-					if(!canSleep(tricksy))
-						result = Result.FAILURE;
-					else if(parent.ticksRunning()%Reference.Values.TICKS_PER_SECOND == 0 && tricksy.getHealth() < tricksy.getMaxHealth())
-						tricksy.heal(1F);
-					
-					tricksy.setTreePose(result.isEnd() ? tricksy.defaultPose() : EntityPose.SITTING);
-					return result;
-				}
+				Result result = Result.RUNNING;
+				
+				if(!canSleep(tricksy))
+					result = Result.FAILURE;
+				else if(parent.ticksRunning()%Reference.Values.TICKS_PER_SECOND == 0 && tricksy.getHealth() < tricksy.getMaxHealth())
+					tricksy.heal(1F);
+				
+				tricksy.setTreePose(result.isEnd() ? tricksy.defaultPose() : EntityPose.SITTING);
+				return result;
 			}
 			
 			private <T extends PathAwareEntity & ITricksyMob<?>> boolean canSleep(T tricksy) { return tricksy.isOnGround() && tricksy.hurtTime <= 0; }

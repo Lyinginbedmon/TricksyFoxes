@@ -15,6 +15,7 @@ import com.lying.tricksy.api.entity.ai.INodeIOValue.WhiteboardValue;
 import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.node.TreeNode.Result;
+import com.lying.tricksy.entity.ai.node.subtype.NodeSubType.CooldownBehaviour;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
@@ -113,6 +114,9 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 		else
 			return parent.getIO(input).get(whiteboards);
 	}
+	
+	/** Defines how the cooldown (if any) for this node should be applied */
+	public default CooldownBehaviour cooldownBehaviour() { return CooldownBehaviour.IF_IMMEDIATE_FAILURE; }
 	
 	public default <T extends PathAwareEntity & ITricksyMob<?>> boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, M parent) { return true; }
 	

@@ -3,6 +3,7 @@ package com.lying.tricksy.entity.ai.node.subtype;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -79,6 +80,8 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public EnumSet<ActionFlag> usesFlags() { return tickFunc.flagsUsed(); }
 	
+	public boolean shouldCooldown(int ticksRunning, Result latestResult) { return tickFunc.cooldownBehaviour().apply(ticksRunning, latestResult); }
+	
 	public Map<WhiteboardRef, INodeIO> ioSet(){ return tickFunc.ioSet(); }
 	
 	public final <T extends PathAwareEntity & ITricksyMob<?>> Result call(T tricksy, WhiteboardManager<T> whiteboards, M parent)
@@ -98,7 +101,8 @@ public class NodeSubType<M extends TreeNode<?>>
 			{
 				case -1:	
 					Result result = tickFunc.doCasting(tricksy, whiteboards, parent);
-					parent.logStatus(TFNodeStatus.CASTING);
+					if(!result.isEnd())
+						parent.logStatus(TFNodeStatus.CASTING);
 					return result;
 				case 0:		
 					return tickFunc.onCast(tricksy, whiteboards, parent);
@@ -130,5 +134,21 @@ public class NodeSubType<M extends TreeNode<?>>
 	public static MutableText cooldownDesc(Text descIn)
 	{
 		return Text.translatable("info."+Reference.ModInfo.MOD_ID+".node_cooldown", descIn).styled(style -> style.withColor(Formatting.GRAY));
+	}
+	
+	public static enum CooldownBehaviour
+	{
+		ALWAYS((ticks,result) -> true),
+		IF_IMMEDIATE_FAILURE((ticks,result) -> result == Result.FAILURE && ticks == 0),
+		IF_SUCCESS((ticks,result) -> result == Result.SUCCESS);
+		
+		private final BiFunction<Integer, Result, Boolean> func;
+		
+		private CooldownBehaviour(BiFunction<Integer, Result, Boolean> funcIn)
+		{
+			this.func = funcIn;
+		}
+		
+		public boolean apply(int ticks, Result result) { return func.apply(ticks, result); }
 	}
 }

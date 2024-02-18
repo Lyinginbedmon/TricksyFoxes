@@ -9,6 +9,7 @@ import com.lying.tricksy.api.entity.ai.INodeIO;
 import com.lying.tricksy.api.entity.ai.INodeTickHandler;
 import com.lying.tricksy.entity.ai.node.LeafNode;
 import com.lying.tricksy.entity.ai.node.subtype.LeafSearch;
+import com.lying.tricksy.entity.ai.node.subtype.NodeSubType.CooldownBehaviour;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
@@ -38,6 +39,8 @@ public class MatchBlockSearchHandler extends GetterHandlerTyped<BlockPos>
 	{
 		super(TFObjType.BLOCK);
 	}
+	
+	public CooldownBehaviour cooldownBehaviour() { return CooldownBehaviour.ALWAYS; }
 	
 	public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
 	{

@@ -919,7 +919,6 @@ public class LeafSpecial extends NodeGroupLeaf
 				if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
 					((EntityTricksyWolf)tricksy).setHowling();
 				
-				parent.logStatus(TFNodeStatus.CASTING);
 				return Result.RUNNING;
 			}
 			
@@ -1187,7 +1186,6 @@ public class LeafSpecial extends NodeGroupLeaf
 					storeFireballs(fireballs, parent.nodeRAM);
 				}
 				
-				parent.logStatus(TFNodeStatus.CASTING);
 				return INodeTickHandler.super.doCasting(tricksy, whiteboards, parent);
 			}
 			

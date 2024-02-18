@@ -26,7 +26,7 @@ public abstract class GetterHandlerTyped<T> extends GetterHandlerUntyped
 		this.type = typeIn;
 	}
 	
-	public <N extends PathAwareEntity & ITricksyMob<?>> Result doTick(N tricksy, WhiteboardManager<N> whiteboards, LeafNode parent)
+	public <N extends PathAwareEntity & ITricksyMob<?>> Result onCast(N tricksy, WhiteboardManager<N> whiteboards, LeafNode parent)
 	{
 		INodeIOValue target = parent.getIO(entry);
 		WhiteboardRef dest = ((WhiteboardValue)target).assignment();

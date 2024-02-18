@@ -3,6 +3,7 @@ package com.lying.tricksy.entity;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.reference.Reference;
@@ -28,7 +29,7 @@ public class EntitySeclusion extends Entity
 {
     public static final TrackedData<Integer> LIFESPAN = DataTracker.registerData(EntitySeclusion.class, TrackedDataHandlerRegistry.INTEGER);
     public static final TrackedData<Integer> AGE = DataTracker.registerData(EntitySeclusion.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Optional<UUID>> TARGET = DataTracker.registerData(EntitySeclusion.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
+    public static final TrackedData<Optional<UUID>> OWNER = DataTracker.registerData(EntitySeclusion.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
     private Entity boundOwner = null;
     
     public static final double RANGE = 6D;
@@ -45,7 +46,7 @@ public class EntitySeclusion extends Entity
 	{
 		getDataTracker().startTracking(AGE, 0);
 		getDataTracker().startTracking(LIFESPAN, -1);
-		getDataTracker().startTracking(TARGET, Optional.empty());
+		getDataTracker().startTracking(OWNER, Optional.empty());
 	}
 	
 	public static EntitySeclusion makeFor(Entity owner)
@@ -106,9 +107,11 @@ public class EntitySeclusion extends Entity
 	
 	protected void handleRepulsion()
 	{
+		Predicate<Entity> isOwner = this::isOwner;
+		
 		Vec3d origin = getPos();
 		Box bounds = getBoundingBox().expand(RANGE * Math.min(1F, age() / Reference.Values.TICKS_PER_SECOND));
-		getWorld().getEntitiesByClass(ProjectileEntity.class, bounds, EntityPredicates.VALID_ENTITY.and(arrow -> !arrow.getUuid().equals(getOwnerId()))).forEach(arrow -> 
+		getWorld().getEntitiesByClass(ProjectileEntity.class, bounds, EntityPredicates.VALID_ENTITY.and(isOwner.negate())).forEach(arrow -> 
 		{
 			Vec3d pos = arrow.getPos();
 			Vec3d nextPos = pos.add(arrow.getVelocity());
@@ -116,7 +119,7 @@ public class EntitySeclusion extends Entity
 				arrow.setVelocity(arrow.getVelocity().multiply(-0.5D));
 		});
 		
-		getWorld().getEntitiesByClass(LivingEntity.class, bounds, EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR).and(ent -> !(ent == this || ent.getUuid().equals(getOwnerId())))).forEach(mob -> 
+		getWorld().getEntitiesByClass(LivingEntity.class, bounds, EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR).and(isOwner.negate())).forEach(mob -> 
 		{
 			Vec3d offset = origin.subtract(mob.getPos());
 			if(offset.length() < RANGE)
@@ -126,6 +129,8 @@ public class EntitySeclusion extends Entity
 			}
 		});
 	}
+	
+	public boolean isOwner(Entity ent) { return hasOwner() && ent.getUuid().equals(getOwnerId()); }
 	
 	public int age() { return getDataTracker().get(AGE).intValue(); }
 	
@@ -148,24 +153,26 @@ public class EntitySeclusion extends Entity
 		updatePosition(ent);
 	}
 	
-	public void setOwner(UUID uuid) { getDataTracker().set(TARGET, uuid == null ? Optional.empty() : Optional.of(uuid)); }
+	public void setOwner(UUID uuid) { getDataTracker().set(OWNER, uuid == null ? Optional.empty() : Optional.of(uuid)); }
 	
-	public boolean hasOwner() { return getDataTracker().get(TARGET).isPresent(); }
+	public boolean hasOwner() { return getDataTracker().get(OWNER).isPresent(); }
 	
-	public UUID getOwnerId() { return hasOwner() ? getDataTracker().get(TARGET).get() : null; }
+	public UUID getOwnerId() { return hasOwner() ? getDataTracker().get(OWNER).get() : null; }
 	
 	public Optional<Entity> getOwner()
 	{
+		if(!hasOwner())
+			return Optional.empty();
+		
 		if(boundOwner == null)
 		{
-			List<Entity> candidates = getWorld().getEntitiesByClass(Entity.class, getBoundingBox().expand(32D), EntityPredicates.VALID_ENTITY.and(ent -> ent.getUuid().equals(getOwnerId())));
+			List<Entity> candidates = getWorld().getEntitiesByClass(Entity.class, getBoundingBox().expand(32D), EntityPredicates.VALID_ENTITY.and(this::isOwner));
 			if(candidates.isEmpty())
 				return Optional.empty();
 			else
 				return Optional.of(boundOwner = candidates.get(0));
 		}
-		else if(boundOwner.isAlive())
-			return Optional.of(boundOwner);
-		return Optional.empty();
+		
+		return Optional.of(boundOwner);
 	}
 }
