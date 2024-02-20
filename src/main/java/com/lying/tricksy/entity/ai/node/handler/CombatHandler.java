@@ -57,7 +57,7 @@ public abstract class CombatHandler implements INodeTickHandler<LeafNode>
 	
 	protected void addVariables(Map<WhiteboardRef, INodeIO> set) { }
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 	{
 		IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
 		

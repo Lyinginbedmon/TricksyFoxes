@@ -91,7 +91,7 @@ public class LeafCombat extends NodeGroupLeaf
 				return Map.of(CommonVariables.TARGET_ENT, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
 				if(value.size() == 0)
@@ -196,10 +196,10 @@ public class LeafCombat extends NodeGroupLeaf
 				set.put(DRAW, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				drawTicks = 20 * MathHelper.clamp(getOrDefault(DRAW, parent, whiteboards).as(TFObjType.INT).get(), 1, 3600);
-				return super.onTick(tricksy, whiteboards, parent);
+				return super.onTick(tricksy, whiteboards, parent, tick);
 			}
 			
 			public boolean isRangeWeapon(ItemStack bowStack) { return !bowStack.isEmpty() && bowStack.getItem() instanceof BowItem; }
@@ -354,7 +354,7 @@ public class LeafCombat extends NodeGroupLeaf
 						LocalWhiteboard.ATTACK_TARGET.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				if(!tricksy.getMainHandStack().isOf(Items.SHIELD))
 					return Result.FAILURE;

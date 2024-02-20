@@ -78,7 +78,7 @@ public class LeafMisc extends NodeGroupLeaf
 				return Map.of(BARK, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				int index = MathHelper.clamp(getOrDefault(BARK, parent, whiteboards).as(TFObjType.INT).get(), 0, Bark.values().length - 1);
 				tricksy.bark(Bark.values()[index]);
@@ -96,15 +96,16 @@ public class LeafMisc extends NodeGroupLeaf
 				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int(1)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<Integer> duration = getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT);
-				
-				if(!parent.isRunning())
-					parent.ticks = duration.get() * Reference.Values.TICKS_PER_SECOND;
-				else if(parent.ticks-- <= 0)
-					return Result.SUCCESS;
+				parent.ticks = duration.get() * Reference.Values.TICKS_PER_SECOND;
 				return Result.RUNNING;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				return parent.ticks-- <= 0 ? Result.SUCCESS : Result.RUNNING;
 			}
 		}));
 		set.add(SET_HOME = subtype(ISubtypeGroup.variant("set_home"), new INodeTickHandler<LeafNode>()
@@ -114,7 +115,7 @@ public class LeafMisc extends NodeGroupLeaf
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false), new WhiteboardObjBlock()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				IWhiteboardObject<BlockPos> value = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				if(value.size() == 0)
@@ -126,7 +127,7 @@ public class LeafMisc extends NodeGroupLeaf
 		}));
 		set.add(ORDER_COMPLETE = subtype(ISubtypeGroup.variant("complete_order"), new INodeTickHandler<LeafNode>()
 				{
-					public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+					public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 					{
 						whiteboards.order().setValue(OrderWhiteboard.ACTIVE, new WhiteboardObj.Bool(false));
 						return Result.SUCCESS;
@@ -146,36 +147,37 @@ public class LeafMisc extends NodeGroupLeaf
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				EntityNavigation navigator = tricksy.getNavigation();
-				if(!parent.isRunning())
+				IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
+				if(targetObj.isEmpty())
 				{
-					IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
-					if(targetObj.isEmpty())
-					{
-						parent.logStatus(TFNodeStatus.INPUT_ERROR);
-						return Result.FAILURE;
-					}
-					
-					BlockPos dest = targetObj.as(TFObjType.BLOCK).get();
-					if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 0.3D)
-						return Result.SUCCESS;
-					
-					Path path = navigator.findPathToAny(ImmutableSet.of(dest), 100, false, 1, 128F);
-					if(path != null && navigator.startMovingAlong(path, 1D))
-					{
-						parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Pathing"+StringUtils.repeat('.', parent.ticksRunning()%3 + 1)));
-						return Result.RUNNING;
-					}
-					else
-					{
-						parent.logStatus(TFNodeStatus.FAILURE, Text.literal("Can't path to there"));
-						return Result.FAILURE;
-					}
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
+					return Result.FAILURE;
+				}
+				
+				BlockPos dest = targetObj.as(TFObjType.BLOCK).get();
+				if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 0.3D)
+					return Result.SUCCESS;
+				
+				EntityNavigation navigator = tricksy.getNavigation();
+				Path path = navigator.findPathToAny(ImmutableSet.of(dest), 100, false, 1, 128F);
+				if(path != null && navigator.startMovingAlong(path, 1D))
+				{
+					parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Pathing"+StringUtils.repeat('.', 1)));
+					return Result.RUNNING;
 				}
 				else
-					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
+				{
+					parent.logStatus(TFNodeStatus.FAILURE, Text.literal("Can't path to there"));
+					return Result.FAILURE;
+				}
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Pathing"+StringUtils.repeat('.', tick%3 + 1)));
+				return tricksy.getNavigation().isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
 			}
 		};
 	}
@@ -184,7 +186,7 @@ public class LeafMisc extends NodeGroupLeaf
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				tricksy.getNavigation().stop();
 				return Result.SUCCESS;
@@ -205,7 +207,7 @@ public class LeafMisc extends NodeGroupLeaf
 						CommonVariables.VAR_DIS, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal(String.valueOf(4))));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<?> targetObj = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
 				IWhiteboardObject<Integer> targetRange = getOrDefault(CommonVariables.VAR_DIS, parent, whiteboards).as(TFObjType.INT);
@@ -219,33 +221,33 @@ public class LeafMisc extends NodeGroupLeaf
 				});
 				
 				EntityNavigation navigator = tricksy.getNavigation();
-				if(!parent.isRunning())
+				Random rand = tricksy.getRandom();
+				
+				int attempts = 50;
+				BlockPos dest;
+				Path path;
+				do
 				{
-					Random rand = tricksy.getRandom();
-					
-					int attempts = 50;
-					BlockPos dest;
-					Path path;
-					do
-					{
-						dest = getWanderTarget(area, rand, tricksy.getWorld().getBottomY());
-						path = navigator.findPathTo(dest, 20);
-					}
-					while(--attempts > 0 && path == null);
-					
-					if(path == null)
-					{
-						parent.logStatus(TFNodeStatus.INPUT_ERROR);
-						return Result.FAILURE;
-					}
-					else if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 1D)
-						return Result.SUCCESS;
-					
-					navigator.startMovingTo(dest.getX(), dest.getY(), dest.getZ(), 1D);
-					return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
+					dest = getWanderTarget(area, rand, tricksy.getWorld().getBottomY());
+					path = navigator.findPathTo(dest, 20);
 				}
-				else
-					return navigator.isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
+				while(--attempts > 0 && path == null);
+				
+				if(path == null)
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
+					return Result.FAILURE;
+				}
+				else if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 1D)
+					return Result.SUCCESS;
+				
+				navigator.startMovingTo(dest.getX(), dest.getY(), dest.getZ(), 1D);
+				return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				return tricksy.getNavigation().isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
 			}
 			
 			private BlockPos getWanderTarget(Region area, Random rand, int bottomY)
@@ -275,13 +277,13 @@ public class LeafMisc extends NodeGroupLeaf
 				return Result.FAILURE;
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				Result result = Result.RUNNING;
 				
 				if(!canSleep(tricksy))
 					result = Result.FAILURE;
-				else if(parent.ticksRunning()%Reference.Values.TICKS_PER_SECOND == 0 && tricksy.getHealth() < tricksy.getMaxHealth())
+				else if(tick%Reference.Values.TICKS_PER_SECOND == 0 && tricksy.getHealth() < tricksy.getMaxHealth())
 					tricksy.heal(1F);
 				
 				tricksy.setTreePose(result.isEnd() ? tricksy.defaultPose() : EntityPose.SITTING);
@@ -311,7 +313,7 @@ public class LeafMisc extends NodeGroupLeaf
 						LocalWhiteboard.ATTACK_TARGET.displayName()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				IWhiteboardObject<?> target = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards);
 				if(target.size() > 0)
@@ -345,19 +347,22 @@ public class LeafMisc extends NodeGroupLeaf
 				return Map.of(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal(String.valueOf(4))));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				if(!parent.isRunning())
-				{
-					int duration = getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT).get();
-					parent.ticks = (duration + 1) * 20;
-					
-					Random rand = tricksy.getRandom();
-					double d = Math.PI * 2 * rand.nextDouble();
-					parent.nodeRAM.putDouble("DeltaX", Math.cos(d));
-					parent.nodeRAM.putDouble("DeltaZ", Math.sin(d));
-				}
-				else if(--parent.ticks == 0)
+				int duration = getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT).get();
+				parent.ticks = (duration + 1) * 20;
+				
+				Random rand = tricksy.getRandom();
+				double d = Math.PI * 2 * rand.nextDouble();
+				parent.nodeRAM.putDouble("DeltaX", Math.cos(d));
+				parent.nodeRAM.putDouble("DeltaZ", Math.sin(d));
+				tricksy.getLookControl().lookAt(tricksy.getX() + parent.nodeRAM.getDouble("DeltaX"), tricksy.getEyeY(), tricksy.getZ() + parent.nodeRAM.getDouble("DeltaZ"));
+				return Result.RUNNING;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				if(--parent.ticks == 0)
 					return Result.SUCCESS;
 				
 				tricksy.getLookControl().lookAt(tricksy.getX() + parent.nodeRAM.getDouble("DeltaX"), tricksy.getEyeY(), tricksy.getZ() + parent.nodeRAM.getDouble("DeltaZ"));

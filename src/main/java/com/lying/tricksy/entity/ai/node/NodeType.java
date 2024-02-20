@@ -36,7 +36,7 @@ public class NodeType<M extends TreeNode<?>>
 	public static final Identifier DUMMY_ID = new Identifier(Reference.ModInfo.MOD_ID, "dummy");
 	private final NodeSubType<M> dummy = new NodeSubType<M>(DUMMY_ID, this, new INodeTickHandler<M>()
 	{
-		public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, M parent)
+		public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, M parent, int tick)
 		{
 			return Result.FAILURE;
 		}

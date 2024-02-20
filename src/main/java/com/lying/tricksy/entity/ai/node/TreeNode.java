@@ -54,7 +54,6 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	private Text customName = null;
 	private boolean hideChildren = false;
-	// TODO Implement isSilent, to prevent a node from emitting any sound events
 	private boolean isSilent = false;
 	
 	/** The primary node type */
@@ -261,7 +260,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		
 		@Nullable
 		Result result = Result.FAILURE;
-		if(subType.usesFlags().isEmpty() || subType.usesFlags().stream().allMatch(flag -> whiteboards.local().canUseFlag(flag)))
+		if(subType.flagsUsed().isEmpty() || subType.flagsUsed().stream().allMatch(flag -> whiteboards.local().canUseFlag(flag)))
 			try
 			{
 				result = subType.call(tricksy, whiteboards, (N)this);
@@ -275,9 +274,8 @@ public abstract class TreeNode<N extends TreeNode<?>>
 					
 					this.nodeRAM = new NbtCompound();
 				}
-				
-				if(!subType.usesFlags().isEmpty())
-					whiteboards.local().flagAction(subType.usesFlags());
+				else if(!subType.flagsUsed().isEmpty())
+					whiteboards.local().flagAction(subType.flagsUsed());
 			}
 			catch(Exception e) { logStatus(TFNodeStatus.FAILURE, Text.literal(e.getLocalizedMessage())); }
 		else
@@ -346,6 +344,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	/** Returns true if this node is in a runnable condition */
 	public boolean isRunnable() { return true; }
 	
+	/** Returns how many ticks since this node started running */
 	public int ticksRunning() { return this.ticksRunning; }
 	
 	/** Returns true if this node can accept the given child node */

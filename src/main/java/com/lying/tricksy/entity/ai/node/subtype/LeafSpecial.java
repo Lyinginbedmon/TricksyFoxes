@@ -293,27 +293,39 @@ public class LeafSpecial extends NodeGroupLeaf
 						CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(1), Text.literal(String.valueOf(1))));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public int castingTime() { return ANIMATION_END_TICK; }
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<BlockPos> posIn = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				if(posIn.size() == 0)
-					return Result.FAILURE;
+					return false;
 				
 				BlockPos pos = posIn.get();
 				if(tricksy.getWorld().getBlockState(pos).getBlock() != TFBlocks.PRESCIENT_CANDLE || tricksy.squaredDistanceTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D) > (INTERACT_RANGE * INTERACT_RANGE))
-					return Result.FAILURE;
+					return false;
 				
+				return true;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				BlockPos pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK).get();
 				tricksy.getLookControl().lookAt(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
 				if(tricksy.getType() == TFEntityTypes.TRICKSY_FOX)
 					((EntityTricksyFox)tricksy).setPraying();
 				
-				if(parent.ticksRunning() == ANIMATION_END_TICK)
-				{
-					CandlePowers candles = CandlePowers.getCandlePowers(tricksy.getServer());
-					candles.setPowerFor(tricksy.getUuid(), getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT).get());
-					return Result.SUCCESS;
-				}
+				if(!validityCheck(tricksy, whiteboards, parent))
+					return Result.FAILURE;
+				
 				return Result.RUNNING;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				CandlePowers candles = CandlePowers.getCandlePowers(tricksy.getServer());
+				candles.setPowerFor(tricksy.getUuid(), getOrDefault(CommonVariables.VAR_NUM, parent, whiteboards).as(TFObjType.INT).get());
+				return Result.SUCCESS;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
@@ -339,44 +351,52 @@ public class LeafSpecial extends NodeGroupLeaf
 				return Map.of(CommonVariables.TARGET_ENT, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<Entity> targetObj = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
 				if(targetObj.isEmpty() || !targetObj.get().isAlive() || !(targetObj.get() instanceof LivingEntity) || tricksy.hasVehicle())
+					return false;
+				return true;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				LivingEntity target = (LivingEntity)getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT).get();
+				EntityTricksyGoat goat = (EntityTricksyGoat)tricksy;
+				EntityNavigation navigator = tricksy.getNavigation();
+				double dist = target.distanceTo(tricksy);
+				if(dist < 4D || dist > 16D)
 					return Result.FAILURE;
 				
-				LivingEntity target = (LivingEntity)targetObj.get();
+				Optional<Ram> ram = findRamStart(goat, target).map(start -> new Ram((BlockPos)start, target.getBlockPos(), target));
+				if(ram.isPresent())
+				{
+					Path path = navigator.findPathTo(ram.get().getEnd(), 0);
+					navigator.startMovingAlong(path, 3F);
+					goat.setCharging();
+					
+					BlockPos goatPos = goat.getBlockPos();
+					Vec3d targetVec = calculateRamTarget(ram.get().getStart(), ram.get().getEnd());
+					Vec3d direction = new Vec3d((double)goatPos.getX() - targetVec.getX(), 0, (double)goatPos.getZ() - targetVec.getZ()).normalize();
+					parent.nodeRAM.putDouble("X", direction.getX());
+					parent.nodeRAM.putDouble("Z", direction.getZ());
+					
+					parent.playSoundFromEntity(null, tricksy, goat.isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_PREPARE_RAM : SoundEvents.ENTITY_GOAT_PREPARE_RAM, SoundCategory.NEUTRAL, 1.0f, tricksy.getSoundPitch());
+					return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
+				}
+				else
+					return Result.FAILURE;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				LivingEntity target = (LivingEntity)getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT).get();
 				EntityTricksyGoat goat = (EntityTricksyGoat)tricksy;
 				
 				EntityNavigation navigator = tricksy.getNavigation();
 				ServerWorld world = (ServerWorld)tricksy.getWorld();
 				tricksy.lookAtEntity(target, 10F, 20F);
-				if(!parent.isRunning())
-				{
-					double dist = target.distanceTo(tricksy);
-					if(dist < 4D || dist > 16D)
-						return Result.FAILURE;
-					
-					Optional<Ram> ram = findRamStart(goat, target).map(start -> new Ram((BlockPos)start, target.getBlockPos(), target));
-					if(ram.isPresent())
-					{
-						Path path = navigator.findPathTo(ram.get().getEnd(), 0);
-						navigator.startMovingAlong(path, 3F);
-						goat.setCharging();
-						
-						BlockPos goatPos = goat.getBlockPos();
-						Vec3d targetVec = calculateRamTarget(ram.get().getStart(), ram.get().getEnd());
-						Vec3d direction = new Vec3d((double)goatPos.getX() - targetVec.getX(), 0, (double)goatPos.getZ() - targetVec.getZ()).normalize();
-						parent.nodeRAM.putDouble("X", direction.getX());
-						parent.nodeRAM.putDouble("Z", direction.getZ());
-						
-						parent.playSoundFromEntity(null, tricksy, goat.isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_PREPARE_RAM : SoundEvents.ENTITY_GOAT_PREPARE_RAM, SoundCategory.NEUTRAL, 1.0f, tricksy.getSoundPitch());
-						return navigator.isFollowingPath() ? Result.RUNNING : Result.FAILURE;
-					}
-					else
-						return Result.FAILURE;
-				}
-				else if(navigator.isFollowingPath())
+				if(navigator.isFollowingPath())
 				{
 					List<LivingEntity> targets = world.getTargets(LivingEntity.class, RAM_TARGET_PREDICATE, tricksy, tricksy.getBoundingBox());
 					if(!targets.isEmpty())
@@ -456,7 +476,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				return Map.of(VAL, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(false), (new WhiteboardObj.Bool(false)).describe().get(0)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				if(tricksy.getType() == TFEntityTypes.TRICKSY_FOX)
 				{
@@ -477,21 +497,21 @@ public class LeafSpecial extends NodeGroupLeaf
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.MOVE); }
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				if(tricksy.getType() == TFEntityTypes.TRICKSY_GOAT && !tricksy.hasVehicle() && tricksy.isOnGround())
-				{
-					if(!parent.isRunning())
-					{
-						((EntityTricksyGoat)tricksy).setBlockading();
-						tricksy.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, DURATION, 5));
-						return Result.RUNNING;
-					}
-					else if(parent.ticksRunning() < DURATION)
-						return Result.RUNNING;
-					return Result.SUCCESS;
-				}
-				return Result.FAILURE;
+				return tricksy.getType() == TFEntityTypes.TRICKSY_GOAT && !tricksy.hasVehicle() && tricksy.isOnGround();
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				((EntityTricksyGoat)tricksy).setBlockading();
+				tricksy.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, DURATION, 5));
+				return Result.RUNNING;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				return tick < DURATION ? Result.RUNNING : Result.SUCCESS;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
@@ -505,187 +525,195 @@ public class LeafSpecial extends NodeGroupLeaf
 	public static INodeTickHandler<LeafNode> leafGoatJump()
 	{
 		return new INodeTickHandler<LeafNode>()
+		{
+			private static final List<Integer> RAM_RANGES = Lists.newArrayList(80, 75, 70, 65);
+			
+			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.MOVE); }
+			
+			public Map<WhiteboardRef, INodeIO> ioSet()
+			{
+				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				BlockPos target = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK).get();
+				if(!canRun(tricksy))
+					return false;
+				
+				if(target.getY() - tricksy.getBlockPos().getY() > 5)
+					return false;
+				
+				BlockPos offset = target.subtract(tricksy.getBlockPos());
+				if((new Vec3i(offset.getX(), 0, offset.getZ())).getSquaredDistance(Vec3i.ZERO) > (5 * 5))
+					return false;
+				
+				Vec3d vel = getJumpingVelocity(tricksy, Vec3d.ofCenter(target));
+				if(vel == null)
+					return false;
+				
+				return true;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				BlockPos target = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK).get();
+				Vec3d vel = getJumpingVelocity(tricksy, Vec3d.ofCenter(target));
+				
+				parent.nodeRAM.putDouble("JumpX", vel.getX());
+				parent.nodeRAM.putDouble("JumpY", vel.getY());
+				parent.nodeRAM.putDouble("JumpZ", vel.getZ());
+				
+				parent.nodeRAM.putDouble("StartX", tricksy.getPos().getX());
+				parent.nodeRAM.putDouble("StartY", tricksy.getPos().getY());
+				parent.nodeRAM.putDouble("StartZ", tricksy.getPos().getZ());
+				return Result.RUNNING;
+			}
+			
+			// FIXME Resolve pathfinding break after landing
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				BlockPos target = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK).get();
+				tricksy.getLookControl().lookAt(target.toCenterPos());
+				Vec3d start = new Vec3d(parent.nodeRAM.getDouble("StartX"), parent.nodeRAM.getDouble("StartY"), parent.nodeRAM.getDouble("StartZ"));
+				if(start.distanceTo(tricksy.getPos()) > 0)
 				{
-					private static final List<Integer> RAM_RANGES = Lists.newArrayList(80, 75, 70, 65);
-					
-					public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.MOVE); }
-					
-					public Map<WhiteboardRef, INodeIO> ioSet()
+					if(!tricksy.isOnGround())
 					{
-						return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
+						// Time in midair
+						tricksy.setNoDrag(true);
+						tricksy.setTreePose(EntityPose.LONG_JUMPING);
 					}
-					
-					// FIXME Resolve pathfinding break after landing
-					public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+					else
 					{
-						BlockPos target = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK).get();
-						tricksy.getLookControl().lookAt(target.toCenterPos());
-						if(!parent.isRunning())
-						{
-							if(!canRun(tricksy))
-								return Result.FAILURE;
-							
-							if(target.getY() - tricksy.getBlockPos().getY() > 5)
-								return Result.FAILURE;
-							
-							BlockPos offset = target.subtract(tricksy.getBlockPos());
-							if((new Vec3i(offset.getX(), 0, offset.getZ())).getSquaredDistance(Vec3i.ZERO) > (5 * 5))
-								return Result.FAILURE;
-							
-							Vec3d vel = getJumpingVelocity(tricksy, Vec3d.ofCenter(target));
-							if(vel == null)
-								return Result.FAILURE;
-							
-							parent.nodeRAM.putDouble("JumpX", vel.getX());
-							parent.nodeRAM.putDouble("JumpY", vel.getY());
-							parent.nodeRAM.putDouble("JumpZ", vel.getZ());
-							
-							parent.nodeRAM.putDouble("StartX", tricksy.getPos().getX());
-							parent.nodeRAM.putDouble("StartY", tricksy.getPos().getY());
-							parent.nodeRAM.putDouble("StartZ", tricksy.getPos().getZ());
-						}
-						else
-						{
-							Vec3d start = new Vec3d(parent.nodeRAM.getDouble("StartX"), parent.nodeRAM.getDouble("StartY"), parent.nodeRAM.getDouble("StartZ"));
-							if(start.distanceTo(tricksy.getPos()) > 0)
-							{
-								if(!tricksy.isOnGround())
-								{
-									// Time in midair
-									tricksy.setNoDrag(true);
-									tricksy.setTreePose(EntityPose.LONG_JUMPING);
-								}
-								else
-								{
-									// Land on ground after launching
-									tricksy.setVelocity(tricksy.getVelocity().multiply(0.1F, 1F, 0.1F));
-									parent.playSoundFromEntity(null, tricksy, SoundEvents.ENTITY_GOAT_STEP, SoundCategory.NEUTRAL, 2.0f, 1.0f);
-									
-									return Result.SUCCESS;
-								}
-							}
-							// Launch after initial windup period
-							else if(parent.ticksRunning() >= (Reference.Values.TICKS_PER_SECOND * 2))
-							{
-								((Entity)tricksy).setYaw(((MobEntity)tricksy).bodyYaw);
-								tricksy.setNoDrag(true);
-								tricksy.setTreePose(EntityPose.LONG_JUMPING);
-								
-								for(int i=0; i<5; i++)
-								{
-									Random rand = tricksy.getRandom();
-									double x = rand.nextDouble() - 0.5D;
-									double z = rand.nextDouble() - 0.5D;
-									Vec3d vel = (new Vec3d(x, 0, z)).normalize();
-									((ServerWorld)tricksy.getWorld()).spawnParticles(ParticleTypes.CLOUD, start.getX(), start.getY(), start.getZ(), 1, vel.x, 0, vel.z, 0.1D);
-								}
-								
-								Vec3d vel = new Vec3d(parent.nodeRAM.getDouble("JumpX"), parent.nodeRAM.getDouble("JumpY"), parent.nodeRAM.getDouble("JumpZ"));
-								double d = vel.length();
-								double e = d + tricksy.getJumpBoostVelocityModifier();
-								((Entity)tricksy).setVelocity(vel.multiply(e / d));
-								
-								if(tricksy.getType() == TFEntityTypes.TRICKSY_GOAT)
-									parent.playSoundFromEntity(null, tricksy, ((EntityTricksyGoat)tricksy).isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_LONG_JUMP : SoundEvents.ENTITY_GOAT_LONG_JUMP, SoundCategory.NEUTRAL, 1.0f, 1.0f);
-							}
-						}
+						// Land on ground after launching
+						tricksy.setVelocity(tricksy.getVelocity().multiply(0.1F, 1F, 0.1F));
+						parent.playSoundFromEntity(null, tricksy, SoundEvents.ENTITY_GOAT_STEP, SoundCategory.NEUTRAL, 2.0f, 1.0f);
 						
-						return Result.RUNNING;
+						return Result.SUCCESS;
+					}
+				}
+				// Launch after initial windup period
+				else if(tick >= (Reference.Values.TICKS_PER_SECOND * 2))
+				{
+					((Entity)tricksy).setYaw(((MobEntity)tricksy).bodyYaw);
+					tricksy.setNoDrag(true);
+					tricksy.setTreePose(EntityPose.LONG_JUMPING);
+					
+					for(int i=0; i<5; i++)
+					{
+						Random rand = tricksy.getRandom();
+						double x = rand.nextDouble() - 0.5D;
+						double z = rand.nextDouble() - 0.5D;
+						Vec3d vel = (new Vec3d(x, 0, z)).normalize();
+						((ServerWorld)tricksy.getWorld()).spawnParticles(ParticleTypes.CLOUD, start.getX(), start.getY(), start.getZ(), 1, vel.x, 0, vel.z, 0.1D);
 					}
 					
-					private boolean canRun(LivingEntity tricksy)
-					{
-						return 
-								tricksy.isOnGround() && 
-								!tricksy.hasVehicle() && 
-								!tricksy.isTouchingWater() && 
-								!tricksy.isInLava() && 
-								!tricksy.getWorld().getBlockState(tricksy.getBlockPos()).isOf(Blocks.HONEY_BLOCK);
-					}
+					Vec3d vel = new Vec3d(parent.nodeRAM.getDouble("JumpX"), parent.nodeRAM.getDouble("JumpY"), parent.nodeRAM.getDouble("JumpZ"));
+					double d = vel.length();
+					double e = d + tricksy.getJumpBoostVelocityModifier();
+					((Entity)tricksy).setVelocity(vel.multiply(e / d));
 					
-					public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
-					{
-						tricksy.setNoDrag(false);
-						tricksy.setTreePose(tricksy.defaultPose());
-					}
-					
-					@Nullable
-					protected Vec3d getJumpingVelocity(MobEntity entity, Vec3d pos)
-					{
-						Iterator<Integer> iterator = RAM_RANGES.iterator();
-						while(iterator.hasNext())
-						{
-							Vec3d vec3d = this.getJumpingVelocity(entity, pos, (Integer)iterator.next());
-							if(vec3d != null)
-								return vec3d;
-						}
-						return null;
-					}
-					
-					@Nullable
-					private Vec3d getJumpingVelocity(Entity entity, Vec3d pos, int range)
-					{
-						Vec3d vec3d = entity.getPos();
-						Vec3d vec3d2 = new Vec3d(pos.x - vec3d.x, 0.0, pos.z - vec3d.z).normalize().multiply(0.5D);
-						pos = pos.subtract(vec3d2);
-						Vec3d vec3d3 = pos.subtract(vec3d);
-				        float f = (float)range * (float)Math.PI / 180.0f;
-				        double d = Math.atan2(vec3d3.z, vec3d3.x);
-				        double e = vec3d3.subtract(0.0, vec3d3.y, 0.0).lengthSquared();
-				        double g = Math.sqrt(e);
-				        double h = vec3d3.y;
-				        double i = Math.sin(2.0f * f);
-				        double k = Math.pow(Math.cos(f), 2.0);
-				        double l = Math.sin(f);
-				        double m = Math.cos(f);
-				        double n = Math.sin(d);
-				        double o = Math.cos(d);
-				        
-				        double p = e * 0.08 / (g * i - 2.0 * h * k);
-				        if(p < 0.0)
-				            return null;
-				        
-				        double q = Math.sqrt(p);
-				        if(q > 1.5D)
-				            return null;
-				        
-				        double r = q * m;
-				        double s = q * l;
-				        int t = MathHelper.ceil(g / r) * 2;
-				        double u = 0.0;
-				        Vec3d vec3d4 = null;
-				        EntityDimensions entityDimensions = entity.getDimensions(EntityPose.LONG_JUMPING);
-				        for(int v = 0; v < t - 1; ++v)
-				        {
-				            double w = l / m * (u += g / (double)t) - Math.pow(u, 2.0) * 0.08 / (2.0 * p * Math.pow(m, 2.0));
-				            double x = u * o;
-				            double y = u * n;
-				            Vec3d vec3d5 = new Vec3d(vec3d.x + x, vec3d.y + w, vec3d.z + y);
-				            if(vec3d4 != null && !this.canReach(entity, entityDimensions, vec3d4, vec3d5))
-				                return null;
-				            
-				            vec3d4 = vec3d5;
-				        }
-				        
-				        return new Vec3d(r * o, s, r * n).multiply(1.25f);
-					}
-					
-					private boolean canReach(Entity entity, EntityDimensions dimensions, Vec3d vec3d, Vec3d vec3d2)
-					{
-						Vec3d vec3d3 = vec3d2.subtract(vec3d);
-						double d = Math.min(dimensions.width, dimensions.height);
-						int i = MathHelper.ceil(vec3d3.length() / d);
-						Vec3d vec3d4 = vec3d3.normalize();
-						Vec3d vec3d5 = vec3d;
-						for (int j = 0; j < i; ++j)
-						{
-							vec3d5 = j == i - 1 ? vec3d2 : vec3d5.add(vec3d4.multiply(d * (double)0.9f));
-							if(!entity.getWorld().isSpaceEmpty(entity, dimensions.getBoxAt(vec3d5)))
-								return false;
-						}
-						return true;
-					}
-				};
+					if(tricksy.getType() == TFEntityTypes.TRICKSY_GOAT)
+						parent.playSoundFromEntity(null, tricksy, ((EntityTricksyGoat)tricksy).isScreaming() ? SoundEvents.ENTITY_GOAT_SCREAMING_LONG_JUMP : SoundEvents.ENTITY_GOAT_LONG_JUMP, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+				}
+				
+				return Result.RUNNING;
+			}
+			
+			private boolean canRun(LivingEntity tricksy)
+			{
+				return 
+						tricksy.isOnGround() && 
+						!tricksy.hasVehicle() && 
+						!tricksy.isTouchingWater() && 
+						!tricksy.isInLava() && 
+						!tricksy.getWorld().getBlockState(tricksy.getBlockPos()).isOf(Blocks.HONEY_BLOCK);
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
+			{
+				tricksy.setNoDrag(false);
+				tricksy.setTreePose(tricksy.defaultPose());
+			}
+			
+			@Nullable
+			protected Vec3d getJumpingVelocity(MobEntity entity, Vec3d pos)
+			{
+				Iterator<Integer> iterator = RAM_RANGES.iterator();
+				while(iterator.hasNext())
+				{
+					Vec3d vec3d = this.getJumpingVelocity(entity, pos, (Integer)iterator.next());
+					if(vec3d != null)
+						return vec3d;
+				}
+				return null;
+			}
+			
+			@Nullable
+			private Vec3d getJumpingVelocity(Entity entity, Vec3d pos, int range)
+			{
+				Vec3d vec3d = entity.getPos();
+				Vec3d vec3d2 = new Vec3d(pos.x - vec3d.x, 0.0, pos.z - vec3d.z).normalize().multiply(0.5D);
+				pos = pos.subtract(vec3d2);
+				Vec3d vec3d3 = pos.subtract(vec3d);
+		        float f = (float)range * (float)Math.PI / 180.0f;
+		        double d = Math.atan2(vec3d3.z, vec3d3.x);
+		        double e = vec3d3.subtract(0.0, vec3d3.y, 0.0).lengthSquared();
+		        double g = Math.sqrt(e);
+		        double h = vec3d3.y;
+		        double i = Math.sin(2.0f * f);
+		        double k = Math.pow(Math.cos(f), 2.0);
+		        double l = Math.sin(f);
+		        double m = Math.cos(f);
+		        double n = Math.sin(d);
+		        double o = Math.cos(d);
+		        
+		        double p = e * 0.08 / (g * i - 2.0 * h * k);
+		        if(p < 0.0)
+		            return null;
+		        
+		        double q = Math.sqrt(p);
+		        if(q > 1.5D)
+		            return null;
+		        
+		        double r = q * m;
+		        double s = q * l;
+		        int t = MathHelper.ceil(g / r) * 2;
+		        double u = 0.0;
+		        Vec3d vec3d4 = null;
+		        EntityDimensions entityDimensions = entity.getDimensions(EntityPose.LONG_JUMPING);
+		        for(int v = 0; v < t - 1; ++v)
+		        {
+		            double w = l / m * (u += g / (double)t) - Math.pow(u, 2.0) * 0.08 / (2.0 * p * Math.pow(m, 2.0));
+		            double x = u * o;
+		            double y = u * n;
+		            Vec3d vec3d5 = new Vec3d(vec3d.x + x, vec3d.y + w, vec3d.z + y);
+		            if(vec3d4 != null && !this.canReach(entity, entityDimensions, vec3d4, vec3d5))
+		                return null;
+		            
+		            vec3d4 = vec3d5;
+		        }
+		        
+		        return new Vec3d(r * o, s, r * n).multiply(1.25f);
+			}
+			
+			private boolean canReach(Entity entity, EntityDimensions dimensions, Vec3d vec3d, Vec3d vec3d2)
+			{
+				Vec3d vec3d3 = vec3d2.subtract(vec3d);
+				double d = Math.min(dimensions.width, dimensions.height);
+				int i = MathHelper.ceil(vec3d3.length() / d);
+				Vec3d vec3d4 = vec3d3.normalize();
+				Vec3d vec3d5 = vec3d;
+				for (int j = 0; j < i; ++j)
+				{
+					vec3d5 = j == i - 1 ? vec3d2 : vec3d5.add(vec3d4.multiply(d * (double)0.9f));
+					if(!entity.getWorld().isSpaceEmpty(entity, dimensions.getBoxAt(vec3d5)))
+						return false;
+				}
+				return true;
+			}
+		};
 	}
 	
 	public static INodeTickHandler<LeafNode> leafFoxFire()
@@ -703,13 +731,15 @@ public class LeafSpecial extends NodeGroupLeaf
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public int castingTime() { return SPAWN_FIRE_TICK; }
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<BlockPos> posIn = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				if(posIn.size() == 0)
 				{
 					parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("No target"));
-					return Result.FAILURE;
+					return false;
 				}
 				
 				World world = tricksy.getEntityWorld();
@@ -717,17 +747,33 @@ public class LeafSpecial extends NodeGroupLeaf
 				if(!tricksy.getBlockPos().isWithinDistance(pos, 16D) || !(FIRE.canPlaceAt(world, pos) || EntityFoxFire.canIgnite(world.getBlockState(pos))) || !INodeTickHandler.canSee(tricksy, pos.toCenterPos()))
 				{
 					parent.logStatus(TFNodeStatus.INPUT_ERROR);
-					return Result.FAILURE;
+					return false;
 				}
+				
+				return true;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				IWhiteboardObject<BlockPos> posIn = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
+				BlockPos pos = posIn.get();
+				tricksy.getLookControl().lookAt(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
 				
 				if(tricksy.getType() == TFEntityTypes.TRICKSY_FOX)
 					((EntityTricksyFox)tricksy).setFoxfire();
-				tricksy.getLookControl().lookAt(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
 				
-				if(parent.ticksRunning() == SPAWN_FIRE_TICK)
+				return Result.RUNNING;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				IWhiteboardObject<BlockPos> posIn = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
+				BlockPos pos = posIn.get();
+				tricksy.getLookControl().lookAt(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
+				if(tick == 0)
 					EntityFoxFire.spawnFlameTargeting(tricksy, pos);
 				
-				return parent.ticksRunning() < ANIMATION_END_TICK ? Result.RUNNING : Result.SUCCESS;
+				return tick < (ANIMATION_END_TICK - castingTime()) ? Result.RUNNING : Result.SUCCESS;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
@@ -753,16 +799,21 @@ public class LeafSpecial extends NodeGroupLeaf
 						TARGET, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<Entity> target = getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT);
 				if(target.isEmpty() || !target.get().isAlive() || target.get().isSpectator() || (target.get().getType() == EntityType.PLAYER && ((PlayerEntity)target.get()).isCreative()) || !(target.get() instanceof MobEntity))
-					return Result.FAILURE;
+					return false;
 				
 				MobEntity mob = (MobEntity)target.get();
 				if(mob == tricksy || !INodeTickHandler.canInteractWithEntity(tricksy, mob) || !isLeashableMob(mob, tricksy))
-					return Result.FAILURE;
-				
+					return false;
+				return true;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				MobEntity mob = (MobEntity)getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT).get();
 				Entity holder = mob.getHoldingEntity();
 				mob.attachLeash(tricksy, true);
 				if(holder != null && holder.getType() == EntityType.LEASH_KNOT)
@@ -798,7 +849,17 @@ public class LeafSpecial extends NodeGroupLeaf
 						ENTITY, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity()));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				BlockPos origin = tricksy.getBlockPos();
+				IWhiteboardObject<BlockPos> target = getOrDefault(FENCE, parent, whiteboards).as(TFObjType.BLOCK);
+				if(!target.isEmpty())
+					origin = target.get();
+				
+				return INodeTickHandler.canInteractWithBlock(tricksy, origin);
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				BlockPos origin = tricksy.getBlockPos();
 				IWhiteboardObject<BlockPos> target = getOrDefault(FENCE, parent, whiteboards).as(TFObjType.BLOCK);
@@ -858,32 +919,41 @@ public class LeafSpecial extends NodeGroupLeaf
 						TARGET, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false)));
 			}
 			
-			// TODO Add particles and SFX to highlight effect
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<Entity> target = getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT);
 				if(target.isEmpty() || !target.get().isAlive() || target.get().isSpectator() || !(target.get() instanceof LivingEntity))
-					return Result.FAILURE;
-				
-				LivingEntity ent = (LivingEntity)target.get();
-				if(parent.ticksRunning() >= ANIMATION_END_TICK)
+					return false;
+				return true;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				if(tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
+					((EntityTricksyWolf)tricksy).setBlessing();
+				return onTick(tricksy, whiteboards, parent, 0);
+			}
+			
+			// TODO Add particles and SFX to highlight effect
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				LivingEntity ent = (LivingEntity)getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT).get();
+				if(tick >= ANIMATION_END_TICK)
 					return Result.SUCCESS;
 				else
 				{
 					StatusEffectInstance blessing = new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1);
-					if(parent.ticksRunning() < Reference.Values.TICKS_PER_SECOND)
+					if(tick < Reference.Values.TICKS_PER_SECOND)
 					{
 						if(!ent.canHaveStatusEffect(blessing) || ent.distanceTo(tricksy) > 16D || !tricksy.canSee(ent))
 							return Result.FAILURE;
 					}
-					else if(parent.ticksRunning() == Reference.Values.TICKS_PER_SECOND)
+					else if(tick == Reference.Values.TICKS_PER_SECOND)
 					{
 						ent.addStatusEffect(blessing, tricksy);
 					}
 					
 					tricksy.getLookControl().lookAt(ent);
-					if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
-						((EntityTricksyWolf)tricksy).setBlessing();
 				}
 				
 				return Result.RUNNING;
@@ -906,18 +976,22 @@ public class LeafSpecial extends NodeGroupLeaf
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				if(parent.ticksRunning() >= ANIMATION_END_TICK)
+				if(tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
+					((EntityTricksyWolf)tricksy).setHowling();
+				return onTick(tricksy, whiteboards, parent, 0);
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				if(tick >= ANIMATION_END_TICK)
 					return Result.SUCCESS;
-				else if(parent.ticksRunning() == HOWL_ISSUE_TICK)
+				else if(tick == HOWL_ISSUE_TICK)
 				{
 					parent.playSound(tricksy, SoundEvents.ENTITY_WOLF_HOWL, 1F, tricksy.getSoundPitch());
 					Howls.getHowls((ServerWorld)tricksy.getWorld()).startHowl(tricksy);
 				}
-				
-				if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
-					((EntityTricksyWolf)tricksy).setHowling();
 				
 				return Result.RUNNING;
 			}
@@ -945,7 +1019,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				return mobs.size() >= 2;
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
 				{
@@ -955,7 +1029,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				return Result.RUNNING;
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				List<LivingEntity> mobs = tricksy.getWorld().getEntitiesByClass(LivingEntity.class, tricksy.getBoundingBox().expand(16D), EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR);
 				mobs.removeIf(living -> !living.isAlive() || living.getHealth() < 1F);
@@ -1020,9 +1094,9 @@ public class LeafSpecial extends NodeGroupLeaf
 				return !validTargets(tricksy, Lists.newArrayList()).isEmpty();
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
-				if(parent.ticksRunning() == 0)
+				if(tick == 0)
 				{
 					int ofuda = tricksy.getRandom().nextBetween(1, 3);
 					parent.nodeRAM.putInt("Count", ofuda);
@@ -1036,12 +1110,12 @@ public class LeafSpecial extends NodeGroupLeaf
 				return Result.RUNNING;
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				List<Entity> prevTargets = previousTargets(parent.nodeRAM, tricksy);
 				
 				// Shooting phase
-				if((parent.ticksRunning() - castingTime())%FIRE_RATE == 0)
+				if(tick%FIRE_RATE == 0)
 				{
 					int count = parent.nodeRAM.getInt("Count");
 					if(count == 0)
@@ -1074,7 +1148,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				}
 				
 				// Finish after 4 seconds in shooting phase regardless of outstanding shots
-				if((parent.ticksRunning() + castingTime()) > (Reference.Values.TICKS_PER_SECOND * 4))
+				if(tick > (Reference.Values.TICKS_PER_SECOND * 3))
 				{
 					parent.logStatus(TFNodeStatus.FAILURE, Text.literal("Couldn't find enough targets in time"));
 					return Result.FAILURE;
@@ -1163,7 +1237,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				return !validTargets(tricksy).isEmpty();
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				if(!validityCheck(tricksy, whiteboards, parent))
 					return Result.FAILURE;
@@ -1173,7 +1247,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				
 				// Periodically spawn a new fireball to shoot, up to 3 total
 				List<EntityOnryojiFire> fireballs = getFireballs(tricksy, parent.nodeRAM.getList("Fireballs", NbtElement.INT_ARRAY_TYPE));
-				if(parent.ticksRunning()%(castingTime() / 3) == 0 && fireballs.size() < 3)
+				if(tick%(castingTime() / 3) == 0 && fireballs.size() < 3)
 				{
 					EntityOnryojiFire fireball = TFEntityTypes.ONRYOJI_FIRE.create(tricksy.getWorld());
 					fireball.setPosition(tricksy.getX(), tricksy.getY(), tricksy.getZ());
@@ -1186,7 +1260,7 @@ public class LeafSpecial extends NodeGroupLeaf
 					storeFireballs(fireballs, parent.nodeRAM);
 				}
 				
-				return INodeTickHandler.super.doCasting(tricksy, whiteboards, parent);
+				return INodeTickHandler.super.doCasting(tricksy, whiteboards, parent, tick);
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
@@ -1267,12 +1341,12 @@ public class LeafSpecial extends NodeGroupLeaf
 				return tricksy.getHealth() <= (tricksy.getMaxHealth() * 0.8F);
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
-				if(!parent.isRunning() && tricksy.getType() == TFEntityTypes.ONRYOJI)
+				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
 					((EntityOnryoji)tricksy).setAnimationSeclusion();
 				
-				return INodeTickHandler.super.doCasting(tricksy, whiteboards, parent);
+				return INodeTickHandler.super.doCasting(tricksy, whiteboards, parent, tick);
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
@@ -1286,7 +1360,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				return Result.RUNNING;
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				// Check for seclusion entity, fail if missing
 				if(tricksy.getWorld().getEntitiesByType(TFEntityTypes.SECLUSION, tricksy.getBoundingBox().expand(32D), (field) -> field.getOwnerId().equals(tricksy.getUuid())).isEmpty())
@@ -1302,7 +1376,7 @@ public class LeafSpecial extends NodeGroupLeaf
 					return Result.FAILURE;
 				}
 				
-				if(parent.ticksRunning() > DURATION)
+				if(tick > DURATION)
 					return Result.SUCCESS;
 				
 				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
@@ -1338,7 +1412,7 @@ public class LeafSpecial extends NodeGroupLeaf
 						!tricksy.getWorld().getEntitiesByType(EntityType.PLAYER, tricksy.getBoundingBox().expand(32D), EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)).isEmpty();
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				if(!validityCheck(tricksy, whiteboards, parent))
 					return Result.FAILURE;
@@ -1347,7 +1421,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				return Result.RUNNING;
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				if(!validityCheck(tricksy, whiteboards, parent))
 					return Result.FAILURE;

@@ -36,9 +36,6 @@ public abstract class RangedCombatHandler extends CombatHandler
 		if(!tricksy.isUsingItem())
 			tricksy.setCurrentHand(Hand.MAIN_HAND);
 		
-		if(!parent.isRunning())
-			return Result.RUNNING;
-		
 		if(target.isInvulnerable())
 		{
 			parent.logStatus(TFNodeStatus.INPUT_ERROR);

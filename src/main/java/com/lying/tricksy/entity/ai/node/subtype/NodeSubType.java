@@ -78,7 +78,7 @@ public class NodeSubType<M extends TreeNode<?>>
 	/** Returns a value of 0 or greater, reflecting how many ticks before this type of node can be used again */
 	public <T extends PathAwareEntity & ITricksyMob<?>> int getCooldown(T tricksy) { return this.cooldown.get(tricksy.getRandom()); }
 	
-	public EnumSet<ActionFlag> usesFlags() { return tickFunc.flagsUsed(); }
+	public EnumSet<ActionFlag> flagsUsed() { return tickFunc.flagsUsed(); }
 	
 	public boolean shouldCooldown(int ticksRunning, Result latestResult) { return tickFunc.cooldownBehaviour().apply(ticksRunning, latestResult); }
 	
@@ -100,7 +100,7 @@ public class NodeSubType<M extends TreeNode<?>>
 			switch((int)Math.signum(parent.ticksRunning() - tickFunc.castingTime()))
 			{
 				case -1:	
-					Result result = tickFunc.doCasting(tricksy, whiteboards, parent);
+					Result result = tickFunc.doCasting(tricksy, whiteboards, parent, parent.ticksRunning());
 					if(!result.isEnd())
 						parent.logStatus(TFNodeStatus.CASTING);
 					return result;
@@ -108,10 +108,10 @@ public class NodeSubType<M extends TreeNode<?>>
 					return tickFunc.onCast(tricksy, whiteboards, parent);
 				case 1:
 				default:	
-					return tickFunc.onTick(tricksy, whiteboards, parent);
+					return tickFunc.onTick(tricksy, whiteboards, parent, parent.ticksRunning() - tickFunc.castingTime());
 			}
 		else
-			return parent.ticksRunning() == 0 ? tickFunc.onCast(tricksy, whiteboards, parent) : tickFunc.onTick(tricksy, whiteboards, parent);
+			return parent.ticksRunning() == 0 ? tickFunc.onCast(tricksy, whiteboards, parent) : tickFunc.onTick(tricksy, whiteboards, parent, parent.ticksRunning() - tickFunc.castingTime());
 	}
 	
 	/** Performs any end-of-behaviour cleanup */
@@ -139,7 +139,7 @@ public class NodeSubType<M extends TreeNode<?>>
 	public static enum CooldownBehaviour
 	{
 		ALWAYS((ticks,result) -> true),
-		IF_IMMEDIATE_FAILURE((ticks,result) -> result == Result.FAILURE && ticks == 0),
+		IF_NOT_IMMEDIATE_FAILURE((ticks,result) -> !(result == Result.FAILURE && ticks == 0)),
 		IF_SUCCESS((ticks,result) -> result == Result.SUCCESS);
 		
 		private final BiFunction<Integer, Result, Boolean> func;

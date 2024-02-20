@@ -116,7 +116,7 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 	}
 	
 	/** Defines how the cooldown (if any) for this node should be applied */
-	public default CooldownBehaviour cooldownBehaviour() { return CooldownBehaviour.IF_IMMEDIATE_FAILURE; }
+	public default CooldownBehaviour cooldownBehaviour() { return CooldownBehaviour.IF_NOT_IMMEDIATE_FAILURE; }
 	
 	public default <T extends PathAwareEntity & ITricksyMob<?>> boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, M parent) { return true; }
 	
@@ -125,15 +125,15 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 	
 	/** Called while the node is within the {@link castingTime} period */
 	@NotNull
-	public default <T extends PathAwareEntity & ITricksyMob<?>> Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, M parent) { parent.logStatus(TFNodeStatus.CASTING); return Result.RUNNING; }
+	public default <T extends PathAwareEntity & ITricksyMob<?>> Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, M parent, int tick) { parent.logStatus(TFNodeStatus.CASTING); return Result.RUNNING; }
 	
 	/** Called when the node first exits the {@link castingTime} period */
 	@NotNull
-	public default <T extends PathAwareEntity & ITricksyMob<?>> Result onCast(T tricksy, WhiteboardManager<T> whiteboards, M parent) { return onTick(tricksy, whiteboards, parent); }
+	public default <T extends PathAwareEntity & ITricksyMob<?>> Result onCast(T tricksy, WhiteboardManager<T> whiteboards, M parent) { return onTick(tricksy, whiteboards, parent, 0); }
 	
 	/** Called each tick after the {@link castingTime} period, in {@link onCast} did not return an end state */
 	@NotNull
-	public default <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, M parent) { return Result.FAILURE; }
+	public default <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, M parent, int tick) { return Result.FAILURE; }
 	
 	/** Performs any cleanup logic needed when the node stops */
 	public default <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, M parent) { }

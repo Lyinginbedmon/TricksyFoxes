@@ -13,11 +13,14 @@ import net.minecraft.entity.mob.PathAwareEntity;
 
 public abstract class SubTreeHandler implements INodeTickHandler<LeafNode>
 {
-	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 	{
-		if(!parent.isRunning() || parent.subTree == null)
-			parent.subTree = generateSubTree(tricksy, whiteboards, parent);
-		
+		parent.subTree = generateSubTree(tricksy, whiteboards, parent);
+		return INodeTickHandler.super.onCast(tricksy, whiteboards, parent);
+	}
+	
+	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+	{
 		return parent.subTree == null ? Result.FAILURE : parent.subTree.tick(tricksy, whiteboards);
 	}
 	

@@ -73,7 +73,7 @@ public class LeafInteraction extends NodeGroupLeaf
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(false), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				IWhiteboardObject<Boolean> stopUsing = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BOOL);
 				if(stopUsing.get())
@@ -117,7 +117,7 @@ public class LeafInteraction extends NodeGroupLeaf
 				return Map.of(TARGET, NodeInput.makeInput((ref) -> ref.type() == TFObjType.BLOCK || ref.type() == TFObjType.ENT));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				IWhiteboardObject<?> value = getOrDefault(TARGET, parent, whiteboards);
 				if(value == null || value.isEmpty() || UNUSABLES.contains(tricksy.getMainHandStack().getItem()))
@@ -168,7 +168,7 @@ public class LeafInteraction extends NodeGroupLeaf
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				IWhiteboardObject<BlockPos> blockPos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				if(!INodeTickHandler.canInteractWithBlock(tricksy, blockPos.get()) || blockPos.isEmpty())
@@ -201,7 +201,7 @@ public class LeafInteraction extends NodeGroupLeaf
 				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				IWhiteboardObject<BlockPos> blockPos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				if(blockPos.isEmpty())
@@ -243,7 +243,7 @@ public class LeafInteraction extends NodeGroupLeaf
 				if(state.hasBlockBreakParticles())
 					world.addBlockBreakParticles(pos, state);
 				
-				if(!parent.isRunning())
+				if(tick == 0)
 				{
 					parent.ticks = 0F;
 					return Result.RUNNING;
@@ -257,7 +257,7 @@ public class LeafInteraction extends NodeGroupLeaf
 				}
 				player.discard();
 				
-				parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Mining"+StringUtils.repeat(".", parent.ticksRunning()%3 + 1)));
+				parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Mining"+StringUtils.repeat(".", tick%3 + 1)));
 				return Result.RUNNING;
 			}
 		};

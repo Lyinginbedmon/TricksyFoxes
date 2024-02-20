@@ -31,7 +31,7 @@ public class ControlFlowMisc extends NodeGroupControlFlow
 		List<NodeSubType<ControlFlowNode>> set = Lists.newArrayList();
 		set.add(SEQUENCE = subtype(VARIANT_SEQUENCE, new ControlFlowHandler() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent, int tick)
 			{
 				TreeNode<?> child = parent.children().get(parent.index % parent.children().size());
 				switch(child.tick(tricksy, whiteboards))
@@ -54,34 +54,32 @@ public class ControlFlowMisc extends NodeGroupControlFlow
 		}));
 		set.add(SELECTOR = subtype(ISubtypeGroup.variant("selector"), new ControlFlowHandler() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result onCast(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
 			{
-				if(!parent.isRunning())
+				// Find first viable child node
+				for(int i=0; i<parent.children().size(); i++)
 				{
-					// Find first viable child node
-					for(int i=0; i<parent.children().size(); i++)
+					TreeNode<?> child = parent.children().get(i);
+					Result result = child.tick(tricksy, whiteboards);
+					if(result != Result.FAILURE)
 					{
-						TreeNode<?> child = parent.children().get(i);
-						Result result = child.tick(tricksy, whiteboards);
-						if(result != Result.FAILURE)
-						{
-							parent.index = i;
-							return result;
-						}
+						parent.index = i;
+						return result;
 					}
-					return Result.FAILURE;
 				}
-				else
-				{
-					// Tick indexed node
-					TreeNode<?> child = parent.children().get(parent.index);
-					return child.tick(tricksy, whiteboards);
-				}
+				return Result.FAILURE;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent, int tick)
+			{
+				// Tick indexed node
+				TreeNode<?> child = parent.children().get(parent.index);
+				return child.tick(tricksy, whiteboards);
 			}
 		}));
 		set.add(REACTIVE = subtype(ISubtypeGroup.variant("reactive"), new ControlFlowHandler() 
 		{
-			public <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent)
+			public <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent, int tick)
 			{
 				/**
 				 * Parent result is equal to:
