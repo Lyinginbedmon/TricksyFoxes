@@ -60,17 +60,22 @@ public class EntitySeclusion extends Entity
 	public void writeCustomDataToNbt(NbtCompound nbt)
 	{
 		nbt.putInt("Age", getDataTracker().get(AGE).intValue());
-		nbt.putInt("Lifespan", getDataTracker().get(LIFESPAN).intValue());
+		if(lifespan() >= 0)
+			nbt.putInt("Lifespan", lifespan());
 		if(hasOwner())
 			nbt.putUuid("Owner", getOwnerId());
+		if(this.isInvisible())
+			nbt.putBoolean("Invisible", true);
 	}
 	
 	public void readCustomDataFromNbt(NbtCompound nbt)
 	{
 		getDataTracker().set(AGE, nbt.getInt("Age"));
-		getDataTracker().set(LIFESPAN, nbt.getInt("Lifespan"));
+		if(nbt.contains("Lifespan", NbtElement.INT_TYPE))
+			getDataTracker().set(LIFESPAN, nbt.getInt("Lifespan"));
 		if(nbt.contains("Owner", NbtElement.INT_ARRAY_TYPE))
 			setOwner(nbt.getUuid("Owner"));
+		setInvisible(nbt.getBoolean("Invisible"));
 	}
 	
 	public void tick()
@@ -93,13 +98,13 @@ public class EntitySeclusion extends Entity
 				((LivingEntity)bound).addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, Reference.Values.TICKS_PER_SECOND, 1));
 		}
 		
-		int lifespan = getDataTracker().get(LIFESPAN).intValue();
-		if(!getWorld().isClient() && lifespan > 0)
+		int lifespan = lifespan();
+		if(!getWorld().isClient() && lifespan >= 0)
 		{
-			if(--lifespan == 0)
+			if(lifespan == 0)
 				discard();
 			else
-				getDataTracker().set(LIFESPAN, lifespan);
+				getDataTracker().set(LIFESPAN, lifespan - 1);
 		}
 		
 		handleRepulsion();
@@ -133,6 +138,8 @@ public class EntitySeclusion extends Entity
 	public boolean isOwner(Entity ent) { return hasOwner() && ent.getUuid().equals(getOwnerId()); }
 	
 	public int age() { return getDataTracker().get(AGE).intValue(); }
+	
+	public int lifespan() { return getDataTracker().get(LIFESPAN).intValue(); }
 	
 	public boolean collidesWith(Entity other) { return false; }
 	

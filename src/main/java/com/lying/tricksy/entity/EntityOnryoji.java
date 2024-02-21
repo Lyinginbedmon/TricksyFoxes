@@ -199,6 +199,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	public void setAnimationCommanders() { this.getDataTracker().set(ANIMATING, ANIM_COMMANDERS); }
 	
 	public void setOfuda(int count) { this.getDataTracker().set(OFUDA, count); }
+	public int getCommanders() { return this.getDataTracker().get(COMM); }
 	
 	public void onTrackedDataSet(TrackedData<?> data)
 	{

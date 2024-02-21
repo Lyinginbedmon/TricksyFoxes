@@ -383,6 +383,7 @@
 	"entity.tricksy.onryoji_fire": "Onryoji Fire",
 	"entity.tricksy.ofuda_thrown": "Thrown Ofuda",
 	"entity.tricksy.ofuda_stuck": "Sealing Ofuda",
+	"entity.tricksy.seclusion": "Zone of Seclusion",
 	"item.tricksy.sage_hat.master_set": "%s will now follow the ways of this sage",
 	"item.tricksy.sage_hat.master_set.fail": "%s already follows a sage!",
 	"item.tricksy.prescient_note.give_value": "%s will remember this",

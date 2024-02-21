@@ -949,9 +949,7 @@ public class LeafSpecial extends NodeGroupLeaf
 							return Result.FAILURE;
 					}
 					else if(tick == Reference.Values.TICKS_PER_SECOND)
-					{
 						ent.addStatusEffect(blessing, tricksy);
-					}
 					
 					tricksy.getLookControl().lookAt(ent);
 				}

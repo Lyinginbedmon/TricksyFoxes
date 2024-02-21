@@ -4,8 +4,9 @@ import com.lying.tricksy.entity.EntityOnryoji;
 import com.lying.tricksy.init.TFModelParts;
 import com.lying.tricksy.model.entity.ModelOnryoji;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.renderer.layer.OnryojiCommanderLayer;
 import com.lying.tricksy.renderer.layer.OnryojiMaskLayer;
-import com.lying.tricksy.renderer.layer.OnryojiOfudaRenderer;
+import com.lying.tricksy.renderer.layer.OnryojiOfudaLayer;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -32,7 +33,8 @@ public class EntityOnryojiRenderer extends MobEntityRenderer<EntityOnryoji, Mode
 						return RenderLayer.getEyes(TEXTURE_TRANSPARENT);
 					}
 				});
-		this.addFeature(new OnryojiOfudaRenderer(this));
+		this.addFeature(new OnryojiOfudaLayer(this));
+		this.addFeature(new OnryojiCommanderLayer(this));
 	}
 	
 	public Identifier getTexture(EntityOnryoji entity)

@@ -15,18 +15,18 @@ import net.minecraft.client.render.model.BakedModelManager;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 
-public class OnryojiOfudaRenderer extends FeatureRenderer<EntityOnryoji, ModelOnryoji<EntityOnryoji>>
+public class OnryojiOfudaLayer extends FeatureRenderer<EntityOnryoji, ModelOnryoji<EntityOnryoji>>
 {
 	private static final ModelIdentifier model = new ModelIdentifier(Reference.ModInfo.MOD_ID, "ofuda", "facing=north");
 	private final BlockRenderManager blockRenderManager;
 	
-	public OnryojiOfudaRenderer(FeatureRendererContext<EntityOnryoji, ModelOnryoji<EntityOnryoji>> context)
+	public OnryojiOfudaLayer(FeatureRendererContext<EntityOnryoji, ModelOnryoji<EntityOnryoji>> context)
 	{
 		super(context);
 		this.blockRenderManager = MinecraftClient.getInstance().getBlockRenderManager();
 	}
 	
-	public void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, EntityOnryoji living, float limbAngle, float limbDistance, float age, float headYaw, float headPitch, float tickDelta)
+	public void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, EntityOnryoji living, float limbSwing, float limbSwingAmount, float tickDelta, float ageInTicks, float netHeadYaw, float headPitch)
 	{
 		int count = living.getDataTracker().get(EntityOnryoji.OFUDA).intValue();
 		if(living.animations.currentAnim() != EntityOnryoji.ANIM_OFUDA || count == 0)
