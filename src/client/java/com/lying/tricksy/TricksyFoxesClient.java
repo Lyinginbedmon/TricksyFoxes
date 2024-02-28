@@ -21,6 +21,8 @@ import com.lying.tricksy.network.SyncScriptureScreenReceiver;
 import com.lying.tricksy.network.SyncTreeScreenReceiver;
 import com.lying.tricksy.network.SyncWorkTableScreenReceiver;
 import com.lying.tricksy.network.TFPacketHandler;
+import com.lying.tricksy.particle.AuraParticle;
+import com.lying.tricksy.particle.EnergyParticle;
 import com.lying.tricksy.particle.FoxfireParticle;
 import com.lying.tricksy.particle.LevelUpParticle;
 import com.lying.tricksy.particle.PaperParticle;
@@ -76,6 +78,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		ClientBus.registerEventCallbacks();
 		
 		registerRenderers();
+		registerParticles();
 		registerPacketReceivers();
 		registerScreens();
 		registerKeyBinds();
@@ -100,12 +103,17 @@ public class TricksyFoxesClient implements ClientModInitializer
 		
 		TFItemsClient.registerItemColors();
 		
+		TFItemsClient.registerModelPredicates();
+	}
+	
+	private static void registerParticles()
+	{
 		ParticleFactoryRegistry particles = ParticleFactoryRegistry.getInstance();
 		particles.register(TFParticles.PAPER, PaperParticle.Factory::new);
 		particles.register(TFParticles.FOXFIRE, FoxfireParticle.Factory::new);
 		particles.register(TFParticles.LEVELUP, LevelUpParticle.Factory::new);
-		
-		TFItemsClient.registerModelPredicates();
+		particles.register(TFParticles.AURA, AuraParticle.Factory::new);
+		particles.register(TFParticles.ENERGY, EnergyParticle.Factory::new);
 	}
 	
 	private static void registerScreens()

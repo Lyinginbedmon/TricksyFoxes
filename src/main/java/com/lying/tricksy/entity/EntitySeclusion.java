@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 import com.lying.tricksy.init.TFEntityTypes;
+import com.lying.tricksy.init.TFParticles;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.Entity;
@@ -78,9 +79,21 @@ public class EntitySeclusion extends Entity
 		setInvisible(nbt.getBoolean("Invisible"));
 	}
 	
+	public double currentRange() { return RANGE * Math.min(1F, age() / Reference.Values.TICKS_PER_SECOND); }
+	
 	public void tick()
 	{
 		super.tick();
+		
+		handleRepulsion(currentRange());
+		if(getWorld().isClient())
+			tickClient();
+		else
+			tickServer();
+	}
+	
+	protected void tickServer()
+	{
 		getDataTracker().set(AGE, age() + 1);
 		
 		if(hasOwner())
@@ -102,20 +115,35 @@ public class EntitySeclusion extends Entity
 		if(!getWorld().isClient() && lifespan >= 0)
 		{
 			if(lifespan == 0)
+			{
 				discard();
+				return;
+			}
 			else
 				getDataTracker().set(LIFESPAN, lifespan - 1);
 		}
-		
-		handleRepulsion();
 	}
 	
-	protected void handleRepulsion()
+	protected void tickClient()
+	{
+		double range = currentRange();
+		if(range < 1D)
+			return;
+		
+		if(random.nextInt(5) == 0)
+			for(int i=this.random.nextBetween(2, 4); i>0; --i)
+			{
+				Vec3d pos = getPos().add(new Vec3d(this.random.nextDouble() - 0.5D, 0D, this.random.nextDouble() - 0.5D).normalize().multiply(this.random.nextDouble() * range * 0.8D));
+				getWorld().addParticle(TFParticles.ENERGY, pos.x, pos.y + 0.01D, pos.z, 255, 255, 255);
+			}
+	}
+	
+	protected void handleRepulsion(double radius)
 	{
 		Predicate<Entity> isOwner = this::isOwner;
-		
 		Vec3d origin = getPos();
-		Box bounds = getBoundingBox().expand(RANGE * Math.min(1F, age() / Reference.Values.TICKS_PER_SECOND));
+		Box bounds = getBoundingBox().expand(radius);
+		
 		getWorld().getEntitiesByClass(ProjectileEntity.class, bounds, EntityPredicates.VALID_ENTITY.and(isOwner.negate())).forEach(arrow -> 
 		{
 			Vec3d pos = arrow.getPos();
@@ -165,6 +193,8 @@ public class EntitySeclusion extends Entity
 	public boolean hasOwner() { return getDataTracker().get(OWNER).isPresent(); }
 	
 	public UUID getOwnerId() { return hasOwner() ? getDataTracker().get(OWNER).get() : null; }
+	
+	public boolean isOwner(UUID uuidIn) { return hasOwner() && getOwnerId().equals(uuidIn); }
 	
 	public Optional<Entity> getOwner()
 	{

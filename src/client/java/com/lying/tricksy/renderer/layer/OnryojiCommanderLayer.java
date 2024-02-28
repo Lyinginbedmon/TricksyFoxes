@@ -19,6 +19,7 @@ import net.minecraft.util.math.Vec2f;
 
 public class OnryojiCommanderLayer extends FeatureRenderer<EntityOnryoji, ModelOnryoji<EntityOnryoji>>
 {
+	// TODO Finalise textures
 	private static final Identifier[] ICONS = new Identifier[12];
 	
 	public OnryojiCommanderLayer(FeatureRendererContext<EntityOnryoji, ModelOnryoji<EntityOnryoji>> context)
@@ -29,7 +30,7 @@ public class OnryojiCommanderLayer extends FeatureRenderer<EntityOnryoji, ModelO
 	public void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, EntityOnryoji living, float limbSwing, float limbSwingAmount, float tickDelta, float ageInTicks, float netHeadYaw, float headPitch)
 	{
 		int icons = living.getCommanders();
-		icons = 12;
+//		icons = 12;	// FIXME Remove once textures finalised
 		if(icons == 0)
 			return;
 		

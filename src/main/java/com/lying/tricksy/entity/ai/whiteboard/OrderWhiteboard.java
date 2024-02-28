@@ -2,6 +2,7 @@ package com.lying.tricksy.entity.ai.whiteboard;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,6 +18,7 @@ import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.reference.Reference;
 
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -48,6 +50,13 @@ public class OrderWhiteboard extends InertWhiteboard
 		register(POS, () -> new WhiteboardObjBlock());
 		register(TAR, () -> new WhiteboardObjEntity());
 		return this;
+	}
+	
+	public Whiteboard<Supplier<IWhiteboardObject<?>>> copy()
+	{
+		OrderWhiteboard copy = new OrderWhiteboard();
+		copy.readFromNbt(writeToNbt(new NbtCompound()));
+		return copy;
 	}
 	
 	public boolean hasOrder() { return currentType() != null; }

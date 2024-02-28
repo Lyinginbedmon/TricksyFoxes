@@ -5,14 +5,17 @@ import java.util.EnumSet;
 import org.jetbrains.annotations.Nullable;
 
 import com.lying.tricksy.block.BlockFoxFire;
+import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.entity.ai.BehaviourTree.ActionFlag;
 import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFSoundEvents;
 import com.lying.tricksy.reference.Reference;
 
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.VariantHolder;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -20,6 +23,8 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.entity.passive.FoxEntity.Type;
@@ -30,6 +35,7 @@ import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
@@ -231,5 +237,36 @@ public class EntityTricksyFox extends AbstractTricksyAnimal implements VariantHo
 		if(this.animations.currentAnim() >= 0)
 			return EnumSet.allOf(BipedPart.class);
 		return IAnimatedBiped.super.getPartsAnimating();
+	}
+	
+	public void onStruckByLightning(ServerWorld world, LightningEntity lightning)
+	{
+		if(TricksyComponent.isMobMaster(this) && hasStatusEffect(StatusEffects.WITHER))
+		{
+			EntityOnryoji onryoji = TFEntityTypes.ONRYOJI.create(getWorld());
+			onryoji.refreshPositionAndAngles(this.getX(), this.getY(), this.getZ(), this.getYaw(), this.getPitch());
+			onryoji.setAiDisabled(this.isAiDisabled());
+			onryoji.setPersistent();
+			if(hasCustomName())
+			{
+				onryoji.setCustomName(getCustomName());
+				onryoji.setCustomNameVisible(isCustomNameVisible());
+			}
+			
+			onryoji.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, Reference.Values.TICKS_PER_SECOND * 5));
+			for(int x=-1; x<=1; x++)
+				for(int z=-1; z<=1; z++)
+				{
+					BlockPos pos = getBlockPos().add(x, 0, z);
+					if(world.getBlockState(pos).getBlock() == Blocks.FIRE)
+						world.setBlockState(pos, Blocks.AIR.getDefaultState());
+				}
+			
+			world.spawnEntity(onryoji);
+			lightning.discard();
+			discard();
+		}
+		else
+			super.onStruckByLightning(world, lightning);
 	}
 }

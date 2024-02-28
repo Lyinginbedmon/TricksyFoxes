@@ -5,6 +5,8 @@ import java.util.EnumSet;
 import com.lying.tricksy.entity.ai.whiteboard.HowlWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.init.TFEntityTypes;
+import com.lying.tricksy.init.TFParticles;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -17,6 +19,8 @@ import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
 public class EntityTricksyWolf extends AbstractTricksyAnimal implements IAnimatedBiped
@@ -25,7 +29,32 @@ public class EntityTricksyWolf extends AbstractTricksyAnimal implements IAnimate
 	 * 0 - Bless
 	 * 1 - Howl
 	 */
-    public final AnimationManager<EntityTricksyWolf> animations = new AnimationManager<>(2);
+    public final AnimationManager<EntityTricksyWolf> animations = new AnimationManager<>(2)
+    		{
+				public void onUpdateAnim(int animation, int ticksRunning, EntityTricksyWolf ent)
+				{
+					Random rand = ent.getRandom();
+					switch(animation)
+					{
+						case 0:
+							if(ticksRunning == Reference.Values.TICKS_PER_SECOND)
+							{
+								Vec3d pos = ent.getPos().add(0D, ent.getHeight() * 0.5D, 0D);
+								double radius = ent.getWidth() * 0.75D;
+								for(int i=6; i>0; i--)
+								{
+									Vec3d offset = new Vec3d(rand.nextDouble() - 0.5D, rand.nextDouble() - 0.5D, rand.nextDouble() - 0.5D).normalize();
+									Vec3d point = pos.add(offset.multiply(radius));
+									ent.getWorld().addParticle(TFParticles.ENERGY, point.getX(), point.getY(), point.getZ(), 252, 248, 205);
+								}
+							}
+							break;
+						case 1:
+						default:
+							return;
+					}
+				}
+    		};
 	
 	protected HowlWhiteboard boardHowl = (HowlWhiteboard)(new HowlWhiteboard(this)).build();
     

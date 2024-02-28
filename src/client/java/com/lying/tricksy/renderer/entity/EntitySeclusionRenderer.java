@@ -22,8 +22,7 @@ import net.minecraft.util.math.Vec2f;
 public class EntitySeclusionRenderer extends EntityRenderer<EntitySeclusion>
 {
 	private static final MinecraftClient mc = MinecraftClient.getInstance();
-	// FIXME Needs proper texture
-	private static final Identifier TEXTURE_CIRCLE = new Identifier(Reference.ModInfo.MOD_ID, "textures/particle/magic_circle.png");
+	private static final Identifier TEXTURE_CIRCLE = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/magic_circle.png");
 	
 	public EntitySeclusionRenderer(Context ctx)
 	{
@@ -63,7 +62,7 @@ public class EntitySeclusionRenderer extends EntityRenderer<EntitySeclusion>
 			buffer.vertex(matrix, vertices[0].x, 0.01F, vertices[0].y).color(255, 255,255, 255).texture(0F, 0F).light(LightmapTextureManager.MAX_LIGHT_COORDINATE).next();
 		matrices.pop();
 		
-		renderBoundary(matrices, vertexConsumers, radius, (float)entity.age, tickDelta, entity.getUuid().getLeastSignificantBits());
+		renderBoundary(matrices, vertexConsumers, radius * 0.98F, (float)entity.age, tickDelta, entity.getUuid().getLeastSignificantBits());
 	}
 	
 	private void renderBoundary(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float radius, float ageInTicks, float tickDelta, long seed)

@@ -13,11 +13,20 @@ public class TFParticles
 	public static final DefaultParticleType PAPER	= FabricParticleTypes.simple();
 	public static final DefaultParticleType FOXFIRE	= FabricParticleTypes.simple();
 	public static final DefaultParticleType LEVELUP = FabricParticleTypes.simple();
+	public static final DefaultParticleType AURA = FabricParticleTypes.simple();
+	public static final DefaultParticleType ENERGY = FabricParticleTypes.simple();
 	
 	public static void init()
 	{
-		Registry.register(Registries.PARTICLE_TYPE, new Identifier(Reference.ModInfo.MOD_ID, "paper"), PAPER);
-		Registry.register(Registries.PARTICLE_TYPE, new Identifier(Reference.ModInfo.MOD_ID, "foxfire"), FOXFIRE);
-		Registry.register(Registries.PARTICLE_TYPE, new Identifier(Reference.ModInfo.MOD_ID, "levelup"), LEVELUP);
+		register("paper", PAPER);
+		register("foxfire", FOXFIRE);
+		register("levelup", LEVELUP);
+		register("aura", AURA);
+		register("energy", ENERGY);
+	}
+	
+	private static void register(String name, DefaultParticleType type)
+	{
+		Registry.register(Registries.PARTICLE_TYPE, new Identifier(Reference.ModInfo.MOD_ID, name), type);
 	}
 }

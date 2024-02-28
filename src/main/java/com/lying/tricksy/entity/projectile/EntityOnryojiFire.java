@@ -62,7 +62,7 @@ public class EntityOnryojiFire extends PersistentProjectileEntity
 		nbt.putInt("Index", this.index);
 		nbt.putInt("Lifespan", getDataTracker().get(LIFESPAN));
 		if(ignited())
-			nbt.putInt("Fuse", ignitedTicks());
+			nbt.putInt("Fuse", fuseTicks());
 	}
 	
 	public void readCustomDataFromNbt(NbtCompound nbt)
@@ -95,7 +95,7 @@ public class EntityOnryojiFire extends PersistentProjectileEntity
 			
 			if(ignited() && this.age%4 == 0)
 			{
-				int particles = ignitedTicks() / 5;
+				int particles = fuseTicks() / 5;
 				Vec3d core = this.getPos().add(0D, getHeight() * 0.5D,  0D);
 				double vel = 0.25D;
 				for(int i=particles; i>0; --i)
@@ -109,22 +109,22 @@ public class EntityOnryojiFire extends PersistentProjectileEntity
 		}
 		else
 		{
-			if(ignited())
+			int lifespan = getDataTracker().get(LIFESPAN);
+			int fuse = fuseTicks();
+			
+			// Despawn after 7 seconds if fired, 21 seconds if not fired, or if fuse has elapsed
+			if(lifespan > (wasShot() ? LIFE_TIME : LIFE_TIME * 3) || fuse > FUSE_TIME)
+				discard();
+			
+			if(fuse >= 0)
 			{
-				int fuse = ignitedTicks();
-				if(fuse < FUSE_TIME)
-					getDataTracker().set(FUSE, fuse + 1);
-				else
+				if(fuse == FUSE_TIME)
 					explode();
+				setFuse(fuse + 1);
 			}
 			else
 			{
-				// Despawn after 7 seconds of not hitting anything
-				int lifespan = getDataTracker().get(LIFESPAN) + 1;
-				if(wasShot() && lifespan > LIFE_TIME || lifespan > (LIFE_TIME * 3))
-					discard();
-				else
-					getDataTracker().set(LIFESPAN, lifespan);
+				getDataTracker().set(LIFESPAN, lifespan + 1);
 				
 				if(wasShot())
 					super.tick();
@@ -185,11 +185,9 @@ public class EntityOnryojiFire extends PersistentProjectileEntity
 	
 	public void explode()
 	{
-		playSound(SoundEvents.ENTITY_GENERIC_EXPLODE, 1F, 0.6F + random.nextFloat() * 0.4F);
+		setFuse(FUSE_TIME);
 		for(LivingEntity hit : getWorld().getEntitiesByClass(LivingEntity.class, getBoundingBox().expand(3D), EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)))
 			explode(hit);
-		
-		discard();
 	}
 	
 	public void explode(LivingEntity hit)
@@ -200,20 +198,23 @@ public class EntityOnryojiFire extends PersistentProjectileEntity
 	}
 	
 	/** Returns the number of ticks since this entity ignited, or -1 if it hasn't */
-	public int ignitedTicks() { return getDataTracker().get(FUSE); }
+	public int fuseTicks() { return getDataTracker().get(FUSE); }
 	
-	public boolean ignited() { return ignitedTicks() >= 0; }
+	public void setFuse(int ticks) { getDataTracker().set(FUSE, ticks); }
+	
+	public boolean ignited() { return fuseTicks() >= 0; }
 	
 	public void ignite()
 	{
-		getDataTracker().set(FUSE, 0);
+		setFuse(0);
 		setVelocity(Vec3d.ZERO);
-		playSound(SoundEvents.ENTITY_TNT_PRIMED, 1F, 0.5F + random.nextFloat());
 	}
 	
 	public void onTrackedDataSet(TrackedData<?> data)
 	{
 		if(FUSE.equals(data))
+		{
+			int fuse = getDataTracker().get(FUSE).intValue();
 			if(ignited())
 			{
 				this.animation_idle.stop();
@@ -224,6 +225,15 @@ public class EntityOnryojiFire extends PersistentProjectileEntity
 				this.animation_idle.startIfNotRunning(this.age);
 				this.animation_fuse.stop();
 			}
+			
+			if(fuse == FUSE_TIME)
+			{
+				playSound(SoundEvents.ENTITY_GENERIC_EXPLODE, 1F, 0.6F + random.nextFloat() * 0.4F);
+				getWorld().addParticle(ParticleTypes.EXPLOSION_EMITTER, this.getX(), this.getY(), this.getZ(), 0.0, 0.0, 0.0);
+			}
+			else if(fuse == 0)
+				playSound(SoundEvents.ENTITY_TNT_PRIMED, 1F, 0.5F + random.nextFloat());
+		}
 	}
 	
 	public void setVelocity(Vec3d velocity)
@@ -236,12 +246,13 @@ public class EntityOnryojiFire extends PersistentProjectileEntity
 	
 	protected void onBlockHit(BlockHitResult blockHitResult)
 	{
-		ignite();
+		if(wasShot())
+			ignite();
 	}
 	
 	protected void onEntityHit(EntityHitResult entityHitResult)
 	{
-		if(entityHitResult.getEntity() == getOwner())
+		if(!wasShot() || entityHitResult.getEntity() == getOwner())
 			return;
 		else if(entityHitResult.getEntity() instanceof LivingEntity)
 			explode();

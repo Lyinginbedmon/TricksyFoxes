@@ -95,7 +95,7 @@ public class OnryojiTree
 //					.child(LeafSpecial.ONRYOJI_BALANCE.create())
 					.child(LeafSpecial.ONRYOJI_FOXFIRE.create())
 					.child(LeafSpecial.ONRYOJI_SECLUSION.create())
-//					.child(LeafSpecial.ONRYOJI_COMMANDERS.create())
+					.child(LeafSpecial.ONRYOJI_COMMANDERS.create())
 					);
 	}
 	

@@ -479,7 +479,7 @@ public class TFAnimations
 			new Keyframe(0.75F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -2.0F), Transformation.Interpolations.LINEAR),
 			new Keyframe(1.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
 		))
-		.addBoneAnimation("shoulders", new Transformation(Transformation.Targets.ROTATE, 
+		.addBoneAnimation(ModelOnryoji.SHOULDERS, new Transformation(Transformation.Targets.ROTATE, 
 			new Keyframe(1.5417F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
 			new Keyframe(1.75F, AnimationHelper.createRotationalVector(14.1614F, 37.8095F, 22.3717F), Transformation.Interpolations.LINEAR),
 			new Keyframe(2.2917F, AnimationHelper.createRotationalVector(14.1614F, 37.8095F, 22.3717F), Transformation.Interpolations.LINEAR),
@@ -534,46 +534,216 @@ public class TFAnimations
 		))
 		.build();
 	
+	public static final Animation ONRYOJI_COMMANDERS = Animation.Builder.create(2.0F)
+		.addBoneAnimation(EntityModelPartNames.ROOT, new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.7083F, AnimationHelper.createTranslationalVector(0.0F, 1.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(ModelOnryoji.UPPER_BODY, new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.4583F, AnimationHelper.createRotationalVector(11.25F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.4167F, AnimationHelper.createRotationalVector(11.25F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.8333F, AnimationHelper.createRotationalVector(-15.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(ModelOnryoji.UPPER_BODY, new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.8333F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(EntityModelPartNames.HEAD, new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(17.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.4583F, AnimationHelper.createRotationalVector(26.88F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.7917F, AnimationHelper.createRotationalVector(21.88F, 0.0F, 0.0F), Transformation.Interpolations.CUBIC),
+			new Keyframe(1.125F, AnimationHelper.createRotationalVector(22.91F, 0.0F, 0.0F), Transformation.Interpolations.CUBIC),
+			new Keyframe(1.4167F, AnimationHelper.createRotationalVector(26.88F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.8333F, AnimationHelper.createRotationalVector(-27.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(EntityModelPartNames.HEAD, new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.4583F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -1.25F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.4167F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -1.25F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.8333F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 1.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(ModelOnryoji.LOWER_BODY, new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.8333F, AnimationHelper.createRotationalVector(-2.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(ModelOnryoji.LEGS, new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.4583F, AnimationHelper.createRotationalVector(-15.9136F, -0.9395F, 2.5849F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.875F, AnimationHelper.createRotationalVector(-15.8188F, -1.2333F, -2.4073F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.4167F, AnimationHelper.createRotationalVector(-15.9136F, -0.9395F, 2.5849F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.8333F, AnimationHelper.createRotationalVector(12.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(ModelOnryoji.LEGS, new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.4583F, AnimationHelper.createTranslationalVector(0.0F, -0.5F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.4167F, AnimationHelper.createTranslationalVector(0.0F, -0.5F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("tails", new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.0417F, AnimationHelper.createRotationalVector(7.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(EntityModelPartNames.LEFT_ARM, new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, -35.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.4583F, AnimationHelper.createRotationalVector(-96.5132F, 3.138F, 1.7082F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.4167F, AnimationHelper.createRotationalVector(-96.5132F, 3.138F, 1.7082F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.8333F, AnimationHelper.createRotationalVector(-35.3092F, -41.303F, -55.6091F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(EntityModelPartNames.LEFT_ARM, new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.4583F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -3.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.4167F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -3.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.8333F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(EntityModelPartNames.RIGHT_ARM, new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, 35.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.4583F, AnimationHelper.createRotationalVector(-96.5132F, -3.138F, -1.7082F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.4167F, AnimationHelper.createRotationalVector(-96.5132F, -3.138F, -1.7082F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.8333F, AnimationHelper.createRotationalVector(-35.3092F, 41.303F, 55.6091F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(EntityModelPartNames.RIGHT_ARM, new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.4583F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -3.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.4167F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -3.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.8333F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.build();
+	
 	public static final Animation ONRYOJI_FOXFIRE = Animation.Builder.create(2.0F)
-			.addBoneAnimation("left_arm", new Transformation(Transformation.Targets.ROTATE, 
-				new Keyframe(0.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, -35.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(0.375F, AnimationHelper.createRotationalVector(-120.6672F, 46.038F, -13.2898F), Transformation.Interpolations.LINEAR),
-				new Keyframe(0.875F, AnimationHelper.createRotationalVector(-118.1672F, -46.038F, 13.2898F), Transformation.Interpolations.LINEAR),
-				new Keyframe(1.25F, AnimationHelper.createRotationalVector(-85.62F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(1.4583F, AnimationHelper.createRotationalVector(-85.62F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(1.5417F, AnimationHelper.createRotationalVector(-72.5F, 0.0F, 17.5F), Transformation.Interpolations.LINEAR)
-			))
-			.addBoneAnimation("left_arm", new Transformation(Transformation.Targets.TRANSLATE, 
-				new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(0.375F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -2.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(0.875F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -2.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(1.25F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -2.0F), Transformation.Interpolations.LINEAR)
-			))
-			.addBoneAnimation("right_arm", new Transformation(Transformation.Targets.ROTATE, 
-				new Keyframe(0.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, 35.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(0.7083F, AnimationHelper.createRotationalVector(-49.7574F, 5.7385F, 39.8371F), Transformation.Interpolations.LINEAR),
-				new Keyframe(1.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, 35.0F), Transformation.Interpolations.LINEAR)
-			))
-			.addBoneAnimation("root", new Transformation(Transformation.Targets.TRANSLATE, 
-				new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(0.7083F, AnimationHelper.createTranslationalVector(0.0F, 1.0F, 0.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(2.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
-			))
-			.addBoneAnimation("head", new Transformation(Transformation.Targets.ROTATE, 
-				new Keyframe(0.0F, AnimationHelper.createRotationalVector(17.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(0.375F, AnimationHelper.createRotationalVector(-21.7847F, 32.1586F, -4.9731F), Transformation.Interpolations.LINEAR),
-				new Keyframe(0.875F, AnimationHelper.createRotationalVector(-21.7847F, -32.1586F, 4.9731F), Transformation.Interpolations.LINEAR),
-				new Keyframe(1.25F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(1.4583F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(1.5417F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 5.0F), Transformation.Interpolations.LINEAR)
-			))
-			.addBoneAnimation("legs", new Transformation(Transformation.Targets.ROTATE, 
-				new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
-				new Keyframe(0.8333F, AnimationHelper.createRotationalVector(7.4299F, -1.7082F, 4.6999F), Transformation.Interpolations.LINEAR),
-				new Keyframe(1.5417F, AnimationHelper.createRotationalVector(2.9194F, 0.6591F, -2.9736F), Transformation.Interpolations.LINEAR),
-				new Keyframe(2.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
-			))
-			.build();
+		.addBoneAnimation(EntityModelPartNames.LEFT_ARM, new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, -35.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.375F, AnimationHelper.createRotationalVector(-120.6672F, 46.038F, -13.2898F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.875F, AnimationHelper.createRotationalVector(-118.1672F, -46.038F, 13.2898F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.25F, AnimationHelper.createRotationalVector(-85.62F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.4583F, AnimationHelper.createRotationalVector(-85.62F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.5417F, AnimationHelper.createRotationalVector(-72.5F, 0.0F, 17.5F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(EntityModelPartNames.LEFT_ARM, new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.375F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -2.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.875F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -2.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.25F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, -2.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(EntityModelPartNames.RIGHT_ARM, new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, 35.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.7083F, AnimationHelper.createRotationalVector(-49.7574F, 5.7385F, 39.8371F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, 35.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(EntityModelPartNames.ROOT, new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.7083F, AnimationHelper.createTranslationalVector(0.0F, 1.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(EntityModelPartNames.HEAD, new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(17.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.375F, AnimationHelper.createRotationalVector(-21.7847F, 32.1586F, -4.9731F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.875F, AnimationHelper.createRotationalVector(-21.7847F, -32.1586F, 4.9731F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.25F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.4583F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.5417F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 5.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation(ModelOnryoji.LEGS, new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.8333F, AnimationHelper.createRotationalVector(7.4299F, -1.7082F, 4.6999F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.5417F, AnimationHelper.createRotationalVector(2.9194F, 0.6591F, -2.9736F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.build();
+	
+	public static final Animation ONRYOJI_SECLUSION = Animation.Builder.create(2.0F)
+		.addBoneAnimation("root", new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.7083F, AnimationHelper.createTranslationalVector(0.0F, 1.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("upper", new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.5F, AnimationHelper.createRotationalVector(-12.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.5833F, AnimationHelper.createRotationalVector(-12.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("upper", new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("head", new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(17.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.5F, AnimationHelper.createRotationalVector(-22.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.875F, AnimationHelper.createRotationalVector(-22.1916F, -3.8102F, -9.2525F), Transformation.Interpolations.CUBIC),
+			new Keyframe(1.2917F, AnimationHelper.createRotationalVector(-22.1916F, 3.8102F, 9.2525F), Transformation.Interpolations.CUBIC),
+			new Keyframe(1.5833F, AnimationHelper.createRotationalVector(-22.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createRotationalVector(17.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("head", new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.5F, AnimationHelper.createTranslationalVector(0.0F, 0.25F, 1.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.5833F, AnimationHelper.createTranslationalVector(0.0F, 0.25F, 1.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("lower", new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.8333F, AnimationHelper.createRotationalVector(-2.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("legs", new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.8333F, AnimationHelper.createRotationalVector(12.5F, 0.0F, 0.0F), Transformation.Interpolations.CUBIC),
+			new Keyframe(1.2917F, AnimationHelper.createRotationalVector(17.5F, 0.0F, 0.0F), Transformation.Interpolations.CUBIC),
+			new Keyframe(2.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("legs", new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.5F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.5833F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("tails", new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.0417F, AnimationHelper.createRotationalVector(7.5F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("left_arm", new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, -35.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.5F, AnimationHelper.createRotationalVector(-116.3713F, 27.3511F, -12.832F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.5833F, AnimationHelper.createRotationalVector(-116.3713F, 27.3511F, -12.832F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, -35.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("left_arm", new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.5F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 1.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.5833F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 1.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("right_arm", new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, 35.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.5F, AnimationHelper.createRotationalVector(-116.3713F, -27.3511F, 12.832F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.5833F, AnimationHelper.createRotationalVector(-116.3713F, -27.3511F, 12.832F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createRotationalVector(-50.0F, 0.0F, 35.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("right_arm", new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.5F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 1.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.5833F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 1.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("shoulders", new Transformation(Transformation.Targets.ROTATE, 
+			new Keyframe(0.0F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.5F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.7917F, AnimationHelper.createRotationalVector(12.5F, 0.0F, 0.0F), Transformation.Interpolations.CUBIC),
+			new Keyframe(1.1667F, AnimationHelper.createRotationalVector(1.58F, 0.0F, 0.0F), Transformation.Interpolations.CUBIC),
+			new Keyframe(1.375F, AnimationHelper.createRotationalVector(10.79F, 0.0F, 0.0F), Transformation.Interpolations.CUBIC),
+			new Keyframe(1.5833F, AnimationHelper.createRotationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.addBoneAnimation("shoulders", new Transformation(Transformation.Targets.TRANSLATE, 
+			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.5F, AnimationHelper.createTranslationalVector(0.0F, 1.5F, -2.5F), Transformation.Interpolations.LINEAR),
+			new Keyframe(1.5833F, AnimationHelper.createTranslationalVector(0.0F, 1.5F, -2.5F), Transformation.Interpolations.LINEAR),
+			new Keyframe(2.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+		))
+		.build();
 	
 	public static final Animation ONRYOJI_FIRE_IDLE = Animation.Builder.create(3.0F).looping()
 		.addBoneAnimation(EntityModelPartNames.HEAD, new Transformation(Transformation.Targets.ROTATE, 

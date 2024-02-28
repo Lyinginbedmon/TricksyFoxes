@@ -43,6 +43,8 @@ import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
+import com.lying.tricksy.init.TFParticles;
+import com.lying.tricksy.init.TFSoundEvents;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.CandlePowers;
 import com.lying.tricksy.utility.Howls;
@@ -107,11 +109,11 @@ public class LeafSpecial extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> WOLF_BLESS;
 	public static NodeSubType<LeafNode> WOLF_HOWL;
 	
-	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;	// TODO Needs animation & affected visuals
+	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;	// TODO Needs casting animation & affected visuals
 	public static NodeSubType<LeafNode> ONRYOJI_OFUDA;		// TODO Needs finalised ammo visuals
 	public static NodeSubType<LeafNode> ONRYOJI_FOXFIRE;
-	public static NodeSubType<LeafNode> ONRYOJI_SECLUSION;	// TODO Needs animation
-	public static NodeSubType<LeafNode> ONRYOJI_COMMANDERS;	// TODO Needs animation & stage display
+	public static NodeSubType<LeafNode> ONRYOJI_SECLUSION;
+	public static NodeSubType<LeafNode> ONRYOJI_COMMANDERS;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_special"); }
 	
@@ -600,9 +602,9 @@ public class LeafSpecial extends NodeGroupLeaf
 					tricksy.setNoDrag(true);
 					tricksy.setTreePose(EntityPose.LONG_JUMPING);
 					
+					Random rand = tricksy.getRandom();
 					for(int i=0; i<5; i++)
 					{
-						Random rand = tricksy.getRandom();
 						double x = rand.nextDouble() - 0.5D;
 						double z = rand.nextDouble() - 0.5D;
 						Vec3d vel = (new Vec3d(x, 0, z)).normalize();
@@ -908,7 +910,7 @@ public class LeafSpecial extends NodeGroupLeaf
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
-			private static final int ANIMATION_END_TICK = (int)(Reference.Values.TICKS_PER_SECOND * 1.5F);
+			private static final int ANIMATION_END_TICK = (int)(Reference.Values.TICKS_PER_SECOND * 0.5F);
 			private static final WhiteboardRef TARGET = CommonVariables.TARGET_ENT;
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.allOf(ActionFlag.class); }
@@ -919,42 +921,59 @@ public class LeafSpecial extends NodeGroupLeaf
 						TARGET, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false)));
 			}
 			
+			public int castingTime() { return Reference.Values.TICKS_PER_SECOND; }
+			
 			public <T extends PathAwareEntity & ITricksyMob<?>> boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<Entity> target = getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT);
 				if(target.isEmpty() || !target.get().isAlive() || target.get().isSpectator() || !(target.get() instanceof LivingEntity))
 					return false;
+				
+				LivingEntity ent = (LivingEntity)target.get();
+				if(!ent.canHaveStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1)) || ent.distanceTo(tricksy) > 16D || !tricksy.canSee(ent))
+					return false;
 				return true;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				if(!validityCheck(tricksy, whiteboards, parent))
+					return Result.FAILURE;
+				
+				if(tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
+					((EntityTricksyWolf)tricksy).setBlessing();
+				
+				tricksy.getLookControl().lookAt((LivingEntity)getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT).get());
+				return Result.RUNNING;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				if(tricksy.getType() == TFEntityTypes.TRICKSY_WOLF)
-					((EntityTricksyWolf)tricksy).setBlessing();
-				return onTick(tricksy, whiteboards, parent, 0);
-			}
-			
-			// TODO Add particles and SFX to highlight effect
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
-			{
 				LivingEntity ent = (LivingEntity)getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT).get();
-				if(tick >= ANIMATION_END_TICK)
-					return Result.SUCCESS;
-				else
+				ent.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1), tricksy);
+				
+				ServerWorld world = (ServerWorld)tricksy.getWorld();
+				Random rand = tricksy.getRandom();
+				Vec3d pos = ent.getPos().add(0D, ent.getHeight() * 0.5D, 0);
+				double radius = ent.getWidth();
+				parent.playSound(ent, TFSoundEvents.TRICKSY_ENLIGHTENED, 0.5F, 0.75F + rand.nextFloat() * 0.25F);
+				
+				// FIXME Ensure particles spawn client-side
+				for(int i=6; i>0; i--)
 				{
-					StatusEffectInstance blessing = new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1);
-					if(tick < Reference.Values.TICKS_PER_SECOND)
-					{
-						if(!ent.canHaveStatusEffect(blessing) || ent.distanceTo(tricksy) > 16D || !tricksy.canSee(ent))
-							return Result.FAILURE;
-					}
-					else if(tick == Reference.Values.TICKS_PER_SECOND)
-						ent.addStatusEffect(blessing, tricksy);
-					
-					tricksy.getLookControl().lookAt(ent);
+					Vec3d offset = new Vec3d(rand.nextDouble() - 0.5D, rand.nextDouble() - 0.5D, rand.nextDouble() - 0.5D).normalize();
+					Vec3d point = pos.add(offset.multiply(radius));
+					world.spawnParticles(TFParticles.ENERGY, point.getX(), point.getY(), point.getZ(), 1, 252, 248, 205, 1D);
+					world.spawnParticles(ParticleTypes.CLOUD, point.getX(), point.getY(), point.getZ(), 1, 0, 0, 0, 0.1D);
 				}
 				
+				tricksy.getLookControl().lookAt(ent);
 				return Result.RUNNING;
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			{
+				return tick >= ANIMATION_END_TICK ? Result.SUCCESS : Result.RUNNING;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
@@ -1020,10 +1039,7 @@ public class LeafSpecial extends NodeGroupLeaf
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
 				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
-				{
-					// TODO Add visual flair to telegraph effect
 					((EntityOnryoji)tricksy).setAnimationBalance();
-				}
 				return Result.RUNNING;
 			}
 			
@@ -1145,7 +1161,7 @@ public class LeafSpecial extends NodeGroupLeaf
 					tricksy.getLookControl().lookAt(target);
 				}
 				
-				// Finish after 4 seconds in shooting phase regardless of outstanding shots
+				// Finish after 3 seconds in shooting phase regardless of outstanding shots
 				if(tick > (Reference.Values.TICKS_PER_SECOND * 3))
 				{
 					parent.logStatus(TFNodeStatus.FAILURE, Text.literal("Couldn't find enough targets in time"));
@@ -1336,11 +1352,14 @@ public class LeafSpecial extends NodeGroupLeaf
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				return tricksy.getHealth() <= (tricksy.getMaxHealth() * 0.8F);
+				return getField(tricksy) == null;// && tricksy.getHealth() <= (tricksy.getMaxHealth() * 0.8F);
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
+				if(!validityCheck(tricksy, whiteboards, parent))
+					return Result.FAILURE;
+				
 				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
 					((EntityOnryoji)tricksy).setAnimationSeclusion();
 				
@@ -1355,40 +1374,47 @@ public class LeafSpecial extends NodeGroupLeaf
 				zone.setOwner(tricksy);
 				tricksy.getWorld().spawnEntity(zone);
 				
+				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
+					((EntityOnryoji)tricksy).clearAnimation();
+				
 				return Result.RUNNING;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
+				// Fail out of action if any damage taken
+				// FIXME Ensure action ends IF user takes damage
+//				if(tricksy.getDamageTracker().getTimeSinceLastAttack() == 0)
+//				{
+//					parent.logStatus(TFNodeStatus.FAILURE, Text.literal("Concentration broken!"));
+//					return Result.FAILURE;
+//				}
+//				
+				if(tick > DURATION)
+					return Result.SUCCESS;
+				
 				// Check for seclusion entity, fail if missing
-				if(tricksy.getWorld().getEntitiesByType(TFEntityTypes.SECLUSION, tricksy.getBoundingBox().expand(32D), (field) -> field.getOwnerId().equals(tricksy.getUuid())).isEmpty())
+				if(getField(tricksy) == null)
 				{
 					parent.logStatus(TFNodeStatus.BAD_RESULT, Text.literal("Zone missing or destroyed"));
 					return Result.FAILURE;
 				}
 				
-				// Fail out of action if any damage taken
-				if(tricksy.getDamageTracker().getTimeSinceLastAttack() == 0)
-				{
-					parent.logStatus(TFNodeStatus.FAILURE, Text.literal("Concentration broken!"));
-					return Result.FAILURE;
-				}
-				
-				if(tick > DURATION)
-					return Result.SUCCESS;
-				
-				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
-					((EntityOnryoji)tricksy).clearAnimation();
 				return Result.RUNNING;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
 			{
-				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
-					((EntityOnryoji)tricksy).clearAnimation();
-				
 				// Kill seclusion entity if still present
-				tricksy.getWorld().getEntitiesByType(TFEntityTypes.SECLUSION, tricksy.getBoundingBox().expand(32D), (field) -> field.getOwnerId().equals(tricksy.getUuid())).forEach(Entity::discard);
+				EntitySeclusion field = getField(tricksy);
+				if(field != null)
+					field.discard();
+			}
+			
+			public static <T extends PathAwareEntity & ITricksyMob<?>> EntitySeclusion getField(T tricksy)
+			{
+				List<EntitySeclusion> fields = tricksy.getWorld().getEntitiesByType(TFEntityTypes.SECLUSION, tricksy.getBoundingBox().expand(32D), (field) -> field.isOwner(tricksy.getUuid()));
+				return fields.isEmpty() ? null : fields.get(0);
 			}
 		};
 	}
@@ -1421,11 +1447,8 @@ public class LeafSpecial extends NodeGroupLeaf
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
-				if(!validityCheck(tricksy, whiteboards, parent))
-					return Result.FAILURE;
-				
-				int stage = tricksy.getDataTracker().get(EntityOnryoji.COMM) + 1;
-				if(stage == 12)
+				int stage = tricksy.getDataTracker().get(EntityOnryoji.COMM);
+				if(stage >= 12)
 				{
 					// Scatter
 					tricksy.getDataTracker().set(EntityOnryoji.COMM, 0);
@@ -1447,7 +1470,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				else
 				{
 					parent.logStatus(TFNodeStatus.SUCCESS, Text.literal(String.valueOf(stage)));
-					tricksy.getDataTracker().set(EntityOnryoji.COMM, stage);
+					tricksy.getDataTracker().set(EntityOnryoji.COMM, stage + 1);
 					return Result.SUCCESS;
 				}
 			}

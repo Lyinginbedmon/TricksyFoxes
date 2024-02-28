@@ -126,8 +126,8 @@ public class ModelOnryoji<T extends EntityOnryoji> extends SinglePartEntityModel
 //		this.updateAnimation(livingEntity.animations.get(1), TFAnimations.ONRYOJI_BALANCE, ageInTicks);
 		this.updateAnimation(livingEntity.animations.get(EntityOnryoji.ANIM_OFUDA), TFAnimations.ONRYOJI_OFUDA, ageInTicks);
 		this.updateAnimation(livingEntity.animations.get(EntityOnryoji.ANIM_FOXFIRE), TFAnimations.ONRYOJI_FOXFIRE, ageInTicks);
-//		this.updateAnimation(livingEntity.animations.get(4), TFAnimations.ONRYOJI_SECLUSION, ageInTicks);
-//		this.updateAnimation(livingEntity.animations.get(5), TFAnimations.ONRYOJI_COMMANDERS, ageInTicks);
+		this.updateAnimation(livingEntity.animations.get(EntityOnryoji.ANIM_SECLUSION), TFAnimations.ONRYOJI_SECLUSION, ageInTicks);
+		this.updateAnimation(livingEntity.animations.get(EntityOnryoji.ANIM_COMMANDERS), TFAnimations.ONRYOJI_COMMANDERS, ageInTicks);
 //		this.updateAnimation(livingEntity.animations.get(6), TFAnimations.ONRYOJI_DEATH, ageInTicks);
 	}
 	

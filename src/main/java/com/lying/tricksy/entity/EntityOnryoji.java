@@ -49,15 +49,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	public static final TrackedData<Integer> BARK = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
 	public static final TrackedData<Integer> OFUDA = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
 	public static final TrackedData<Integer> COMM = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
-	/*
-	 * 0 - Idle
-	 * 1 - Balance
-	 * 2 - Sealing Ofuda
-	 * 3 - Foxfire
-	 * 4 - Seclusion
-	 * 5 - Twelve Heavenly Commanders
-	 * 6 - Death
-	 */
+	
 	public final AnimationManager<EntityOnryoji> animations = new AnimationManager<>(7);
 	public static final int ANIM_IDLE = 0;
 	public static final int ANIM_BALANCE = 1;
@@ -65,6 +57,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	public static final int ANIM_FOXFIRE = 3;
 	public static final int ANIM_SECLUSION = 4;
 	public static final int ANIM_COMMANDERS = 5;
+	public static final int ANIM_DEATH = 6;
 	
 	private static final TreeNode<?> TREE = OnryojiTree.get();
 	private BehaviourTree behaviourTree = new BehaviourTree(TREE);
@@ -76,7 +69,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	{
 		super(entityType, world);
 		animations.start(0, this.age);
-		this.moveControl = new FlightMoveControl(this, 20, true);
+		this.moveControl = new FlightMoveControl(this, 20, true);	// FIXME Replace move control with direct travel
 	}
 	
 	public void initDataTracker()
@@ -94,7 +87,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	
 	public static DefaultAttributeContainer.Builder createOnryojiAttributes()
 	{
-		return HostileEntity.createHostileAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 300).add(EntityAttributes.GENERIC_FLYING_SPEED, 0.7f);
+		return HostileEntity.createHostileAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 300).add(EntityAttributes.GENERIC_FLYING_SPEED, 0.7f).add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64D);
 	}
 	
 	public boolean hasNoGravity() { return true; }
@@ -166,9 +159,6 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		super.tick();
 		if(!hasCustomer() && !isAiDisabled())
 			ITricksyMob.updateBehaviourTree(this);
-		
-//		if(this.barkTicks > 0 && --this.barkTicks == 0)
-//			getDataTracker().set(BARK, Bark.NONE.ordinal());
 	}
 	
 	public static List<LivingEntity> getAttackTargets(LivingEntity tricksy, List<Entity> ignore)
@@ -187,7 +177,8 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		targets.addAll(world.getEntitiesByType(EntityType.PLAYER, bounds, EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)));
 		targets.addAll(world.getEntitiesByType(EntityType.VILLAGER, bounds, EntityPredicates.VALID_ENTITY));
 		
-		targets.removeIf(ent -> ignore.contains(ent));
+		if(!ignore.isEmpty())
+			targets.removeIf(ent -> ignore.contains(ent));
 		return targets;
 	}
 	

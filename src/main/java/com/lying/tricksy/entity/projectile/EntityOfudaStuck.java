@@ -29,6 +29,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -140,7 +141,7 @@ public class EntityOfudaStuck extends LivingEntity
 			Entity bound = target.get();
 			if(!bound.isAlive())
 				setTarget(null);
-			else if(bound instanceof LivingEntity)
+			else if(getWorld().isClient() && bound instanceof LivingEntity || bound instanceof PlayerEntity)
 			{
 				Vec3d origin = getPos();
 				Vec3d dest = bound.getPos();
