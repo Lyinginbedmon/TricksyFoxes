@@ -168,10 +168,10 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		World world = tricksy.getWorld();
 		Box bounds = tricksy.getBoundingBox().expand(tricksy.getAttributeValue(EntityAttributes.GENERIC_FOLLOW_RANGE));
 		
-		if(tricksy.getAttacking() != null && EntityPredicates.VALID_ENTITY.test(tricksy.getAttacking()))
+		if(tricksy.getAttacking() != null && EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR).test(tricksy.getAttacking()))
 			targets.add(tricksy.getAttacking());
 		
-		if(tricksy.getAttacker() != null && EntityPredicates.VALID_ENTITY.test(tricksy.getAttacker()))
+		if(tricksy.getAttacker() != null && tricksy.getAttacker() != tricksy.getAttacking() && EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR).test(tricksy.getAttacker()))
 			targets.add(tricksy.getAttacker());
 		
 		targets.addAll(world.getEntitiesByType(EntityType.PLAYER, bounds, EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)));

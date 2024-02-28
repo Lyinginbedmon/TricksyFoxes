@@ -1350,6 +1350,8 @@ public class LeafSpecial extends NodeGroupLeaf
 			
 			public int castingTime() { return Reference.Values.TICKS_PER_SECOND * 2; }
 			
+			public boolean shouldBreakOnDamage() { return true; }
+			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				return getField(tricksy) == null;// && tricksy.getHealth() <= (tricksy.getMaxHealth() * 0.8F);
@@ -1382,14 +1384,6 @@ public class LeafSpecial extends NodeGroupLeaf
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
-				// Fail out of action if any damage taken
-				// FIXME Ensure action ends IF user takes damage
-//				if(tricksy.getDamageTracker().getTimeSinceLastAttack() == 0)
-//				{
-//					parent.logStatus(TFNodeStatus.FAILURE, Text.literal("Concentration broken!"));
-//					return Result.FAILURE;
-//				}
-//				
 				if(tick > DURATION)
 					return Result.SUCCESS;
 				

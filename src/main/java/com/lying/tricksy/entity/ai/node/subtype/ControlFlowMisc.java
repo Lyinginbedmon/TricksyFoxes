@@ -103,7 +103,7 @@ public class ControlFlowMisc extends NodeGroupControlFlow
 					}
 				
 				if(result.isEnd())
-					parent.children().forEach((child) -> { if(child.isRunning()) child.stop(tricksy); });
+					parent.children().forEach((child) -> { if(child.isRunning()) child.stop(tricksy, whiteboards); });
 				
 				return result;
 			}

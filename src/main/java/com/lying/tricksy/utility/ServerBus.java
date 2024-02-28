@@ -3,7 +3,10 @@ package com.lying.tricksy.utility;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.component.Accomplishment;
 import com.lying.tricksy.component.TricksyComponent;
+import com.lying.tricksy.entity.ai.BehaviourTree;
+import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
+import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
 import com.lying.tricksy.init.TFItems;
@@ -11,11 +14,15 @@ import com.lying.tricksy.item.ItemPrescientNote;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.EventFactory;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.ActionResult;
@@ -25,6 +32,18 @@ import net.minecraft.world.dimension.DimensionTypes;
 
 public class ServerBus
 {
+	public static final Event<AfterDamage> AFTER_DAMAGE = EventFactory.createArrayBacked(AfterDamage.class, callbacks -> (entity, source, amount) -> 
+	{
+		for(AfterDamage callback : callbacks)
+			callback.afterDamage(entity, source, amount);
+	});
+	
+	@FunctionalInterface
+	public interface AfterDamage
+	{
+		void afterDamage(LivingEntity entity, DamageSource source, float amount);
+	}
+	
 	public static void registerEventCallbacks()
 	{
 		ServerLifecycleEvents.SERVER_STARTED.register((server) -> reloadDataPackListeners());
@@ -103,6 +122,26 @@ public class ServerBus
 			
 			return ActionResult.PASS;
 		});
+		
+		ServerBus.AFTER_DAMAGE.register((entity, damage, amount) -> 
+		{
+			if(!(entity instanceof ITricksyMob<?>) || !(entity instanceof PathAwareEntity))
+				return;
+			BehaviourTree tree = ((ITricksyMob<?>)entity).getBehaviourTree();
+			if(tree.isRunning())
+				findActiveAndBreak(tree.root(), (PathAwareEntity & ITricksyMob<?>)entity);
+		});
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static <T extends PathAwareEntity & ITricksyMob<?>> void findActiveAndBreak(TreeNode<?> nodeIn, T tricksy)
+	{
+		if(!nodeIn.isRunning())
+			return;
+		else if(nodeIn.getSubType().breaksOnDamage())
+			nodeIn.stop(tricksy, (WhiteboardManager<T>)tricksy.getWhiteboards());
+		else if(nodeIn.hasChildren())
+			nodeIn.children().forEach(child -> findActiveAndBreak(child, tricksy));
 	}
 	
 	private static void reloadDataPackListeners()

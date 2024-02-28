@@ -123,6 +123,9 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 	/** How long it takes to use this action before it actually takes effect */
 	public default int castingTime() { return -1; }
 	
+	/** Returns true if this node should fail if active when the parent mob takes damage */
+	public default boolean shouldBreakOnDamage() { return false; }
+	
 	/** Called while the node is within the {@link castingTime} period */
 	@NotNull
 	public default <T extends PathAwareEntity & ITricksyMob<?>> Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, M parent, int tick) { parent.logStatus(TFNodeStatus.CASTING); return Result.RUNNING; }

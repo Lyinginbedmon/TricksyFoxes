@@ -200,7 +200,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 	
 	public void setBehaviourTree(NbtCompound data)
 	{
-		behaviourTree.root().stop(this);
+		behaviourTree.root().stop(this, this.getWhiteboards());
 		getDataTracker().set(TREE_NBT, data);
 		behaviourTree.setTrees(data);
 		behaviourTree.logInForest(getWorld(), getUuid());

@@ -24,9 +24,10 @@ public abstract class SubTreeHandler implements INodeTickHandler<LeafNode>
 		return parent.subTree == null ? Result.FAILURE : parent.subTree.tick(tricksy, whiteboards);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, LeafNode parent)
 	{
-		parent.subTree.stop(tricksy);
+		parent.subTree.stop(tricksy, (WhiteboardManager<T>)tricksy.getWhiteboards());
 	}
 	
 	public abstract <T extends PathAwareEntity & ITricksyMob<?>> TreeNode<?> generateSubTree(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent);

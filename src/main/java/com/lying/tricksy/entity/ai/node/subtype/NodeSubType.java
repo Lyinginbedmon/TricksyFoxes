@@ -3,7 +3,6 @@ package com.lying.tricksy.entity.ai.node.subtype;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -80,7 +79,20 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public EnumSet<ActionFlag> flagsUsed() { return tickFunc.flagsUsed(); }
 	
-	public boolean shouldCooldown(int ticksRunning, Result latestResult) { return tickFunc.cooldownBehaviour().apply(ticksRunning, latestResult); }
+	public final NodePhase getPhase(int ticksRunning)
+	{
+		switch((int)Math.signum(ticksRunning - tickFunc.castingTime()))
+		{
+			case -1:	return NodePhase.CASTING;
+			case 0:		return NodePhase.CAST;
+			default:
+			case 1:		 return NodePhase.TICK;
+		}
+	}
+	
+	public boolean shouldCooldown(int ticksRunning, NodePhase phase, Result latestResult) { return tickFunc.cooldownBehaviour().apply(ticksRunning, phase, latestResult); }
+	
+	public boolean breaksOnDamage() { return this.tickFunc.shouldBreakOnDamage(); }
 	
 	public Map<WhiteboardRef, INodeIO> ioSet(){ return tickFunc.ioSet(); }
 	
@@ -97,21 +109,23 @@ public class NodeSubType<M extends TreeNode<?>>
 		if(!parent.isRunning() && !tickFunc.validityCheck(tricksy, whiteboards, parent))
 			return Result.FAILURE;
 		else if(tickFunc.castingTime() > 0)
-			switch((int)Math.signum(parent.ticksRunning() - tickFunc.castingTime()))
+			switch(getPhase(parent.ticksRunning()))
 			{
-				case -1:	
+				case CASTING:
 					Result result = tickFunc.doCasting(tricksy, whiteboards, parent, parent.ticksRunning());
 					if(!result.isEnd())
 						parent.logStatus(TFNodeStatus.CASTING);
 					return result;
-				case 0:		
+				case CAST:
 					return tickFunc.onCast(tricksy, whiteboards, parent);
-				case 1:
-				default:	
+				case TICK:
+				default:
 					return tickFunc.onTick(tricksy, whiteboards, parent, parent.ticksRunning() - tickFunc.castingTime());
 			}
 		else
-			return parent.ticksRunning() == 0 ? tickFunc.onCast(tricksy, whiteboards, parent) : tickFunc.onTick(tricksy, whiteboards, parent, parent.ticksRunning() - tickFunc.castingTime());
+			return getPhase(parent.ticksRunning()) == NodePhase.CAST ?
+					tickFunc.onCast(tricksy, whiteboards, parent) :
+					tickFunc.onTick(tricksy, whiteboards, parent, parent.ticksRunning() - tickFunc.castingTime());
 	}
 	
 	/** Performs any end-of-behaviour cleanup */
@@ -138,17 +152,40 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public static enum CooldownBehaviour
 	{
-		ALWAYS((ticks,result) -> true),
-		IF_NOT_IMMEDIATE_FAILURE((ticks,result) -> !(result == Result.FAILURE && ticks == 0)),
-		IF_SUCCESS((ticks,result) -> result == Result.SUCCESS);
+		ALWAYS((ticks,phase,result) -> true),
+		IF_NOT_IMMEDIATE_FAILURE((ticks,phase,result) -> !(result == Result.FAILURE && ticks == 0)),
+		IF_ACTIVE((ticks,phase,result) -> phase.active()),
+		IF_SUCCESS((ticks,phase,result) -> result == Result.SUCCESS);
 		
-		private final BiFunction<Integer, Result, Boolean> func;
+		private final CooldownFunc func;
 		
-		private CooldownBehaviour(BiFunction<Integer, Result, Boolean> funcIn)
+		private CooldownBehaviour(CooldownFunc funcIn)
 		{
 			this.func = funcIn;
 		}
 		
-		public boolean apply(int ticks, Result result) { return func.apply(ticks, result); }
+		public boolean apply(int ticks, NodePhase phase, Result result) { return func.apply(ticks, phase, result); }
+		
+		@FunctionalInterface
+		public interface CooldownFunc
+		{
+			public boolean apply(int ticks, NodePhase phase, Result result);
+		}
+	}
+	
+	public static enum NodePhase
+	{
+		CASTING(false),
+		CAST(true),
+		TICK(true);
+		
+		private final boolean isActive;
+		
+		private NodePhase(boolean active)
+		{
+			isActive = active;
+		}
+		
+		public boolean active() { return this.isActive; }
 	}
 }

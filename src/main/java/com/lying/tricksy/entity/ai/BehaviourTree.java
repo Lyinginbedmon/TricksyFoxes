@@ -137,10 +137,11 @@ public class BehaviourTree
 	
 	public void setExecutor(Order type, TreeNode<?> treeIn) { this.commandNodes.put(type, treeIn); }
 	
+	@SuppressWarnings("unchecked")
 	public <T extends PathAwareEntity & ITricksyMob<?>> void giveCommand(OrderWhiteboard commandIn, T tricksy)
 	{
 		this.latestTicked.clearLog();
-		this.latestTicked.stop(tricksy);
+		this.latestTicked.stop(tricksy, (WhiteboardManager<T>)tricksy.getWhiteboards());
 		this.boardCommand = (OrderWhiteboard)commandIn.copy();
 	}
 	
