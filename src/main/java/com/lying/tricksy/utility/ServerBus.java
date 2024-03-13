@@ -11,11 +11,13 @@ import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
 import com.lying.tricksy.init.TFItems;
 import com.lying.tricksy.item.ItemPrescientNote;
+import com.lying.tricksy.network.SyncSpecialVisualsPacket;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.entity.EntityType;
@@ -23,6 +25,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.ActionResult;
@@ -48,6 +51,8 @@ public class ServerBus
 	{
 		ServerLifecycleEvents.SERVER_STARTED.register((server) -> reloadDataPackListeners());
 		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, serverResourceManager, success) -> reloadDataPackListeners());
+		
+		ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> { if(entity.getType() == EntityType.PLAYER) SyncSpecialVisualsPacket.send((PlayerEntity)entity, SpecialVisuals.getVisuals(world)); });
 		
 		ServerEntityWorldChangeEvents.AFTER_ENTITY_CHANGE_WORLD.register((originalEntity, newEntity, origin, destination) -> 
 		{

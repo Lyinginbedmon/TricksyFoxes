@@ -19,5 +19,6 @@ public class Reference
 		public static final int ENTITY_MAX_AIR			= 300;
 		public static final int TICKS_PER_BUBBLE		= ENTITY_MAX_AIR / TICKS_PER_SECOND;
 		public static final int TICKS_PER_DAY			= TICKS_PER_SECOND * 1200;
+		public static final double SPEED_OF_SOUND		= 343D;
 	}
 }

@@ -19,12 +19,15 @@ import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 
 /** A whiteboard containing locally-accessible values set by a tricksy mob itself */
 public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends Whiteboard<Function<T, IWhiteboardObject<?>>>
 {
 	public static final WhiteboardRef SELF = makeSystemRef("self", TFObjType.ENT, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef ALTITUDE = makeSystemRef("altitude", TFObjType.INT, TFWhiteboards.LOCAL);
 	public static final WhiteboardRef HP = makeSystemRef("health", TFObjType.INT, TFWhiteboards.LOCAL);
 	public static final WhiteboardRef ARMOUR = makeSystemRef("armor", TFObjType.INT, TFWhiteboards.LOCAL);
 	public static final WhiteboardRef USING = makeSystemRef("ticks_using", TFObjType.INT, TFWhiteboards.LOCAL);
@@ -59,6 +62,13 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 	public Whiteboard<?> build()
 	{
 		register(SELF, (tricksy) -> new WhiteboardObjEntity(tricksy));
+		register(ALTITUDE, (tricksy) -> {
+			BlockPos pos = tricksy.getBlockPos();
+			World world = tricksy.getWorld();
+			while(world.isAir(pos) && pos.getY() > world.getBottomY())
+				pos = pos.down();
+			return new WhiteboardObj.Int(tricksy.getBlockPos().getY() - pos.getY());
+		});
 		register(HP, (tricksy) -> new WhiteboardObj.Int((int)tricksy.getHealth()));
 		register(ARMOUR, (tricksy) -> new WhiteboardObj.Int(tricksy.getArmor()));
 		register(HANDS_FULL, (tricksy) -> new WhiteboardObj.Bool(!tricksy.getMainHandStack().isEmpty() && !tricksy.getOffHandStack().isEmpty()));

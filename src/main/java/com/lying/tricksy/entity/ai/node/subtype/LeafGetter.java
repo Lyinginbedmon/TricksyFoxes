@@ -29,6 +29,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.world.World;
 
 public class LeafGetter extends NodeGroupLeaf
 {
@@ -37,11 +38,10 @@ public class LeafGetter extends NodeGroupLeaf
 	// Entity value getters
 	public static NodeSubType<LeafNode> GET_ASSAILANT;
 	public static NodeSubType<LeafNode> GET_HEALTH;
+	public static NodeSubType<LeafNode> GET_ALTITUDE;
 	public static NodeSubType<LeafNode> GET_HELD;
 	public static NodeSubType<LeafNode> GET_BARK;
 	public static NodeSubType<LeafNode> GET_LEASHED;
-	
-	// TODO Implement GET_ALTITUDE getter
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_getter"); }
 	
@@ -88,6 +88,27 @@ public class LeafGetter extends NodeGroupLeaf
 				
 				LivingEntity living = (LivingEntity)entity;
 				return new WhiteboardObj.Int((int)(isMax.get() ? living.getMaxHealth() : living.getHealth()));
+			}
+		}));
+		set.add(GET_ALTITUDE = subtype(ISubtypeGroup.variant("get_altitude"), new GetterHandlerTyped<Integer>(TFObjType.INT)
+		{
+			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
+			{
+				set.put(CommonVariables.TARGET_ENT, NodeInput.makeInput(NodeInput.ofType(TFObjType.ENT, false), new WhiteboardObjEntity(), LocalWhiteboard.SELF.displayName()));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				IWhiteboardObject<Entity> target = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
+				Entity entity = target.size() == 0 ? tricksy : target.get();
+				if(!(entity instanceof LivingEntity) || !entity.isAlive())
+					return null;
+				
+				BlockPos pos = entity.getBlockPos();
+				World world = entity.getWorld();
+				while(world.isAir(pos) && pos.getY() > world.getBottomY())
+					pos = pos.down();
+				return new WhiteboardObj.Int(entity.getBlockPos().getY() - pos.getY());
 			}
 		}));
 		set.add(GET_HELD = subtype(ISubtypeGroup.variant("get_held_item"), new GetterHandlerTyped<ItemStack>(TFObjType.ITEM)

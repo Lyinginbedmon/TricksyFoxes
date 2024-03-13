@@ -131,7 +131,7 @@ public class TFObjType<T>
 	{
 		if(typeIn == this)
 			return (IWhiteboardObject<N>)obj;
-		else if(this == TFObjType.EMPTY)
+		else if(this == TFObjType.EMPTY || obj.isEmpty())
 			return typeIn.blank();
 		else if(castingMap.containsKey(typeIn))
 			return (IWhiteboardObject<N>)castingMap.get(typeIn).apply(obj);

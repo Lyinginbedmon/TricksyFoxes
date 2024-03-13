@@ -15,6 +15,7 @@ public class TFParticles
 	public static final DefaultParticleType LEVELUP = FabricParticleTypes.simple();
 	public static final DefaultParticleType AURA = FabricParticleTypes.simple();
 	public static final DefaultParticleType ENERGY = FabricParticleTypes.simple();
+	public static final DefaultParticleType ENERGY_EMITTER = FabricParticleTypes.simple();
 	
 	public static void init()
 	{
@@ -23,6 +24,7 @@ public class TFParticles
 		register("levelup", LEVELUP);
 		register("aura", AURA);
 		register("energy", ENERGY);
+		register("energy_emitter", ENERGY_EMITTER);
 	}
 	
 	private static void register(String name, DefaultParticleType type)

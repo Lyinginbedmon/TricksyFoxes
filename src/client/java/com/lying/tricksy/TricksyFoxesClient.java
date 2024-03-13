@@ -18,10 +18,12 @@ import com.lying.tricksy.network.RefAddedReceiver;
 import com.lying.tricksy.network.SyncInventoryScreenReceiver;
 import com.lying.tricksy.network.SyncPrescientCandleScreenReceiver;
 import com.lying.tricksy.network.SyncScriptureScreenReceiver;
+import com.lying.tricksy.network.SyncSpecialVisualsReceiver;
 import com.lying.tricksy.network.SyncTreeScreenReceiver;
 import com.lying.tricksy.network.SyncWorkTableScreenReceiver;
 import com.lying.tricksy.network.TFPacketHandler;
 import com.lying.tricksy.particle.AuraParticle;
+import com.lying.tricksy.particle.EnergyEmitterParticle;
 import com.lying.tricksy.particle.EnergyParticle;
 import com.lying.tricksy.particle.FoxfireParticle;
 import com.lying.tricksy.particle.LevelUpParticle;
@@ -114,6 +116,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		particles.register(TFParticles.LEVELUP, LevelUpParticle.Factory::new);
 		particles.register(TFParticles.AURA, AuraParticle.Factory::new);
 		particles.register(TFParticles.ENERGY, EnergyParticle.Factory::new);
+		particles.register(TFParticles.ENERGY_EMITTER, EnergyEmitterParticle.Factory::new);
 	}
 	
 	private static void registerScreens()
@@ -135,6 +138,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_WORK_TABLE_ID, new SyncWorkTableScreenReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_PRESCIENT_CANDLE_ID, new SyncPrescientCandleScreenReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.ORDER_STATE_ID, new OrderStateReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(TFPacketHandler.SYNC_VISUALS_ID, new SyncSpecialVisualsReceiver());
 	}
 	
 	private static void registerKeyBinds()

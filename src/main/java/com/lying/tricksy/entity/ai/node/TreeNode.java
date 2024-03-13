@@ -265,15 +265,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			{
 				result = subType.call(tricksy, whiteboards, (N)this);
 				if(result.isEnd())
-				{
-					subType.onEnd(tricksy, (N)this);
-					
-					int cooldown = subType.getCooldown(tricksy);
-					if(cooldown > 0 && subType.shouldCooldown(ticksRunning, subType.getPhase(ticksRunning), result))
-						whiteboards.local().setNodeCooldown(subType, cooldown);
-					
-					this.nodeRAM = new NbtCompound();
-				}
+					endRunning(tricksy, whiteboards, result);
 				else if(!subType.flagsUsed().isEmpty())
 					whiteboards.local().flagAction(subType.flagsUsed());
 			}
@@ -414,27 +406,30 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	public boolean isRunning() { return !lastResult.isEnd(); }
 	
 	/** Performs an immediate end to this node's activity */
-	@SuppressWarnings("unchecked")
 	public <T extends PathAwareEntity & ITricksyMob<?>> void stop(T tricksy, WhiteboardManager<T> whiteboards)
 	{
 		if(!isRunning())
 			return;
 		
+		endRunning(tricksy, whiteboards, lastResult = Result.FAILURE);
+		children.forEach((child) -> child.stop(tricksy, whiteboards));
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <T extends PathAwareEntity & ITricksyMob<?>> void endRunning(T tricksy, WhiteboardManager<T> whiteboards, Result endResult)
+	{
 		try
 		{
 			NodeSubType<N> subType = nodeType.getSubType(this.subType);
 			subType.onEnd(tricksy, (N)this);
 			
 			int cooldown = subType.getCooldown(tricksy);
-			if(cooldown > 0 && subType.shouldCooldown(ticksRunning, subType.getPhase(ticksRunning), Result.FAILURE))
+			if(cooldown > 0 && subType.shouldCooldown(ticksRunning, subType.getPhase(ticksRunning), endResult))
 				whiteboards.local().setNodeCooldown(subType, cooldown);
 			
 			this.nodeRAM = new NbtCompound();
 		}
 		catch(Exception e) { }
-		
-		lastResult = Result.FAILURE;
-		children.forEach((child) -> child.stop(tricksy, whiteboards));
 	}
 	
 	@Nullable

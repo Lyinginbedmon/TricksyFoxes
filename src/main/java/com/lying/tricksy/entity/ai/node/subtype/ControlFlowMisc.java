@@ -73,8 +73,7 @@ public class ControlFlowMisc extends NodeGroupControlFlow
 			public <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, ControlFlowNode parent, int tick)
 			{
 				// Tick indexed node
-				TreeNode<?> child = parent.children().get(parent.index);
-				return child.tick(tricksy, whiteboards);
+				return parent.children().get(parent.index).tick(tricksy, whiteboards);
 			}
 		}));
 		set.add(REACTIVE = subtype(ISubtypeGroup.variant("reactive"), new ControlFlowHandler() 

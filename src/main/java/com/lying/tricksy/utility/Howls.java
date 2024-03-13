@@ -1,6 +1,5 @@
 package com.lying.tricksy.utility;
 
-import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -62,7 +61,6 @@ public class Howls extends PersistentState
 		activeHowls.add(new Entry(wolf, world.getTime()));
 	}
 	
-	// TODO Account for distance to exclude howls too far away to be heard
 	public Howl getCurrentHowl(BlockPos pos)
 	{
 		if(activeHowls.isEmpty())
@@ -70,14 +68,12 @@ public class Howls extends PersistentState
 		
 		long time = world.getTime();
 		Entry youngest = null;
-		Iterator<Entry> iterator = activeHowls.iterator();
-		while(iterator.hasNext())
+		for(Entry howl : activeHowls)
 		{
-			Entry howl = iterator.next();
-			if(!howl.isActive(time))
-				iterator.remove();
-			else if(youngest == null || howl.age(time) < youngest.age(time))
-				youngest = howl;
+			long age = howl.age(time);
+			if(howl.isActive(time)  && howl.board().position.as(TFObjType.BLOCK).get().isWithinDistance(pos, ((age / 20) * Reference.Values.SPEED_OF_SOUND)))
+				if(youngest == null || age < youngest.age(time))
+					youngest = howl;
 		}
 		
 		return youngest == null ? new Howl() : youngest.board();

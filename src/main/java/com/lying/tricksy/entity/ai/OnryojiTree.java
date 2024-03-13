@@ -26,7 +26,6 @@ import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFWhiteboards;
 
 import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 public class OnryojiTree
@@ -34,8 +33,6 @@ public class OnryojiTree
 	public static class OnryojiWhiteboard extends LocalWhiteboard<EntityOnryoji>
 	{
 		public static final WhiteboardRef NEAREST_PLAYER = new WhiteboardRef("near_player", TFObjType.ENT, TFWhiteboards.LOCAL).noCache();
-		public static final WhiteboardRef ALTITUDE = new WhiteboardRef("altitude", TFObjType.INT, TFWhiteboards.LOCAL).noCache();
-		
 		public static final WhiteboardRef MOVE_POS = new WhiteboardRef("move_pos", TFObjType.BLOCK, TFWhiteboards.LOCAL);
 		public static final WhiteboardRef MOVE_DIS = new WhiteboardRef("move_dis", TFObjType.INT, TFWhiteboards.LOCAL);
 		
@@ -49,24 +46,6 @@ public class OnryojiTree
 			super.build();
 			
 			register(NEAREST_PLAYER, (mob) -> new WhiteboardObjEntity(mob.getWorld().getClosestPlayer(mob.getX(), mob.getY(), mob.getZ(), 32D, true)));
-			register(ALTITUDE, (mob) ->
-			{
-				if(mob.isOnGround())
-					return new WhiteboardObj.Int(0);
-				
-				BlockPos pos = mob.getBlockPos();
-				if(pos.getY() > 256)
-					pos = new BlockPos(pos.getX(), 256, pos.getZ());
-				
-				int altitude = 0;
-				while(pos.getY() > -64 && mob.getWorld().getBlockState(pos.down()).isAir())
-				{
-					altitude++;
-					pos = pos.down();
-				}
-				
-				return new WhiteboardObj.Int(altitude);
-			});
 			
 			register(MOVE_POS, (mob) -> new WhiteboardObjBlock(mob.getBlockPos()));
 			register(MOVE_DIS, (mob) -> new WhiteboardObj.Int(0));
@@ -92,7 +71,7 @@ public class OnryojiTree
 				.child(LeafMisc.WAIT.create())
 				.child(ControlFlowMisc.SELECTOR.create()
 					.child(LeafSpecial.ONRYOJI_OFUDA.create())
-//					.child(LeafSpecial.ONRYOJI_BALANCE.create())
+					.child(LeafSpecial.ONRYOJI_BALANCE.create())
 					.child(LeafSpecial.ONRYOJI_FOXFIRE.create())
 					.child(LeafSpecial.ONRYOJI_SECLUSION.create())
 					.child(LeafSpecial.ONRYOJI_COMMANDERS.create())
@@ -140,12 +119,12 @@ public class OnryojiTree
 	{
 		return ControlFlowMisc.SELECTOR.create().named(Text.literal("Altitude management"))
 				.child(ControlFlowMisc.SEQUENCE.create().named(Text.literal("Descent")).discrete()
-					.child(ControlFlowMisc.REACTIVE.create().named(Text.literal("Higher than 5 blocks"))
+					.child(ControlFlowMisc.REACTIVE.create().named(Text.literal("Higher than 4 blocks"))
 						.child(ConditionWhiteboard.GREATER_THAN.create(Map.of(
-							CommonVariables.VAR_A, new WhiteboardValue(OnryojiWhiteboard.ALTITUDE), 
-							CommonVariables.VAR_B, new StaticValue(new WhiteboardObj.Int(5)))))
+							CommonVariables.VAR_A, new WhiteboardValue(LocalWhiteboard.ALTITUDE), 
+							CommonVariables.VAR_B, new StaticValue(new WhiteboardObj.Int(4)))))
 						.child(LeafArithmetic.ADD.create(Map.of(
-							CommonVariables.VAR_A, new WhiteboardValue(OnryojiWhiteboard.ALTITUDE),
+							CommonVariables.VAR_A, new WhiteboardValue(LocalWhiteboard.ALTITUDE),
 							CommonVariables.VAR_B, new StaticValue(new WhiteboardObj.Int(4)),
 							CommonVariables.SUBTRACT, new StaticValue(new WhiteboardObj.Bool(true)),
 							GetterHandlerUntyped.makeOutput(TFObjType.INT, TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_DIS))).silent())
@@ -163,11 +142,11 @@ public class OnryojiTree
 				.child(ControlFlowMisc.SEQUENCE.create().named(Text.literal("Ascent")).discrete()
 					.child(ControlFlowMisc.REACTIVE.create().named(Text.literal("Lower than 3 blocks"))
 						.child(ConditionWhiteboard.LESS_THAN.create(Map.of(
-							CommonVariables.VAR_A, new WhiteboardValue(OnryojiWhiteboard.ALTITUDE), 
+							CommonVariables.VAR_A, new WhiteboardValue(LocalWhiteboard.ALTITUDE), 
 							CommonVariables.VAR_B, new StaticValue(new WhiteboardObj.Int(3)))))
 						.child(LeafArithmetic.ADD.create(Map.of(
 							CommonVariables.VAR_A, new StaticValue(new WhiteboardObj.Int(4)),
-							CommonVariables.VAR_B, new WhiteboardValue(OnryojiWhiteboard.ALTITUDE),
+							CommonVariables.VAR_B, new WhiteboardValue(LocalWhiteboard.ALTITUDE),
 							CommonVariables.SUBTRACT, new StaticValue(new WhiteboardObj.Bool(true)),
 							new WhiteboardRef("target_reference", TFObjType.INT), new WhiteboardValue(OnryojiWhiteboard.MOVE_DIS))).silent())
 						.child(ConditionWhiteboard.GREATER_THAN.create(Map.of(

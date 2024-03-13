@@ -86,7 +86,7 @@ public class ConditionMisc extends NodeGroupCondition
 			{
 				// Value A - mandatory
 				IWhiteboardObject<BlockPos> objPosA = getOrDefault(CommonVariables.VAR_POS_A, parent, whiteboards).as(TFObjType.BLOCK);
-				BlockPos posA = objPosA.as(TFObjType.BLOCK).get();
+				BlockPos posA = objPosA.get();
 				
 				// Value B - optional, defaults to mob's position
 				BlockPos posB;

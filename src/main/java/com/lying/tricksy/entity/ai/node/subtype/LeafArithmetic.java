@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.jetbrains.annotations.NotNull;
+
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
@@ -54,25 +56,34 @@ public class LeafArithmetic extends NodeGroupLeaf
 				set.put(CommonVariables.SUBTRACT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
 			}
 			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				return !(getOrDefault(CommonVariables.VAR_A, parent, whiteboards).isEmpty() || getOrDefault(CommonVariables.VAR_B, parent, whiteboards).isEmpty());
+			}
+			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				IWhiteboardObject<?> intA = getOrDefault(CommonVariables.VAR_A, parent, whiteboards);
 				IWhiteboardObject<?> intB = getOrDefault(CommonVariables.VAR_B, parent, whiteboards);
 				int mul = getOrDefault(CommonVariables.SUBTRACT, parent, whiteboards).as(TFObjType.BOOL).get() ? -1 : 1;
 				
+				if(intB.type().castableTo(intA.type()))
+				{
+					// Add two integers
+					if(intA.type() == TFObjType.INT)
+						return new WhiteboardObj.Int(intA.as(TFObjType.INT).get() + (intB.as(TFObjType.INT).get() * mul));
+					
+					// Add two positions
+					if(intA.type() == TFObjType.BLOCK)
+						return new WhiteboardObjBlock(intA.as(TFObjType.BLOCK).get().add(intB.as(TFObjType.BLOCK).get().multiply(mul)));
+				}
 				// Add an integer to all coordinates of a position
-				if(intA.type() != intB.type())
+				else
 				{
 					int num = (intA.type() == TFObjType.INT ? intA.as(TFObjType.INT).get() : intB.as(TFObjType.INT).get()) * mul;
-					IWhiteboardObject<BlockPos> pos = intA.type() == TFObjType.BLOCK ? intA.as(TFObjType.BLOCK) : intB.as(TFObjType.BLOCK);
-					return new WhiteboardObjBlock(pos.get().add(num, num, num), ((WhiteboardObjBlock)pos).direction());
+					WhiteboardObjBlock pos = (WhiteboardObjBlock)(intA.type() == TFObjType.BLOCK ? intA.as(TFObjType.BLOCK) : intB.as(TFObjType.BLOCK));
+					return new WhiteboardObjBlock(pos.get().add(num, num, num), pos.direction());
 				}
-				// Add two integers
-				else if(intA.type() == TFObjType.INT)
-					return new WhiteboardObj.Int(intA.as(TFObjType.INT).get() + (intB.as(TFObjType.INT).get() * mul));
-				// Add two positions
-				else if(intA.type() == TFObjType.BLOCK)
-					return new WhiteboardObjBlock(intA.as(TFObjType.BLOCK).get().add(intB.as(TFObjType.BLOCK).get().multiply(mul)));
 				
 				parent.logStatus(TFNodeStatus.INPUT_ERROR);
 				return null;
@@ -87,6 +98,11 @@ public class LeafArithmetic extends NodeGroupLeaf
 				set.put(CommonVariables.VAR_A, NUM_OR_POS);
 				set.put(CommonVariables.VAR_B, NodeInput.makeInput(ref -> ref.type().castableTo(TFObjType.INT) || ref.type().castableTo(TFObjType.BLOCK)));
 				set.put(DIV, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				return !(getOrDefault(CommonVariables.VAR_A, parent, whiteboards).isEmpty() || getOrDefault(CommonVariables.VAR_B, parent, whiteboards).isEmpty());
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
@@ -133,6 +149,11 @@ public class LeafArithmetic extends NodeGroupLeaf
 				set.put(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(4), Text.literal("4")));
 			}
 			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				return !getOrDefault(CommonVariables.VAR_A, parent, whiteboards).isEmpty();
+			}
+			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
 				int intA = getOrDefault(CommonVariables.VAR_A, parent, whiteboards).as(TFObjType.INT).get();
@@ -146,6 +167,11 @@ public class LeafArithmetic extends NodeGroupLeaf
 			{
 				set.put(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, true)));
 				set.put(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(0), Text.literal("0")));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				return !getOrDefault(CommonVariables.VAR_A, parent, whiteboards).isEmpty();
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
@@ -179,6 +205,11 @@ public class LeafArithmetic extends NodeGroupLeaf
 				set.put(CommonVariables.VAR_A, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, false)));
 				set.put(CommonVariables.VAR_B, NodeInput.makeInput(NodeInput.ofType(TFObjType.BLOCK, true), new WhiteboardObjBlock(BlockPos.ORIGIN, Direction.NORTH), ConstantsWhiteboard.DIRECTIONS.get(Direction.NORTH).displayName()));
 				set.put(CommonVariables.VAR_NUM, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, true), new WhiteboardObj.Int(1), Text.literal("1")));
+			}
+			
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
+			{
+				return !getOrDefault(CommonVariables.VAR_A, parent, whiteboards).isEmpty();
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)

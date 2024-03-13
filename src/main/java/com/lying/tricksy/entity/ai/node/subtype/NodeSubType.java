@@ -81,13 +81,16 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public final NodePhase getPhase(int ticksRunning)
 	{
-		switch((int)Math.signum(ticksRunning - tickFunc.castingTime()))
-		{
-			case -1:	return NodePhase.CASTING;
-			case 0:		return NodePhase.CAST;
-			default:
-			case 1:		 return NodePhase.TICK;
-		}
+		if(tickFunc.castingTime() > 0)
+			switch((int)Math.signum(ticksRunning - tickFunc.castingTime()))
+			{
+				case -1:	return NodePhase.CASTING;
+				case 0:		return NodePhase.CAST;
+				default:
+				case 1:		 return NodePhase.TICK;
+			}
+		else
+			return ticksRunning > 0 ? NodePhase.TICK : NodePhase.CAST;
 	}
 	
 	public boolean shouldCooldown(int ticksRunning, NodePhase phase, Result latestResult) { return tickFunc.cooldownBehaviour().apply(ticksRunning, phase, latestResult); }
@@ -108,7 +111,7 @@ public class NodeSubType<M extends TreeNode<?>>
 		
 		if(!parent.isRunning() && !tickFunc.validityCheck(tricksy, whiteboards, parent))
 			return Result.FAILURE;
-		else if(tickFunc.castingTime() > 0)
+		else
 			switch(getPhase(parent.ticksRunning()))
 			{
 				case CASTING:
@@ -122,10 +125,6 @@ public class NodeSubType<M extends TreeNode<?>>
 				default:
 					return tickFunc.onTick(tricksy, whiteboards, parent, parent.ticksRunning() - tickFunc.castingTime());
 			}
-		else
-			return getPhase(parent.ticksRunning()) == NodePhase.CAST ?
-					tickFunc.onCast(tricksy, whiteboards, parent) :
-					tickFunc.onTick(tricksy, whiteboards, parent, parent.ticksRunning() - tickFunc.castingTime());
 	}
 	
 	/** Performs any end-of-behaviour cleanup */

@@ -59,7 +59,7 @@ public abstract class WhiteboardObj<T, G extends NbtElement> extends WhiteboardO
 		}
 		
 		protected NbtInt valueToNbt(Integer val) { return NbtInt.of(val); }
-		protected Integer valueFromNbt(NbtInt nbt) { return nbt.intValue(); }
+		protected Integer valueFromNbt(NbtInt nbt) { return nbt == null ? 0 : nbt.intValue(); }
 		protected MutableText describeValue(Integer value) { return Text.literal(String.valueOf(value)); }
 	}
 	

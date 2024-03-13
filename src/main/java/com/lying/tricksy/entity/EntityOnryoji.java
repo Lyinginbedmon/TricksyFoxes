@@ -42,7 +42,7 @@ import net.minecraft.world.World;
 
 public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOnryoji>, IAnimatedBiped
 {
-    public static final TrackedData<Integer> ANIMATING = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
+	public static final TrackedData<Integer> ANIMATING = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
 	public static final TrackedData<NbtCompound> LOG_NBT = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	public static final TrackedData<NbtCompound> TREE_NBT = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.NBT_COMPOUND);
 	public static final TrackedData<EntityPose> TREE_POSE = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.ENTITY_POSE);
@@ -69,7 +69,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	{
 		super(entityType, world);
 		animations.start(0, this.age);
-		this.moveControl = new FlightMoveControl(this, 20, true);	// FIXME Replace move control with direct travel
+		this.moveControl = new FlightMoveControl(this, 10, true);	// FIXME Replace move control with direct travel
 	}
 	
 	public void initDataTracker()
@@ -90,7 +90,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		return HostileEntity.createHostileAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 300).add(EntityAttributes.GENERIC_FLYING_SPEED, 0.7f).add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64D);
 	}
 	
-	public boolean hasNoGravity() { return true; }
+	public void setNoGravity(boolean par1Bool) { super.setNoGravity(true); }
 	
 	public void fall(double heightDifference, boolean onGround, BlockState state, BlockPos landedPosition) { }
 	
@@ -98,13 +98,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	{
 		BirdNavigation birdNavigation = new BirdNavigation(this, world)
 				{
-					public boolean isValidPosition(BlockPos pos)
-					{
-						for(int i=3; i>0; i--)
-							if(!world.getBlockState(pos.down(i)).isAir())
-								return false;
-						return true;
-					}
+					public boolean isValidPosition(BlockPos pos) { return world.getFluidState(pos).isEmpty(); }
 				};
 		birdNavigation.setCanPathThroughDoors(true);
 		birdNavigation.setCanSwim(false);
@@ -220,7 +214,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		switch(this.animations.currentAnim())
 		{
 			case ANIM_IDLE:		return EnumSet.of(BipedPart.BODY, BipedPart.LEFT_ARM, BipedPart.RIGHT_ARM, BipedPart.HEAD);
-			case ANIM_OFUDA:		return EnumSet.of(BipedPart.BODY, BipedPart.LEFT_ARM, BipedPart.RIGHT_ARM);
+			case ANIM_OFUDA:	return EnumSet.of(BipedPart.BODY, BipedPart.LEFT_ARM, BipedPart.RIGHT_ARM);
 			case ANIM_BALANCE:
 			case ANIM_FOXFIRE:
 			case ANIM_SECLUSION:

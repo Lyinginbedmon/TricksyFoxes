@@ -27,6 +27,9 @@ public class TFRegistries
 	public static final RegistryKey<Registry<TFNodeStatus>> STATUS_KEY = RegistryKey.ofRegistry(new Identifier(Reference.ModInfo.MOD_ID, "node_status"));
 	public static final Registry<TFNodeStatus> STATUS_REGISTRY = FabricRegistryBuilder.createSimple(STATUS_KEY).buildAndRegister();
 	
+	public static final RegistryKey<Registry<TFSpecialVisual>> VISUAL_KEY = RegistryKey.ofRegistry(new Identifier(Reference.ModInfo.MOD_ID, "special_visual"));
+	public static final Registry<TFSpecialVisual> VISUAL_REGISTRY = FabricRegistryBuilder.createSimple(VISUAL_KEY).buildAndRegister();
+	
 	public static void init()
 	{
 		TFAccomplishments.init();
@@ -34,5 +37,6 @@ public class TFRegistries
 		TFObjType.init();
 		TFNodeTypes.init();
 		TFNodeStatus.init();
+		TFSpecialVisual.init();
 	}
 }

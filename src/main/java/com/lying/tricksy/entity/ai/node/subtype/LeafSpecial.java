@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,11 +44,12 @@ import com.lying.tricksy.init.TFEntityTypes;
 import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.init.TFObjType;
-import com.lying.tricksy.init.TFParticles;
 import com.lying.tricksy.init.TFSoundEvents;
+import com.lying.tricksy.init.TFSpecialVisual;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.CandlePowers;
 import com.lying.tricksy.utility.Howls;
+import com.lying.tricksy.utility.SpecialVisuals;
 import com.lying.tricksy.utility.fakeplayer.ServerFakePlayer;
 
 import net.minecraft.block.BlockState;
@@ -109,7 +111,7 @@ public class LeafSpecial extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> WOLF_BLESS;
 	public static NodeSubType<LeafNode> WOLF_HOWL;
 	
-	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;	// TODO Needs casting animation & affected visuals
+	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;	// TODO Needs affected visuals
 	public static NodeSubType<LeafNode> ONRYOJI_OFUDA;		// TODO Needs finalised ammo visuals
 	public static NodeSubType<LeafNode> ONRYOJI_FOXFIRE;
 	public static NodeSubType<LeafNode> ONRYOJI_SECLUSION;
@@ -258,7 +260,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				return list;
 			}
 		});
-		set.add(ONRYOJI_BALANCE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_balance"), TFNodeTypes.LEAF, leafOnryojiBalance(), ConstantIntProvider.create(Reference.Values.TICKS_PER_MINUTE))
+		set.add(ONRYOJI_BALANCE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_balance"), TFNodeTypes.LEAF, leafOnryojiBalance(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 5)) // FIXME Revert to 1 minute cooldown after dev
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
 		});
@@ -274,7 +276,7 @@ public class LeafSpecial extends NodeGroupLeaf
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
 		});
-		set.add(ONRYOJI_COMMANDERS = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_commanders"), TFNodeTypes.LEAF, leafOnryojiCommanders(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 5))
+		set.add(ONRYOJI_COMMANDERS = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_commanders"), TFNodeTypes.LEAF, leafOnryojiCommanders(), ConstantIntProvider.create(Reference.Values.TICKS_PER_MINUTE))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
 		});
@@ -952,20 +954,9 @@ public class LeafSpecial extends NodeGroupLeaf
 				LivingEntity ent = (LivingEntity)getOrDefault(TARGET, parent, whiteboards).as(TFObjType.ENT).get();
 				ent.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1), tricksy);
 				
-				ServerWorld world = (ServerWorld)tricksy.getWorld();
 				Random rand = tricksy.getRandom();
-				Vec3d pos = ent.getPos().add(0D, ent.getHeight() * 0.5D, 0);
-				double radius = ent.getWidth();
 				parent.playSound(ent, TFSoundEvents.TRICKSY_ENLIGHTENED, 0.5F, 0.75F + rand.nextFloat() * 0.25F);
-				
-				// FIXME Ensure particles spawn client-side
-				for(int i=6; i>0; i--)
-				{
-					Vec3d offset = new Vec3d(rand.nextDouble() - 0.5D, rand.nextDouble() - 0.5D, rand.nextDouble() - 0.5D).normalize();
-					Vec3d point = pos.add(offset.multiply(radius));
-					world.spawnParticles(TFParticles.ENERGY, point.getX(), point.getY(), point.getZ(), 1, 252, 248, 205, 1D);
-					world.spawnParticles(ParticleTypes.CLOUD, point.getX(), point.getY(), point.getZ(), 1, 0, 0, 0, 0.1D);
-				}
+				SpecialVisuals.getVisuals((ServerWorld)tricksy.getWorld()).addVisual(ent, TFSpecialVisual.WOLF_BLESS, Reference.Values.TICKS_PER_SECOND);
 				
 				tricksy.getLookControl().lookAt(ent);
 				return Result.RUNNING;
@@ -1025,14 +1016,15 @@ public class LeafSpecial extends NodeGroupLeaf
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
+			private static final Predicate<Entity> VIABLE_TARGET = EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR.and(EntityPredicates.VALID_ENTITY).and((entity) -> entity != null && entity instanceof LivingEntity && ((LivingEntity)entity).getHealth() >= 1F);
+			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.MOVE, ActionFlag.HANDS); }
 			
-			public int castingTime() { return Reference.Values.TICKS_PER_SECOND; }
+			public int castingTime() { return Reference.Values.TICKS_PER_SECOND * 2; }
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				List<LivingEntity> mobs = tricksy.getWorld().getEntitiesByClass(LivingEntity.class, tricksy.getBoundingBox().expand(16D), EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR);
-				mobs.removeIf(living -> !living.isAlive() || living.getHealth() < 1F);
+				List<LivingEntity> mobs = tricksy.getWorld().getEntitiesByClass(LivingEntity.class, tricksy.getBoundingBox().expand(16D), VIABLE_TARGET);
 				return mobs.size() >= 2;
 			}
 			
@@ -1040,31 +1032,58 @@ public class LeafSpecial extends NodeGroupLeaf
 			{
 				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
 					((EntityOnryoji)tricksy).setAnimationBalance();
+				
+				if(tick == 0)
+				{
+					List<LivingEntity> mobs = tricksy.getWorld().getEntitiesByClass(LivingEntity.class, tricksy.getBoundingBox().expand(16D), VIABLE_TARGET);
+					LivingEntity mobA, mobB;
+					switch(mobs.size())
+					{
+						case 2:
+							mobA = tricksy;
+							mobs.remove(tricksy);
+							mobB = mobs.get(0);
+							
+							// Never balance with self if we'd lose health in the exchange
+							if(tricksy.getHealth() >= mobB.getHealth())
+								return Result.FAILURE;
+							break;
+						default:
+							mobs.remove(tricksy);
+							mobs.sort((a,b) -> a.getHealth() < b.getHealth() ? -1 : a.getHealth() > b.getHealth() ? 1 : 0);
+							mobA = mobs.get(0);
+							mobB = mobs.get(mobs.size() - 1);
+					}
+					
+					parent.nodeRAM.putUuid("MobA", mobA.getUuid());
+					parent.nodeRAM.putUuid("MobB", mobB.getUuid());
+					
+					SpecialVisuals visuals = SpecialVisuals.getVisuals((ServerWorld)tricksy.getWorld());
+					visuals.addVisual(mobA, TFSpecialVisual.ONRYOJI_BALANCE, castingTime());
+					visuals.addVisual(mobB, TFSpecialVisual.ONRYOJI_BALANCE, castingTime());
+				}
+				else
+				{
+					Pair<LivingEntity, LivingEntity> targets = getTargets(tricksy, tricksy.getWorld(), parent.nodeRAM);
+					LivingEntity mobA = targets.getLeft(), mobB = targets.getRight();
+					if(!VIABLE_TARGET.test(mobA) || !VIABLE_TARGET.test(mobB))
+					{
+						parent.logStatus(TFNodeStatus.BAD_RESULT);
+						return Result.FAILURE;
+					}
+				}
+				
 				return Result.RUNNING;
 			}
 			
-			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				List<LivingEntity> mobs = tricksy.getWorld().getEntitiesByClass(LivingEntity.class, tricksy.getBoundingBox().expand(16D), EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR);
-				mobs.removeIf(living -> !living.isAlive() || living.getHealth() < 1F);
-				
-				LivingEntity mobA, mobB;
-				switch(mobs.size())
+				Pair<LivingEntity, LivingEntity> targets = getTargets(tricksy, tricksy.getWorld(), parent.nodeRAM);
+				LivingEntity mobA = targets.getLeft(), mobB = targets.getRight();
+				if(!VIABLE_TARGET.test(mobA) || !VIABLE_TARGET.test(mobB))
 				{
-					case 2:
-						mobA = tricksy;
-						mobs.remove(tricksy);
-						mobB = mobs.get(0);
-						
-						// Never balance with self if we'd lose health in the exchange
-						if(tricksy.getHealth() >= mobB.getHealth())
-							return Result.FAILURE;
-						break;
-					default:
-						mobs.remove(tricksy);
-						mobs.sort((a,b) -> a.getHealth() < b.getHealth() ? -1 : a.getHealth() > b.getHealth() ? 1 : 0);
-						mobA = mobs.get(0);
-						mobB = mobs.get(mobs.size() - 1);
+					parent.logStatus(TFNodeStatus.BAD_RESULT);
+					return Result.FAILURE;
 				}
 				
 				int dif = Math.abs((int)mobA.getHealth() - (int)mobB.getHealth());
@@ -1088,6 +1107,17 @@ public class LeafSpecial extends NodeGroupLeaf
 			{
 				if(tricksy.getType() == TFEntityTypes.ONRYOJI)
 					((EntityOnryoji)tricksy).clearAnimation();
+			}
+			
+			public static Pair<LivingEntity, LivingEntity> getTargets(LivingEntity tricksy, World world, NbtCompound nodeRam)
+			{
+				LivingEntity mobA = null, mobB = null;
+				for(LivingEntity mob : tricksy.getWorld().getEntitiesByClass(LivingEntity.class, tricksy.getBoundingBox().expand(60D), VIABLE_TARGET))
+					if(mob.getUuid().equals(nodeRam.getUuid("MobA")))
+						mobA = mob;
+					else if(mob.getUuid().equals(nodeRam.getUuid("MobB")))
+						mobB = mob;
+				return Pair.of(mobA, mobB);
 			}
 		};
 	}
@@ -1354,7 +1384,7 @@ public class LeafSpecial extends NodeGroupLeaf
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				return getField(tricksy) == null;// && tricksy.getHealth() <= (tricksy.getMaxHealth() * 0.8F);
+				return getField(tricksy) == null && tricksy.getHealth() <= (tricksy.getMaxHealth() * 0.8F);
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doCasting(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
