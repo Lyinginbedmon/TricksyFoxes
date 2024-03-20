@@ -1,7 +1,9 @@
 package com.lying.tricksy.component;
 
 import java.util.Collection;
+import java.util.List;
 
+import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.lying.tricksy.api.entity.ITricksyMob;
 
@@ -22,6 +24,9 @@ public interface EnlightenmentPath<T extends MobEntity, N extends PathAwareEntit
 	public boolean conditionsMet(Collection<Accomplishment> accomplishments);
 	
 	public default boolean hasReachedMastery(Collection<Accomplishment> accomplishments) { return false; }
+	
+	public default List<Accomplishment> getApprenticeAcc(){ return Lists.newArrayList(); }
+	public default List<Accomplishment> getMasterAcc(){ return Lists.newArrayList(); }
 	
 	public Identifier registryName();
 	

@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import com.lying.tricksy.component.Accomplishment;
 import com.lying.tricksy.reference.Reference;
 
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.predicate.entity.LocationPredicate;
@@ -42,11 +43,16 @@ public class TFAccomplishments
 	public static final Accomplishment INCONCEIVABLE = make("inconceivable").obfuscate();
 	public static final Accomplishment CLOUDSEEKER = make("cloudseeker").tick().condition(ON_GROUND).condition(IN_OVERWORLD).condition((mob) -> mob.getY() == World.MAX_Y);
 	public static final Accomplishment OUTSIDE_THE_BOX = make("outside_the_box").tick().condition(ON_GROUND).condition(IN_NETHER).condition((mob) -> mob.getY() >= 128);
-	public static final Accomplishment FIRETOUCHED = make("firetouched").precondition(mob -> mob.isOnFire()).condition(LOW_HEALTH).condition((mob) -> !mob.isFireImmune() && !mob.isInvulnerableTo(mob.getWorld().getDamageSources().onFire()) && !mob.hasStatusEffect(StatusEffects.FIRE_RESISTANCE));
-	public static final Accomplishment WATERBORNE = make("waterborne").precondition(mob -> mob.getAir() <= 0).condition(LOW_HEALTH).condition((mob) -> !mob.isInvulnerableTo(mob.getWorld().getDamageSources().drown()) && !mob.hasStatusEffect(StatusEffects.FIRE_RESISTANCE));
+	public static final Accomplishment FIRETOUCHED = make("firetouched").precondition(mob -> mob.isOnFire()).condition(LOW_HEALTH).condition((mob) -> !mob.isFireImmune() && !mob.isInvulnerableTo(mob.getWorld().getDamageSources().onFire()) && !hasEffect(mob, StatusEffects.FIRE_RESISTANCE));
+	public static final Accomplishment WATERBORNE = make("waterborne").precondition(mob -> mob.getAir() <= 0).condition(LOW_HEALTH).condition((mob) -> !mob.isInvulnerableTo(mob.getWorld().getDamageSources().drown()) && !hasEffect(mob, StatusEffects.FIRE_RESISTANCE));
 	public static final Accomplishment FISHERMAN = make("fisherman").condition((mob) -> mob.getMainHandStack().isIn(ItemTags.FISHES) || mob.getOffHandStack().isIn(ItemTags.FISHES));
 	public static final Accomplishment JOURNEYMAN = make("journeyman");
-	public static final Accomplishment EYES_UNCLOUDED = make("eyes_unclouded").tick().precondition(mob -> mob.hasStatusEffect(StatusEffects.BLINDNESS));
+	public static final Accomplishment EYES_UNCLOUDED = make("eyes_unclouded").tick().precondition(mob -> hasEffect(mob, StatusEffects.BLINDNESS));
+	
+	private static boolean hasEffect(MobEntity mob, StatusEffect effect)
+	{
+		return mob.hasStatusEffect(effect) && mob.getStatusEffect(effect).getDuration() > 0;
+	}
 	
 	/** Returns a set of all registered accomplishments that need to be checked every tick */
 	public static final Collection<Accomplishment> ticking()

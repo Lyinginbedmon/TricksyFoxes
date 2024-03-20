@@ -6,6 +6,7 @@ import com.lying.tricksy.renderer.OrderOverlay;
 import com.lying.tricksy.renderer.layer.FoxPeriaptLayer;
 import com.lying.tricksy.renderer.layer.GoatPeriaptLayer;
 import com.lying.tricksy.renderer.layer.SpecialVisualsLayer;
+import com.lying.tricksy.renderer.layer.WolfPeriaptLayer;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -16,10 +17,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.model.FoxEntityModel;
 import net.minecraft.client.render.entity.model.GoatEntityModel;
+import net.minecraft.client.render.entity.model.WolfEntityModel;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.entity.passive.GoatEntity;
+import net.minecraft.entity.passive.WolfEntity;
 
 public class ClientBus
 {
@@ -50,9 +53,10 @@ public class ClientBus
 				registrationHelper.register(new FoxPeriaptLayer((FeatureRendererContext<FoxEntity, FoxEntityModel<FoxEntity>>)entityRenderer));
 			else if(entityType == EntityType.GOAT)
 				registrationHelper.register(new GoatPeriaptLayer((FeatureRendererContext<GoatEntity, GoatEntityModel<GoatEntity>>)entityRenderer));
-			// FIXME Implement wolf periapt layer
+			else if(entityType == EntityType.WOLF)
+				registrationHelper.register(new WolfPeriaptLayer((FeatureRendererContext<WolfEntity, WolfEntityModel<WolfEntity>>)entityRenderer));
 			
-			if(entityType.getBaseClass().isAssignableFrom(LivingEntity.class))
+			if(entityType.getBaseClass().isAssignableFrom(MobEntity.class))
 				registrationHelper.register(new SpecialVisualsLayer<>(entityRenderer));
 		});
 		

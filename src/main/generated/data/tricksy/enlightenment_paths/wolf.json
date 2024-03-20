@@ -3,5 +3,9 @@
     "tricksy:scholar",
     "tricksy:archaeologist"
   ],
-  "EntityType": "minecraft:wolf"
+  "EntityType": "minecraft:wolf",
+  "Mastery": [
+    "tricksy:visit_end",
+    "tricksy:squire"
+  ]
 }

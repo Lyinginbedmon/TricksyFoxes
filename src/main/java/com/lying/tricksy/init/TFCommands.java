@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.component.Accomplishment;
+import com.lying.tricksy.component.EnlightenmentPath;
 import com.lying.tricksy.component.TricksyComponent;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.TricksyUtils;
@@ -28,6 +29,7 @@ import net.minecraft.text.Text;
 public class TFCommands
 {
 	private static final Text GENERIC_FAIL = Text.translatable("command."+Reference.ModInfo.MOD_ID+".failed");
+	private static final String ENL_SLUG = "command."+Reference.ModInfo.MOD_ID+".enlighten";
 	private static final String ACC_SLUG = "command."+Reference.ModInfo.MOD_ID+".accomplishments";
 	
 	private static final SimpleCommandExceptionType REVOKE_FAILED = new SimpleCommandExceptionType(Text.translatable(ACC_SLUG+".revoke.failed"));
@@ -42,14 +44,16 @@ public class TFCommands
 			dispatcher.register(literal(Reference.ModInfo.MOD_ID).requires(source -> source.hasPermissionLevel(2))
 					.then(literal("enlighten")
 						.then(argument("targets", EntityArgumentType.entities())
-						.executes(context ->
-						{
-							int tally = 0;
-							for(Entity ent : EntityArgumentType.getEntities(context, "targets"))
-								if(tryToEnlighten(ent, context.getSource()))
-									tally++;
-							return Math.min(15, tally);
-						})))
+							.executes(context ->
+							{
+								int tally = 0;
+								for(Entity ent : EntityArgumentType.getEntities(context, "targets"))
+									if(tryToEnlighten(ent, context.getSource()))
+										tally++;
+								return Math.min(15, tally);
+							})
+						.then(literal("requirements")
+							.executes(context -> tryGetPath(EntityArgumentType.getEntity(context, "targets"), context.getSource())))))
 					.then(literal("accomplishments")
 						.then(literal("list")
 							.executes(context -> listAccomplishments(context.getSource())))
@@ -83,10 +87,39 @@ public class TFCommands
 		}
 		catch(Exception e) { }
 		if(!result)
-			throw (new SimpleCommandExceptionType(Text.translatable("command."+Reference.ModInfo.MOD_ID+".enlighten.failed", ent.getDisplayName()))).create();
-		Text message = Text.translatable("command."+Reference.ModInfo.MOD_ID+".enlighten.success", ent.getDisplayName());
+			throw (new SimpleCommandExceptionType(Text.translatable(ENL_SLUG+".failed", ent.getDisplayName()))).create();
+		Text message = Text.translatable(ENL_SLUG+".success", ent.getDisplayName());
 		source.sendFeedback(() -> message, true);
 		return result;
+	}
+	
+	private static int tryGetPath(Entity ent, ServerCommandSource source) throws CommandSyntaxException
+	{
+		List<Accomplishment> setApprentice = Lists.newArrayList();
+		List<Accomplishment> setMaster = Lists.newArrayList();
+		try
+		{
+			TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(ent);
+			EnlightenmentPath<?,?> path = comp.getPath();
+			setApprentice.addAll(path.getApprenticeAcc());
+			setMaster.addAll(path.getMasterAcc());
+		}
+		catch(Exception e) { source.sendFeedback(() -> GENERIC_FAIL, true); return 0; }
+		if(setApprentice.isEmpty() && setMaster.isEmpty())
+			throw (new SimpleCommandExceptionType(Text.translatable(ENL_SLUG+".requirements.failed", ent.getDisplayName()))).create();
+		else
+		{
+			if(!setApprentice.isEmpty())
+				source.sendFeedback(() -> Text.translatable(ENL_SLUG+".requirements.apprentice.success", ent.getDisplayName(), listToText(setApprentice)), true);
+			else
+				source.sendFeedback(() -> Text.translatable(ENL_SLUG+".requirements.apprentice.failed", ent.getDisplayName()), true);
+			
+			if(!setMaster.isEmpty())
+				source.sendFeedback(() -> Text.translatable(ENL_SLUG+".requirements.master.success", ent.getDisplayName(), listToText(setMaster)), true);
+			else
+				source.sendFeedback(() -> Text.translatable(ENL_SLUG+".requirements.master.failed", ent.getDisplayName()), true);
+		}
+		return 1;
 	}
 	
 	private static int listAccomplishments(ServerCommandSource source)

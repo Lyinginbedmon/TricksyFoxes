@@ -12,6 +12,7 @@ import com.lying.tricksy.model.entity.ModelTricksyGoatSleeping;
 import com.lying.tricksy.model.entity.ModelTricksyWolfMain;
 import com.lying.tricksy.model.layer.ModelFoxPeriapt;
 import com.lying.tricksy.model.layer.ModelGoatPeriapt;
+import com.lying.tricksy.model.layer.ModelWolfPeriapt;
 import com.lying.tricksy.reference.Reference;
 
 import net.fabricmc.api.EnvType;
@@ -26,6 +27,7 @@ public class TFModelParts
 {
 	public static final EntityModelLayer PERIAPT_FOX	= ofName("fox_periapt", "main");
 	public static final EntityModelLayer PERIAPT_GOAT	= ofName("goat_periapt", "main");
+	public static final EntityModelLayer PERIAPT_WOLF	= ofName("wolf_periapt", "main");
 	
 	public static final EntityModelLayer TRICKSY_FOX					= ofName("tricksy_fox", "main");
 	public static final EntityModelLayer TRICKSY_FOX_MASK				= ofName("tricksy_fox", "mask");
@@ -85,6 +87,7 @@ public class TFModelParts
 		register(TFModelParts.SAGE_HAT, ModelSageHat::getTexturedModelData);
 		register(TFModelParts.PERIAPT_FOX, ModelFoxPeriapt::getTexturedModelData);
 		register(TFModelParts.PERIAPT_GOAT, ModelGoatPeriapt::getTexturedModelData);
+		register(TFModelParts.PERIAPT_WOLF, ModelWolfPeriapt::getTexturedModelData);
 		
 		register(TFModelParts.CLOCKWORK_FRIAR, ModelClockworkFriar::getTexturedModelData);
 	}

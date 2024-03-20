@@ -1,2 +1,4 @@
-// 1.20.1	2024-02-07T05:27:12.6571302	Tricksy Foxes/Tricksy Foxes damage type tags
+// 1.20.1	2024-03-19T23:47:57.2818517	Tricksy Foxes/Tricksy Foxes damage type tags
 3b00db91ac09e2664b5909d7420f050ebe3a158d data\minecraft\tags\damage_type\bypasses_cooldown.json
+3b00db91ac09e2664b5909d7420f050ebe3a158d data\minecraft\tags\damage_type\witch_resistant_to.json
+3b00db91ac09e2664b5909d7420f050ebe3a158d data\minecraft\tags\damage_type\bypasses_armor.json

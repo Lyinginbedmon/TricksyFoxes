@@ -170,6 +170,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		
 		targets.addAll(world.getEntitiesByType(EntityType.PLAYER, bounds, EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)));
 		targets.addAll(world.getEntitiesByType(EntityType.VILLAGER, bounds, EntityPredicates.VALID_ENTITY));
+		targets.addAll(world.getEntitiesByType(EntityType.PIG, bounds, EntityPredicates.VALID_ENTITY));
 		
 		if(!ignore.isEmpty())
 			targets.removeIf(ent -> ignore.contains(ent));

@@ -3,5 +3,9 @@
     "tricksy:cloudseeker",
     "tricksy:journeyman"
   ],
-  "EntityType": "minecraft:goat"
+  "EntityType": "minecraft:goat",
+  "Mastery": [
+    "tricksy:outside_the_box",
+    "tricksy:eyes_unclouded"
+  ]
 }

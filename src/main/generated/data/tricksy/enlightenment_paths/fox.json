@@ -1,6 +1,11 @@
 {
   "Accomplishments": [
-    "tricksy:fisherman"
+    "tricksy:visit_nether",
+    "tricksy:visit_overworld"
   ],
-  "EntityType": "minecraft:fox"
+  "EntityType": "minecraft:fox",
+  "Mastery": [
+    "tricksy:visit_end",
+    "tricksy:journeyman"
+  ]
 }

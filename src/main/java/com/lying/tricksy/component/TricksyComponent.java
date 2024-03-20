@@ -2,6 +2,8 @@ package com.lying.tricksy.component;
 
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.collect.Lists;
 import com.lying.tricksy.init.TFAccomplishments;
 import com.lying.tricksy.init.TFComponents;
@@ -9,6 +11,7 @@ import com.lying.tricksy.init.TFEnlightenmentPaths;
 import com.lying.tricksy.init.TFParticles;
 import com.lying.tricksy.init.TFRegistries;
 import com.lying.tricksy.init.TFSoundEvents;
+import com.lying.tricksy.reference.Reference;
 
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
@@ -42,6 +45,8 @@ import net.minecraft.world.dimension.DimensionTypes;
  */
 public final class TricksyComponent implements ServerTickingComponent, AutoSyncedComponent
 {
+	private static final int ENLIGHTEN_TIME = Reference.Values.TICKS_PER_SECOND * 15;
+	
 	/** The mob this component is monitoring */
 	private final MobEntity theMob;
 	
@@ -211,16 +216,24 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 			case NASCENT:
 				if(isEnlightening())
 				{
-					if(enlightening > 0)
-						--enlightening;
-					else if(enlightening == 0)
-						enlighten();
+					switch((int)Math.signum(enlightening))
+					{
+						case 1:
+							--enlightening;
+							break;
+						case 0:
+							if(!enlighten())
+								enlightening = Reference.Values.TICKS_PER_SECOND;
+							break;
+						case -1:
+							break;
+					}
 				}
 				else if(getPath().conditionsMet(accomplishments))
 				{
-					theMob.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 300, 0));
+					theMob.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, ENLIGHTEN_TIME, 0));
 					if(!theMob.hasPortalCooldown())
-						enlightening = 300;
+						enlightening = ENLIGHTEN_TIME;
 				}
 				break;
 			case APPRENTICE:
@@ -233,9 +246,19 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 		}
 	}
 	
+	@Nullable
 	public EnlightenmentPath<?, ?> getPath()
 	{
-		return pathID != null ? TFEnlightenmentPaths.INSTANCE.getPath(pathID) : TFEnlightenmentPaths.INSTANCE.getPath(theMob.getType());
+		if(pathID != null)
+			return TFEnlightenmentPaths.INSTANCE.getPath(pathID);
+		else
+		{
+			EnlightenmentPath<?, ?> byType = TFEnlightenmentPaths.INSTANCE.getPathFrom(theMob.getType());
+			if(byType != null)
+				return byType;
+			else
+				return TFEnlightenmentPaths.INSTANCE.getPathTo(theMob.getType());
+		}
 	}
 	
 	public void changeFromNether(BlockPos position, RegistryKey<DimensionType> dim)
@@ -271,6 +294,7 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 				EnlightenmentPath<?,?> pathTaken = getPath();
 				if(pathTaken.resultType() == theMob.getType())
 				{
+					setRanking(Rank.APPRENTICE);
 					setPathTaken(pathTaken.registryName());
 					doEnlightenmentFanfare(world, theMob, theMob.getRandom());
 					return true;
@@ -285,15 +309,19 @@ public final class TricksyComponent implements ServerTickingComponent, AutoSynce
 				TFComponents.TRICKSY_TRACKING.get(tricksy).setRanking(Rank.APPRENTICE);
 				TFComponents.TRICKSY_TRACKING.get(tricksy).setPathTaken(pathTaken.registryName());
 				
-				// FIXME Implement proper bounding box check before enlightening
-				if(!world.isClient())
+				if(world.isSpaceEmpty(tricksy.getType().createSimpleBoundingBox(tricksy.getX(), tricksy.getY(), tricksy.getZ())))
 				{
-					world.spawnEntity(tricksy);
-					theMob.discard();
-					
-					doEnlightenmentFanfare(world, tricksy, tricksy.getRandom());
+					if(!world.isClient())
+					{
+						world.spawnEntity(tricksy);
+						theMob.discard();
+						
+						doEnlightenmentFanfare(world, tricksy, tricksy.getRandom());
+					}
+					return true;
 				}
-				return true;
+				else
+					return false;
 			case MASTER:
 			default:
 				return false;

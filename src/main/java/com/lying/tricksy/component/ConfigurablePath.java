@@ -28,6 +28,15 @@ public abstract class ConfigurablePath<T extends MobEntity, N extends PathAwareE
 				stepsApprentice.add(step);
 	}
 	
+	public ConfigurablePath<T,N> setMastery(Accomplishment... stepsIn)
+	{
+		stepsMaster.clear();
+		for(Accomplishment step : stepsIn)
+			if(!stepsMaster.contains(step))
+				stepsMaster.add(step);
+		return this;
+	}
+	
 	public Identifier registryName() { return registryName; }
 	
 	public boolean conditionsMet(Collection<Accomplishment> accomplishments) { return matchesNonEmptyList(accomplishments, this.stepsApprentice); }
@@ -38,6 +47,9 @@ public abstract class ConfigurablePath<T extends MobEntity, N extends PathAwareE
 	{
 		return !list.isEmpty() && list.stream().allMatch(acc -> accomplishments.contains(acc));
 	}
+	
+	public List<Accomplishment> getApprenticeAcc(){ return this.stepsApprentice; }
+	public List<Accomplishment> getMasterAcc(){ return this.stepsMaster; }
 	
 	public void readFromJson(JsonObject dataIn)
 	{
@@ -53,7 +65,8 @@ public abstract class ConfigurablePath<T extends MobEntity, N extends PathAwareE
 	{
 		EnlightenmentPath.super.writeToJson(obj);
 		
-		obj.add("Accomplishments", writeListToJson(this.stepsApprentice));
+		if(!this.stepsApprentice.isEmpty())
+			obj.add("Accomplishments", writeListToJson(this.stepsApprentice));
 		if(!this.stepsMaster.isEmpty())
 			obj.add("Mastery", writeListToJson(this.stepsMaster));
 		return obj;

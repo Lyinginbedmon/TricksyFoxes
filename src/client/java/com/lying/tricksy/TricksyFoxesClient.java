@@ -38,6 +38,7 @@ import com.lying.tricksy.renderer.entity.EntityTricksyFoxRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyGoatRenderer;
 import com.lying.tricksy.renderer.entity.EntityTricksyWolfRenderer;
 import com.lying.tricksy.renderer.layer.SageHatRenderer;
+import com.lying.tricksy.renderer.layer.SpecialVisualsRegistry;
 import com.lying.tricksy.screen.ClockworkFriarScreen;
 import com.lying.tricksy.screen.PrescientCandleScreen;
 import com.lying.tricksy.screen.ScriptureScreen;
@@ -106,6 +107,7 @@ public class TricksyFoxesClient implements ClientModInitializer
 		TFItemsClient.registerItemColors();
 		
 		TFItemsClient.registerModelPredicates();
+		SpecialVisualsRegistry.instance().init();
 	}
 	
 	private static void registerParticles()

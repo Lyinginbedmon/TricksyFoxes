@@ -75,7 +75,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
@@ -111,7 +110,7 @@ public class LeafSpecial extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> WOLF_BLESS;
 	public static NodeSubType<LeafNode> WOLF_HOWL;
 	
-	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;	// TODO Needs affected visuals
+	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;
 	public static NodeSubType<LeafNode> ONRYOJI_OFUDA;		// TODO Needs finalised ammo visuals
 	public static NodeSubType<LeafNode> ONRYOJI_FOXFIRE;
 	public static NodeSubType<LeafNode> ONRYOJI_SECLUSION;
@@ -260,7 +259,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				return list;
 			}
 		});
-		set.add(ONRYOJI_BALANCE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_balance"), TFNodeTypes.LEAF, leafOnryojiBalance(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 5)) // FIXME Revert to 1 minute cooldown after dev
+		set.add(ONRYOJI_BALANCE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_balance"), TFNodeTypes.LEAF, leafOnryojiBalance(), ConstantIntProvider.create(Reference.Values.TICKS_PER_MINUTE))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
 		});
@@ -604,14 +603,7 @@ public class LeafSpecial extends NodeGroupLeaf
 					tricksy.setNoDrag(true);
 					tricksy.setTreePose(EntityPose.LONG_JUMPING);
 					
-					Random rand = tricksy.getRandom();
-					for(int i=0; i<5; i++)
-					{
-						double x = rand.nextDouble() - 0.5D;
-						double z = rand.nextDouble() - 0.5D;
-						Vec3d vel = (new Vec3d(x, 0, z)).normalize();
-						((ServerWorld)tricksy.getWorld()).spawnParticles(ParticleTypes.CLOUD, start.getX(), start.getY(), start.getZ(), 1, vel.x, 0, vel.z, 0.1D);
-					}
+					SpecialVisuals.getVisuals((ServerWorld)tricksy.getWorld()).addVisual(tricksy, TFSpecialVisual.GOAT_JUMP, 1);
 					
 					Vec3d vel = new Vec3d(parent.nodeRAM.getDouble("JumpX"), parent.nodeRAM.getDouble("JumpY"), parent.nodeRAM.getDouble("JumpZ"));
 					double d = vel.length();
@@ -1016,7 +1008,11 @@ public class LeafSpecial extends NodeGroupLeaf
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
-			private static final Predicate<Entity> VIABLE_TARGET = EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR.and(EntityPredicates.VALID_ENTITY).and((entity) -> entity != null && entity instanceof LivingEntity && ((LivingEntity)entity).getHealth() >= 1F);
+			private static final Predicate<Entity> VIABLE_TARGET = 
+					EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR
+					.and(EntityPredicates.VALID_ENTITY)
+					.and(entity -> entity instanceof PathAwareEntity || entity instanceof PlayerEntity)
+					.and((entity) -> entity != null && entity instanceof LivingEntity && ((LivingEntity)entity).getHealth() >= 1F);
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.MOVE, ActionFlag.HANDS); }
 			
@@ -1039,6 +1035,8 @@ public class LeafSpecial extends NodeGroupLeaf
 					LivingEntity mobA, mobB;
 					switch(mobs.size())
 					{
+						case 1:
+							return Result.FAILURE;
 						case 2:
 							mobA = tricksy;
 							mobs.remove(tricksy);
@@ -1050,17 +1048,18 @@ public class LeafSpecial extends NodeGroupLeaf
 							break;
 						default:
 							mobs.remove(tricksy);
-							mobs.sort((a,b) -> a.getHealth() < b.getHealth() ? -1 : a.getHealth() > b.getHealth() ? 1 : 0);
+							mobs.sort((a,b) -> a.getHealth() < b.getHealth() ? -1 : a.getHealth() > b.getHealth() ? 1 : tricksy.getRandom().nextBoolean() ? -1 : 1);
 							mobA = mobs.get(0);
 							mobB = mobs.get(mobs.size() - 1);
+							break;
 					}
 					
 					parent.nodeRAM.putUuid("MobA", mobA.getUuid());
 					parent.nodeRAM.putUuid("MobB", mobB.getUuid());
 					
 					SpecialVisuals visuals = SpecialVisuals.getVisuals((ServerWorld)tricksy.getWorld());
-					visuals.addVisual(mobA, TFSpecialVisual.ONRYOJI_BALANCE, castingTime());
-					visuals.addVisual(mobB, TFSpecialVisual.ONRYOJI_BALANCE, castingTime());
+					visuals.addVisual(mobA, TFSpecialVisual.ONRYOJI_BALANCE, Reference.Values.TICKS_PER_SECOND * 3);
+					visuals.addVisual(mobB, TFSpecialVisual.ONRYOJI_BALANCE, Reference.Values.TICKS_PER_SECOND * 3);
 				}
 				else
 				{

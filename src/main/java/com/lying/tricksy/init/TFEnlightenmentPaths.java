@@ -63,35 +63,35 @@ public class TFEnlightenmentPaths implements SimpleResourceReloadListener<List<J
 				tricksy.equipStack(EquipmentSlot.OFFHAND, fox.getEquippedStack(EquipmentSlot.OFFHAND));
 				return tricksy;
 			}
-		});
+		}.setMastery(TFAccomplishments.VISIT_END, TFAccomplishments.JOURNEYMAN));
 	
 	public static final EnlightenmentPath<GoatEntity, EntityTricksyGoat> GOAT	= addEnlightenment(EntityType.GOAT, new ConfigurablePath<GoatEntity, EntityTricksyGoat>(EntityType.GOAT, TFAccomplishments.CLOUDSEEKER, TFAccomplishments.JOURNEYMAN)
+		{
+			public EntityType<EntityTricksyGoat> resultType(){ return TFEntityTypes.TRICKSY_GOAT; }
+			
+			public EntityTricksyGoat enlighten(GoatEntity goat)
 			{
-				public EntityType<EntityTricksyGoat> resultType(){ return TFEntityTypes.TRICKSY_GOAT; }
-				
-				public EntityTricksyGoat enlighten(GoatEntity goat)
-				{
-					EntityTricksyGoat tricksy = TFEntityTypes.TRICKSY_GOAT.create(goat.getEntityWorld());
-					tricksy.setHorns(goat.hasLeftHorn(), goat.hasRightHorn());
-					tricksy.setScreaming(goat.isScreaming());
-					tricksy.equipStack(EquipmentSlot.MAINHAND, goat.getEquippedStack(EquipmentSlot.MAINHAND));
-					tricksy.equipStack(EquipmentSlot.OFFHAND, goat.getEquippedStack(EquipmentSlot.OFFHAND));
-					return tricksy;
-				}
-			});
+				EntityTricksyGoat tricksy = TFEntityTypes.TRICKSY_GOAT.create(goat.getEntityWorld());
+				tricksy.setHorns(goat.hasLeftHorn(), goat.hasRightHorn());
+				tricksy.setScreaming(goat.isScreaming());
+				tricksy.equipStack(EquipmentSlot.MAINHAND, goat.getEquippedStack(EquipmentSlot.MAINHAND));
+				tricksy.equipStack(EquipmentSlot.OFFHAND, goat.getEquippedStack(EquipmentSlot.OFFHAND));
+				return tricksy;
+			}
+		}.setMastery(TFAccomplishments.OUTSIDE_THE_BOX, TFAccomplishments.EYES_UNCLOUDED));
 	
 	public static final EnlightenmentPath<WolfEntity, EntityTricksyWolf> WOLF 	= addEnlightenment(EntityType.WOLF, new ConfigurablePath<WolfEntity, EntityTricksyWolf>(EntityType.WOLF, TFAccomplishments.SCHOLAR, TFAccomplishments.ARCHAEOLOGIST)
+		{
+			public EntityType<EntityTricksyWolf> resultType() { return TFEntityTypes.TRICKSY_WOLF; }
+			
+			public EntityTricksyWolf enlighten(WolfEntity wolf)
 			{
-				public EntityType<EntityTricksyWolf> resultType() { return TFEntityTypes.TRICKSY_WOLF; }
-				
-				public EntityTricksyWolf enlighten(WolfEntity wolf)
-				{
-					EntityTricksyWolf tricksy = TFEntityTypes.TRICKSY_WOLF.create(wolf.getEntityWorld());
-					tricksy.equipStack(EquipmentSlot.MAINHAND, wolf.getEquippedStack(EquipmentSlot.MAINHAND));
-					tricksy.equipStack(EquipmentSlot.OFFHAND, wolf.getEquippedStack(EquipmentSlot.OFFHAND));
-					return tricksy;
-				}
-			});
+				EntityTricksyWolf tricksy = TFEntityTypes.TRICKSY_WOLF.create(wolf.getEntityWorld());
+				tricksy.equipStack(EquipmentSlot.MAINHAND, wolf.getEquippedStack(EquipmentSlot.MAINHAND));
+				tricksy.equipStack(EquipmentSlot.OFFHAND, wolf.getEquippedStack(EquipmentSlot.OFFHAND));
+				return tricksy;
+			}
+		}.setMastery(TFAccomplishments.VISIT_END, TFAccomplishments.SQUIRE));
 	
 	private static <T extends PathAwareEntity, N extends PathAwareEntity & ITricksyMob<?>> EnlightenmentPath<T,N> addEnlightenment(EntityType<? extends MobEntity> type, EnlightenmentPath<T,N> path)
 	{
@@ -122,7 +122,17 @@ public class TFEnlightenmentPaths implements SimpleResourceReloadListener<List<J
 	}
 	
 	@Nullable
-	public EnlightenmentPath<?, ?> getPath(EntityType<?> entity) { return PATHS_MAP.getOrDefault(entity, null); }
+	public EnlightenmentPath<?, ?> getPathFrom(EntityType<?> entity) { return PATHS_MAP.getOrDefault(entity, null); }
+	
+	@Nullable
+	public EnlightenmentPath<?, ?> getPathTo(EntityType<?> entity)
+	{
+		for(EnlightenmentPath<?, ?> entry : PATHS_MAP.values())
+			if(entry.resultType() == entity)
+				return entry;
+		
+		return null;
+	}
 	
 	@Nullable
 	public EnlightenmentPath<?, ?> getPath(Identifier regName)
