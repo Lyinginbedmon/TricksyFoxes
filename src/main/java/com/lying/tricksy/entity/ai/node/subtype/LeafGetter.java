@@ -20,6 +20,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
+import com.lying.tricksy.utility.TricksyUtils;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -104,11 +105,7 @@ public class LeafGetter extends NodeGroupLeaf
 				if(!(entity instanceof LivingEntity) || !entity.isAlive())
 					return null;
 				
-				BlockPos pos = entity.getBlockPos();
-				World world = entity.getWorld();
-				while(world.isAir(pos) && pos.getY() > world.getBottomY())
-					pos = pos.down();
-				return new WhiteboardObj.Int(entity.getBlockPos().getY() - pos.getY());
+				return new WhiteboardObj.Int(TricksyUtils.getEntityAltitude(tricksy));
 			}
 		}));
 		set.add(GET_HELD = subtype(ISubtypeGroup.variant("get_held_item"), new GetterHandlerTyped<ItemStack>(TFObjType.ITEM)

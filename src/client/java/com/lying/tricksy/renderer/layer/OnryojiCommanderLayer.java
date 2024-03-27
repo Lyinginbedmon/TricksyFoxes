@@ -19,7 +19,6 @@ import net.minecraft.util.math.Vec2f;
 
 public class OnryojiCommanderLayer extends FeatureRenderer<EntityOnryoji, ModelOnryoji<EntityOnryoji>>
 {
-	// TODO Finalise zodiac textures
 	private static final Identifier[] ICONS = new Identifier[12];
 	
 	public OnryojiCommanderLayer(FeatureRendererContext<EntityOnryoji, ModelOnryoji<EntityOnryoji>> context)

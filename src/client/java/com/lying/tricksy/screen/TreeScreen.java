@@ -4,11 +4,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.base.Predicates;
 import com.lying.tricksy.TricksyFoxesClient;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.node.TreeNode;
-import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard.Order;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.init.TFNodeTypes;
@@ -29,6 +30,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec2f;
+import oshi.util.tuples.Pair;
 
 @Environment(EnvType.CLIENT)
 public class TreeScreen extends TricksyScreenBase
@@ -45,7 +47,7 @@ public class TreeScreen extends TricksyScreenBase
 	public ButtonWidget save;
 	// Button to view whiteboards
 	public ButtonWidget whiteboards;
-	public ButtonWidget[] trees = new ButtonWidget[1 + OrderWhiteboard.Order.values().length];
+	public TreeButtonEntry[] trees = new TreeButtonEntry[1 + Order.values().length];
 	
 	private Vec2f position = null;
 	private Vec2f moveStart = null;
@@ -86,11 +88,12 @@ public class TreeScreen extends TricksyScreenBase
 			client.setScreen(new WhiteboardScreen(getScreenHandler(), this.playerInv, this.title));
 		}));
 		
-		// TODO Display available trees more aesthetically
-		addDrawableChild(trees[0] = ButtonWidget.builder(Text.translatable("order."+Reference.ModInfo.MOD_ID+".idle"), (button) -> this.handler.showSubTree(null)).dimensions(0, 0, 35, 20).build());
+		addDrawableChild((trees[0] = new TreeButtonEntry(null, new TreeButton(0, 10, Text.translatable("order."+Reference.ModInfo.MOD_ID+".idle"), (button) -> showTree(null)))).getB());
 		for(Order order : Order.values())
-			addDrawableChild(trees[order.ordinal() + 1] = ButtonWidget.builder(order.translate(), (button) -> this.handler.showSubTree(order)).dimensions(0, (1+order.ordinal()) * 22, 35, 20).build());
-		showSubTrees(handler.showSubTrees());
+			addDrawableChild((trees[1 + order.ordinal()] = new TreeButtonEntry(order, new TreeButton(0, 10 + (1+order.ordinal()) * 22, order.translate(), (button) -> showTree(order)))).getB());
+		showSubTrees(handler.shouldShowSubTrees());
+		if(handler.shouldShowSubTrees())
+			showTree(null);
 		
 		if(position == null)
 			setPosition(-this.width / 4, -this.height / 4);
@@ -101,14 +104,22 @@ public class TreeScreen extends TricksyScreenBase
 		super.handledScreenTick();
 		save.active = handler.canSyncToServer();
 		
-		if(trees[0].visible != handler.showSubTrees())
-			showSubTrees(handler.showSubTrees());
+		if(trees[0].getB().visible != handler.shouldShowSubTrees())
+			showSubTrees(handler.shouldShowSubTrees());
 	}
 	
 	private void showSubTrees(boolean bool)
 	{
-		for(ButtonWidget tree : trees)
-			tree.active = tree.visible = bool;
+		for(TreeButtonEntry tree : trees)
+			tree.getB().active = tree.getB().visible = bool;
+	}
+	
+	private void showTree(@Nullable Order order)
+	{
+		this.handler.showSubTree(order);
+		if(this.handler.shouldShowSubTrees())
+			for(TreeButtonEntry entry : trees)
+				entry.getB().active = entry.getA() != order;
 	}
 	
 	public void setPosition(int x, int y)
@@ -270,5 +281,13 @@ public class TreeScreen extends TricksyScreenBase
 		TYPE,
 		SUBTYPE,
 		VARIABLES;
+	}
+	
+	private class TreeButtonEntry extends Pair<Order, TreeButton>
+	{
+		public TreeButtonEntry(Order orderIn, TreeButton buttonIn)
+		{
+			super(orderIn, buttonIn);
+		}
 	}
 }

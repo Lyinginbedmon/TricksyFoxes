@@ -113,7 +113,7 @@ public class LeafSpecial extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;
 	public static NodeSubType<LeafNode> ONRYOJI_OFUDA;		// TODO Needs finalised ammo visuals
 	public static NodeSubType<LeafNode> ONRYOJI_FOXFIRE;
-	public static NodeSubType<LeafNode> ONRYOJI_SECLUSION;
+	public static NodeSubType<LeafNode> ONRYOJI_SECLUSION;	// TODO Add descent if in mid-air
 	public static NodeSubType<LeafNode> ONRYOJI_COMMANDERS;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_special"); }

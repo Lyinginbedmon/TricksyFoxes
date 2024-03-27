@@ -13,6 +13,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.init.TFWhiteboards.BoardType;
+import com.lying.tricksy.utility.TricksyUtils;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.ItemCooldownManager;
@@ -62,13 +63,7 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 	public Whiteboard<?> build()
 	{
 		register(SELF, (tricksy) -> new WhiteboardObjEntity(tricksy));
-		register(ALTITUDE, (tricksy) -> {
-			BlockPos pos = tricksy.getBlockPos();
-			World world = tricksy.getWorld();
-			while(world.isAir(pos) && pos.getY() > world.getBottomY())
-				pos = pos.down();
-			return new WhiteboardObj.Int(tricksy.getBlockPos().getY() - pos.getY());
-		});
+		register(ALTITUDE, (tricksy) -> new WhiteboardObj.Int(TricksyUtils.getEntityAltitude(tricksy)));
 		register(HP, (tricksy) -> new WhiteboardObj.Int((int)tricksy.getHealth()));
 		register(ARMOUR, (tricksy) -> new WhiteboardObj.Int(tricksy.getArmor()));
 		register(HANDS_FULL, (tricksy) -> new WhiteboardObj.Bool(!tricksy.getMainHandStack().isEmpty() && !tricksy.getOffHandStack().isEmpty()));

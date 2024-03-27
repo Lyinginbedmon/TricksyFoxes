@@ -58,8 +58,8 @@ public class OnryojiTree
 	{
 		return ControlFlowMisc.REACTIVE.create()
 				.child(attackControl())
-//				.child(DecoratorMisc.FORCE_SUCCESS.create()
-//					.child(motionControl()))
+				.child(DecoratorMisc.FORCE_SUCCESS.create()
+					.child(motionControl()))
 				.child(DecoratorMisc.FORCE_SUCCESS.create()
 					.child(LeafMisc.LOOK_AT.create(Map.of(CommonVariables.TARGET_ENT, new WhiteboardValue(OnryojiWhiteboard.NEAREST_PLAYER)))))
 		;
@@ -82,7 +82,9 @@ public class OnryojiTree
 	{
 		return ControlFlowMisc.SELECTOR.create().named(Text.literal("Motion control"))
 				.child(keepAway())
+				// TODO Add stay near players behaviour
 				.child(manageAltitude())
+				// TODO Add a wander behaviour
 				.child(LeafMisc.WAIT.create());
 	}
 	
@@ -127,15 +129,15 @@ public class OnryojiTree
 							CommonVariables.VAR_A, new WhiteboardValue(LocalWhiteboard.ALTITUDE),
 							CommonVariables.VAR_B, new StaticValue(new WhiteboardObj.Int(4)),
 							CommonVariables.SUBTRACT, new StaticValue(new WhiteboardObj.Bool(true)),
-							GetterHandlerUntyped.makeOutput(TFObjType.INT, TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_DIS))).silent())
+							GetterHandlerUntyped.makeOutput(TFObjType.INT, TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_DIS))).named(Text.literal("Calculate how far to move")).silent())
 						.child(ConditionWhiteboard.GREATER_THAN.create(Map.of(
 								CommonVariables.VAR_A, new WhiteboardValue(OnryojiWhiteboard.MOVE_DIS),
-								CommonVariables.VAR_B, new StaticValue(new WhiteboardObj.Int(2))))))
+								CommonVariables.VAR_B, new StaticValue(new WhiteboardObj.Int(2)))).named(Text.literal("If more than 2 blocks away"))))
 					.child(LeafArithmetic.OFFSET.create(Map.of(
 						CommonVariables.VAR_A, new WhiteboardValue(LocalWhiteboard.SELF),
 						CommonVariables.VAR_B, new WhiteboardValue(ConstantsWhiteboard.DIRECTIONS.get(Direction.DOWN)),
 						CommonVariables.VAR_NUM, new WhiteboardValue(OnryojiWhiteboard.MOVE_DIS),
-						GetterHandlerUntyped.makeOutput(TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))).silent())
+						GetterHandlerUntyped.makeOutput(TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))).named(Text.literal("Calculate target position")).silent())
 					.child(ConditionMisc.CAN_PATH_TO.create(Map.of(CommonVariables.VAR_POS, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))))
 					.child(LeafMisc.GOTO.create(Map.of(CommonVariables.VAR_POS, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))))
 					.child(LeafMisc.WAIT.create()))
@@ -148,15 +150,15 @@ public class OnryojiTree
 							CommonVariables.VAR_A, new StaticValue(new WhiteboardObj.Int(4)),
 							CommonVariables.VAR_B, new WhiteboardValue(LocalWhiteboard.ALTITUDE),
 							CommonVariables.SUBTRACT, new StaticValue(new WhiteboardObj.Bool(true)),
-							new WhiteboardRef("target_reference", TFObjType.INT), new WhiteboardValue(OnryojiWhiteboard.MOVE_DIS))).silent())
+							new WhiteboardRef("target_reference", TFObjType.INT), new WhiteboardValue(OnryojiWhiteboard.MOVE_DIS))).named(Text.literal("Calculate how far to move")).silent())
 						.child(ConditionWhiteboard.GREATER_THAN.create(Map.of(
 							CommonVariables.VAR_A, new WhiteboardValue(OnryojiWhiteboard.MOVE_DIS),
-							CommonVariables.VAR_B, new StaticValue(new WhiteboardObj.Int(2))))))
+							CommonVariables.VAR_B, new StaticValue(new WhiteboardObj.Int(2)))).named(Text.literal("If more than 2 blocks away"))))
 					.child(LeafArithmetic.OFFSET.create(Map.of(
 						CommonVariables.VAR_A, new WhiteboardValue(LocalWhiteboard.SELF),
 						CommonVariables.VAR_B, new WhiteboardValue(ConstantsWhiteboard.DIRECTIONS.get(Direction.UP)),
 						CommonVariables.VAR_NUM, new WhiteboardValue(OnryojiWhiteboard.MOVE_DIS),
-						new WhiteboardRef("target_reference", TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))).silent())
+						new WhiteboardRef("target_reference", TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))).named(Text.literal("Calculate target position")).silent())
 					.child(ConditionMisc.CAN_PATH_TO.create(Map.of(CommonVariables.VAR_POS, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))))
 					.child(LeafMisc.GOTO.create(Map.of(CommonVariables.VAR_POS, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))))
 					.child(LeafMisc.WAIT.create()));

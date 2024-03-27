@@ -58,7 +58,7 @@ public class LeafArithmetic extends NodeGroupLeaf
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				return !(getOrDefault(CommonVariables.VAR_A, parent, whiteboards).isEmpty() || getOrDefault(CommonVariables.VAR_B, parent, whiteboards).isEmpty());
+				return !(getOrDefault(CommonVariables.VAR_A, parent, whiteboards).size() == 0 || getOrDefault(CommonVariables.VAR_B, parent, whiteboards).size() == 0);
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
@@ -102,7 +102,7 @@ public class LeafArithmetic extends NodeGroupLeaf
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				return !(getOrDefault(CommonVariables.VAR_A, parent, whiteboards).isEmpty() || getOrDefault(CommonVariables.VAR_B, parent, whiteboards).isEmpty());
+				return !(getOrDefault(CommonVariables.VAR_A, parent, whiteboards).size() == 0 || getOrDefault(CommonVariables.VAR_B, parent, whiteboards).size() == 0);
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<?> getResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
@@ -151,7 +151,7 @@ public class LeafArithmetic extends NodeGroupLeaf
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				return !getOrDefault(CommonVariables.VAR_A, parent, whiteboards).isEmpty();
+				return getOrDefault(CommonVariables.VAR_A, parent, whiteboards).size() != 0;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
@@ -171,7 +171,7 @@ public class LeafArithmetic extends NodeGroupLeaf
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				return !getOrDefault(CommonVariables.VAR_A, parent, whiteboards).isEmpty();
+				return getOrDefault(CommonVariables.VAR_A, parent, whiteboards).size() != 0;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<Integer> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
@@ -209,7 +209,7 @@ public class LeafArithmetic extends NodeGroupLeaf
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
 			{
-				return !getOrDefault(CommonVariables.VAR_A, parent, whiteboards).isEmpty();
+				return getOrDefault(CommonVariables.VAR_A, parent, whiteboards).size() != 0;
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> IWhiteboardObject<BlockPos> getTypedResult(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)

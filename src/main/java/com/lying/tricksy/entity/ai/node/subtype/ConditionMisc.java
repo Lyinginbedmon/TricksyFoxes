@@ -295,7 +295,7 @@ public class ConditionMisc extends NodeGroupCondition
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onCast(T tricksy, WhiteboardManager<T> whiteboards, ConditionNode parent)
 			{
 				BlockPos pos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK).get();
-				return tricksy.getNavigation().findPathToAny(ImmutableSet.of(pos), 100, false, 1, 128F) != null ? Result.SUCCESS : Result.FAILURE;
+				return pos.getY() >= tricksy.getEntityWorld().getBottomY() && tricksy.getNavigation().findPathToAny(ImmutableSet.of(pos), 100, false, 1, 128F) != null ? Result.SUCCESS : Result.FAILURE;
 			}
 		}));
 		return set;

@@ -4,8 +4,10 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.reference.Reference;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.Inventory;
@@ -15,8 +17,10 @@ import net.minecraft.recipe.RecipeMatcher;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 public class TricksyUtils
 {
@@ -59,6 +63,18 @@ public class TricksyUtils
 			for(int i=1; i<tooltip.size(); i++)
 				text.append(lineBreak).append(tooltip.get(i));
 		return text;
+	}
+	
+	public static int getEntityAltitude(Entity entity)
+	{
+		BlockPos pos = entity.getBlockPos();
+		World world = entity.getWorld();
+		if((int)entity.getY() < world.getBottomY())
+			return 0;
+		
+		while(world.isAir(pos) && pos.getY() > world.getBottomY())
+			pos = pos.down();
+		return entity.getBlockPos().getY() - pos.getY();
 	}
 	
 	public static RecipeInputInventory ingredientsFromInventory(Inventory inventory)

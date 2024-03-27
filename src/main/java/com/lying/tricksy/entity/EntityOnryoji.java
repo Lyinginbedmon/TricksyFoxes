@@ -22,7 +22,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.control.FlightMoveControl;
+import net.minecraft.entity.ai.control.MoveControl;
 import net.minecraft.entity.ai.pathing.BirdNavigation;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -31,6 +31,7 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -38,6 +39,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOnryoji>, IAnimatedBiped
@@ -69,7 +71,8 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	{
 		super(entityType, world);
 		animations.start(0, this.age);
-		this.moveControl = new FlightMoveControl(this, 10, true);	// FIXME Replace move control with direct travel
+		this.moveControl = new OnryojiMoveControl(this);
+		this.experiencePoints = 50;
 	}
 	
 	public void initDataTracker()
@@ -90,18 +93,16 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		return HostileEntity.createHostileAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 300).add(EntityAttributes.GENERIC_FLYING_SPEED, 0.7f).add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64D);
 	}
 	
-	public void setNoGravity(boolean par1Bool) { super.setNoGravity(true); }
-	
 	public void fall(double heightDifference, boolean onGround, BlockState state, BlockPos landedPosition) { }
 	
 	protected EntityNavigation createNavigation(World world)
 	{
 		BirdNavigation birdNavigation = new BirdNavigation(this, world)
 				{
-					public boolean isValidPosition(BlockPos pos) { return world.getFluidState(pos).isEmpty(); }
+					public boolean isValidPosition(BlockPos pos) { return world.getFluidState(pos).isEmpty() && world.getBlockState(pos).getCollisionShape(world, pos).isEmpty(); }
 				};
 		birdNavigation.setCanPathThroughDoors(true);
-		birdNavigation.setCanSwim(false);
+		birdNavigation.setCanSwim(true);
 		birdNavigation.setCanEnterOpenDoors(true);
 		return birdNavigation;
 	}
@@ -150,7 +151,11 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	
 	public void tick()
 	{
+		// TODO Implement death animation
+		this.noClip = true;
 		super.tick();
+		this.noClip = false;
+		this.setNoGravity(true);
 		if(!hasCustomer() && !isAiDisabled())
 			ITricksyMob.updateBehaviourTree(this);
 	}
@@ -222,6 +227,29 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 			case ANIM_COMMANDERS:
 						return EnumSet.allOf(BipedPart.class);
 			default:	return EnumSet.noneOf(BipedPart.class);
+		}
+	}
+	
+	public class OnryojiMoveControl extends MoveControl
+	{
+		public OnryojiMoveControl(EntityOnryoji owner) { super(owner); }
+		
+		public void tick()
+		{
+			if(this.state != MoveControl.State.MOVE_TO)
+				return;
+			
+			MobEntity mob = this.entity;
+			Vec3d target = new Vec3d(this.targetX, this.targetY, this.targetZ);
+			Vec3d offset = new Vec3d(target.x - mob.getX(), target.y - mob.getY(), target.z - mob.getZ());
+			double dist = offset.length();
+			if(dist < 0.1D)
+			{
+				this.state = MoveControl.State.WAIT;
+				mob.setVelocity(mob.getVelocity().multiply(0.5D));
+			}
+			else
+				mob.setVelocity(offset.normalize().multiply(this.speed * dist * 0.5D));
 		}
 	}
 }

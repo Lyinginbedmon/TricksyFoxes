@@ -130,7 +130,7 @@ public class TricksyTreeScreenHandler extends ScreenHandler implements ITricksyS
 	
 	public TreeNode<?> root() { return getTree().root(showSubTree); }
 	
-	public boolean showSubTrees() { return this.isMaster; }
+	public boolean shouldShowSubTrees() { return this.isMaster; }
 	
 	public void sync(ITricksyMob<?> tricksyIn, PathAwareEntity mobIn)
 	{

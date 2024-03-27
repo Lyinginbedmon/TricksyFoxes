@@ -43,6 +43,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 
 public class LeafMisc extends NodeGroupLeaf
@@ -159,12 +160,17 @@ public class LeafMisc extends NodeGroupLeaf
 				BlockPos dest = targetObj.as(TFObjType.BLOCK).get();
 				if(dest.getSquaredDistance(tricksy.getBlockPos()) <= 0.3D)
 					return Result.SUCCESS;
+				else if(dest.getY() < tricksy.getEntityWorld().getBottomY())
+				{
+					parent.logStatus(TFNodeStatus.INPUT_ERROR);
+					return Result.FAILURE;
+				}
 				
 				EntityNavigation navigator = tricksy.getNavigation();
 				Path path = navigator.findPathToAny(ImmutableSet.of(dest), 100, false, 1, 128F);
 				if(path != null && navigator.startMovingAlong(path, 1D))
 				{
-					parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Pathing"+StringUtils.repeat('.', 1)));
+					parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Pathing from "+tricksy.getBlockPos().toShortString()+" to "+dest.toShortString()+" "+StringUtils.repeat('.', 1)));
 					return Result.RUNNING;
 				}
 				else
@@ -176,8 +182,11 @@ public class LeafMisc extends NodeGroupLeaf
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 			{
-				parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Pathing"+StringUtils.repeat('.', tick%3 + 1)));
-				return tricksy.getNavigation().isFollowingPath() ? Result.RUNNING : Result.SUCCESS;
+				EntityNavigation navigator = tricksy.getNavigation();
+				Vec3d target = navigator.getTargetPos().toCenterPos();
+				parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Pathing from "+tricksy.getBlockPos().toShortString()+" to "+navigator.getTargetPos().toShortString()+" "+StringUtils.repeat('.', tick%3 + 1)));
+				Vec3d offset = new Vec3d(target.x - tricksy.getX(), target.y - tricksy.getY(), target.z - tricksy.getZ());
+				return offset.length() < tricksy.getBoundingBox().getAverageSideLength() || !navigator.isFollowingPath() ? Result.SUCCESS : Result.RUNNING;
 			}
 		};
 	}
