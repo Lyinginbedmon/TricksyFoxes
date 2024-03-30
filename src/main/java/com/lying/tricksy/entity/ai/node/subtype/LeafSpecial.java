@@ -59,6 +59,7 @@ import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MovementType;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.ai.brain.task.PrepareRamTask.Ram;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
@@ -113,7 +114,7 @@ public class LeafSpecial extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> ONRYOJI_BALANCE;
 	public static NodeSubType<LeafNode> ONRYOJI_OFUDA;		// TODO Needs finalised ammo visuals
 	public static NodeSubType<LeafNode> ONRYOJI_FOXFIRE;
-	public static NodeSubType<LeafNode> ONRYOJI_SECLUSION;	// TODO Add descent if in mid-air
+	public static NodeSubType<LeafNode> ONRYOJI_SECLUSION;
 	public static NodeSubType<LeafNode> ONRYOJI_COMMANDERS;
 	
 	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_special"); }
@@ -259,19 +260,19 @@ public class LeafSpecial extends NodeGroupLeaf
 				return list;
 			}
 		});
-		set.add(ONRYOJI_BALANCE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_balance"), TFNodeTypes.LEAF, leafOnryojiBalance(), ConstantIntProvider.create(Reference.Values.TICKS_PER_MINUTE))
+		set.add(ONRYOJI_BALANCE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_balance"), TFNodeTypes.LEAF, leafOnryojiBalance(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 15))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
 		});
-		set.add(ONRYOJI_OFUDA = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_ofuda"), TFNodeTypes.LEAF, leafOnryojiSealingOfuda(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 10))
+		set.add(ONRYOJI_OFUDA = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_ofuda"), TFNodeTypes.LEAF, leafOnryojiSealingOfuda(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 8))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
 		});
-		set.add(ONRYOJI_FOXFIRE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_fireball"), TFNodeTypes.LEAF, leafOnryojiFoxfire(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 7))
+		set.add(ONRYOJI_FOXFIRE = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_fireball"), TFNodeTypes.LEAF, leafOnryojiFoxfire(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 5))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
 		});
-		set.add(ONRYOJI_SECLUSION = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_seclusion"), TFNodeTypes.LEAF, leafOnryojiSeclusion(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 15))
+		set.add(ONRYOJI_SECLUSION = new NodeSubType<LeafNode>(ISubtypeGroup.variant("onryoji_seclusion"), TFNodeTypes.LEAF, leafOnryojiSeclusion(), ConstantIntProvider.create(Reference.Values.TICKS_PER_SECOND * 20))
 		{
 			public boolean isValidFor(EntityType<?> typeIn) { return typeIn == TFEntityTypes.ONRYOJI; }
 		});
@@ -1164,6 +1165,7 @@ public class LeafSpecial extends NodeGroupLeaf
 					if(count == 0)
 						return Result.SUCCESS;
 					
+					// FIXME Permit multiple shots at the same target if we have more ofuda than valid targets
 					List<LivingEntity> targets = validTargets(tricksy, prevTargets);
 					if(!targets.isEmpty())
 						for(LivingEntity target : targets)
@@ -1417,11 +1419,16 @@ public class LeafSpecial extends NodeGroupLeaf
 					return Result.SUCCESS;
 				
 				// Check for seclusion entity, fail if missing
-				if(getField(tricksy) == null)
+				EntitySeclusion field = getField(tricksy);
+				if(field == null)
 				{
 					parent.logStatus(TFNodeStatus.BAD_RESULT, Text.literal("Zone missing or destroyed"));
 					return Result.FAILURE;
 				}
+				
+				BlockPos down = new BlockPos((int)tricksy.getX(), (int)(tricksy.getY() - 0.02D), (int)tricksy.getZ());
+				if(tricksy.getWorld().isAir(down) && down.getY() > tricksy.getWorld().getBottomY())
+					tricksy.move(MovementType.SELF, new Vec3d(0D, -0.02D, 0D));
 				
 				return Result.RUNNING;
 			}

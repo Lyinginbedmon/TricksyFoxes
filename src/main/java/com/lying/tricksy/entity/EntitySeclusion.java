@@ -105,10 +105,13 @@ public class EntitySeclusion extends Entity
 			Entity bound = optOwner.get();
 			if(!bound.isAlive())
 				discard();
-			updatePosition(bound);
-			
-			if(bound instanceof LivingEntity)
-				((LivingEntity)bound).addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, Reference.Values.TICKS_PER_SECOND, 1));
+			else
+			{
+				updatePosition(bound);
+				
+				if(bound instanceof LivingEntity)
+					((LivingEntity)bound).addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, Reference.Values.TICKS_PER_SECOND, 6));
+			}
 		}
 		
 		int lifespan = lifespan();

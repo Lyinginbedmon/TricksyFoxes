@@ -17,6 +17,7 @@ public class TFDataGenerators implements DataGeneratorEntrypoint
 		pack.addProvider(TFDamageTypeTagProvider::new);
 		pack.addProvider(TFRecipeProvider::new);
 		pack.addProvider(TFEntityTags::new);
+		pack.addProvider(TFEntityLootTables::new);
 		pack.addProvider(TFBlockTags::new);
 		pack.addProvider(TFItemTags::new);
 		pack.addProvider(TFPathsProvider::new);

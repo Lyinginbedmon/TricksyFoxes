@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.google.common.collect.Lists;
+import com.lying.tricksy.component.TricksyComponent;
+import com.lying.tricksy.component.TricksyComponent.Rank;
 import com.lying.tricksy.item.ISealableItem;
 import com.lying.tricksy.item.ItemOfuda;
 import com.lying.tricksy.item.ItemPresciencePeriapt;
@@ -20,6 +22,8 @@ import com.lying.tricksy.utility.Region;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -29,7 +33,9 @@ import net.minecraft.item.SpawnEggItem;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 
@@ -67,6 +73,23 @@ public class TFItems
     public static final Item WORK_TABLE_ITEM = register("work_table", new BlockItem(TFBlocks.WORK_TABLE, new FabricItemSettings()));
     public static final Item CLOCKWORK_FRIAR_ITEM = register("clockwork_friar", new BlockItem(TFBlocks.CLOCKWORK_FRIAR, new FabricItemSettings()));
     public static final Item OFUDA = register("ofuda", new ItemOfuda(new FabricItemSettings()));
+    public static final Item MASTER_TOKEN = register("master_token", new Item(new FabricItemSettings().maxCount(1).fireproof())
+		{
+			public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand)
+			{
+				if(!user.getWorld().isClient())
+				{
+					TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(entity);
+					if(comp.ranking() == Rank.APPRENTICE)
+					{
+						comp.enlighten();
+						stack.decrement(1);
+						return ActionResult.SUCCESS;
+					}
+				}
+				return ActionResult.PASS;
+			}
+		});
     
     public static final Item NOTE = register("prescient_note", new ItemPrescientNote(new FabricItemSettings().rarity(Rarity.UNCOMMON)));
     public static final Item NOTE_POS = register("prescient_note_block", new ItemPrescientNote.Block(new FabricItemSettings().rarity(Rarity.UNCOMMON)));

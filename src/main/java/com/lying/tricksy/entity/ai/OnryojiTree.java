@@ -14,6 +14,7 @@ import com.lying.tricksy.entity.ai.node.subtype.DecoratorMisc;
 import com.lying.tricksy.entity.ai.node.subtype.LeafArithmetic;
 import com.lying.tricksy.entity.ai.node.subtype.LeafMisc;
 import com.lying.tricksy.entity.ai.node.subtype.LeafSpecial;
+import com.lying.tricksy.entity.ai.node.subtype.LeafWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.CommonVariables;
 import com.lying.tricksy.entity.ai.whiteboard.ConstantsWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
@@ -82,9 +83,9 @@ public class OnryojiTree
 	{
 		return ControlFlowMisc.SELECTOR.create().named(Text.literal("Motion control"))
 				.child(keepAway())
-				// TODO Add stay near players behaviour
+				.child(keepNear())
 				.child(manageAltitude())
-				// TODO Add a wander behaviour
+				.child(wander())
 				.child(LeafMisc.WAIT.create());
 	}
 	
@@ -92,29 +93,85 @@ public class OnryojiTree
 	private static TreeNode<?> keepAway()
 	{
 		return ControlFlowMisc.SEQUENCE.create().named(Text.literal("Keep away"))
-				.child(ConditionMisc.CLOSER_THAN.create(Map.of(
-						CommonVariables.VAR_POS_A, new WhiteboardValue(OnryojiWhiteboard.NEAREST_PLAYER),
-						CommonVariables.VAR_DIS, new StaticValue(new WhiteboardObj.Int(5)))).named(Text.literal("Player within 5 blocks")))
-				.child(DecoratorMisc.RETRY.create(Map.of(CommonVariables.VAR_NUM, new StaticValue(new WhiteboardObj.Int(10))))
+			.child(ConditionMisc.CLOSER_THAN.create(Map.of(
+				CommonVariables.VAR_POS_A, new WhiteboardValue(OnryojiWhiteboard.NEAREST_PLAYER),
+				CommonVariables.VAR_DIS, new StaticValue(new WhiteboardObj.Int(5)))).named(Text.literal("Player within 5 blocks")))
+			.child(DecoratorMisc.RETRY.create(Map.of(CommonVariables.VAR_NUM, new StaticValue(new WhiteboardObj.Int(10))))
+				.child(ControlFlowMisc.SEQUENCE.create()
+					.child(LeafArithmetic.RANDOM_POS.create(Map.of(
+						CommonVariables.X, new StaticValue(new WhiteboardObj.Int(4)),
+						CommonVariables.Y, new StaticValue(new WhiteboardObj.Int(4)),
+						CommonVariables.Z, new StaticValue(new WhiteboardObj.Int(4)),
+						GetterHandlerUntyped.makeOutput(TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))).named(Text.literal("Get random position")).silent())
+					.child(LeafArithmetic.ADD.create(Map.of(
+						CommonVariables.VAR_A, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS),
+						CommonVariables.VAR_B, new WhiteboardValue(LocalWhiteboard.SELF),
+						CommonVariables.SUBTRACT, new StaticValue(new WhiteboardObj.Bool(false)),
+						GetterHandlerUntyped.makeOutput(TFObjType.INT, TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))).silent())
+					.child(DecoratorMisc.INVERTER.create()
+						.child(ConditionMisc.CLOSER_THAN.create(Map.of(
+							CommonVariables.VAR_POS_A, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS),
+							CommonVariables.VAR_POS_B, new WhiteboardValue(OnryojiWhiteboard.NEAREST_PLAYER),
+							CommonVariables.VAR_DIS, new StaticValue(new WhiteboardObj.Int(5))))))
+					.child(ConditionMisc.CAN_PATH_TO.create(Map.of(CommonVariables.VAR_POS, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))))))
+			.child(LeafMisc.GOTO.create(Map.of(CommonVariables.VAR_POS, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))))
+			.child(LeafMisc.WAIT.create(Map.of(CommonVariables.VAR_NUM, new StaticValue(new WhiteboardObj.Int(3)))));
+	}
+	
+	private static TreeNode<?> keepNear()
+	{
+		return ControlFlowMisc.SEQUENCE.create().named(Text.literal("Keep near"))
+			.child(ControlFlowMisc.REACTIVE.create()
+				.child(ConditionWhiteboard.VALUE_EXISTS.create(Map.of(CommonVariables.VAR, new WhiteboardValue(OnryojiWhiteboard.NEAREST_PLAYER))))
+				.child(DecoratorMisc.INVERTER.create()
+					.child(ConditionMisc.CLOSER_THAN.create(Map.of(
+							CommonVariables.VAR_POS_A, new WhiteboardValue(OnryojiWhiteboard.NEAREST_PLAYER),
+							CommonVariables.VAR_DIS, new StaticValue(new WhiteboardObj.Int(12))))))).named(Text.literal("Player farther than 12 blocks"))
+			.child(DecoratorMisc.FORCE_SUCCESS.create()
+				.child(ControlFlowMisc.SEQUENCE.create()
+					.child(DecoratorMisc.INVERTER.create()
+						.child(DecoratorMisc.RETRY.create(Map.of(CommonVariables.VAR_NUM, new StaticValue(new WhiteboardObj.Int(10))))
+							.child(ControlFlowMisc.SEQUENCE.create()
+								.child(LeafArithmetic.RANDOM_POS.create(Map.of(
+									CommonVariables.X, new StaticValue(new WhiteboardObj.Int(6)),
+									CommonVariables.Y, new StaticValue(new WhiteboardObj.Int(6)),
+									CommonVariables.Z, new StaticValue(new WhiteboardObj.Int(6)),
+									GetterHandlerUntyped.makeOutput(TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))).named(Text.literal("Get random position")).silent())
+								.child(LeafArithmetic.ADD.create(Map.of(
+									CommonVariables.VAR_A, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS),
+									CommonVariables.VAR_B, new WhiteboardValue(LocalWhiteboard.SELF),
+									CommonVariables.SUBTRACT, new StaticValue(new WhiteboardObj.Bool(false)),
+									GetterHandlerUntyped.makeOutput(TFObjType.INT, TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))).silent())
+								.child(ConditionMisc.CLOSER_THAN.create(Map.of(
+									CommonVariables.VAR_POS_A, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS),
+									CommonVariables.VAR_POS_B, new WhiteboardValue(OnryojiWhiteboard.NEAREST_PLAYER),
+									CommonVariables.VAR_DIS, new StaticValue(new WhiteboardObj.Int(12)))))
+								.child(ConditionMisc.CAN_PATH_TO.create(Map.of(CommonVariables.VAR_POS, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS)))))))
+					.child(LeafWhiteboard.COPY.create(Map.of(
+						new WhiteboardRef("value_to_copy", TFObjType.BOOL), new WhiteboardValue(OnryojiWhiteboard.NEAREST_PLAYER),
+						new WhiteboardRef("target_reference", TFObjType.BOOL), new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))).named(Text.literal("Move directly towards")))))
+			.child(LeafMisc.GOTO.create(Map.of(CommonVariables.VAR_POS, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))))
+			.child(LeafMisc.WAIT.create(Map.of(CommonVariables.VAR_NUM, new StaticValue(new WhiteboardObj.Int(2)))));
+	}
+	
+	private static TreeNode<?> wander()
+	{
+		return ControlFlowMisc.SEQUENCE.create().named(Text.literal("Wander"))
+			.child(DecoratorMisc.RETRY.create(Map.of(CommonVariables.VAR_NUM, new StaticValue(new WhiteboardObj.Int(10))))
 					.child(ControlFlowMisc.SEQUENCE.create()
 						.child(LeafArithmetic.RANDOM_POS.create(Map.of(
-							CommonVariables.X, new StaticValue(new WhiteboardObj.Int(4)),
-							CommonVariables.Y, new StaticValue(new WhiteboardObj.Int(4)),
-							CommonVariables.Z, new StaticValue(new WhiteboardObj.Int(4)),
+							CommonVariables.X, new StaticValue(new WhiteboardObj.Int(6)),
+							CommonVariables.Y, new StaticValue(new WhiteboardObj.Int(6)),
+							CommonVariables.Z, new StaticValue(new WhiteboardObj.Int(6)),
 							GetterHandlerUntyped.makeOutput(TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))).named(Text.literal("Get random position")).silent())
 						.child(LeafArithmetic.ADD.create(Map.of(
 							CommonVariables.VAR_A, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS),
 							CommonVariables.VAR_B, new WhiteboardValue(LocalWhiteboard.SELF),
 							CommonVariables.SUBTRACT, new StaticValue(new WhiteboardObj.Bool(false)),
 							GetterHandlerUntyped.makeOutput(TFObjType.INT, TFObjType.BLOCK), new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))).silent())
-						.child(DecoratorMisc.INVERTER.create()
-							.child(ConditionMisc.CLOSER_THAN.create(Map.of(
-								CommonVariables.VAR_POS_A, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS),
-								CommonVariables.VAR_POS_B, new WhiteboardValue(OnryojiWhiteboard.NEAREST_PLAYER),
-								CommonVariables.VAR_DIS, new StaticValue(new WhiteboardObj.Int(5))))))
 						.child(ConditionMisc.CAN_PATH_TO.create(Map.of(CommonVariables.VAR_POS, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))))))
-				.child(LeafMisc.GOTO.create(Map.of(CommonVariables.VAR_POS, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))))
-				.child(LeafMisc.WAIT.create(Map.of(CommonVariables.VAR_NUM, new StaticValue(new WhiteboardObj.Int(3)))));
+			.child(LeafMisc.GOTO.create(Map.of(CommonVariables.VAR_POS, new WhiteboardValue(OnryojiWhiteboard.MOVE_POS))))
+			.child(LeafMisc.WAIT.create(Map.of(CommonVariables.VAR_NUM, new StaticValue(new WhiteboardObj.Int(5)))));
 	}
 	
 	private static TreeNode<?> manageAltitude()

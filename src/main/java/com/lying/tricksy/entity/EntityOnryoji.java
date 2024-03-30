@@ -27,6 +27,8 @@ import net.minecraft.entity.ai.pathing.BirdNavigation;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.boss.BossBar;
+import net.minecraft.entity.boss.ServerBossBar;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -37,6 +39,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.predicate.entity.EntityPredicates;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -51,6 +54,8 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	public static final TrackedData<Integer> BARK = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
 	public static final TrackedData<Integer> OFUDA = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
 	public static final TrackedData<Integer> COMM = DataTracker.registerData(EntityOnryoji.class, TrackedDataHandlerRegistry.INTEGER);
+	
+	private final ServerBossBar bossBar = (ServerBossBar)new ServerBossBar(this.getDisplayName(), BossBar.Color.RED, BossBar.Style.NOTCHED_10);
 	
 	public final AnimationManager<EntityOnryoji> animations = new AnimationManager<>(7);
 	public static final int ANIM_IDLE = 0;
@@ -90,7 +95,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	
 	public static DefaultAttributeContainer.Builder createOnryojiAttributes()
 	{
-		return HostileEntity.createHostileAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 300).add(EntityAttributes.GENERIC_FLYING_SPEED, 0.7f).add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64D);
+		return HostileEntity.createHostileAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 500).add(EntityAttributes.GENERIC_FLYING_SPEED, 0.7f).add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64D);
 	}
 	
 	public void fall(double heightDifference, boolean onGround, BlockState state, BlockPos landedPosition) { }
@@ -158,6 +163,24 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		this.setNoGravity(true);
 		if(!hasCustomer() && !isAiDisabled())
 			ITricksyMob.updateBehaviourTree(this);
+	}
+	
+	public void mobTick()
+	{
+		super.mobTick();
+		this.bossBar.setPercent(getHealth() / getMaxHealth());
+	}
+	
+	public void onStartedTrackingBy(ServerPlayerEntity player)
+	{
+		super.onStartedTrackingBy(player);
+		this.bossBar.addPlayer(player);
+	}
+	
+	public void onStoppedTrackingBy(ServerPlayerEntity player)
+	{
+		super.onStoppedTrackingBy(player);
+		this.bossBar.removePlayer(player);
 	}
 	
 	public static List<LivingEntity> getAttackTargets(LivingEntity tricksy, List<Entity> ignore)
