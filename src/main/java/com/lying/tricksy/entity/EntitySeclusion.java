@@ -16,8 +16,6 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -104,14 +102,15 @@ public class EntitySeclusion extends Entity
 			
 			Entity bound = optOwner.get();
 			if(!bound.isAlive())
-				discard();
-			else
 			{
-				updatePosition(bound);
-				
-				if(bound instanceof LivingEntity)
-					((LivingEntity)bound).addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, Reference.Values.TICKS_PER_SECOND, 6));
+				discard();
+				return;
 			}
+			
+			updatePosition(bound);
+			
+			if(bound instanceof LivingEntity && age()%2 == 0)
+				((LivingEntity)bound).heal(1.5F);
 		}
 		
 		int lifespan = lifespan();

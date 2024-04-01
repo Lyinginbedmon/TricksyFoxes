@@ -19,6 +19,8 @@ import com.lying.tricksy.entity.ai.node.TreeNode;
 import com.lying.tricksy.entity.ai.whiteboard.GlobalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.LocalWhiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
+import com.lying.tricksy.init.TFParticles;
+import com.lying.tricksy.init.TFSoundEvents;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -33,6 +35,7 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.entity.boss.ServerBossBar;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -42,8 +45,11 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -68,12 +74,12 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	public static final int ANIM_FOXFIRE = 3;
 	public static final int ANIM_SECLUSION = 4;
 	public static final int ANIM_COMMANDERS = 5;
+	// TODO Implement death animation
 	public static final int ANIM_DEATH = 6;
 	public final AnimationManager<EntityOnryoji> animations = new AnimationManager<>(7)
 		{
 			public void onUpdateAnim(int animation, int ticksRunning, EntityOnryoji ent)
 			{
-				// FIXME Add auxiliary particles and SFX to animations
 				Random rand = ent.getRandom();
 				switch(animation)
 				{
@@ -82,14 +88,36 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 					case ANIM_BALANCE:
 						break;
 					case ANIM_OFUDA:
+						if(ticksRunning == 15)
+							ent.playSound(SoundEvents.ENTITY_FOX_SCREECH, ent.getSoundVolume(), ent.getSoundPitch());
 						break;
 					case ANIM_FOXFIRE:
+						if(ticksRunning == 10)
+							ent.playSound(SoundEvents.ENTITY_FOX_SCREECH, ent.getSoundVolume(), ent.getSoundPitch());
+						else if(ticksRunning == 29)
+							ent.playSound(TFSoundEvents.SNAP, ent.getSoundVolume(), ent.getSoundPitch());
 						break;
 					case ANIM_SECLUSION:
+						if(ticksRunning == 10)
+							ent.playSound(TFSoundEvents.CLAP, ent.getSoundVolume(), ent.getSoundPitch());
+						else if(ticksRunning == 15)
+							ent.playSound(SoundEvents.ENTITY_FOX_SCREECH, ent.getSoundVolume(), ent.getSoundPitch());
+						
+						if(ticksRunning < 15 && rand.nextInt(8) == 0)
+							ent.getWorld().addParticle(TFParticles.ENERGY_EMITTER, ent.getX(), ent.getEyeY() + 0.5D, ent.getZ(), 255, 255, 255);
 						break;
 					case ANIM_COMMANDERS:
+						if(ticksRunning == 9)
+							ent.playSound(SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, ent.getSoundVolume(), ent.getSoundPitch());
+						else if(ticksRunning == 28)
+							ent.playSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE, ent.getSoundVolume(), ent.getSoundPitch());
+						
+						if(ticksRunning == 30)
+							ent.getWorld().addParticle(ParticleTypes.EXPLOSION_EMITTER, ent.getX(), ent.getEyeY() + 0.5D, ent.getZ(), 0, 0, 0);
 						break;
 					case ANIM_DEATH:
+						if(ticksRunning == 0)
+							ent.playSound(SoundEvents.ENTITY_ENDER_DRAGON_DEATH, ent.getSoundVolume(), ent.getSoundPitch());
 						break;
 					default:
 						return;
@@ -142,6 +170,12 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		birdNavigation.setCanEnterOpenDoors(true);
 		return birdNavigation;
 	}
+	
+	protected SoundEvent getAmbientSound() { return SoundEvents.ENTITY_FOX_SCREECH; }
+	
+	protected SoundEvent getHurtSound(DamageSource source) { return SoundEvents.ENTITY_FOX_HURT; }
+	
+	protected SoundEvent getDeathSound() { return SoundEvents.ENTITY_FOX_DEATH; }
 	
 	public ItemStack getStack(int slot) { return getEquippedStack(ITricksyMob.INDEX_TO_SLOT_MAP.get(slot)); }
 	
@@ -199,6 +233,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		this.setNoGravity(true);
 		if(!hasCustomer() && !isAiDisabled())
 			ITricksyMob.updateBehaviourTree(this);
+		this.animations.tick(this);
 	}
 	
 	public void mobTick()
@@ -289,7 +324,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 				case ANIM_FOXFIRE:
 				case ANIM_SECLUSION:
 				case ANIM_COMMANDERS:
-				case 6:
+				case ANIM_DEATH:
 				default:
 					this.animations.stopAll();
 					this.animations.start(getDataTracker().get(ANIMATING), this.age);
