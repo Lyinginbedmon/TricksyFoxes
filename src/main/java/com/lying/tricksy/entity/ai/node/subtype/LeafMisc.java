@@ -170,12 +170,12 @@ public class LeafMisc extends NodeGroupLeaf
 				Path path = navigator.findPathToAny(ImmutableSet.of(dest), 100, false, 1, 128F);
 				if(path != null && navigator.startMovingAlong(path, 1D))
 				{
-					parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Pathing from "+tricksy.getBlockPos().toShortString()+" to "+dest.toShortString()+" "+StringUtils.repeat('.', 1)));
+					parent.logStatus(TFNodeStatus.RUNNING, TFNodeStatus.message("pathing", tricksy.getBlockPos().toShortString(),dest.toShortString(),StringUtils.repeat('.', 1)));
 					return Result.RUNNING;
 				}
 				else
 				{
-					parent.logStatus(TFNodeStatus.FAILURE, Text.literal("Can't path to there"));
+					parent.logStatus(TFNodeStatus.FAILURE, TFNodeStatus.message("no_path"));
 					return Result.FAILURE;
 				}
 			}
@@ -184,7 +184,7 @@ public class LeafMisc extends NodeGroupLeaf
 			{
 				EntityNavigation navigator = tricksy.getNavigation();
 				Vec3d target = navigator.getTargetPos().toCenterPos();
-				parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Pathing from "+tricksy.getBlockPos().toShortString()+" to "+navigator.getTargetPos().toShortString()+" "+StringUtils.repeat('.', tick%3 + 1)));
+				parent.logStatus(TFNodeStatus.RUNNING, TFNodeStatus.message("pathing",tricksy.getBlockPos().toShortString(),navigator.getTargetPos().toShortString(),StringUtils.repeat('.', tick%3 + 1)));
 				Vec3d offset = new Vec3d(target.x - tricksy.getX(), target.y - tricksy.getY(), target.z - tricksy.getZ());
 				return offset.length() < tricksy.getBoundingBox().getAverageSideLength() || !navigator.isFollowingPath() ? Result.SUCCESS : Result.RUNNING;
 			}

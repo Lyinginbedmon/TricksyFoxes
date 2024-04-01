@@ -22,7 +22,6 @@ import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
-import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFWhiteboards;
 
@@ -33,7 +32,6 @@ public class OnryojiTree
 {
 	public static class OnryojiWhiteboard extends LocalWhiteboard<EntityOnryoji>
 	{
-		public static final WhiteboardRef NEAREST_PLAYER = new WhiteboardRef("near_player", TFObjType.ENT, TFWhiteboards.LOCAL).noCache();
 		public static final WhiteboardRef MOVE_POS = new WhiteboardRef("move_pos", TFObjType.BLOCK, TFWhiteboards.LOCAL);
 		public static final WhiteboardRef MOVE_DIS = new WhiteboardRef("move_dis", TFObjType.INT, TFWhiteboards.LOCAL);
 		
@@ -45,8 +43,6 @@ public class OnryojiTree
 		public Whiteboard<?> build()
 		{
 			super.build();
-			
-			register(NEAREST_PLAYER, (mob) -> new WhiteboardObjEntity(mob.getWorld().getClosestPlayer(mob.getX(), mob.getY(), mob.getZ(), 32D, true)));
 			
 			register(MOVE_POS, (mob) -> new WhiteboardObjBlock(mob.getBlockPos()));
 			register(MOVE_DIS, (mob) -> new WhiteboardObj.Int(0));

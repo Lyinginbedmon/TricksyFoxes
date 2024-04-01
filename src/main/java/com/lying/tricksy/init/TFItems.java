@@ -22,6 +22,7 @@ import com.lying.tricksy.utility.Region;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
@@ -32,6 +33,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
@@ -73,19 +75,20 @@ public class TFItems
     public static final Item WORK_TABLE_ITEM = register("work_table", new BlockItem(TFBlocks.WORK_TABLE, new FabricItemSettings()));
     public static final Item CLOCKWORK_FRIAR_ITEM = register("clockwork_friar", new BlockItem(TFBlocks.CLOCKWORK_FRIAR, new FabricItemSettings()));
     public static final Item OFUDA = register("ofuda", new ItemOfuda(new FabricItemSettings()));
-    public static final Item MASTER_TOKEN = register("master_token", new Item(new FabricItemSettings().maxCount(1).fireproof())
+    public static final Item MASTER_TOKEN = register("master_token", new Item(new FabricItemSettings().maxCount(1).maxDamage(2).fireproof().rarity(Rarity.EPIC))
 		{
 			public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand)
 			{
 				if(!user.getWorld().isClient())
 				{
 					TricksyComponent comp = TFComponents.TRICKSY_TRACKING.get(entity);
-					if(comp.ranking() == Rank.APPRENTICE)
-					{
-						comp.enlighten();
-						stack.decrement(1);
-						return ActionResult.SUCCESS;
-					}
+					if(comp.ranking() != Rank.MASTER && comp.ranking() != Rank.INCAPABLE)
+						if(comp.enlighten())
+						{
+							if(!user.isCreative())
+								stack.damage(1, (ServerPlayerEntity)user, e -> e.sendEquipmentBreakStatus(hand == Hand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND));
+							return ActionResult.SUCCESS;
+						}
 				}
 				return ActionResult.PASS;
 			}
@@ -111,6 +114,7 @@ public class TFItems
 			entries.add(PRESCIENCE_ITEM);
 			entries.add(PRESCIENT_CANDLE_ITEM);
 			entries.add(PERIAPT);
+			entries.add(MASTER_TOKEN);
 			entries.add(NOTE);
 			entries.add(SCRIPTURE);
 			entries.add(WORK_TABLE_ITEM);

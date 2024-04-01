@@ -36,6 +36,7 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 	public static final WhiteboardRef HOME = makeSystemRef("home_pos", TFObjType.BLOCK, TFWhiteboards.LOCAL);
 	public static final WhiteboardRef HAS_SAGE = makeSystemRef("has_sage", TFObjType.BOOL, TFWhiteboards.LOCAL);
 	public static final WhiteboardRef NEAREST_SAGE = makeSystemRef("nearest_sage", TFObjType.ENT, TFWhiteboards.LOCAL);
+	public static final WhiteboardRef NEAREST_PLAYER = makeSystemRef("nearest_player", TFObjType.ENT, TFWhiteboards.LOCAL);
 	public static final WhiteboardRef ATTACK_TARGET = makeSystemRef("attack_target", TFObjType.ENT, TFWhiteboards.LOCAL);
 	public static final WhiteboardRef ON_GROUND = makeSystemRef("on_ground", TFObjType.BOOL, TFWhiteboards.LOCAL);
 	
@@ -75,6 +76,7 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 			PlayerEntity nearestSage = tricksy.getEntityWorld().getClosestPlayer(tricksy.getX(), tricksy.getY(), tricksy.getZ(), 32D, (player) -> tricksy.isSage((PlayerEntity)player));
 			return nearestSage == null ? TFObjType.ENT.blank() : new WhiteboardObjEntity(nearestSage);
 		});
+		register(NEAREST_PLAYER, (tricksy) -> new WhiteboardObjEntity(tricksy.getWorld().getClosestPlayer(tricksy.getX(), tricksy.getY(), tricksy.getZ(), 32D, true)));
 		register(ATTACK_TARGET, (tricksy) -> tricksy.getAttacking() == null ? TFObjType.ENT.blank() : new WhiteboardObjEntity(tricksy.getAttacking()));
 		register(ON_GROUND, (tricksy) -> new WhiteboardObj.Bool(tricksy.isOnGround()));
 		return this;

@@ -14,7 +14,6 @@ import com.lying.tricksy.init.TFNodeStatus;
 import com.lying.tricksy.init.TFObjType;
 
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.text.Text;
 
 public abstract class GetterHandlerTyped<T> extends GetterHandlerUntyped
 {
@@ -32,7 +31,7 @@ public abstract class GetterHandlerTyped<T> extends GetterHandlerUntyped
 		WhiteboardRef dest = ((WhiteboardValue)target).assignment();
 		if(dest == null || dest.boardType().isReadOnly())
 		{
-			parent.logStatus(TFNodeStatus.OUTPUT_ERROR, Text.literal("Invalid output"));
+			parent.logStatus(TFNodeStatus.OUTPUT_ERROR, TFNodeStatus.message("invalid_output"));
 			return Result.FAILURE;
 		}
 		
@@ -40,7 +39,7 @@ public abstract class GetterHandlerTyped<T> extends GetterHandlerUntyped
 		if(result == null || result.isEmpty() || result.size() == 0)
 		{
 			whiteboards.get(dest.boardType()).setValue(dest, type.blank());
-			parent.logStatus(TFNodeStatus.BAD_RESULT, Text.literal("No result"));
+			parent.logStatus(TFNodeStatus.BAD_RESULT, TFNodeStatus.message("no_result"));
 			return Result.FAILURE;
 		}
 		

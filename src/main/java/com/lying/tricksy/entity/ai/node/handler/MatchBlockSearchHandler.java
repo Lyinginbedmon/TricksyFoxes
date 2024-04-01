@@ -27,7 +27,6 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -61,7 +60,7 @@ public class MatchBlockSearchHandler extends GetterHandlerTyped<BlockPos>
 		IWhiteboardObject<?> filter = getOrDefault(MATCH, parent, whiteboards);
 		if(filter == null || filter.size() == 0)
 		{
-			parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("No filter supplied"));
+			parent.logStatus(TFNodeStatus.INPUT_ERROR, TFNodeStatus.message("no_filter"));
 			return null;
 		}
 		

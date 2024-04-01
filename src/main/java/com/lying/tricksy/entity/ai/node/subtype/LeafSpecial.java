@@ -735,7 +735,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				IWhiteboardObject<BlockPos> posIn = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards).as(TFObjType.BLOCK);
 				if(posIn.size() == 0)
 				{
-					parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("No target"));
+					parent.logStatus(TFNodeStatus.INPUT_ERROR, TFNodeStatus.message("no_target"));
 					return false;
 				}
 				
@@ -1009,11 +1009,7 @@ public class LeafSpecial extends NodeGroupLeaf
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
-			private static final Predicate<Entity> VIABLE_TARGET = 
-					EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR
-					.and(EntityPredicates.VALID_ENTITY)
-					.and(entity -> entity instanceof PathAwareEntity || entity instanceof PlayerEntity)
-					.and((entity) -> entity != null && entity instanceof LivingEntity && ((LivingEntity)entity).getHealth() >= 1F);
+			private static final Predicate<Entity> VIABLE_TARGET = ent -> ent instanceof LivingEntity && ((LivingEntity)ent).getHealth() >= 1F;
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.MOVE, ActionFlag.HANDS); }
 			
@@ -1032,15 +1028,14 @@ public class LeafSpecial extends NodeGroupLeaf
 				
 				if(tick == 0)
 				{
-					List<LivingEntity> mobs = tricksy.getWorld().getEntitiesByClass(LivingEntity.class, tricksy.getBoundingBox().expand(16D), VIABLE_TARGET);
+					List<LivingEntity> mobs = EntityOnryoji.getAttackTargets(tricksy, List.of(), VIABLE_TARGET);
 					LivingEntity mobA, mobB;
 					switch(mobs.size())
 					{
-						case 1:
+						case 0:
 							return Result.FAILURE;
-						case 2:
+						case 1:
 							mobA = tricksy;
-							mobs.remove(tricksy);
 							mobB = mobs.get(0);
 							
 							// Never balance with self if we'd lose health in the exchange
@@ -1066,7 +1061,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				{
 					Pair<LivingEntity, LivingEntity> targets = getTargets(tricksy, tricksy.getWorld(), parent.nodeRAM);
 					LivingEntity mobA = targets.getLeft(), mobB = targets.getRight();
-					if(!VIABLE_TARGET.test(mobA) || !VIABLE_TARGET.test(mobB))
+					if(!VIABLE_TARGET.test(mobA) || !VIABLE_TARGET.test(mobB) || mobA.getHealth() == mobB.getHealth())
 					{
 						parent.logStatus(TFNodeStatus.BAD_RESULT);
 						return Result.FAILURE;
@@ -1165,8 +1160,10 @@ public class LeafSpecial extends NodeGroupLeaf
 					if(count == 0)
 						return Result.SUCCESS;
 					
-					// FIXME Permit multiple shots at the same target if we have more ofuda than valid targets
 					List<LivingEntity> targets = validTargets(tricksy, prevTargets);
+					if(targets.size() < count)
+						targets = validTargets(tricksy, List.of());
+					
 					if(!targets.isEmpty())
 						for(LivingEntity target : targets)
 							if(bindTarget(target, tricksy))
@@ -1177,7 +1174,7 @@ public class LeafSpecial extends NodeGroupLeaf
 								storeTargets(prevTargets, parent.nodeRAM);
 								
 								tricksy.getLookControl().lookAt(target);
-								parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Targeted "+target.getName().getString()));
+								parent.logStatus(TFNodeStatus.RUNNING, TFNodeStatus.message("targeted",target.getName()));
 								parent.playSound(tricksy, SoundEvents.ENTITY_SNOWBALL_THROW, 1F, tricksy.getSoundPitch());
 								break;
 							}
@@ -1195,7 +1192,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				// Finish after 3 seconds in shooting phase regardless of outstanding shots
 				if(tick > (Reference.Values.TICKS_PER_SECOND * 3))
 				{
-					parent.logStatus(TFNodeStatus.FAILURE, Text.literal("Couldn't find enough targets in time"));
+					parent.logStatus(TFNodeStatus.FAILURE, TFNodeStatus.message("insufficient_targets"));
 					return Result.FAILURE;
 				}
 				else
@@ -1204,10 +1201,8 @@ public class LeafSpecial extends NodeGroupLeaf
 			
 			private static List<LivingEntity> validTargets(LivingEntity tricksy, List<Entity> ignore)
 			{
-				List<LivingEntity> targets = EntityOnryoji.getAttackTargets(tricksy, ignore);
-				
 				// Don't bother targeting something that's already been sealed
-				targets.removeIf(IS_SEALED.or(ent -> !tricksy.canSee(ent)));
+				List<LivingEntity> targets = EntityOnryoji.getAttackTargets(tricksy, ignore, ent -> tricksy.canSee(ent) && !IS_SEALED.test(ent));
 				
 				if(targets.size() > 1)
 					targets.sort((a,b) -> 
@@ -1350,9 +1345,8 @@ public class LeafSpecial extends NodeGroupLeaf
 			
 			private static List<LivingEntity> validTargets(LivingEntity tricksy)
 			{
-				List<LivingEntity> targets = EntityOnryoji.getAttackTargets(tricksy, Lists.newArrayList());
+				List<LivingEntity> targets = EntityOnryoji.getAttackTargets(tricksy, Lists.newArrayList(), ent -> tricksy.canSee(ent));
 				
-				targets.removeIf(ent -> !tricksy.canSee(ent));
 				if(targets.size() > 1)
 					targets.sort((a,b) -> 
 					{
@@ -1422,7 +1416,7 @@ public class LeafSpecial extends NodeGroupLeaf
 				EntitySeclusion field = getField(tricksy);
 				if(field == null)
 				{
-					parent.logStatus(TFNodeStatus.BAD_RESULT, Text.literal("Zone missing or destroyed"));
+					parent.logStatus(TFNodeStatus.BAD_RESULT, TFNodeStatus.message("no_zone"));
 					return Result.FAILURE;
 				}
 				

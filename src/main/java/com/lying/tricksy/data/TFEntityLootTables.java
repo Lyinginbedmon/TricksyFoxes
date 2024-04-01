@@ -13,7 +13,6 @@ import net.minecraft.loot.LootTable;
 import net.minecraft.loot.LootTable.Builder;
 import net.minecraft.loot.context.LootContextTypes;
 import net.minecraft.loot.entry.ItemEntry;
-import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.loot.provider.number.UniformLootNumberProvider;
 import net.minecraft.util.Identifier;
 
@@ -29,6 +28,6 @@ public class TFEntityLootTables	extends SimpleFabricLootTableProvider
 		var1.accept(TFEntityTypes.ONRYOJI.getLootTableId(), LootTable.builder()
 			.pool(LootPool.builder().rolls(UniformLootNumberProvider.create(1.0f, 3.0f)).with(ItemEntry.builder(Items.PHANTOM_MEMBRANE)))
 			.pool(LootPool.builder().rolls(UniformLootNumberProvider.create(0.0f, 5.0f)).with(ItemEntry.builder(TFItems.OFUDA)))
-			.pool(LootPool.builder().rolls(ConstantLootNumberProvider.create(1.0f)).with(ItemEntry.builder(TFItems.MASTER_TOKEN))));
+			.pool(LootPool.builder().rolls(UniformLootNumberProvider.create(1.0f, 3.0f)).with(ItemEntry.builder(TFItems.MASTER_TOKEN))));
 	}
 }

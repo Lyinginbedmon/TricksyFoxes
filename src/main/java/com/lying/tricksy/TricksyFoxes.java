@@ -37,8 +37,6 @@ public class TricksyFoxes implements ModInitializer
 	public static ServerConfig config;
     public static final Logger LOGGER = LoggerFactory.getLogger(Reference.ModInfo.MOD_ID);
     
-    // FIXME Final lang check before release
-    
 	public void onInitialize()
 	{
 		config = new ServerConfig("config/TricksyFoxesServer.cfg");

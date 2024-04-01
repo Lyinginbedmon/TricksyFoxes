@@ -8,6 +8,8 @@ import org.jetbrains.annotations.Nullable;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.registry.Registry;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 /** The various potential statuses to be reported to a {@link NodeStatusLog} */
@@ -65,4 +67,6 @@ public class TFNodeStatus
 	{
 		return TFRegistries.STATUS_REGISTRY.get(nameIn);
 	}
+	
+	public static MutableText message(String id, Object... args) { return Text.translatable("debug.tricksy."+id.toLowerCase(), args); }
 }

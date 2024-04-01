@@ -6,6 +6,7 @@ import com.lying.tricksy.entity.ai.whiteboard.Whiteboard;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
+import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -114,7 +115,7 @@ public interface INodeIOValue
 			return new StaticValue(IWhiteboardObject.createFromNbt(compound));
 		}
 		
-		public Text displayName() { return value.size() > 0 ? value.describe().get(0) : Text.literal("Static value"); }
+		public Text displayName() { return value.size() > 0 ? value.describe().get(0) : Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".static_value"); }
 	}
 	
 	public static enum Type implements StringIdentifiable

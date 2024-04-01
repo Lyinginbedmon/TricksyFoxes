@@ -105,7 +105,7 @@ public class LeafInteraction extends NodeGroupLeaf
 		return new INodeTickHandler<LeafNode>()
 		{
 			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_use_item");
-			public static final WhiteboardRef TARGET = new WhiteboardRef("target", TFObjType.BLOCK).displayName(Text.literal("Target"));
+			public static final WhiteboardRef TARGET = new WhiteboardRef("target", TFObjType.BLOCK).displayName(Text.translatable("variable."+Reference.ModInfo.MOD_ID+".order_target"));
 			
 			// Items that directly affect the player using them, hence cannot be used normally by a mob
 			private static final Set<Item> UNUSABLES = Set.of(Items.ENDER_PEARL, Items.LEAD, Items.FISHING_ROD);
@@ -213,28 +213,28 @@ public class LeafInteraction extends NodeGroupLeaf
 				World world = tricksy.getWorld();
 				if(!world.getGameRules().get(GameRules.DO_MOB_GRIEFING).get())
 				{
-					parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("No mob griefing"));
+					parent.logStatus(TFNodeStatus.INPUT_ERROR, TFNodeStatus.message("no_mob_griefing"));
 					return Result.FAILURE;
 				}
 				
 				BlockPos pos = blockPos.get();
 				if(!INodeTickHandler.canInteractWithBlock(tricksy, pos))
 				{
-					parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("Not close enough"));
+					parent.logStatus(TFNodeStatus.INPUT_ERROR, TFNodeStatus.message("too_far"));
 					return Result.FAILURE;
 				}
 				
 				BlockState state = world.getBlockState(pos);
 				if(state.isAir() || state.getHardness(world, pos) < 0F || state.getBlock() instanceof FluidBlock)
 				{
-					parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("Unbreakable"));
+					parent.logStatus(TFNodeStatus.INPUT_ERROR, TFNodeStatus.message("unbreakable"));
 					return Result.FAILURE;
 				}
 				
 				ServerFakePlayer player = ServerFakePlayer.makeForMob(tricksy, BUILDER_ID);
 				if(!player.getMainHandStack().getItem().canMine(state, world, pos, player))
 				{
-					parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.literal("Can't mine that"));
+					parent.logStatus(TFNodeStatus.INPUT_ERROR, TFNodeStatus.message("unminable"));
 					return Result.FAILURE;
 				}
 				
@@ -257,7 +257,7 @@ public class LeafInteraction extends NodeGroupLeaf
 				}
 				player.discard();
 				
-				parent.logStatus(TFNodeStatus.RUNNING, Text.literal("Mining"+StringUtils.repeat(".", tick%3 + 1)));
+				parent.logStatus(TFNodeStatus.RUNNING, TFNodeStatus.message("mining_progress",StringUtils.repeat(".", tick%3 + 1)));
 				return Result.RUNNING;
 			}
 		};

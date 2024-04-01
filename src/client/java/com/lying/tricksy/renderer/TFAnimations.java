@@ -8,6 +8,8 @@ import net.minecraft.client.render.entity.animation.Keyframe;
 import net.minecraft.client.render.entity.animation.Transformation;
 import net.minecraft.client.render.entity.model.EntityModelPartNames;
 
+// FIXME Implement death animation for Onryoji
+
 public class TFAnimations
 {
 	public static final Animation BLOCKADE = Animation.Builder.create(0.5F)

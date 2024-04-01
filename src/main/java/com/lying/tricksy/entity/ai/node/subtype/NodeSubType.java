@@ -105,7 +105,7 @@ public class NodeSubType<M extends TreeNode<?>>
 			return Result.FAILURE;
 		else if(!isValidFor(tricksy.getType()))
 		{
-			parent.logStatus(TFNodeStatus.INVALID_USER, Text.literal("Can't use this node"));
+			parent.logStatus(TFNodeStatus.INVALID_USER, TFNodeStatus.message("invalid_user"));
 			return Result.FAILURE;
 		}
 		

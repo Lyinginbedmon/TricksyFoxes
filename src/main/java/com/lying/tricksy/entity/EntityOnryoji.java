@@ -4,9 +4,12 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
@@ -19,6 +22,7 @@ import com.lying.tricksy.entity.ai.whiteboard.OrderWhiteboard;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityGroup;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -43,6 +47,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
 public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOnryoji>, IAnimatedBiped
@@ -57,7 +62,6 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	
 	private final ServerBossBar bossBar = (ServerBossBar)new ServerBossBar(this.getDisplayName(), BossBar.Color.RED, BossBar.Style.NOTCHED_10);
 	
-	public final AnimationManager<EntityOnryoji> animations = new AnimationManager<>(7);
 	public static final int ANIM_IDLE = 0;
 	public static final int ANIM_BALANCE = 1;
 	public static final int ANIM_OFUDA = 2;
@@ -65,6 +69,33 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	public static final int ANIM_SECLUSION = 4;
 	public static final int ANIM_COMMANDERS = 5;
 	public static final int ANIM_DEATH = 6;
+	public final AnimationManager<EntityOnryoji> animations = new AnimationManager<>(7)
+		{
+			public void onUpdateAnim(int animation, int ticksRunning, EntityOnryoji ent)
+			{
+				// FIXME Add auxiliary particles and SFX to animations
+				Random rand = ent.getRandom();
+				switch(animation)
+				{
+					case ANIM_IDLE:
+						break;
+					case ANIM_BALANCE:
+						break;
+					case ANIM_OFUDA:
+						break;
+					case ANIM_FOXFIRE:
+						break;
+					case ANIM_SECLUSION:
+						break;
+					case ANIM_COMMANDERS:
+						break;
+					case ANIM_DEATH:
+						break;
+					default:
+						return;
+				}
+			}
+		};
 	
 	private static final TreeNode<?> TREE = OnryojiTree.get();
 	private BehaviourTree behaviourTree = new BehaviourTree(TREE);
@@ -154,9 +185,14 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	
 	public Inventory getMainInventory() { return this; }
 	
+	public boolean canUsePortals() { return false; }
+	
+	public boolean canStartRiding(Entity entity) { return false; }
+	
+	public EntityGroup getGroup() { return EntityGroup.UNDEAD; }
+	
 	public void tick()
 	{
-		// TODO Implement death animation
 		this.noClip = true;
 		super.tick();
 		this.noClip = false;
@@ -169,6 +205,12 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	{
 		super.mobTick();
 		this.bossBar.setPercent(getHealth() / getMaxHealth());
+	}
+	
+	protected void updatePostDeath()
+	{
+		setAnimationDeath();
+		super.updatePostDeath();
 	}
 	
 	public void onStartedTrackingBy(ServerPlayerEntity player)
@@ -185,23 +227,39 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	
 	public static List<LivingEntity> getAttackTargets(LivingEntity tricksy, List<Entity> ignore)
 	{
+		return getAttackTargets(tricksy, ignore, Predicates.alwaysTrue());
+	}
+	
+	/**
+	 * Returns a list of viable attack targets for this mob
+	 * @param tricksy The mob to center the search on, excluded from the resulting list
+	 * @param ignore A list of entities to ignore in the search
+	 * @param predicate A predicate to apply to valid returned entities, according to usage context
+	 * @return
+	 */
+	public static List<LivingEntity> getAttackTargets(@NotNull LivingEntity tricksy, @NotNull List<Entity> ignore, @NotNull Predicate<Entity> predicate)
+	{
+		Predicate<Entity> fullPredicate = EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR).and(ent -> !ent.equals(tricksy)).and(predicate);
 		List<LivingEntity> targets = Lists.newArrayList();
 		
 		World world = tricksy.getWorld();
-		Box bounds = tricksy.getBoundingBox().expand(tricksy.getAttributeValue(EntityAttributes.GENERIC_FOLLOW_RANGE));
+		double range = tricksy.getAttributes().hasAttribute(EntityAttributes.GENERIC_FOLLOW_RANGE) ? tricksy.getAttributeValue(EntityAttributes.GENERIC_FOLLOW_RANGE) : 32D;
+		Box bounds = tricksy.getBoundingBox().expand(range);
 		
-		if(tricksy.getAttacking() != null && EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR).test(tricksy.getAttacking()))
-			targets.add(tricksy.getAttacking());
+		LivingEntity attacking = tricksy.getAttacking();
+		LivingEntity attacker = tricksy.getAttacker();
+		if(attacking != null && fullPredicate.test(attacking))
+			targets.add(attacking);
 		
-		if(tricksy.getAttacker() != null && tricksy.getAttacker() != tricksy.getAttacking() && EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR).test(tricksy.getAttacker()))
-			targets.add(tricksy.getAttacker());
+		if(attacker != null && attacker != attacking && fullPredicate.test(attacker))
+			targets.add(attacker);
 		
-		targets.addAll(world.getEntitiesByType(EntityType.PLAYER, bounds, EntityPredicates.VALID_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)));
-		targets.addAll(world.getEntitiesByType(EntityType.VILLAGER, bounds, EntityPredicates.VALID_ENTITY));
-		targets.addAll(world.getEntitiesByType(EntityType.PIG, bounds, EntityPredicates.VALID_ENTITY));
+		world.getEntitiesByType(EntityType.PLAYER, bounds, fullPredicate).forEach(ent -> { if(!targets.contains(ent)) targets.add(ent); });
+		world.getEntitiesByClass(MobEntity.class, bounds, fullPredicate).forEach(ent -> { if(!targets.contains(ent)) targets.add(ent); });
 		
 		if(!ignore.isEmpty())
 			targets.removeIf(ent -> ignore.contains(ent));
+		
 		return targets;
 	}
 	
@@ -211,6 +269,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 	public void setAnimationFoxfire() { this.getDataTracker().set(ANIMATING, ANIM_FOXFIRE); }
 	public void setAnimationSeclusion() { this.getDataTracker().set(ANIMATING, ANIM_SECLUSION); }
 	public void setAnimationCommanders() { this.getDataTracker().set(ANIMATING, ANIM_COMMANDERS); }
+	public void setAnimationDeath() { this.getDataTracker().set(ANIMATING, ANIM_DEATH); }
 	
 	public void setOfuda(int count) { this.getDataTracker().set(OFUDA, count); }
 	public int getCommanders() { return this.getDataTracker().get(COMM); }
