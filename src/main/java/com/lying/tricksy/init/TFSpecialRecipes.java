@@ -37,7 +37,7 @@ public class TFSpecialRecipes
 	
 	static <T extends Recipe<?>> RecipeSerializer<T> makeSerializer(String name, RecipeSerializer<T> serializer)
 	{
-		RECIPE_SERIALIZERS.put(serializer, new Identifier(Reference.ModInfo.MOD_ID, name));
+		RECIPE_SERIALIZERS.put(serializer, Reference.ModInfo.prefix(name));
 		return serializer;
 	}
 	
@@ -45,7 +45,7 @@ public class TFSpecialRecipes
 	private static <T extends Recipe<?>> RecipeType<T> makeType(String name)
 	{
 		RecipeType<T> type = new RecipeType<>() { public String toString() { return name; } };
-		RECIPE_TYPES.put(type, new Identifier(Reference.ModInfo.MOD_ID, name));
+		RECIPE_TYPES.put(type, Reference.ModInfo.prefix(name));
 		return type;
 	}
 	

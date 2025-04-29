@@ -14,7 +14,6 @@ import com.lying.tricksy.screen.NodeScreen;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
 
 public class ReferencesScreen extends NestedScreen<NodeScreen>
 {
@@ -44,7 +43,7 @@ public class ReferencesScreen extends NestedScreen<NodeScreen>
 		addDrawableChild(boardList = new BoardList(70, this.height, 0, this.height, 20, this));
 		boardList.setLeftPos(referenceList.getRowLeft() - 67);
 		
-		addDrawableChild(createStaticButton = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.open_create"), (button) -> 
+		addDrawableChild(createStaticButton = ButtonWidget.builder(Reference.ModInfo.translate("gui", "tree_screen.open_create"), (button) -> 
 		{
 			CreateStaticScreen screen = new CreateStaticScreen(this.parent, this);
 			screen.init(this.client, this.width, this.height);

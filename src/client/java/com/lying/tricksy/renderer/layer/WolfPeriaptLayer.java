@@ -16,7 +16,7 @@ import net.minecraft.util.Identifier;
 
 public class WolfPeriaptLayer extends FeatureRenderer<WolfEntity, WolfEntityModel<WolfEntity>>
 {
-	private static final Identifier TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/periapt_wolf.png");
+	private static final Identifier TEXTURE = Reference.ModInfo.prefix("textures/entity/periapt_wolf.png");
 	private final ModelWolfPeriapt<WolfEntity> periaptModel;
 	
 	public WolfPeriaptLayer(FeatureRendererContext<WolfEntity, WolfEntityModel<WolfEntity>> context)

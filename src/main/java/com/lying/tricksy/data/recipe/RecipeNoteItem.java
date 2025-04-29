@@ -16,7 +16,7 @@ import net.minecraft.world.World;
 
 public class RecipeNoteItem extends RecipeNote
 {
-	public static final Identifier ID = new Identifier(Reference.ModInfo.MOD_ID, "note_item");
+	public static final Identifier ID = Reference.ModInfo.prefix("note_item");
 	
 	public RecipeNoteItem() { super(ID); }
 	

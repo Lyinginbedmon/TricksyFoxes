@@ -1,5 +1,7 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
+import static com.lying.tricksy.reference.Reference.ModInfo.translate;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +44,7 @@ public class LeafArithmetic extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> RANDOM;
 	public static NodeSubType<LeafNode> RANDOM_POS;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_arithmetic"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("leaf_arithmetic"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
@@ -53,7 +55,7 @@ public class LeafArithmetic extends NodeGroupLeaf
 			{
 				set.put(CommonVariables.VAR_A, NUM_OR_POS);
 				set.put(CommonVariables.VAR_B, NodeInput.makeInput(ref -> ref.type().castableTo(TFObjType.INT) || ref.type().castableTo(TFObjType.BLOCK)));
-				set.put(CommonVariables.SUBTRACT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
+				set.put(CommonVariables.SUBTRACT, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), translate("value", "boolean.false")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)
@@ -97,7 +99,7 @@ public class LeafArithmetic extends NodeGroupLeaf
 			{
 				set.put(CommonVariables.VAR_A, NUM_OR_POS);
 				set.put(CommonVariables.VAR_B, NodeInput.makeInput(ref -> ref.type().castableTo(TFObjType.INT) || ref.type().castableTo(TFObjType.BLOCK)));
-				set.put(DIV, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
+				set.put(DIV, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, false), new WhiteboardObj.Bool(), translate("value", "boolean.false")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull boolean validityCheck(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent)

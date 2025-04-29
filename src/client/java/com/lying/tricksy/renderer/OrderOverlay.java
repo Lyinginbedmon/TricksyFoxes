@@ -26,7 +26,7 @@ import net.minecraft.util.math.Vec2f;
 public class OrderOverlay
 {
 	private static final MinecraftClient mc = MinecraftClient.getInstance();
-	private static final Identifier BORDER_TEX = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/orders/overlay.png");
+	private static final Identifier BORDER_TEX = Reference.ModInfo.prefix("textures/gui/orders/overlay.png");
 	private static final Vec2f[] OUTLINE_OFFSETS = new Vec2f[] {
 			new Vec2f(-1, -1),	new Vec2f(0, -1),	new Vec2f(1, -1),
 			new Vec2f(-1, 0),						new Vec2f(1, 0),

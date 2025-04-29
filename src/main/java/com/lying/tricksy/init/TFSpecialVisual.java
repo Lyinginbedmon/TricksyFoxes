@@ -34,7 +34,7 @@ public class TFSpecialVisual
 		void registerVisuals(SpecialVisualRegistry registry);
 	}
 	
-	private static TFSpecialVisual ofName(String nameIn) { return new TFSpecialVisual(new Identifier(Reference.ModInfo.MOD_ID, nameIn)); }
+	private static TFSpecialVisual ofName(String nameIn) { return new TFSpecialVisual(Reference.ModInfo.prefix(nameIn)); }
 	
 	private final Identifier registryName;
 	

@@ -18,8 +18,8 @@ import net.minecraft.util.Identifier;
 @Environment(EnvType.CLIENT)
 public class TricksyFoxClothingLayer extends DyeableClothingLayer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>
 {
-	public static final Identifier TEXTURE_CLOTHING = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_fox/clothing.png");
-	public static final Identifier TEXTURE_CLOTHING_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_fox/clothing_overlay.png");
+	public static final Identifier TEXTURE_CLOTHING = Reference.ModInfo.prefix("textures/entity/tricksy_fox/clothing.png");
+	public static final Identifier TEXTURE_CLOTHING_OVERLAY = Reference.ModInfo.prefix("textures/entity/tricksy_fox/clothing_overlay.png");
 	
 	private final ModelTricksyFoxBase<EntityTricksyFox> standing;
 	private final ModelTricksyFoxBase<EntityTricksyFox> crouching;

@@ -12,8 +12,8 @@ import net.minecraft.util.Identifier;
 
 public class TricksyWolfClothingLayer extends DyeableClothingLayer<EntityTricksyWolf, ModelTricksyWolfBase<EntityTricksyWolf>>
 {
-	public static final Identifier TEXTURE_CLOTHING = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_wolf/clothing.png");
-	public static final Identifier TEXTURE_CLOTHING_OVERLAY = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_wolf/clothing_overlay.png");
+	public static final Identifier TEXTURE_CLOTHING = Reference.ModInfo.prefix("textures/entity/tricksy_wolf/clothing.png");
+	public static final Identifier TEXTURE_CLOTHING_OVERLAY = Reference.ModInfo.prefix("textures/entity/tricksy_wolf/clothing_overlay.png");
 	
 	public TricksyWolfClothingLayer(FeatureRendererContext<EntityTricksyWolf, ModelTricksyWolfBase<EntityTricksyWolf>> context)
 	{

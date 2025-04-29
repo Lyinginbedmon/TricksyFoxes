@@ -19,8 +19,8 @@ import net.minecraft.util.Identifier;
 @Environment(EnvType.CLIENT)
 public class EntityOnryojiRenderer extends MobEntityRenderer<EntityOnryoji, ModelOnryoji<EntityOnryoji>>
 {
-	public static final Identifier TEXTURE_TRANSPARENT = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/onryoji/onryoji.png");
-	public static final Identifier TEXTURE_OPAQUE = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/onryoji/onryoji_overlay.png");
+	public static final Identifier TEXTURE_TRANSPARENT = Reference.ModInfo.prefix("textures/entity/onryoji/onryoji.png");
+	public static final Identifier TEXTURE_OPAQUE = Reference.ModInfo.prefix("textures/entity/onryoji/onryoji_overlay.png");
 	
 	public EntityOnryojiRenderer(Context ctx)
 	{

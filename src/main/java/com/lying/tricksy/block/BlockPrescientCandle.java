@@ -5,6 +5,7 @@ import java.util.function.ToIntFunction;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.block.entity.PrescientCandleBlockEntity;
 import com.lying.tricksy.init.TFBlockEntities;
 import com.lying.tricksy.init.TFBlocks;
@@ -106,7 +107,7 @@ public class BlockPrescientCandle extends BlockWithEntity
 	
 	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit)
 	{
-		if(world.isClient())
+		if(world.isClient() || !TricksyFoxes.config.prescientCandlesEnabled())
 			return ActionResult.SUCCESS;
 		
 		BlockEntity blockEntity = world.getBlockEntity(pos);

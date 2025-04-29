@@ -46,7 +46,7 @@ public class LeafSearch extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> GET_REPLACEABLE;
 	public static NodeSubType<LeafNode> GET_MATCHES;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_search"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("leaf_search"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{

@@ -6,7 +6,6 @@ import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
 
 public class TFParticles
 {
@@ -29,6 +28,6 @@ public class TFParticles
 	
 	private static void register(String name, DefaultParticleType type)
 	{
-		Registry.register(Registries.PARTICLE_TYPE, new Identifier(Reference.ModInfo.MOD_ID, name), type);
+		Registry.register(Registries.PARTICLE_TYPE, Reference.ModInfo.prefix(name), type);
 	}
 }

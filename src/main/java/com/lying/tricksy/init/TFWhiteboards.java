@@ -61,7 +61,7 @@ public class TFWhiteboards
 		public BoardType(String nameIn, int indexIn, boolean isReadOnly, boolean isAlwaysVisible)
 		{
 			name = nameIn;
-			registryName = new Identifier(Reference.ModInfo.MOD_ID, nameIn.toLowerCase());
+			registryName = Reference.ModInfo.prefix(nameIn.toLowerCase());
 			displayIndex = indexIn;
 			readOnly = isReadOnly;
 			alwaysVisible = isAlwaysVisible;

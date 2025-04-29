@@ -10,12 +10,11 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper.WrapperLookup;
 import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
 
 public class TFEntityTags extends EntityTypeTagProvider
 {
-	public static final TagKey<EntityType<?>> MONSTER = TagKey.of(RegistryKeys.ENTITY_TYPE, new Identifier(Reference.ModInfo.MOD_ID, "monster"));
-	public static final TagKey<EntityType<?>> ANIMAL = TagKey.of(RegistryKeys.ENTITY_TYPE, new Identifier(Reference.ModInfo.MOD_ID, "animal"));
+	public static final TagKey<EntityType<?>> MONSTER = TagKey.of(RegistryKeys.ENTITY_TYPE, Reference.ModInfo.prefix("monster"));
+	public static final TagKey<EntityType<?>> ANIMAL = TagKey.of(RegistryKeys.ENTITY_TYPE, Reference.ModInfo.prefix("animal"));
 	
 	public TFEntityTags(FabricDataOutput output, CompletableFuture<WrapperLookup> completableFuture)
 	{

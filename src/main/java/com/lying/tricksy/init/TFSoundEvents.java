@@ -9,19 +9,19 @@ import net.minecraft.util.Identifier;
 
 public class TFSoundEvents
 {
-	private static final Identifier ID_WHITEBOARD_UPDATED = new Identifier(Reference.ModInfo.MOD_ID, "whiteboard_updated");
+	private static final Identifier ID_WHITEBOARD_UPDATED = Reference.ModInfo.prefix("whiteboard_updated");
 	public static final SoundEvent WHITEBOARD_UPDATED = SoundEvent.of(ID_WHITEBOARD_UPDATED);
 	
-	private static final Identifier ID_TRICKSY_ENLIGHTENED = new Identifier(Reference.ModInfo.MOD_ID, "tricksy_enlightened");
+	private static final Identifier ID_TRICKSY_ENLIGHTENED = Reference.ModInfo.prefix("tricksy_enlightened");
 	public static final SoundEvent TRICKSY_ENLIGHTENED = SoundEvent.of(ID_TRICKSY_ENLIGHTENED);
 	
-	private static final Identifier ID_CLAP = new Identifier(Reference.ModInfo.MOD_ID, "clap");
+	private static final Identifier ID_CLAP = Reference.ModInfo.prefix("clap");
 	public static final SoundEvent CLAP = SoundEvent.of(ID_CLAP);
 	
-	private static final Identifier ID_SNAP = new Identifier(Reference.ModInfo.MOD_ID, "snap");
+	private static final Identifier ID_SNAP = Reference.ModInfo.prefix("snap");
 	public static final SoundEvent SNAP = SoundEvent.of(ID_SNAP);
 	
-	private static final Identifier ID_FAN = new Identifier(Reference.ModInfo.MOD_ID, "fan");
+	private static final Identifier ID_FAN = Reference.ModInfo.prefix("fan");
 	public static final SoundEvent FAN = SoundEvent.of(ID_FAN);
 	
 	public static void init()

@@ -13,7 +13,7 @@ import net.minecraft.util.Identifier;
 
 public interface ISubtypeGroup<T extends TreeNode<?>>
 {
-	public static Identifier variant(String nameIn) { return new Identifier(Reference.ModInfo.MOD_ID, nameIn); }
+	public static Identifier variant(String nameIn) { return Reference.ModInfo.prefix(nameIn); }
 	
 	public Identifier getRegistryName();
 	

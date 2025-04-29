@@ -34,8 +34,8 @@ import net.minecraft.util.math.Vec2f;
 
 public class WhiteboardList extends ElementListWidget<WhiteboardList.ReferenceEntry>
 {
-	public static final Identifier BOARD_TEXTURES = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/whiteboard.png");
-	public static final Identifier SLICE_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/whiteboard_slice.png");
+	public static final Identifier BOARD_TEXTURES = Reference.ModInfo.prefix("textures/gui/whiteboard.png");
+	public static final Identifier SLICE_TEXTURE = Reference.ModInfo.prefix("textures/gui/whiteboard_slice.png");
 	private final WhiteboardScreen parent;
 	
 	private BranchLine leftLine, rightLine;

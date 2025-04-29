@@ -8,11 +8,10 @@ import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
 import dev.onyxstudios.cca.api.v3.entity.EntityComponentFactoryRegistry;
 import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.util.Identifier;
 
 public class TFComponents implements EntityComponentInitializer
 {
-	public static final ComponentKey<TricksyComponent> TRICKSY_TRACKING = ComponentRegistry.getOrCreate(new Identifier(Reference.ModInfo.MOD_ID, "tricksy_tracking"), TricksyComponent.class);
+	public static final ComponentKey<TricksyComponent> TRICKSY_TRACKING = ComponentRegistry.getOrCreate(Reference.ModInfo.prefix("tricksy_tracking"), TricksyComponent.class);
 	
 	public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry)
 	{

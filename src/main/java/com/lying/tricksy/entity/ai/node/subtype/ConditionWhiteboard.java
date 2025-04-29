@@ -34,7 +34,7 @@ public class ConditionWhiteboard extends NodeGroupCondition
 	
 	public static NodeSubType<ConditionNode> EQUALS;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_whiteboard"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("condition_whiteboard"); }
 	
 	public Collection<NodeSubType<ConditionNode>> getSubtypes()
 	{

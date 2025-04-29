@@ -80,7 +80,7 @@ public class SpecialVisualsRegistry
 		});
 		register(TFSpecialVisual.ONRYOJI_BALANCE, new SpecialVisualRender()
 		{
-			private static final Identifier TEXTURE_CIRCLE = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/magic_circle.png");
+			private static final Identifier TEXTURE_CIRCLE = Reference.ModInfo.prefix("textures/entity/magic_circle.png");
 			
 			public void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, Entity entity, float tickDelta, float ageInTicks, int ticksActive, float progress)
 			{

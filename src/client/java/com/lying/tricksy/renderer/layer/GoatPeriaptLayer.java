@@ -16,7 +16,7 @@ import net.minecraft.util.Identifier;
 
 public class GoatPeriaptLayer extends FeatureRenderer<GoatEntity, GoatEntityModel<GoatEntity>>
 {
-	private static final Identifier TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/periapt_goat.png");
+	private static final Identifier TEXTURE = Reference.ModInfo.prefix("textures/entity/periapt_goat.png");
 	private final ModelGoatPeriapt<GoatEntity> periaptModel;
 	
 	public GoatPeriaptLayer(FeatureRendererContext<GoatEntity, GoatEntityModel<GoatEntity>> context)

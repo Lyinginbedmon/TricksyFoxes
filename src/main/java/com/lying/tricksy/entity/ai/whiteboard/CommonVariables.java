@@ -31,5 +31,5 @@ public class CommonVariables
 	public static final WhiteboardRef SUBTRACT = new WhiteboardRef("subtract", TFObjType.BOOL).displayName(translate("subtract"));
 	public static final WhiteboardRef INVERT = new WhiteboardRef("invert", TFObjType.BOOL).displayName(translate("invert"));
 	
-	public static Text translate(String nameIn) { return Text.translatable("variable."+Reference.ModInfo.MOD_ID+"."+nameIn); }
+	public static Text translate(String nameIn) { return Reference.ModInfo.translate("variable", nameIn); }
 }

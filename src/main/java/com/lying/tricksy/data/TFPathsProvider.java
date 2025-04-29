@@ -13,7 +13,6 @@ import net.minecraft.data.DataOutput.OutputType;
 import net.minecraft.data.DataOutput.PathResolver;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.DataWriter;
-import net.minecraft.util.Identifier;
 
 public class TFPathsProvider implements DataProvider
 {
@@ -28,7 +27,7 @@ public class TFPathsProvider implements DataProvider
 	{
 		List<CompletableFuture<?>> futures = Lists.newArrayList();
 		TFEnlightenmentPaths.getDefaultPaths().forEach(path -> 
-			futures.add(DataProvider.writeToPath(dataWriter, path.writeToJson(new JsonObject()), this.path.resolveJson(new Identifier(Reference.ModInfo.MOD_ID, path.registryName().getPath())))));
+			futures.add(DataProvider.writeToPath(dataWriter, path.writeToJson(new JsonObject()), this.path.resolveJson(Reference.ModInfo.prefix(path.registryName().getPath())))));
 		return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
 	}
 	

@@ -1,5 +1,7 @@
 package com.lying.tricksy.screen;
 
+import static com.lying.tricksy.reference.Reference.ModInfo.translate;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -16,7 +18,6 @@ import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.network.AddLocalReferencePacket;
 import com.lying.tricksy.network.DeleteReferencePacket;
 import com.lying.tricksy.network.SaveTreePacket;
-import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.NodeRenderUtils.NodeDisplay;
 
 import net.fabricmc.api.EnvType;
@@ -72,12 +73,12 @@ public class TreeScreen extends TricksyScreenBase
 		}));
 		
 		int midPoint = this.width / 2;
-		addDrawableChild(reset = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.reset"), (button) -> 
+		addDrawableChild(reset = ButtonWidget.builder(translate("gui", "tree_screen.reset"), (button) -> 
 		{
 			handler.resetTree();
 			setPosition(-this.width / 4, -this.height / 4);
 		}).dimensions(midPoint - 70 - 20, 7, 40, 16).build());
-		addDrawableChild(save = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.save"), (button) -> 
+		addDrawableChild(save = ButtonWidget.builder(translate("gui", "tree_screen.save"), (button) -> 
 		{
 			issueWhiteboardPackets(player, handler);
 			SaveTreePacket.send(player, handler.tricksyUUID(), getTree());
@@ -88,7 +89,7 @@ public class TreeScreen extends TricksyScreenBase
 			client.setScreen(new WhiteboardScreen(getScreenHandler(), this.playerInv, this.title));
 		}));
 		
-		addDrawableChild((trees[0] = new TreeButtonEntry(null, new TreeButton(0, 10, Text.translatable("order."+Reference.ModInfo.MOD_ID+".idle"), (button) -> showTree(null)))).getB());
+		addDrawableChild((trees[0] = new TreeButtonEntry(null, new TreeButton(0, 10, translate("order", "idle"), (button) -> showTree(null)))).getB());
 		for(Order order : Order.values())
 			addDrawableChild((trees[1 + order.ordinal()] = new TreeButtonEntry(order, new TreeButton(0, 10 + (1+order.ordinal()) * 22, order.translate(), (button) -> showTree(order)))).getB());
 		showSubTrees(handler.shouldShowSubTrees());

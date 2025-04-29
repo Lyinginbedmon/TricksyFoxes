@@ -68,9 +68,11 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public boolean isValidFor(EntityType<?> typeIn) { return true; }
 	
-	public Text translatedName() { return Text.translatable("variant."+registryName.getNamespace()+"."+registryName.getPath()); }
+	public final String translationSlug() { return "variant."+registryName.getNamespace()+"."+registryName.getPath(); } 
 	
-	public MutableText description() { return Text.translatable("variant."+registryName.getNamespace()+"."+registryName.getPath()+".desc"); }
+	public Text translatedName() { return Text.translatable(translationSlug()); }
+	
+	public MutableText description() { return Text.translatable(translationSlug()+".desc"); }
 	
 	public List<MutableText> fullDescription() { return List.of(description()); }
 	
@@ -141,12 +143,12 @@ public class NodeSubType<M extends TreeNode<?>>
 	
 	public static MutableText exclusivityDesc(Text descIn)
 	{
-		return Text.translatable("info."+Reference.ModInfo.MOD_ID+".node_exclusivity", descIn).styled(style -> style.withBold(true).withColor(Formatting.GOLD));
+		return Reference.ModInfo.translate("info", "node_exclusivity", descIn).copy().styled(style -> style.withBold(true).withColor(Formatting.GOLD));
 	}
 	
 	public static MutableText cooldownDesc(Text descIn)
 	{
-		return Text.translatable("info."+Reference.ModInfo.MOD_ID+".node_cooldown", descIn).styled(style -> style.withColor(Formatting.GRAY));
+		return Reference.ModInfo.translate("info", "node_cooldown", descIn).copy().styled(style -> style.withColor(Formatting.GRAY));
 	}
 	
 	public static enum CooldownBehaviour

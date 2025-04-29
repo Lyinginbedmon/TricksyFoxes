@@ -17,7 +17,7 @@ import net.minecraft.world.World;
 
 public class RecipeNoteBool extends RecipeNote
 {
-	public static final Identifier ID = new Identifier(Reference.ModInfo.MOD_ID, "note_boolean");
+	public static final Identifier ID = Reference.ModInfo.prefix("note_boolean");
 	
 	public RecipeNoteBool() { super(ID); }
 	

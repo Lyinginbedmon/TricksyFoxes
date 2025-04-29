@@ -81,6 +81,6 @@ public class OnryojiCommanderLayer extends FeatureRenderer<EntityOnryoji, ModelO
 	static
 	{
 		for(int i=0; i<12; i++)
-			ICONS[i] = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/onryoji/commander_"+i+".png");
+			ICONS[i] = Reference.ModInfo.prefix("textures/entity/onryoji/commander_"+i+".png");
 	}
 }

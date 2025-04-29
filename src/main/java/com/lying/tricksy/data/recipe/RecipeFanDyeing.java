@@ -19,7 +19,7 @@ import net.minecraft.world.World;
 
 public class RecipeFanDyeing extends SpecialCraftingRecipe
 {
-	public static final Identifier ID = new Identifier(Reference.ModInfo.MOD_ID, "fan_dyeing");
+	public static final Identifier ID = Reference.ModInfo.prefix("fan_dyeing");
 	
 	public RecipeFanDyeing()
 	{

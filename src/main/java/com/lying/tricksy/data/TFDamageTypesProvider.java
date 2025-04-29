@@ -13,7 +13,6 @@ import net.minecraft.data.DataOutput.OutputType;
 import net.minecraft.data.DataOutput.PathResolver;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.DataWriter;
-import net.minecraft.util.Identifier;
 
 public class TFDamageTypesProvider implements DataProvider
 {
@@ -38,7 +37,7 @@ public class TFDamageTypesProvider implements DataProvider
 			obj.addProperty("scaling", type.scaling().asString());
 			obj.addProperty("effects", type.effects().asString());
 			obj.addProperty("death_message_type", type.deathMessageType().asString());
-			futures.add(DataProvider.writeToPath(dataWriter, obj, this.path.resolveJson(new Identifier(Reference.ModInfo.MOD_ID, type.msgId()))));
+			futures.add(DataProvider.writeToPath(dataWriter, obj, this.path.resolveJson(Reference.ModInfo.prefix(type.msgId()))));
 		});
 		return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
 	}

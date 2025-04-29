@@ -33,7 +33,7 @@ public class TFScreenHandlerTypes
 	
 	private static <T extends ScreenHandler> ScreenHandlerType<T> register(String nameIn, ScreenHandlerType<T> typeIn)
 	{
-		HANDLERS.put(new Identifier(Reference.ModInfo.MOD_ID, nameIn), typeIn);
+		HANDLERS.put(Reference.ModInfo.prefix(nameIn), typeIn);
 		return typeIn;
 	}
 	

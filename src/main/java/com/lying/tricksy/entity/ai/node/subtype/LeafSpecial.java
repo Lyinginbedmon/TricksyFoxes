@@ -117,7 +117,7 @@ public class LeafSpecial extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> ONRYOJI_SECLUSION;
 	public static NodeSubType<LeafNode> ONRYOJI_COMMANDERS;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_special"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("leaf_special"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
@@ -785,7 +785,7 @@ public class LeafSpecial extends NodeGroupLeaf
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
-			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_wolf_lead");
+			private static final Identifier BUILDER_ID = Reference.ModInfo.prefix("leaf_wolf_lead");
 			private static final WhiteboardRef TARGET = CommonVariables.TARGET_ENT;
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.HANDS); }

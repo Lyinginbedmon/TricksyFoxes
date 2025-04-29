@@ -275,7 +275,7 @@ public interface ITricksyMob<T extends PathAwareEntity & ITricksyMob<?>> extends
 		
 		private Bark()
 		{
-			this.texture = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/bark/"+asString()+".png");
+			this.texture = Reference.ModInfo.prefix("textures/entity/bark/"+asString()+".png");
 		}
 		
 		public String asString() { return name().toLowerCase(); }

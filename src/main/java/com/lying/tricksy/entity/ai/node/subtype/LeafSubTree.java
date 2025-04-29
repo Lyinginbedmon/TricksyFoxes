@@ -37,7 +37,7 @@ public class LeafSubTree extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> PICKUP;
 	public static NodeSubType<LeafNode> BREAK;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_subtree"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("leaf_subtree"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{

@@ -29,7 +29,7 @@ import net.minecraft.util.math.BlockPos;
 
 public abstract class GetterHandlerUntyped implements INodeTickHandler<LeafNode>
 {
-	public static final INodeIO POS_OR_REGION = NodeInput.makeInput(ref -> (ref.type() == TFObjType.BLOCK && !ref.isFilter()) || ref.type() == TFObjType.REGION, new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName());
+	public static final INodeIO POS_OR_REGION = NodeInput.makeInput(ref -> (ref.type().castableTo(TFObjType.BLOCK) && !ref.isFilter()) || ref.type() == TFObjType.REGION, new WhiteboardObjBlock(), LocalWhiteboard.SELF.displayName());
 	public static final INodeIO NUM_OR_POS = NodeInput.makeInput(ref -> ref.type() == TFObjType.INT || ref.type() == TFObjType.BLOCK);
 	
 	protected final WhiteboardRef entry;

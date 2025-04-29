@@ -39,7 +39,7 @@ public class ConditionInventory extends NodeGroupCondition
 {
 	public static NodeSubType<ConditionNode> INV_HAS;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_inventory"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("condition_inventory"); }
 	
 	public Collection<NodeSubType<ConditionNode>> getSubtypes()
 	{

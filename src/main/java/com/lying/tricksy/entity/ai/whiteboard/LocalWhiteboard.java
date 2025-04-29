@@ -77,7 +77,7 @@ public class LocalWhiteboard<T extends PathAwareEntity & ITricksyMob<?>> extends
 			return nearestSage == null ? TFObjType.ENT.blank() : new WhiteboardObjEntity(nearestSage);
 		});
 		register(NEAREST_PLAYER, (tricksy) -> new WhiteboardObjEntity(tricksy.getWorld().getClosestPlayer(tricksy.getX(), tricksy.getY(), tricksy.getZ(), 32D, true)));
-		register(ATTACK_TARGET, (tricksy) -> tricksy.getAttacking() == null ? TFObjType.ENT.blank() : new WhiteboardObjEntity(tricksy.getAttacking()));
+		register(ATTACK_TARGET, (tricksy) -> tricksy.getTarget() == null ? TFObjType.ENT.blank() : new WhiteboardObjEntity(tricksy.getTarget()));
 		register(ON_GROUND, (tricksy) -> new WhiteboardObj.Bool(tricksy.isOnGround()));
 		return this;
 	}

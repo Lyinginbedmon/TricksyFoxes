@@ -17,6 +17,7 @@ import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 
 public abstract class RangedCombatHandler extends CombatHandler
@@ -31,16 +32,19 @@ public abstract class RangedCombatHandler extends CombatHandler
 	{
 		ItemStack bowStack = tricksy.getMainHandStack();
 		if(!isRangeWeapon(bowStack))
+		{
+			parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.translatable("debug.tricksy.wrong_weapon"));
 			return Result.FAILURE;
-		
-		if(!tricksy.isUsingItem())
-			tricksy.setCurrentHand(Hand.MAIN_HAND);
+		}
 		
 		if(target.isInvulnerable())
 		{
-			parent.logStatus(TFNodeStatus.INPUT_ERROR);
+			parent.logStatus(TFNodeStatus.INPUT_ERROR, Text.translatable("debug.tricksy.target_invulnerable"));
 			return Result.FAILURE;
 		}
+		
+		if(!tricksy.isUsingItem())
+			tricksy.setCurrentHand(Hand.MAIN_HAND);
 		
 		if(tricksy.getItemUseTime() >= getDrawTime())
 		{

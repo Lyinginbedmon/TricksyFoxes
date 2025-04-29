@@ -52,7 +52,7 @@ public class LeafWhiteboard extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> COPY;
 	public static NodeSubType<LeafNode> CLEAR;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_whiteboard"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("leaf_whiteboard"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{

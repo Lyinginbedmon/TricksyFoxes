@@ -14,7 +14,7 @@ import net.minecraft.world.World;
 
 public class RecipeNoteSeal extends RecipeNote
 {
-	public static final Identifier ID = new Identifier(Reference.ModInfo.MOD_ID, "note_sealing");
+	public static final Identifier ID = Reference.ModInfo.prefix("note_sealing");
 	
 	public RecipeNoteSeal() { super(ID); }
 	

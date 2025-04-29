@@ -15,7 +15,7 @@ import net.minecraft.util.Identifier;
 
 public class TricksyInventoryScreen extends AbstractInventoryScreen<TricksyInventoryScreenHandler>
 {
-	public static final Identifier BACKGROUND_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/inventory.png");
+	public static final Identifier BACKGROUND_TEXTURE = Reference.ModInfo.prefix("textures/gui/inventory.png");
 	
 	// Button to view behaviour tree
 	public ButtonWidget tree;

@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.entity.ai.NodeStatusLog;
@@ -206,7 +207,11 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		behaviourTree.logInForest(getWorld(), getUuid());
 	}
 	
-	public void setLatestLog(NodeStatusLog logIn) { this.getDataTracker().set(LOG_NBT, logIn.writeToNbt(new NbtCompound())); }
+	public void setLatestLog(NodeStatusLog logIn)
+	{
+		if(TricksyFoxes.config.prescientCandlesEnabled())
+			getDataTracker().set(LOG_NBT, logIn.writeToNbt(new NbtCompound()));
+	}
 	
 	public NodeStatusLog getLatestLog() { return NodeStatusLog.fromNbt(this.getDataTracker().get(LOG_NBT)); }
 	

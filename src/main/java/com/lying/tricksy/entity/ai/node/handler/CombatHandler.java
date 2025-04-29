@@ -57,7 +57,7 @@ public abstract class CombatHandler implements INodeTickHandler<LeafNode>
 	
 	protected void addVariables(Map<WhiteboardRef, INodeIO> set) { }
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 	{
 		IWhiteboardObject<Entity> value = getOrDefault(CommonVariables.TARGET_ENT, parent, whiteboards).as(TFObjType.ENT);
 		
@@ -77,7 +77,6 @@ public abstract class CombatHandler implements INodeTickHandler<LeafNode>
 		tricksy.setAttacking(true);
 		
 		// Wait for attack cooldown to finish before starting attack
-		
 		if(!whiteboards.local().canAttack())
 			return Result.RUNNING;
 		

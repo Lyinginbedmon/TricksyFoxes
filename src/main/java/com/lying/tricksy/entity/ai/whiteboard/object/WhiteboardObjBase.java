@@ -48,7 +48,7 @@ public abstract class WhiteboardObjBase<T, N, G extends NbtElement> implements I
 	{
 		List<Text> description = Lists.newArrayList();
 		if(isList())
-			description.add(Text.translatable("value."+Reference.ModInfo.MOD_ID+".is_list", value.size()));
+			description.add(Reference.ModInfo.translate("value", "is_list", value.size()));
 		
 		value.forEach((val) -> {
 			Text entry = describeValue(val);

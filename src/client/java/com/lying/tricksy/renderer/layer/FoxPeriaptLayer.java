@@ -16,7 +16,7 @@ import net.minecraft.util.Identifier;
 
 public class FoxPeriaptLayer extends FeatureRenderer<FoxEntity, FoxEntityModel<FoxEntity>>
 {
-	private final Identifier TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/periapt_fox.png");
+	private final Identifier TEXTURE = Reference.ModInfo.prefix("textures/entity/periapt_fox.png");
 	private final ModelFoxPeriapt<FoxEntity> periaptModel;
 	
 	public FoxPeriaptLayer(FeatureRendererContext<FoxEntity, FoxEntityModel<FoxEntity>> context)

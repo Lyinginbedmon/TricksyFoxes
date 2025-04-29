@@ -18,7 +18,7 @@ import net.minecraft.util.Identifier;
 
 public class TricksyWolfBookLayer extends FeatureRenderer<EntityTricksyWolf, ModelTricksyWolfBase<EntityTricksyWolf>>
 {
-	public static final Identifier texture = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_wolf/holy_book.png");
+	public static final Identifier texture = Reference.ModInfo.prefix("textures/entity/tricksy_wolf/holy_book.png");
 	
 	protected ModelTricksyWolfBase<EntityTricksyWolf> clothingModel;
 	

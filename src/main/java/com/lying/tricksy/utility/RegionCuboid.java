@@ -12,7 +12,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3i;
@@ -81,7 +80,7 @@ public class RegionCuboid extends Region
 		return true;
 	}
 	
-	public MutableText describeValue() { return Text.translatable("value."+Reference.ModInfo.MOD_ID+".region_cuboid", min.toShortString(), max.toShortString()); }
+	public MutableText describeValue() { return Reference.ModInfo.translate("value", "region_cuboid", min.toShortString(), max.toShortString()).copy(); }
 	
 	public BlockPos findRandomWithin(Random rand)
 	{

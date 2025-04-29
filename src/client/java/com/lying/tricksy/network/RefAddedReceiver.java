@@ -12,7 +12,6 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.Text;
 
 @Environment(EnvType.CLIENT)
 public class RefAddedReceiver implements ClientPlayNetworking.PlayChannelHandler
@@ -23,7 +22,7 @@ public class RefAddedReceiver implements ClientPlayNetworking.PlayChannelHandler
 		if(player != null)
 		{
 			client.getSoundManager().play(PositionedSoundInstance.master(TFSoundEvents.WHITEBOARD_UPDATED, 1F));
-			player.sendMessage(Text.translatable("item."+Reference.ModInfo.MOD_ID+".prescient_note.give_value.global"), true);
+			player.sendMessage(Reference.ModInfo.translate("item","prescient_note.give_value.global"), true);
 		}
 	}
 }

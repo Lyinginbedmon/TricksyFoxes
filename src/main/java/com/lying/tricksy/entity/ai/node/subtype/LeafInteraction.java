@@ -1,5 +1,7 @@
 package com.lying.tricksy.entity.ai.node.subtype;
 
+import static com.lying.tricksy.reference.Reference.ModInfo.prefix;
+
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -35,7 +37,6 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -50,7 +51,7 @@ public class LeafInteraction extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> BREAK_BLOCK;
 	public static NodeSubType<LeafNode> USE_ITEM;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_interaction"); }
+	public Identifier getRegistryName() { return prefix("leaf_interaction"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
@@ -70,7 +71,7 @@ public class LeafInteraction extends NodeGroupLeaf
 			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{
-				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(false), Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false")));
+				return Map.of(CommonVariables.VAR_POS, NodeInput.makeInput(NodeInput.ofType(TFObjType.BOOL, true), new WhiteboardObj.Bool(false), Reference.ModInfo.translate("value", "boolean.false")));
 			}
 			
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
@@ -104,8 +105,8 @@ public class LeafInteraction extends NodeGroupLeaf
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
-			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_use_item");
-			public static final WhiteboardRef TARGET = new WhiteboardRef("target", TFObjType.BLOCK).displayName(Text.translatable("variable."+Reference.ModInfo.MOD_ID+".order_target"));
+			private static final Identifier BUILDER_ID = prefix("leaf_use_item");
+			public static final WhiteboardRef TARGET = new WhiteboardRef("target", TFObjType.BLOCK).displayName(CommonVariables.translate("order_target"));
 			
 			// Items that directly affect the player using them, hence cannot be used normally by a mob
 			private static final Set<Item> UNUSABLES = Set.of(Items.ENDER_PEARL, Items.LEAD, Items.FISHING_ROD);
@@ -159,7 +160,7 @@ public class LeafInteraction extends NodeGroupLeaf
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
-			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_activate");
+			private static final Identifier BUILDER_ID = prefix("leaf_activate");
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.HANDS); }
 			
@@ -192,7 +193,7 @@ public class LeafInteraction extends NodeGroupLeaf
 	{
 		return new INodeTickHandler<LeafNode>()
 		{
-			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_break");
+			private static final Identifier BUILDER_ID = prefix("leaf_break");
 			
 			public EnumSet<ActionFlag> flagsUsed() { return EnumSet.of(ActionFlag.LOOK, ActionFlag.HANDS); }
 			

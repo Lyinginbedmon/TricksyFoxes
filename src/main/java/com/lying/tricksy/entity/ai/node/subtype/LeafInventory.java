@@ -59,7 +59,7 @@ public class LeafInventory extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> INSERT_ITEM;
 	public static NodeSubType<LeafNode> EXTRACT_ITEM;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_inventory"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("leaf_inventory"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
@@ -113,7 +113,7 @@ public class LeafInventory extends NodeGroupLeaf
 	{
 		return new InventoryHandler()
 		{
-			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_insert");
+			private static final Identifier BUILDER_ID = Reference.ModInfo.prefix("leaf_insert");
 			
 			public static final WhiteboardRef TILE = CommonVariables.VAR_POS;
 			public static final WhiteboardRef FACE = InventoryHandler.FACE;
@@ -181,7 +181,7 @@ public class LeafInventory extends NodeGroupLeaf
 	{
 		return new InventoryHandler()
 		{
-			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "leaf_extract");
+			private static final Identifier BUILDER_ID = Reference.ModInfo.prefix("leaf_extract");
 			
 			public static final WhiteboardRef TILE = CommonVariables.VAR_POS;
 			public static final WhiteboardRef FACE = InventoryHandler.FACE;

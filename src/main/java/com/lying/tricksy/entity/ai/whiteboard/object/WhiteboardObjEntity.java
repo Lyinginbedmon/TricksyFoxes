@@ -71,7 +71,7 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 			return value.valueName;
 		else if(value.isFilter())
 			return (MutableText)value.type.getName();
-		return Text.translatable("value."+Reference.ModInfo.MOD_ID+".entity");
+		return Reference.ModInfo.translate("value", "entity").copy();
 	}
 	
 	public boolean isFilterList() { return this.isFilterList; }

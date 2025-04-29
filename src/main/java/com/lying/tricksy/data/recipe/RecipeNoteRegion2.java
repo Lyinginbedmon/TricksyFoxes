@@ -15,7 +15,7 @@ import net.minecraft.world.World;
 
 public class RecipeNoteRegion2 extends RecipeNote
 {
-	public static final Identifier ID = new Identifier(Reference.ModInfo.MOD_ID, "note_region");
+	public static final Identifier ID = Reference.ModInfo.prefix("note_region");
 	
 	public RecipeNoteRegion2() { super(ID); }
 	

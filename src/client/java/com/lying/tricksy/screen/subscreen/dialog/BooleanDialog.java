@@ -8,7 +8,6 @@ import com.lying.tricksy.screen.subscreen.CreateStaticScreen;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
 
 public class BooleanDialog extends ValueDialog<Boolean>
 {
@@ -19,10 +18,10 @@ public class BooleanDialog extends ValueDialog<Boolean>
 	protected void init()
 	{
 		clearChildren();
-		addDrawableChild(ButtonWidget.builder(Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean.false"), (button) -> 
+		addDrawableChild(ButtonWidget.builder(Reference.ModInfo.translate("value", "boolean.false"), (button) -> 
 		{
 			value = !value;
-			button.setMessage(Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean."+(value ? "true" : "false")));
+			button.setMessage(Reference.ModInfo.translate("value", "boolean."+(value ? "true" : "false")));
 		}).dimensions(this.width / 2 - 15, this.height / 2 - 15, 30, 30).build());
 	}
 	

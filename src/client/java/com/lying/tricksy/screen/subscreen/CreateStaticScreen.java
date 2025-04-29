@@ -18,7 +18,6 @@ import com.lying.tricksy.screen.subscreen.dialog.ValueDialog;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
 
 public class CreateStaticScreen extends NestedScreen<NodeScreen> implements INestedScreenProvider<CreateStaticScreen>
 {
@@ -55,7 +54,7 @@ public class CreateStaticScreen extends NestedScreen<NodeScreen> implements INes
 		typeList.setEntries(objPredicate, this);
 		typeList.setLeftPos(0);
 		
-		addDrawableChild(saveButton = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".tree_screen.save"), (button) -> 
+		addDrawableChild(saveButton = ButtonWidget.builder(Reference.ModInfo.translate("gui", "tree_screen.save"), (button) -> 
 		{
 			this.parent.currentNode.ioStatic(parent.targetIORef(), getCurrentValue()); 
 			this.refParent.closeStatic();

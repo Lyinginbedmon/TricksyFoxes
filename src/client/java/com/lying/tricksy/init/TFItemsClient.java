@@ -21,11 +21,11 @@ public class TFItemsClient
 	
 	public static void registerModelPredicates()
 	{
-		Identifier note_sealed = new Identifier(Reference.ModInfo.MOD_ID, "sealed");
+		Identifier note_sealed = Reference.ModInfo.prefix("sealed");
 		for(Item scroll : TFItems.SEALABLES)
 			ModelPredicateProviderRegistry.register(scroll, note_sealed, (itemStack, clientWorld, livingEntity, seed) -> { return ISealableItem.isSealed(itemStack) ? 1F : 0F; });
 		
-		Identifier fan_open = new Identifier(Reference.ModInfo.MOD_ID, "open");
+		Identifier fan_open = Reference.ModInfo.prefix("open");
 		ClampedModelPredicateProvider fan_is_open = (itemStack, clientWorld, livingEntity, seed) -> livingEntity != null && livingEntity.getActiveItem().equals(itemStack) ? 1F : 0F;
 		ModelPredicateProviderRegistry.register(TFItems.SAGE_FAN, fan_open, fan_is_open);
 		for(Item fan : TFItems.FAN_COLOR_MAP.values())

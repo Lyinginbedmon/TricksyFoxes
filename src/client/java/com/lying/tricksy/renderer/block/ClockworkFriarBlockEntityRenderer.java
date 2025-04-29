@@ -20,7 +20,7 @@ import net.minecraft.util.math.RotationAxis;
 
 public class ClockworkFriarBlockEntityRenderer implements BlockEntityRenderer<ClockworkFriarBlockEntity>
 {
-	private static final Identifier BASE_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/block/clockwork_friar.png");
+	private static final Identifier BASE_TEXTURE = Reference.ModInfo.prefix("textures/block/clockwork_friar.png");
 	private final ItemRenderer itemRenderer;
 	private final ModelClockworkFriar friarModel;
 	

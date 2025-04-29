@@ -124,7 +124,7 @@ public class TFItems
     
     private static Item register(String nameIn, Item itemIn)
     {
-    	ITEMS.put(new Identifier(Reference.ModInfo.MOD_ID, nameIn), itemIn);
+    	ITEMS.put(Reference.ModInfo.prefix(nameIn), itemIn);
     	if(itemIn instanceof ISealableItem)
     		SEALABLES.add(itemIn);
     	return itemIn;
@@ -135,7 +135,7 @@ public class TFItems
 		for(Entry<Identifier, Item> entry : ITEMS.entrySet())
 			Registry.register(Registries.ITEM, entry.getKey(), entry.getValue());
 		
-		Registry.register(Registries.ITEM_GROUP, new Identifier(Reference.ModInfo.MOD_ID, "item_group"), TRICKSY_GROUP);
+		Registry.register(Registries.ITEM_GROUP, Reference.ModInfo.prefix("item_group"), TRICKSY_GROUP);
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS).register((content) -> 
 		{
 			content.add(FOX_EGG);

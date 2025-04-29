@@ -24,7 +24,7 @@ public class ControlFlowMisc extends NodeGroupControlFlow
 	public static NodeSubType<ControlFlowNode> SELECTOR;
 	public static NodeSubType<ControlFlowNode> REACTIVE;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "control_flow_misc"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("control_flow_misc"); }
 	
 	public Collection<NodeSubType<ControlFlowNode>> getSubtypes()
 	{

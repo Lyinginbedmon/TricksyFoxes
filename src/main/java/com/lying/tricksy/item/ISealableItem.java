@@ -28,6 +28,6 @@ public interface ISealableItem
 	
 	public static Text getSealedName(Text nameIn)
 	{
-		return Text.translatable("item."+Reference.ModInfo.MOD_ID+".sealed_item", nameIn);
+		return Reference.ModInfo.translate("item", "sealed_item", nameIn);
 	}
 }

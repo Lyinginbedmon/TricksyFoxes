@@ -145,7 +145,7 @@ public class TFEnlightenmentPaths implements SimpleResourceReloadListener<List<J
 	
 	public Identifier getFabricId()
 	{
-		return new Identifier(Reference.ModInfo.MOD_ID, "enlightenment_paths");
+		return Reference.ModInfo.prefix("enlightenment_paths");
 	}
 	
 	public CompletableFuture<List<JsonObject>> load(ResourceManager manager, Profiler profiler, Executor executor)

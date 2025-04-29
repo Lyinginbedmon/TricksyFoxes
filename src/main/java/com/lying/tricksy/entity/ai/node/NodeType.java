@@ -33,7 +33,7 @@ import net.minecraft.util.Identifier;
 /** Defines a single behaviour tree node supertype */
 public class NodeType<M extends TreeNode<?>>
 {
-	public static final Identifier DUMMY_ID = new Identifier(Reference.ModInfo.MOD_ID, "dummy");
+	public static final Identifier DUMMY_ID = Reference.ModInfo.prefix("dummy");
 	private final NodeSubType<M> dummy = new NodeSubType<M>(DUMMY_ID, this, new INodeTickHandler<M>()
 	{
 		public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, M parent, int tick)
@@ -41,6 +41,7 @@ public class NodeType<M extends TreeNode<?>>
 			return Result.FAILURE;
 		}
 	});
+	
 	public Comparator<Identifier> subTypeSort = (o1,o2) -> TricksyUtils.stringComparator(getSubType(o1).translatedName().getString(), getSubType(o2).translatedName().getString());
 	private Identifier registryName = null;
 	private final int displayColor;
@@ -66,10 +67,13 @@ public class NodeType<M extends TreeNode<?>>
 		groupsBuilder = subTypeBuilder;
 	}
 	
-	public final void setRegistryName(Identifier idIn)
+	public final void setRegistryName(Identifier idIn) throws UnsupportedOperationException
 	{
 		if(this.registryName != null)
-			TricksyFoxes.LOGGER.error("Attempted to alter registry name of node type "+this.registryName.toString()+"!");
+		{
+			TricksyFoxes.LOGGER.error("Attempted to alter registry name of existing node type {}!", this.registryName.toString());
+			throw new UnsupportedOperationException();
+		}
 		this.registryName = idIn;
 	}
 	
@@ -80,9 +84,11 @@ public class NodeType<M extends TreeNode<?>>
 	@Nullable
 	public Identifier flowerTexture() { return this.flowerTexture; }
 	
-	public Text translatedName() { return Text.translatable("node."+registryName.getNamespace()+"."+registryName.getPath()); }
+	public final String translationSlug() { return "node."+registryName.getNamespace()+"."+registryName.getPath(); }
 	
-	public MutableText description() { return Text.translatable("node."+registryName.getNamespace()+"."+registryName.getPath()+".desc"); }
+	public Text translatedName() { return Text.translatable(translationSlug()); }
+	
+	public MutableText description() { return Text.translatable(translationSlug()+".desc"); }
 	
 	public final M create(UUID uuidIn) { return create(uuidIn, new NbtCompound()); }
 	

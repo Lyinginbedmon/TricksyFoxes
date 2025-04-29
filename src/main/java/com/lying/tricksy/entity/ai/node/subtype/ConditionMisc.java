@@ -54,7 +54,7 @@ public class ConditionMisc extends NodeGroupCondition
 	public static NodeSubType<ConditionNode> CAN_PATH_TO;
 	public static NodeSubType<ConditionNode> CLOSER_THAN;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "condition_misc"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("condition_misc"); }
 	
 	public Collection<NodeSubType<ConditionNode>> getSubtypes()
 	{
@@ -150,7 +150,7 @@ public class ConditionMisc extends NodeGroupCondition
 		}));
 		set.add(CAN_MINE = subtype(ISubtypeGroup.variant("can_mine"), new INodeTickHandler<ConditionNode>()
 		{
-			private static final Identifier BUILDER_ID = new Identifier(Reference.ModInfo.MOD_ID, "condition_mine");
+			private static final Identifier BUILDER_ID = Reference.ModInfo.prefix("condition_mine");
 			
 			public Map<WhiteboardRef, INodeIO> ioSet()
 			{

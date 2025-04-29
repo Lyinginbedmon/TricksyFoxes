@@ -41,7 +41,7 @@ public class DecoratorMisc extends NodeGroupDecorator
 	public static NodeSubType<DecoratorNode> DO_ONCE;
 	public static NodeSubType<DecoratorNode> WAIT_FOR_COOLDOWN;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "decorator_misc"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("decorator_misc"); }
 	
 	public Collection<NodeSubType<DecoratorNode>> getSubtypes()
 	{

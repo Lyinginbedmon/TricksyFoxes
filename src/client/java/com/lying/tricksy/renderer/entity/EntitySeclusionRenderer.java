@@ -22,7 +22,7 @@ import net.minecraft.util.math.Vec2f;
 public class EntitySeclusionRenderer extends EntityRenderer<EntitySeclusion>
 {
 	private static final MinecraftClient mc = MinecraftClient.getInstance();
-	private static final Identifier TEXTURE_CIRCLE = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/magic_circle.png");
+	private static final Identifier TEXTURE_CIRCLE = Reference.ModInfo.prefix("textures/entity/magic_circle.png");
 	
 	public EntitySeclusionRenderer(Context ctx)
 	{

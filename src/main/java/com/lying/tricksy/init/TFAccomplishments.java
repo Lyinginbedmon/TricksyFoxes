@@ -71,7 +71,7 @@ public class TFAccomplishments
 	
 	private static Accomplishment make(String nameIn)
 	{
-		Accomplishment made = new Accomplishment(new Identifier(Reference.ModInfo.MOD_ID, nameIn));
+		Accomplishment made = new Accomplishment(Reference.ModInfo.prefix(nameIn));
 		ACCOMPLISHMENTS.add(made);
 		return made;
 	}

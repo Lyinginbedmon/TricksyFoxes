@@ -219,7 +219,7 @@ public abstract class Whiteboard<T>
 	
 	protected IWhiteboardObject<?> cache(WhiteboardRef reference, WhiteboardObj<?,?> obj) { cache.put(reference, obj); return obj; }
 	
-	protected final void uncache(WhiteboardRef reference)
+	public final void uncache(WhiteboardRef reference)
 	{
 		cache.entrySet().removeIf(entry -> entry.getKey().isSameRef(reference));
 	}

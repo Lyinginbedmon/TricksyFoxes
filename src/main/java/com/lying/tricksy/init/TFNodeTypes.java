@@ -25,8 +25,8 @@ import net.minecraft.util.Identifier;
 
 public class TFNodeTypes
 {
-	public static final Identifier ROSE_FLOWER = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree/branch_rose.png");
-	public static final Identifier GRAPE_FLOWER = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree/branch_grapes.png");
+	public static final Identifier ROSE_FLOWER = Reference.ModInfo.prefix("textures/gui/tree/branch_rose.png");
+	public static final Identifier GRAPE_FLOWER = Reference.ModInfo.prefix("textures/gui/tree/branch_grapes.png");
 	
 	/**
 	 * NODE TYPES<br>
@@ -40,10 +40,10 @@ public class TFNodeTypes
 	 */
 	private static final Map<Identifier, NodeType<?>> TYPES = new HashMap<>();
 	
-	public static final NodeType<ControlFlowNode> CONTROL_FLOW = register(new Identifier(Reference.ModInfo.MOD_ID, "control_flow"), new NodeType<ControlFlowNode>(12596790, ROSE_FLOWER, ControlFlowNode::fromData, ControlFlowNode::getSubtypeGroups).setBaseSubType(ControlFlowMisc.VARIANT_SEQUENCE));
-	public static final NodeType<DecoratorNode> DECORATOR = register(new Identifier(Reference.ModInfo.MOD_ID, "decorator"), new NodeType<DecoratorNode>(3555008, GRAPE_FLOWER, DecoratorNode::fromData, DecoratorNode::getSubtypeGroups).setBaseSubType(DecoratorMisc.VARIANT_INVERTER));
-	public static final NodeType<ConditionNode> CONDITION = register(new Identifier(Reference.ModInfo.MOD_ID, "condition"), new NodeType<ConditionNode>(12630070, ConditionNode::fromData, ConditionNode::getSubtypeGroups).setBaseSubType(ConditionWhiteboard.VARIANT_VALUE_TRUE));
-	public static final NodeType<LeafNode> LEAF = register(new Identifier(Reference.ModInfo.MOD_ID, "leaf"), new NodeType<LeafNode>(3588150, LeafNode::fromData, LeafNode::getSubtypeGroups).setBaseSubType(LeafMisc.VARIANT_GOTO));
+	public static final NodeType<ControlFlowNode> CONTROL_FLOW = register(Reference.ModInfo.prefix("control_flow"), new NodeType<ControlFlowNode>(12596790, ROSE_FLOWER, ControlFlowNode::fromData, ControlFlowNode::getSubtypeGroups).setBaseSubType(ControlFlowMisc.VARIANT_SEQUENCE));
+	public static final NodeType<DecoratorNode> DECORATOR = register(Reference.ModInfo.prefix("decorator"), new NodeType<DecoratorNode>(3555008, GRAPE_FLOWER, DecoratorNode::fromData, DecoratorNode::getSubtypeGroups).setBaseSubType(DecoratorMisc.VARIANT_INVERTER));
+	public static final NodeType<ConditionNode> CONDITION = register(Reference.ModInfo.prefix("condition"), new NodeType<ConditionNode>(12630070, ConditionNode::fromData, ConditionNode::getSubtypeGroups).setBaseSubType(ConditionWhiteboard.VARIANT_VALUE_TRUE));
+	public static final NodeType<LeafNode> LEAF = register(Reference.ModInfo.prefix("leaf"), new NodeType<LeafNode>(3588150, LeafNode::fromData, LeafNode::getSubtypeGroups).setBaseSubType(LeafMisc.VARIANT_GOTO));
 	
 	private static <M extends TreeNode<M>> NodeType<M> register(Identifier registryName, NodeType<M> typeIn)
 	{

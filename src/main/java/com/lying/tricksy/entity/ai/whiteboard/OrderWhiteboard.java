@@ -122,9 +122,11 @@ public class OrderWhiteboard extends InertWhiteboard
 		
 		public Identifier texture() { return new Identifier(Reference.ModInfo.MOD_ID,"textures/gui/orders/"+asString()+".png"); }
 		
-		public MutableText translate() { return Text.translatable("order."+Reference.ModInfo.MOD_ID+"."+asString()); }
+		public final String translationSlug() { return "order."+Reference.ModInfo.MOD_ID+"."+asString(); }
 		
-		public MutableText translate(MutableText target) { return Text.translatable("order."+Reference.ModInfo.MOD_ID+"."+asString()+".desc", target); }
+		public MutableText translate() { return Text.translatable(translationSlug()); }
+		
+		public MutableText translate(MutableText target) { return Text.translatable(translationSlug()+".desc", target); }
 		
 		public MutableText translate(IWhiteboardObject<?> target) { return translate(target == null || target.size() == 0 ? Text.empty() : target.describe(0)); }
 		

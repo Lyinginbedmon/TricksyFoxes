@@ -19,7 +19,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
 
 public class TFEntityTypes
 {
@@ -54,7 +53,7 @@ public class TFEntityTypes
 	{
 		return Registry.register(
 				Registries.ENTITY_TYPE,
-				new Identifier(Reference.ModInfo.MOD_ID, name),
+				Reference.ModInfo.prefix(name),
 				entry);
 	}
 	

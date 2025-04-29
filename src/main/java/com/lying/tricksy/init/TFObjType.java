@@ -79,7 +79,7 @@ public class TFObjType<T>
 	
 	public TFObjType(String nameIn, int index, Supplier<IWhiteboardObject<T>> supplierIn)
 	{
-		this(new Identifier(Reference.ModInfo.MOD_ID, nameIn.toLowerCase()), index, supplierIn);
+		this(Reference.ModInfo.prefix(nameIn.toLowerCase()), index, supplierIn);
 	}
 	
 	public TFObjType(Identifier nameIn, int index, Supplier<IWhiteboardObject<T>> supplierIn)
@@ -97,7 +97,7 @@ public class TFObjType<T>
 	
 	public int index() { return this.index; }
 	
-	public Identifier texture() { return new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/obj_types/icon_"+toString()+".png"); }
+	public Identifier texture() { return Reference.ModInfo.prefix("textures/gui/obj_types/icon_"+toString()+".png"); }
 	
 	public static void init()
 	{

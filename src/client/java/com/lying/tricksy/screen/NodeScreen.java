@@ -44,7 +44,7 @@ import net.minecraft.util.math.Vec2f;
  */
 public class NodeScreen	extends TricksyScreenBase implements INestedScreenProvider<NodeScreen>
 {
-	public static final Identifier EDITOR_TEXTURES = new Identifier(Reference.ModInfo.MOD_ID, "textures/gui/tree_editor.png");
+	public static final Identifier EDITOR_TEXTURES = Reference.ModInfo.prefix("textures/gui/tree_editor.png");
 	private static final int MAIN_BAR_Y = 82;
 	public final PlayerEntity player;
 	

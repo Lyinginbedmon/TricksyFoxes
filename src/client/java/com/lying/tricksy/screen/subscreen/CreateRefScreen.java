@@ -72,7 +72,7 @@ public class CreateRefScreen extends NestedScreen<WhiteboardScreen>
 			buttonX += 20 + buttonSpacing;
 		};
 		
-		addDrawableChild(createButton = ButtonWidget.builder(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".whiteboard_screen.finalise"), button -> 
+		addDrawableChild(createButton = ButtonWidget.builder(Reference.ModInfo.translate("gui", "whiteboard_screen.finalise"), button -> 
 		{
 			WhiteboardRef reference = makeRef();
 			if(reference != null)
@@ -137,7 +137,7 @@ public class CreateRefScreen extends NestedScreen<WhiteboardScreen>
 		context.drawNineSlicedTexture(ValueDialog.DIALOG_TEXTURES, (this.width - backingWidth) / 2, (this.height - backingHeight) / 2, backingWidth, backingHeight, 10, 200, 26, 0, 0);
 		super.render(context, mouseX, mouseY, delta);
 		
-		Text title = Text.translatable("gui."+Reference.ModInfo.MOD_ID+".whiteboard_screen.create_reference");
+		Text title = Reference.ModInfo.translate("gui", "whiteboard_screen.create_reference");
 		context.drawText(client.textRenderer, title, (this.width - client.textRenderer.getWidth(title)) / 2, (this.height / 2) - 35, 0x505050, false);
 		this.nameField.render(context, mouseX, mouseY, delta);
 		

@@ -5,11 +5,11 @@ import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.lying.tricksy.entity.ai.NodeStatusLog;
 import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.registry.Registry;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 /** The various potential statuses to be reported to a {@link NodeStatusLog} */
@@ -34,7 +34,7 @@ public class TFNodeStatus
 	public static final TFNodeStatus FLAGS_OCCUPIED = register(ofName("flags_occupied"));
 	public static final TFNodeStatus CASTING = register(ofName("casting"));
 	
-	public static TFNodeStatus ofName(String nameIn) { return new TFNodeStatus(new Identifier(Reference.ModInfo.MOD_ID, nameIn)); }
+	public static TFNodeStatus ofName(String nameIn) { return new TFNodeStatus(Reference.ModInfo.prefix(nameIn)); }
 	
 	private final Identifier registryName;
 	
@@ -68,5 +68,5 @@ public class TFNodeStatus
 		return TFRegistries.STATUS_REGISTRY.get(nameIn);
 	}
 	
-	public static MutableText message(String id, Object... args) { return Text.translatable("debug.tricksy."+id.toLowerCase(), args); }
+	public static MutableText message(String id, Object... args) { return Reference.ModInfo.translate("debug", id.toLowerCase(), args).copy(); }
 }

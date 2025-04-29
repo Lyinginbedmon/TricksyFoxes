@@ -74,11 +74,11 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 				BehaviourTree nextTree = getTree(stack);
 				if(nextTree == null || (!doesNodeAcceptRecursive(nextTree.root(), entityType) && !shouldOverruleInvalid(stack)))
 				{
-					user.sendMessage(Text.translatable("item."+Reference.ModInfo.MOD_ID+".scripture.paste_fail", tricksy.getDisplayName()), true);
+					user.sendMessage(Reference.ModInfo.translate("item", "scripture.paste_fail", tricksy.getDisplayName()), true);
 					return ActionResult.FAIL;
 				}
 				
-				user.sendMessage(Text.translatable("item."+Reference.ModInfo.MOD_ID+".scripture.paste", tricksy.getDisplayName()), true);
+				user.sendMessage(Reference.ModInfo.translate("item", "scripture.paste", tricksy.getDisplayName()), true);
 				setOverrule(stack, false);
 				tricksy.setBehaviourTree(stack.getOrCreateSubNbt("Tree"));
 				return ActionResult.success(user.getWorld().isClient());
@@ -88,7 +88,7 @@ public class ItemScripture extends Item implements ISealableItem, ITreeItem
 		}
 		else if(!ISealableItem.isSealed(stack))
 		{
-			user.sendMessage(Text.translatable("item."+Reference.ModInfo.MOD_ID+".scripture.copy", stack.getName(), tricksy.getDisplayName()), true);
+			user.sendMessage(Reference.ModInfo.translate("item", "scripture.copy", stack.getName(), tricksy.getDisplayName()), true);
 			setTree(tricksy.getBehaviourTree(), stack);
 			return ActionResult.success(user.getWorld().isClient());
 		}

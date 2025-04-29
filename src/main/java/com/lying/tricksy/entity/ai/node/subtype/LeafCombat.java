@@ -67,7 +67,7 @@ public class LeafCombat extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> ATTACK_POTION;
 	public static NodeSubType<LeafNode> SHIELD;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_combat"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("leaf_combat"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{
@@ -97,6 +97,7 @@ public class LeafCombat extends NodeGroupLeaf
 				if(value.size() == 0)
 				{
 					tricksy.setTarget(null);
+					parent.logStatus(TFNodeStatus.SUCCESS, TFNodeStatus.message("clear_attack_target"));
 					return Result.SUCCESS;
 				}
 				
@@ -104,6 +105,7 @@ public class LeafCombat extends NodeGroupLeaf
 				if(ent instanceof LivingEntity)
 				{
 					tricksy.setTarget((LivingEntity)ent);
+					parent.logStatus(TFNodeStatus.SUCCESS, TFNodeStatus.message("set_attack_target", ent.getDisplayName()));
 					return Result.SUCCESS;
 				}
 				else
@@ -121,11 +123,17 @@ public class LeafCombat extends NodeGroupLeaf
 		{
 			protected <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result attack(T tricksy, LivingEntity target, LocalWhiteboard<T> local, LeafNode parent)
 			{
-				if(tricksy.isInAttackRange(target) && !target.isInvulnerable())
-				{
-					INodeTickHandler.swingHand(tricksy, Hand.MAIN_HAND);
-					return tricksy.tryAttack(target) ? Result.SUCCESS : Result.FAILURE;
-				}
+				if(!target.isInvulnerable())
+					if(tricksy.isInAttackRange(target))
+					{
+						INodeTickHandler.swingHand(tricksy, Hand.MAIN_HAND);
+						return tricksy.tryAttack(target) ? Result.SUCCESS : Result.FAILURE;
+					}
+					else
+					{
+						parent.logStatus(TFNodeStatus.INPUT_ERROR, TFNodeStatus.message("too_far"));
+						return Result.FAILURE;
+					}
 				parent.logStatus(TFNodeStatus.INPUT_ERROR);
 				return Result.FAILURE;
 			}

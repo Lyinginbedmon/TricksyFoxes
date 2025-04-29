@@ -23,5 +23,5 @@ public class TFPacketHandler
 	public static final Identifier GIVE_ORDER_ID		= make("give_order");
 	public static final Identifier ORDER_STATE_ID		= make("order_state");
 	
-	private static Identifier make(String nameIn) { return new Identifier(Reference.ModInfo.MOD_ID, nameIn); }
+	private static Identifier make(String nameIn) { return Reference.ModInfo.prefix(nameIn); }
 }

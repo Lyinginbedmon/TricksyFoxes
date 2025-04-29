@@ -9,7 +9,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -35,9 +34,9 @@ public class WhiteboardObjBlock extends WhiteboardObjBase<BlockPos, com.lying.tr
 	public MutableText describeValue(WhiteboardObjBlock.BlockData value)
 	{
 		if(value.face != Direction.UP)
-			return Text.translatable("value."+Reference.ModInfo.MOD_ID+".blockpos_long", value.pos.toShortString(), value.face.getName());
+			return Reference.ModInfo.translate("value", "blockpos_long", value.pos.toShortString(), value.face.getName()).copy();
 		else
-			return Text.translatable("value."+Reference.ModInfo.MOD_ID+".blockpos", value.pos.toShortString());
+			return Reference.ModInfo.translate("value", "blockpos", value.pos.toShortString()).copy();
 	}
 	
 	public Direction direction() { return value.isEmpty() ? Direction.UP : value.get(0).blockFace(); }

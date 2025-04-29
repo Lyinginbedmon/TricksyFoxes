@@ -19,7 +19,7 @@ import net.minecraft.util.Identifier;
 
 public class TricksyFoxMaskLayer extends FeatureRenderer<EntityTricksyFox, ModelTricksyFoxBase<EntityTricksyFox>>
 {
-	public static final Identifier texture = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/tricksy_fox/mask.png");
+	public static final Identifier texture = Reference.ModInfo.prefix("textures/entity/tricksy_fox/mask.png");
 	
 	private final ModelTricksyFoxBase<EntityTricksyFox> standing;
 	private final ModelTricksyFoxBase<EntityTricksyFox> crouching;

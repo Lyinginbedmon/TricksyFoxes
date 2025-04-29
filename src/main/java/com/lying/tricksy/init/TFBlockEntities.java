@@ -25,7 +25,7 @@ public class TFBlockEntities
 	
 	private static <T extends BlockEntity> BlockEntityType<T> register(String nameIn, BlockEntityType<T> typeIn)
 	{
-		BLOCK_ENTITIES.put(typeIn, new Identifier(Reference.ModInfo.MOD_ID, nameIn));
+		BLOCK_ENTITIES.put(typeIn, Reference.ModInfo.prefix(nameIn));
 		return typeIn;
 	}
 	

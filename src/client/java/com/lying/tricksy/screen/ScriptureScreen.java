@@ -1,8 +1,9 @@
 package com.lying.tricksy.screen;
 
+import static com.lying.tricksy.reference.Reference.ModInfo.translate;
+
 import com.google.common.base.Predicates;
 import com.lying.tricksy.network.ToggleScriptureOverrulePacket;
-import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -35,7 +36,7 @@ public class ScriptureScreen extends HandledScreen<ScriptureScreenHandler>
 			getScreenHandler().toggleOverrule();
 			ToggleScriptureOverrulePacket.send(client.player, getScreenHandler().shouldOverrule());
 		}).dimensions(this.width - 84, this.height - 20, 80, 16).build());
-		overrule.setTooltip(Tooltip.of(Text.translatable("gui."+Reference.ModInfo.MOD_ID+".scripture_screen.paste.desc")));
+		overrule.setTooltip(Tooltip.of(translate("gui", "scripture_screen.paste.desc")));
 	}
 	
 	public boolean shouldPause() { return true; }
@@ -75,8 +76,8 @@ public class ScriptureScreen extends HandledScreen<ScriptureScreenHandler>
 		ticksOpen++;
 		
 		overrule.setMessage(getScreenHandler().shouldOverrule() ? 
-				Text.translatable("gui."+Reference.ModInfo.MOD_ID+".scripture_screen.paste.force") : 
-				Text.translatable("gui."+Reference.ModInfo.MOD_ID+".scripture_screen.paste.prevent"));
+				translate("gui", "scripture_screen.paste.force") : 
+				translate("gui", "scripture_screen.paste.prevent"));
 	}
 	
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY)

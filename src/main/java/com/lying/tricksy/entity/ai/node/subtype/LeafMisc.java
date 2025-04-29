@@ -61,7 +61,7 @@ public class LeafMisc extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> WANDER;
 	public static NodeSubType<LeafNode> ORDER_COMPLETE;
 	
-	public Identifier getRegistryName() { return new Identifier(Reference.ModInfo.MOD_ID, "leaf_misc"); }
+	public Identifier getRegistryName() { return Reference.ModInfo.prefix("leaf_misc"); }
 	
 	public Collection<NodeSubType<LeafNode>> getSubtypes()
 	{

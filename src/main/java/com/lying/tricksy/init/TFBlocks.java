@@ -48,7 +48,7 @@ public class TFBlocks
 	
 	private static Block register(String nameIn, Block blockIn)
 	{
-		BLOCKS.put(new Identifier(Reference.ModInfo.MOD_ID, nameIn), blockIn);
+		BLOCKS.put(Reference.ModInfo.prefix(nameIn), blockIn);
 		return blockIn;
 	}
 	

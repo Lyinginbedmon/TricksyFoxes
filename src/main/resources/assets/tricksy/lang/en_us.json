@@ -263,9 +263,9 @@
 	"variant.tricksy.generic_combat": "Generic Combat",
 	"variant.tricksy.generic_combat.desc": "Performs very simple combat behaviours",
 	"variant.tricksy.generic_pickup": "Go Pick Up",
-	"variant.tricksy.generic_pickup.desc": "Performs very simple combat behaviours",
+	"variant.tricksy.generic_pickup.desc": "Travels to and picks up a target item",
 	"variant.tricksy.generic_break": "Go Break Block",
-	"variant.tricksy.generic_break.desc": "Performs very simple combat behaviours",
+	"variant.tricksy.generic_break.desc": "Travels to and breaks a target block",
 	"variant.tricksy.look_at": "Look At",
 	"variant.tricksy.look_at.desc": "Looks at a creature or position",
 	"variant.tricksy.look_around": "Look Around",
@@ -462,5 +462,8 @@
 	"debug.tricksy.no_path": "Can't path to there",
 	"debug.tricksy.no_zone": "Zone missing or destroyed",
 	"debug.tricksy.insufficient_targets": "Couldn't find enough targets",
-	"debug.tricksy.targeted": "Targeted %s"
+	"debug.tricksy.targeted": "Targeted %s",
+	"debug.tricksy.clear_attack_target": "Cleared attack target",
+	"debug.tricksy.set_attack_target": "Set attack target to %s",
+	"debug.tricksy.too_far": "Target is too far away"
 }

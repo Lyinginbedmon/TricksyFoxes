@@ -20,7 +20,6 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry.TexturedModelDataProvider;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
-import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
 public class TFModelParts
@@ -57,7 +56,7 @@ public class TFModelParts
 	
 	private static EntityModelLayer ofName(String main, String part)
 	{
-		return new EntityModelLayer(new Identifier(Reference.ModInfo.MOD_ID, main), part);
+		return new EntityModelLayer(Reference.ModInfo.prefix(main), part);
 	}
 	
 	public static void init()

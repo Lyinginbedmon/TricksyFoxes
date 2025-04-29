@@ -13,7 +13,6 @@ import net.minecraft.entity.damage.DamageType;
 import net.minecraft.registry.Registerable;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
 public class TFDamageTypes
@@ -25,7 +24,7 @@ public class TFDamageTypes
 	
 	public static RegistryKey<DamageType> register(DamageType source)
 	{
-		RegistryKey<DamageType> type = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier(Reference.ModInfo.MOD_ID, source.msgId()));
+		RegistryKey<DamageType> type = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Reference.ModInfo.prefix(source.msgId()));
 		TYPES.put(type, source);
 		return type;
 	}

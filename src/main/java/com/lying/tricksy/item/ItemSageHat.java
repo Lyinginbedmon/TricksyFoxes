@@ -33,7 +33,7 @@ public class ItemSageHat extends DyeableArmorItem implements ITreeItem
 	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context)
 	{
 		super.appendTooltip(stack, world, tooltip, context);
-		tooltip.add(Text.translatable("item."+Reference.ModInfo.MOD_ID+".sage_hat.tooltip").setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
+		tooltip.add(Reference.ModInfo.translate("item", "sage_hat.tooltip").copy().setStyle(Style.EMPTY.withItalic(true).withFormatting(Formatting.GRAY)));
 	}
 	
 	/** Returns the UUID stored in this hat, or null if there isn't one */
@@ -70,12 +70,12 @@ public class ItemSageHat extends DyeableArmorItem implements ITreeItem
 		if(!tricksy.hasSage() || tricksy.isSage(user))
 		{
 			tricksy.setSage(ItemSageHat.getSageID(stack, user));
-			user.sendMessage(Text.translatable("item."+Reference.ModInfo.MOD_ID+".sage_hat.master_set", tricksy.getDisplayName()), true);
+			user.sendMessage(Reference.ModInfo.translate("item", "sage_hat.master_set", tricksy.getDisplayName()), true);
 			return ActionResult.success(tricksy.getWorld().isClient());
 		}
 		else
 		{
-			user.sendMessage(Text.translatable("item."+Reference.ModInfo.MOD_ID+".sage_hat.master_set.fail", tricksy.getDisplayName()), true);
+			user.sendMessage(Reference.ModInfo.translate("item", "sage_hat.master_set.fail", tricksy.getDisplayName()), true);
 			return ActionResult.FAIL;
 		}
 	}

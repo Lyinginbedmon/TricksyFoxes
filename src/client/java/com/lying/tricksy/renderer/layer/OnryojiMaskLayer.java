@@ -16,7 +16,7 @@ import net.minecraft.util.Identifier;
 
 public class OnryojiMaskLayer extends FeatureRenderer<EntityOnryoji, ModelOnryoji<EntityOnryoji>>
 {
-	public static final Identifier TEXTURE = new Identifier(Reference.ModInfo.MOD_ID, "textures/entity/onryoji/onryoji_mask.png");
+	public static final Identifier TEXTURE = Reference.ModInfo.prefix("textures/entity/onryoji/onryoji_mask.png");
 	
 	protected final ModelOnryoji<EntityOnryoji> maskModel;
 	
