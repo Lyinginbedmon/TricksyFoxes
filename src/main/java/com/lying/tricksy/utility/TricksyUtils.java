@@ -48,7 +48,7 @@ public class TricksyUtils
 	
 	public static Text translateDirection(Direction dir)
 	{
-		return Text.translatable("enum."+Reference.ModInfo.MOD_ID+".direction."+dir.asString());
+		return Reference.ModInfo.translate("enum", "direction."+dir.asString());
 	}
 	
 	public static MutableText tooltipToMultilineText(List<MutableText> tooltip)

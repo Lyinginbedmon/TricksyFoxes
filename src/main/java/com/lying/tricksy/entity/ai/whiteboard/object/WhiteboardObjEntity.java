@@ -50,13 +50,13 @@ public class WhiteboardObjEntity extends WhiteboardObjBase<Entity, com.lying.tri
 	{
 		List<Text> description = Lists.newArrayList();
 		
-		String header = "value."+Reference.ModInfo.MOD_ID+".entity";
+		String header = "entity";
 		if(isFilterList)
 			header += "_filter";
 		if(isList())
 			header += "_list";
 		
-		description.add(Text.translatable(header, value.size()));
+		description.add(Reference.ModInfo.translate("value", header, value.size()));
 		
 		value.forEach((val) -> {
 			Text entry = describeValue(val);

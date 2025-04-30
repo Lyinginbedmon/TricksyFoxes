@@ -43,7 +43,7 @@ public abstract class WhiteboardObj<T, G extends NbtElement> extends WhiteboardO
 		
 		protected NbtByte valueToNbt(Boolean val) { return NbtByte.of(val); }
 		protected Boolean valueFromNbt(NbtByte nbt) { return nbt.byteValue() > 0; }
-		protected MutableText describeValue(Boolean value) { return Text.translatable("value."+Reference.ModInfo.MOD_ID+".boolean."+(value ? "true" : "false")); }
+		protected MutableText describeValue(Boolean value) { return Reference.ModInfo.translate("value", "boolean."+(value ? "true" : "false")).copy(); }
 	}
 	
 	public static class Int extends WhiteboardObj<Integer, NbtInt>

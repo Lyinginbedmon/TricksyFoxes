@@ -115,7 +115,7 @@ public interface INodeIOValue
 			return new StaticValue(IWhiteboardObject.createFromNbt(compound));
 		}
 		
-		public Text displayName() { return value.size() > 0 ? value.describe().get(0) : Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+".static_value"); }
+		public Text displayName() { return value.size() > 0 ? value.describe().get(0) : Reference.ModInfo.translate("whiteboard", "static_value"); }
 	}
 	
 	public static enum Type implements StringIdentifiable

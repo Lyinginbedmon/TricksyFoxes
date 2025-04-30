@@ -39,7 +39,7 @@ public class EntityOfudaStuckRenderer extends EntityRenderer<EntityOfudaStuck>
 			Direction.EAST, new ModelIdentifier(Reference.ModInfo.MOD_ID, "ofuda", "facing=east"),
 			Direction.SOUTH, new ModelIdentifier(Reference.ModInfo.MOD_ID, "ofuda", "facing=south"),
 			Direction.WEST, new ModelIdentifier(Reference.ModInfo.MOD_ID, "ofuda", "facing=west"));
-	private static final Identifier EXPLOSION_BEAM_TEXTURE = new Identifier(Reference.ModInfo.MOD_ID,"textures/chain.png");
+	private static final Identifier EXPLOSION_BEAM_TEXTURE = Reference.ModInfo.prefix("textures/chain.png");
 	private static final RenderLayer LAYER = RenderLayer.getEntityCutoutNoCull(EXPLOSION_BEAM_TEXTURE);
 	private final BlockRenderManager blockRenderManager;
 	

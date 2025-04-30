@@ -22,7 +22,6 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.text.Text;
 import net.minecraft.world.World;
 
 /**
@@ -279,6 +278,6 @@ public abstract class Whiteboard<T>
 	protected static WhiteboardRef makeRef(String name, TFObjType<?> type, BoardType board)
 	{
 		name = name.replace(' ', '_').toLowerCase();
-		return new WhiteboardRef(name, type, board).displayName(Text.translatable("whiteboard."+Reference.ModInfo.MOD_ID+"."+name));
+		return new WhiteboardRef(name, type, board).displayName(Reference.ModInfo.translate("whiteboard", name));
 	}
 }

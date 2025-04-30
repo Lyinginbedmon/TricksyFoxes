@@ -123,7 +123,7 @@ public class WorkTableBlockEntity extends LockableContainerBlockEntity implement
 	
 	public boolean canExtract(int slot, ItemStack stack, Direction face) { return slot == 9 && face == Direction.DOWN; }
 	
-	protected Text getContainerName() { return Text.translatable("block."+Reference.ModInfo.MOD_ID+".work_table"); }
+	protected Text getContainerName() { return Reference.ModInfo.translate("block", "work_table"); }
 	
 	public void updateRecipeOutput()
 	{

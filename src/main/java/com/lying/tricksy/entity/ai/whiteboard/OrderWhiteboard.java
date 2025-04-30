@@ -39,7 +39,7 @@ public class OrderWhiteboard extends InertWhiteboard
 	
 	private static WhiteboardRef makeRef(String name, TFObjType<?> type)
 	{
-		return makeRef(name, type, TFWhiteboards.ORDER).displayName(Text.translatable("variable."+Reference.ModInfo.MOD_ID+".order_"+name));
+		return makeRef(name, type, TFWhiteboards.ORDER).displayName(Reference.ModInfo.translate("variable", "order_"+name));
 	}
 	
 	public Whiteboard<?> build()
@@ -120,13 +120,11 @@ public class OrderWhiteboard extends InertWhiteboard
 		
 		public int color() { return this.borderColor; }
 		
-		public Identifier texture() { return new Identifier(Reference.ModInfo.MOD_ID,"textures/gui/orders/"+asString()+".png"); }
+		public Identifier texture() { return Reference.ModInfo.prefix("textures/gui/orders/"+asString()+".png"); }
 		
-		public final String translationSlug() { return "order."+Reference.ModInfo.MOD_ID+"."+asString(); }
+		public MutableText translate() { return Reference.ModInfo.translate("order", asString()).copy(); }
 		
-		public MutableText translate() { return Text.translatable(translationSlug()); }
-		
-		public MutableText translate(MutableText target) { return Text.translatable(translationSlug()+".desc", target); }
+		public MutableText translate(MutableText target) { return Reference.ModInfo.translate("order", asString()+".desc", target).copy(); }
 		
 		public MutableText translate(IWhiteboardObject<?> target) { return translate(target == null || target.size() == 0 ? Text.empty() : target.describe(0)); }
 		

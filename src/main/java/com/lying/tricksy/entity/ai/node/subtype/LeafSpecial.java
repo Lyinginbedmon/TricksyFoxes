@@ -130,7 +130,7 @@ public class LeafSpecial extends NodeGroupLeaf
 						List<MutableText> list = Lists.newArrayList();
 						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_FOX.getName()));
 						list.addAll(super.fullDescription());
-						list.add(cooldownDesc(Text.translatable("info."+Reference.ModInfo.MOD_ID+".fox_pray_cooldown")));
+						list.add(cooldownDesc(Reference.ModInfo.translate("info", "fox_pray_cooldown")));
 						return list;
 					}
 				});
@@ -155,7 +155,7 @@ public class LeafSpecial extends NodeGroupLeaf
 						List<MutableText> list = Lists.newArrayList();
 						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_GOAT.getName()));
 						list.addAll(super.fullDescription());
-						list.add(cooldownDesc(Text.translatable("info."+Reference.ModInfo.MOD_ID+".goat_ram_cooldown")));
+						list.add(cooldownDesc(Reference.ModInfo.translate("info", "goat_ram_cooldown")));
 						return list;
 					}
 				});
@@ -183,7 +183,7 @@ public class LeafSpecial extends NodeGroupLeaf
 						List<MutableText> list = Lists.newArrayList();
 						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_FOX.getName()));
 						list.addAll(super.fullDescription());
-						list.add(cooldownDesc(Text.translatable("info."+Reference.ModInfo.MOD_ID+".fox_fire_cooldown")));
+						list.add(cooldownDesc(Reference.ModInfo.translate("info", "fox_fire_cooldown")));
 						return list;
 					}
 				});
@@ -200,7 +200,7 @@ public class LeafSpecial extends NodeGroupLeaf
 						List<MutableText> list = Lists.newArrayList();
 						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_GOAT.getName()));
 						list.addAll(super.fullDescription());
-						list.add(cooldownDesc(Text.translatable("info."+Reference.ModInfo.MOD_ID+".goat_blockade_cooldown")));
+						list.add(cooldownDesc(Reference.ModInfo.translate("info", "goat_blockade_cooldown")));
 						return list;
 					}
 				});
@@ -212,7 +212,7 @@ public class LeafSpecial extends NodeGroupLeaf
 						List<MutableText> list = Lists.newArrayList();
 						list.add(exclusivityDesc(TFEntityTypes.TRICKSY_GOAT.getName()));
 						list.addAll(super.fullDescription());
-						list.add(cooldownDesc(Text.translatable("info."+Reference.ModInfo.MOD_ID+".goat_jump_cooldown")));
+						list.add(cooldownDesc(Reference.ModInfo.translate("info", "goat_jump_cooldown")));
 						return list;
 					}
 				});

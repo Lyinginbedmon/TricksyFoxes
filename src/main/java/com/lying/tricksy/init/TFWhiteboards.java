@@ -71,7 +71,7 @@ public class TFWhiteboards
 		
 		public String asString() { return name.toLowerCase(); }
 		
-		public Text translate() { return Text.translatable("board."+Reference.ModInfo.MOD_ID+"."+asString()); }
+		public Text translate() { return Reference.ModInfo.translate("board", asString()); }
 		
 		/** Returns true if mobs should be prevented from editing values in this whiteboard */
 		public boolean isReadOnly() { return this.readOnly; }

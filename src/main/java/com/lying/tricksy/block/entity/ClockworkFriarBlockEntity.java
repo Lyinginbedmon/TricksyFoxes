@@ -135,7 +135,7 @@ public class ClockworkFriarBlockEntity extends LockableContainerBlockEntity impl
 	
 	public boolean canPlayerUse(PlayerEntity player) { return Inventory.canPlayerUse(this, player); }
 	
-	protected Text getContainerName() { return Text.translatable("block."+Reference.ModInfo.MOD_ID+".clockwork_friar"); }
+	protected Text getContainerName() { return Reference.ModInfo.translate("block", "clockwork_friar"); }
 	
 	public Direction facing()
 	{

@@ -37,11 +37,11 @@ public class Accomplishment
 	
 	public MutableText translate()
 	{
-		String slug = "accomplishment."+Reference.ModInfo.MOD_ID+"."+name.getPath();
+		String slug = name.getPath();
 		final MutableText reg = Text.literal(name.toString());
-		final MutableText desc = Text.translatable(slug+".desc").styled(style -> style.withObfuscated(isObfuscated))
+		final MutableText desc = Reference.ModInfo.translate("accomplishment", slug+".desc").copy().styled(style -> style.withObfuscated(isObfuscated))
 				.append("\n").append(reg.styled(style -> style.withObfuscated(false).withColor(Formatting.DARK_GRAY)));
-		MutableText name = Text.translatable(slug).styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, desc)));
+		MutableText name = Reference.ModInfo.translate("accomplishment", slug).copy().styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, desc)));
 		return Text.literal("[").append(name).append("]");
 	}
 	

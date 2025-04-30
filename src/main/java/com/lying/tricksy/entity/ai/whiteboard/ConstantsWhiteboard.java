@@ -20,15 +20,14 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.TagKey;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 public class ConstantsWhiteboard extends InertWhiteboard
 {
-	public static final WhiteboardRef ENT_MONSTERS = new WhiteboardRef("entity_monster", TFObjType.ENT).filter().displayName(Text.translatable("constant."+Reference.ModInfo.MOD_ID+".entity_monster"));
-	public static final WhiteboardRef ENT_ANIMALS = new WhiteboardRef("entity_animal", TFObjType.ENT).filter().displayName(Text.translatable("constant."+Reference.ModInfo.MOD_ID+".entity_animal"));
-	public static final WhiteboardRef ENT_PLAYERS = new WhiteboardRef("entity_player", TFObjType.ENT).filter().displayName(Text.translatable("constant."+Reference.ModInfo.MOD_ID+".entity_player"));
+	public static final WhiteboardRef ENT_MONSTERS = new WhiteboardRef("entity_monster", TFObjType.ENT).filter().displayName(Reference.ModInfo.translate("constant", "entity_monster"));
+	public static final WhiteboardRef ENT_ANIMALS = new WhiteboardRef("entity_animal", TFObjType.ENT).filter().displayName(Reference.ModInfo.translate("constant", "entity_animal"));
+	public static final WhiteboardRef ENT_PLAYERS = new WhiteboardRef("entity_player", TFObjType.ENT).filter().displayName(Reference.ModInfo.translate("constant", "entity_player"));
 	
 	public static WhiteboardObjEntity FILTER_MONSTER = new WhiteboardObjEntity().setFilter(true);
 	public static WhiteboardObjEntity FILTER_ANIMAL = new WhiteboardObjEntity().setFilter(true);

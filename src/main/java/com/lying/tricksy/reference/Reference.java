@@ -13,6 +13,8 @@ public class Reference
 		
 		public static final String VERSION	= "4.1";
 		
+		public static final String LEAD_DEV	= "_Lying";
+		
 		public static Identifier prefix(String name) { return Identifier.of(MOD_ID, name); }
 		public static Text translate(String prefix, String suffix) { return Text.translatable(prefix + "." + MOD_ID + "." + suffix); }
 		public static Text translate(String prefix, String suffix, Object... args) { return Text.translatable(prefix + "." + MOD_ID + "." + suffix, args); }

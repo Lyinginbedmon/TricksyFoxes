@@ -18,6 +18,7 @@ import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.network.AddLocalReferencePacket;
 import com.lying.tricksy.network.DeleteReferencePacket;
 import com.lying.tricksy.network.SaveTreePacket;
+import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.screen.NodeRenderUtils.NodeDisplay;
 
 import net.fabricmc.api.EnvType;
@@ -28,7 +29,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec2f;
 import oshi.util.tuples.Pair;
@@ -186,7 +186,7 @@ public class TreeScreen extends TricksyScreenBase
 		this.save.render(context, mouseX, mouseY, 0F);
 		this.whiteboards.render(context, mouseX, mouseY, 0F);
 		
-		MutableText tally = Text.translatable("gui.tricksy.tree_screen.node_tally", getScreenHandler().nodeCount(), getScreenHandler().getCap());
+		Text tally = Reference.ModInfo.translate("gui", "tree_screen.node_tally", getScreenHandler().nodeCount(), getScreenHandler().getCap());
 		int tallyX = width - 5 - textRenderer.getWidth(tally);
 		int tallyY = height - 5 - textRenderer.fontHeight;
 		context.drawText(textRenderer, tally, tallyX, tallyY, -1, false);

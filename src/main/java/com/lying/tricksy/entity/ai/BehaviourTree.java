@@ -31,7 +31,6 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.text.Text;
 import net.minecraft.world.World;
 
 /**
@@ -42,10 +41,10 @@ public class BehaviourTree
 {
 	/** Default behaviour tree applied on tricksy mob startup before being overridden by NBT */
 	public static final TreeNode<?> INITIAL_TREE = 
-			ControlFlowMisc.SELECTOR.create().named(Text.translatable("node."+Reference.ModInfo.MOD_ID+".root"))
+			ControlFlowMisc.SELECTOR.create().named(Reference.ModInfo.translate("node", "root"))
 				.child(DecoratorMisc.DO_ONCE.create()
 					.child(LeafMisc.SET_HOME.create(Map.of(CommonVariables.VAR_POS, new WhiteboardValue(LocalWhiteboard.SELF)))))
-				.child(ControlFlowMisc.SEQUENCE.create().named(Text.translatable("node."+Reference.ModInfo.MOD_ID+".meander")).discrete()
+				.child(ControlFlowMisc.SEQUENCE.create().named(Reference.ModInfo.translate("node", "meander")).discrete()
 					.child(ConditionWhiteboard.EQUALS.create(Map.of(
 						CommonVariables.VAR_A, new WhiteboardValue(LocalWhiteboard.HAS_SAGE), 
 						CommonVariables.VAR_B, new StaticValue(new WhiteboardObj.Bool(false)))))
@@ -53,7 +52,7 @@ public class BehaviourTree
 					.child(DecoratorMisc.FORCE_SUCCESS.create()
 						.child(LeafMisc.WANDER.create()))
 					.child(LeafMisc.LOOK_AROUND.create()))
-				.child(ControlFlowMisc.SEQUENCE.create().named(Text.translatable("node."+Reference.ModInfo.MOD_ID+".follow_sage"))
+				.child(ControlFlowMisc.SEQUENCE.create().named(Reference.ModInfo.translate("node", "follow_sage"))
 					.child(DecoratorMisc.INVERTER.create()
 						.child(ConditionMisc.CLOSER_THAN.create(Map.of(
 							CommonVariables.VAR_POS_A, new WhiteboardValue(LocalWhiteboard.NEAREST_SAGE), 
@@ -62,7 +61,7 @@ public class BehaviourTree
 						CommonVariables.VAR_POS, new WhiteboardValue(LocalWhiteboard.NEAREST_SAGE)))));
 	
 	public static final TreeNode<?> COMMAND_DEFAULT =
-			ControlFlowMisc.SEQUENCE.create().named(Text.translatable("node."+Reference.ModInfo.MOD_ID+".root"))
+			ControlFlowMisc.SEQUENCE.create().named(Reference.ModInfo.translate("node", "root"))
 				.child(LeafMisc.ORDER_COMPLETE.create());
 	
 	private static final String TREE_KEY = "Tree";
