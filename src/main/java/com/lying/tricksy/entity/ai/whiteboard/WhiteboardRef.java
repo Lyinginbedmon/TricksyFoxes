@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -15,11 +16,12 @@ import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.init.TFWhiteboards;
 import com.lying.tricksy.init.TFWhiteboards.BoardType;
 import com.lying.tricksy.utility.TricksyUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 
 /**
  * A complex reference object that denotes a value in a whiteboard of a specific type.<br>
@@ -32,6 +34,36 @@ public class WhiteboardRef
 	public static final String NAME_KEY = "Name";
 	public static final String BOARD_KEY = "Board";
 	public static final String TYPE_KEY = "Type";
+	
+	public static final Codec<WhiteboardRef> CODEC	= RecordCodecBuilder.create(instance -> instance.group(
+			Codec.STRING.fieldOf(NAME_KEY).forGetter(WhiteboardRef::name),
+			TFObjType.CODEC.fieldOf(TYPE_KEY).forGetter(WhiteboardRef::type),
+			BoardType.CODEC.fieldOf(BOARD_KEY).forGetter(WhiteboardRef::boardType),
+			Codec.BOOL.optionalFieldOf("Live").forGetter(r -> r.noCache ? Optional.of(r.noCache) : Optional.empty()),
+			Codec.BOOL.optionalFieldOf("Filter").forGetter(r -> r.isFilter ? Optional.of(r.isFilter) : Optional.empty()),
+			Codec.BOOL.optionalFieldOf("Hidden").forGetter(r -> r.isHidden ? Optional.of(r.isHidden) : Optional.empty()),
+			Codec.STRING.optionalFieldOf("DisplayName").forGetter(r -> r.displayName != null ? Optional.of(Text.Serializer.toJson(r.displayName)) : Optional.empty())
+			).apply(instance, (name, type, board, uncached, filtered, hidden, displayName) -> 
+			{
+				WhiteboardRef reference = new WhiteboardRef(name, type, board);
+				uncached.ifPresent(b -> reference.noCache = b);
+				filtered.ifPresent(b -> reference.isFilter = b);
+				hidden.ifPresent(b -> reference.isHidden = b);
+				if(displayName.isPresent())
+				{
+					String string = displayName.get();
+					try
+					{
+						reference.displayName = Text.Serializer.fromJson(string);
+					}
+					catch(Exception e)
+					{
+						TricksyFoxes.LOGGER.warn("Failed to parse whiteboard reference custom name {}", (Object)string, (Object)e);
+					}
+				}
+				
+				return reference;
+			}));
 	
 	public static final Comparator<WhiteboardRef> REF_SORT = new Comparator<>()
 	{
@@ -141,49 +173,14 @@ public class WhiteboardRef
 	
 	public boolean isHidden() { return this.isHidden; }
 	
-	public NbtCompound writeToNbt(NbtCompound data)
+	public NbtCompound toNbt()
 	{
-		data.putString(NAME_KEY, name);
-		data.putString(BOARD_KEY, onBoard.asString());
-		data.putString(TYPE_KEY, varType.registryName().toString());
-		
-		if(noCache)
-			data.putBoolean("Live", noCache);
-		if(isFilter)
-			data.putBoolean("Filter", isFilter);
-		if(isHidden)
-			data.putBoolean("Hidden", isHidden);
-		if(displayName != null)
-			data.putString("DisplayName", Text.Serializer.toJson(displayName));
-		return data;
+		return (NbtCompound)CODEC.encodeStart(NbtOps.INSTANCE, this).result().get();
 	}
 	
 	public static WhiteboardRef fromNbt(NbtCompound data)
 	{
-		String name = data.getString(NAME_KEY);
-		BoardType board = TFWhiteboards.fromString(data.getString(BOARD_KEY));
-		TFObjType<?> type = TFObjType.getType(new Identifier(data.getString(TYPE_KEY)));
-		WhiteboardRef ref = new WhiteboardRef(name, type, board);
-		
-		if(data.contains("Live") && data.getBoolean("Live"))
-			ref.noCache();
-		if(data.contains("Filter") && data.getBoolean("Filter"))
-			ref.filter();
-		if(data.contains("Hidden") && data.getBoolean("Hidden"))
-			ref.hidden();
-		if(data.contains("DisplayName", NbtElement.STRING_TYPE))
-		{
-			String string = data.getString("DisplayName");
-			try
-			{
-				ref.displayName = Text.Serializer.fromJson(string);
-			}
-			catch(Exception e)
-			{
-				TricksyFoxes.LOGGER.warn("Failed to parse whiteboard reference custom name {}", (Object)string, (Object)e);
-			}
-		}
-		return ref;
+		return CODEC.parse(NbtOps.INSTANCE, data).resultOrPartial(TricksyFoxes.LOGGER::error).orElseThrow();
 	}
 	
 	@Nullable

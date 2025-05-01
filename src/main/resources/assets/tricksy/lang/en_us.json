@@ -465,5 +465,6 @@
 	"debug.tricksy.targeted": "Targeted %s",
 	"debug.tricksy.clear_attack_target": "Cleared attack target",
 	"debug.tricksy.set_attack_target": "Set attack target to %s",
-	"debug.tricksy.too_far": "Target is too far away"
+	"debug.tricksy.too_far": "Target is too far away",
+	"debug.tricksy.node_handler_error": "Node handler found unspecified handling, report this bug!"
 }

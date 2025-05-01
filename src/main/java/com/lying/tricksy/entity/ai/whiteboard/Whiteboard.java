@@ -119,7 +119,7 @@ public abstract class Whiteboard<T>
 				continue;
 			
 			NbtCompound data = new NbtCompound();
-			data.put("Ref", entry.getKey().writeToNbt(new NbtCompound()));
+			data.put("Ref", entry.getKey().toNbt());
 			data.put("Value", supplierToValue(entry.getValue()).writeToNbt(new NbtCompound()));
 			list.add(data);
 		}
@@ -230,7 +230,7 @@ public abstract class Whiteboard<T>
 			if(ref.isHidden())
 				return;
 			NbtCompound data = new NbtCompound();
-			data.put("Ref", ref.writeToNbt(new NbtCompound()));
+			data.put("Ref", ref.toNbt());
 			IWhiteboardObject<?> value = getValue(ref);
 			if(!value.isEmpty())
 				data.put("Val", getValue(ref).writeToNbt(new NbtCompound()));

@@ -160,14 +160,14 @@ public class BehaviourTree
 	
 	public NbtCompound storeTrees(NbtCompound data)
 	{
-		data.put(TREE_KEY, this.treeRoot().write(new NbtCompound()));
+		data.put(TREE_KEY, this.treeRoot().write());
 		
 		NbtList list = new NbtList();
 		this.commandNodes.forEach((type,tree) -> 
 		{
 			NbtCompound nbt = new NbtCompound();
 			nbt.putString("Order", type.asString());
-			nbt.put("Tree", tree.write(new NbtCompound()));
+			nbt.put("Tree", tree.write());
 			list.add(nbt);
 		});
 		data.put(EXECUTOR_KEY, list);
@@ -234,7 +234,7 @@ public class BehaviourTree
 		if(forest.hasTreeFor(tricksy))
 			setTrees(forest.getTreeFor(tricksy));
 		else
-			setTrees(INITIAL_TREE.write(new NbtCompound()));
+			setTrees(INITIAL_TREE.write());
 	}
 	
 	/** Attempts to synchronise this tree with the one on file in the forest */

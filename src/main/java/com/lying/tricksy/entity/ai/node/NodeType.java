@@ -21,8 +21,10 @@ import com.lying.tricksy.entity.ai.node.subtype.ISubtypeGroup;
 import com.lying.tricksy.entity.ai.node.subtype.NodeSubType;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
+import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.TricksyUtils;
+import com.mojang.serialization.Codec;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -41,6 +43,8 @@ public class NodeType<M extends TreeNode<?>>
 			return Result.FAILURE;
 		}
 	});
+	
+	public static final Codec<NodeType<?>> CODEC	= Identifier.CODEC.xmap(TFNodeTypes::getTypeById, NodeType::getRegistryName);
 	
 	public Comparator<Identifier> subTypeSort = (o1,o2) -> TricksyUtils.stringComparator(getSubType(o1).translatedName().getString(), getSubType(o2).translatedName().getString());
 	private Identifier registryName = null;

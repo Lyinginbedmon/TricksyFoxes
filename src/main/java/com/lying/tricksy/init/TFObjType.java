@@ -19,6 +19,7 @@ import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjRegion;
 import com.lying.tricksy.reference.Reference;
 import com.lying.tricksy.utility.Region;
+import com.mojang.serialization.Codec;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
@@ -33,6 +34,8 @@ import net.minecraft.util.math.Direction;
 public class TFObjType<T>
 {
 	private static final Map<Identifier, TFObjType<?>> OBJ_TYPES = new HashMap<>();
+	
+	public static final Codec<TFObjType<?>> CODEC	= Identifier.CODEC.xmap(TFObjType::getType, TFObjType::registryName);
 	
 	/** Empty value, usually obtained when the whiteboard grabs a value it doesn't have */
 	public static final TFObjType<Object> EMPTY = register(new TFObjType<>("empty", 0, () -> WhiteboardObj.EMPTY)

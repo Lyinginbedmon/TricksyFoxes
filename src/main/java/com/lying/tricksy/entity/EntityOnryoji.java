@@ -146,7 +146,7 @@ public class EntityOnryoji extends HostileEntity implements ITricksyMob<EntityOn
 		this.getDataTracker().startTracking(OFUDA, 0);
 		this.getDataTracker().startTracking(COMM, 0);
 		
-		this.getDataTracker().startTracking(TREE_NBT, TREE.write(new NbtCompound()));
+		this.getDataTracker().startTracking(TREE_NBT, TREE.write());
 		this.getDataTracker().startTracking(LOG_NBT, new NbtCompound());
 		this.getDataTracker().startTracking(TREE_POSE, EntityPose.STANDING);
 		this.getDataTracker().startTracking(BARK, Bark.NONE.ordinal());

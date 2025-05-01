@@ -22,15 +22,16 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.init.TFNodeStatus;
-import com.lying.tricksy.init.TFNodeTypes;
 import com.lying.tricksy.reference.Reference;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
@@ -47,6 +48,53 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	public static final String TYPE_KEY = "Type";
 	public static final String SUBTYPE_KEY = "Variant";
 	public static final String IO_KEY = "IO";
+	
+	/** Codec of all TreeNode information except child nodes */
+	public static final Codec<TreeNode<?>> SOLO_CODEC	= RecordCodecBuilder.create(instance -> instance.group(
+			NodeType.CODEC.fieldOf(TYPE_KEY).forGetter(TreeNode::getType),
+			Codec.STRING.optionalFieldOf("UUID").forGetter(n -> n.nodeID == null ? Optional.empty() : Optional.of(n.nodeID.toString())),
+			Identifier.CODEC.optionalFieldOf(SUBTYPE_KEY).forGetter(n -> n.subType == null ? Optional.empty() : Optional.of(n.subType)),
+			NbtCompound.CODEC.optionalFieldOf("Data").forGetter(TreeNode::dataStorage),
+			NodeIO.CODEC.listOf().optionalFieldOf(IO_KEY).forGetter(TreeNode::ioList),
+			Codec.STRING.optionalFieldOf("DisplayName").forGetter(r -> r.customName != null ? Optional.of(Text.Serializer.toJson(r.customName)) : Optional.empty()),
+			Codec.BOOL.optionalFieldOf("Discrete").forGetter(n -> n.hideChildren ? Optional.of(n.hideChildren) : Optional.empty()),
+			Codec.BOOL.optionalFieldOf("Silent").forGetter(n -> n.isSilent ? Optional.of(n.isSilent) : Optional.empty())
+			).apply(instance, (type, uuid, subtype, data, io, displayName, discrete, silent) -> 
+			{
+				if(type == null)
+				{
+					TricksyFoxes.LOGGER.warn("Behaviour tree node not recognised!");
+					return null;
+				}
+				
+				TreeNode<?> node = type.create(uuid.isPresent() ? UUID.fromString(uuid.get()) : UUID.randomUUID(), data.orElse(new NbtCompound()));
+				if(node == null)
+				{
+					TricksyFoxes.LOGGER.warn("Behaviour tree node failed to initialise! Type: "+type.getRegistryName().toString());
+					return null;
+				}
+				
+				node.setSubType(subtype.orElse(NodeType.DUMMY_ID));
+				io.ifPresent(list -> list.forEach(entry -> node.assignIO(entry.variable(), entry.value())));
+				
+				if(displayName.isPresent())
+				{
+					String string = displayName.get();
+					try
+					{
+						node.customName = Text.Serializer.fromJson(string);
+					}
+					catch(Exception e)
+					{
+						TricksyFoxes.LOGGER.warn("Failed to parse tree node custom name {}", (Object)string, (Object)e);
+					}
+				}
+				
+				node.discrete(discrete.orElse(false));
+				node.isSilent = silent.orElse(false);
+				
+				return node;
+			}));
 	
 	/** A unique identifier, stored by behaviour trees to reduce unnecessary ticking in large trees by only ticking the running node */
 	@NotNull
@@ -95,7 +143,58 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	
 	public final @Nullable TreeNode<?> copy()
 	{
-		return TreeNode.create(write(new NbtCompound()));
+		return TreeNode.create(write());
+	}
+	
+	@Nullable
+	public static TreeNode<?> create(NbtCompound data)
+	{
+		TreeNode<?> node = SOLO_CODEC.parse(NbtOps.INSTANCE, data).resultOrPartial(TricksyFoxes.LOGGER::error).orElse(null);
+		if(node != null && data.contains("Children"))
+			data.getList("Children", NbtCompound.COMPOUND_TYPE).stream().map(e -> (NbtCompound)e).map(TreeNode::create).forEach(child -> 
+			{
+				if(node.canAddChild())
+					node.child(child);
+			});
+		
+		return node;
+	}
+	
+	public final NbtCompound write()
+	{
+		NbtCompound nbt = (NbtCompound)SOLO_CODEC.encodeStart(NbtOps.INSTANCE, this).resultOrPartial(TricksyFoxes.LOGGER::error).orElseThrow();
+		if(hasChildren())
+		{
+			NbtList childList = new NbtList();
+			children.forEach(child -> childList.add(child.write()));
+			nbt.put("Children", childList);
+		}
+		return nbt;
+	}
+	
+	protected NbtCompound writeToNbt(NbtCompound data) { return data; }
+	
+	protected final Optional<NbtCompound> dataStorage()
+	{
+		NbtCompound data = writeToNbt(new NbtCompound());
+		return data.isEmpty() ? Optional.empty() : Optional.of(data);
+	}
+	
+	private static record NodeIO(WhiteboardRef variable, INodeIOValue value)
+	{
+		public static final Codec<NodeIO> CODEC	= RecordCodecBuilder.create(instance -> instance.group(
+				WhiteboardRef.CODEC.fieldOf("IO").forGetter(NodeIO::variable), 
+				INodeIOValue.CODEC.fieldOf("Value").forGetter(NodeIO::value)
+				).apply(instance, NodeIO::new));
+	}
+	
+	public Optional<List<NodeIO>> ioList()
+	{
+		if(assignedIO.isEmpty())
+			return Optional.empty();
+		List<NodeIO> list = Lists.newArrayList();
+		assignedIO.entrySet().stream().filter(e -> e.getValue().isPresent()).forEach(entry -> list.add(new NodeIO(entry.getKey(), entry.getValue().get())));
+		return Optional.of(list);
 	}
 	
 	public final void setPosition(int x, int y)
@@ -431,133 +530,6 @@ public abstract class TreeNode<N extends TreeNode<?>>
 		}
 		catch(Exception e) { }
 	}
-	
-	@Nullable
-	public static TreeNode<?> create(NbtCompound data)
-	{
-		if(data.contains("Type", NbtElement.STRING_TYPE))
-		{
-			Identifier type = new Identifier(data.getString(TYPE_KEY));
-			NodeType<?> nodeType = TFNodeTypes.getTypeById(type);
-			if(nodeType == null)
-			{
-				TricksyFoxes.LOGGER.warn("Behaviour tree node not recognise! Type received: "+type.toString());
-				return null;
-			}
-			
-			UUID uuid = data.contains("UUID", NbtElement.INT_ARRAY_TYPE) ? data.getUuid("UUID") : UUID.randomUUID();
-			TreeNode<?> parent = nodeType.create(uuid, data.contains("Data", NbtElement.COMPOUND_TYPE) ? data.getCompound("Data") : new NbtCompound());
-			if(parent == null)
-			{
-				TricksyFoxes.LOGGER.warn("Behaviour tree node failed to initialise! Type: "+nodeType.getRegistryName().toString());
-				return null;
-			}
-			
-			parent.setSubType(data.contains(SUBTYPE_KEY, NbtElement.STRING_TYPE) ? new Identifier(data.getString(SUBTYPE_KEY)) : NodeType.DUMMY_ID);
-			if(data.contains("Variables", NbtElement.LIST_TYPE))
-				loadIOFromList(parent, data.getList("Variables", NbtElement.COMPOUND_TYPE));
-			else if(data.contains(IO_KEY, NbtElement.LIST_TYPE))
-				loadIOFromList(parent, data.getList(IO_KEY, NbtElement.COMPOUND_TYPE));
-			
-			if(data.contains("CustomName", NbtElement.STRING_TYPE))
-			{
-				String string = data.getString("CustomName");
-				try
-				{
-					parent.customName = Text.Serializer.fromJson(string);
-				}
-				catch(Exception e)
-				{
-					TricksyFoxes.LOGGER.warn("Failed to parse tree node custom name {}", (Object)string, (Object)e);
-				}
-			}
-			
-			NbtList children = data.contains("Children", NbtElement.LIST_TYPE) ? data.getList("Children", NbtElement.COMPOUND_TYPE) : new NbtList();
-			for(int i=0; i<children.size(); i++)
-			{
-				TreeNode<?> child = create(children.getCompound(i));
-				if(child != null && parent.canAddChild())
-					parent.child(child);
-			}
-			if(children.size() > 0)
-				parent.hideChildren = data.getBoolean("Discrete");
-			
-			if(data.contains("Silent"))
-				parent.isSilent = data.getBoolean("Silent");
-			
-			return parent;
-		}
-		return null;
-	}
-	
-	private static void loadIOFromList(TreeNode<?> node, NbtList list)
-	{
-		for(int i=0; i<list.size(); i++)
-		{
-			NbtCompound nbt = list.getCompound(i);
-			WhiteboardRef variable = loadIO(nbt);
-			if(variable == null)
-				continue;
-			INodeIOValue value = INodeIOValue.readFromNbt(nbt.getCompound("Value"));
-			node.assignIO(variable, value);
-		}
-	}
-	
-	@Nullable
-	private static WhiteboardRef loadIO(NbtCompound nbt)
-	{
-		if(nbt.contains("Variable", NbtElement.COMPOUND_TYPE))
-			return WhiteboardRef.fromNbt(nbt.getCompound("Variable"));
-		else if(nbt.contains("IO", NbtElement.COMPOUND_TYPE))
-			return WhiteboardRef.fromNbt(nbt.getCompound("IO"));
-		return null;
-	}
-	
-	public final NbtCompound write(NbtCompound data)
-	{
-		data.putString(TYPE_KEY, this.nodeType.getRegistryName().toString());
-		data.putString(SUBTYPE_KEY, this.subType.toString());
-		data.putUuid("UUID", this.nodeID);
-		
-		if(!assignedIO.isEmpty())
-		{
-			NbtList variables = new NbtList();
-			assignedIO.entrySet().forEach((entry) -> 
-			{
-				if(!entry.getValue().isPresent() || entry.getKey() == null)
-					return;
-				
-				NbtCompound nbt = new NbtCompound();
-				nbt.put("IO", entry.getKey().writeToNbt(new NbtCompound()));
-				nbt.put("Value", entry.getValue().get().writeToNbt(new NbtCompound()));
-				
-				variables.add(nbt);
-			});
-			data.put(IO_KEY, variables);
-		}
-		
-		if(!children().isEmpty())
-		{
-			NbtList children = new NbtList();
-			children().forEach((child) -> children.add(child.write(new NbtCompound())));
-			data.put("Children", children);
-			
-			data.putBoolean("Discrete", this.hideChildren);
-		}
-		
-		if(this.isSilent)
-			data.putBoolean("Silent", true);
-		
-		if(hasCustomName())
-			data.putString("CustomName", Text.Serializer.toJson(this.customName));
-		
-		NbtCompound storage = writeToNbt(new NbtCompound());
-		if(!storage.isEmpty())
-			data.put("Data", storage);
-		return data;
-	}
-	
-	protected NbtCompound writeToNbt(NbtCompound data) { return data; }
 	
 	/** Returns the node with the given ID, if it exists at or below this node in the tree */
 	@Nullable

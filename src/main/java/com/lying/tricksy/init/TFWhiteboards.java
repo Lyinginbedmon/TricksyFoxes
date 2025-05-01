@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.lying.tricksy.reference.Reference;
+import com.mojang.serialization.Codec;
 
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
@@ -53,6 +54,8 @@ public class TFWhiteboards
 	
 	public static class BoardType
 	{
+		public static final Codec<BoardType> CODEC	= Codec.STRING.xmap(TFWhiteboards::fromString, BoardType::asString);
+		
 		private final Identifier registryName;
 		private final String name;
 		private final boolean readOnly, alwaysVisible;

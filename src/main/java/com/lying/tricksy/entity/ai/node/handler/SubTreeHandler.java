@@ -19,7 +19,7 @@ public abstract class SubTreeHandler implements INodeTickHandler<LeafNode>
 		return INodeTickHandler.super.onCast(tricksy, whiteboards, parent);
 	}
 	
-	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result doTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
+	public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, LeafNode parent, int tick)
 	{
 		return parent.subTree == null ? Result.FAILURE : parent.subTree.tick(tricksy, whiteboards);
 	}

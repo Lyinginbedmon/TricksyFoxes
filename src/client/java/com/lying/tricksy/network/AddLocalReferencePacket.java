@@ -10,7 +10,6 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 
 public class AddLocalReferencePacket
@@ -22,7 +21,7 @@ public class AddLocalReferencePacket
 		
 		PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
 		buffer.writeUuid(tricksyID);
-		buffer.writeNbt(reference.writeToNbt(new NbtCompound()));
+		buffer.writeNbt(reference.toNbt());
 		ClientPlayNetworking.send(TFPacketHandler.ADD_LOCAL_REF_ID, buffer);
 	}
 }

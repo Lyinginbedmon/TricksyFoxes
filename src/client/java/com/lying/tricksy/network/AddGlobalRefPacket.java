@@ -17,7 +17,7 @@ public class AddGlobalRefPacket
 	{
 		PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
 		buffer.writeUuid(sageID);
-		buffer.writeNbt(ref.writeToNbt(new NbtCompound()));
+		buffer.writeNbt(ref.toNbt());
 		buffer.writeNbt(val.writeToNbt(new NbtCompound()));
 		ClientPlayNetworking.send(TFPacketHandler.ADD_GLOBAL_REF_ID, buffer);
 	}

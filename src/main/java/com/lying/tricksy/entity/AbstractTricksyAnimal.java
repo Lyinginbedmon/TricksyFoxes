@@ -70,7 +70,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 		super.initDataTracker();
 		this.getDataTracker().startTracking(OWNER_UUID, Optional.empty());
 		this.getDataTracker().startTracking(COLOR, OptionalInt.empty());
-		this.getDataTracker().startTracking(TREE_NBT, BehaviourTree.INITIAL_TREE.write(new NbtCompound()));
+		this.getDataTracker().startTracking(TREE_NBT, BehaviourTree.INITIAL_TREE.write());
 		this.getDataTracker().startTracking(LOG_NBT, new NbtCompound());
 		this.getDataTracker().startTracking(TREE_POSE, EntityPose.STANDING);
 		this.getDataTracker().startTracking(BARK, Bark.NONE.ordinal());

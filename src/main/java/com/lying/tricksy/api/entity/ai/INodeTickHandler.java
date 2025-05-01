@@ -136,7 +136,11 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 	
 	/** Called each tick after the {@link castingTime} period, in {@link onCast} did not return an end state */
 	@NotNull
-	public default <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, M parent, int tick) { return Result.FAILURE; }
+	public default <T extends PathAwareEntity & ITricksyMob<?>> Result onTick(T tricksy, WhiteboardManager<T> whiteboards, M parent, int tick)
+	{
+		parent.logStatus(TFNodeStatus.FAILURE, TFNodeStatus.message("node_handler_error"));
+		return Result.FAILURE;
+	}
 	
 	/** Performs any cleanup logic needed when the node stops */
 	public default <T extends PathAwareEntity & ITricksyMob<?>> void onEnd(T tricksy, M parent) { }

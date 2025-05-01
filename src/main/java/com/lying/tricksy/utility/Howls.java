@@ -82,7 +82,7 @@ public class Howls extends PersistentState
 	private static class Entry
 	{
 		private long startTick = -1;
-		private Howl howl = null;
+		private Howl howl = new Howl();
 		
 		public Entry(LivingEntity wolf, long start)
 		{

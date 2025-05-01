@@ -7,6 +7,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.reference.Reference;
+import com.mojang.serialization.Codec;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -15,6 +16,8 @@ import net.minecraft.util.StringIdentifiable;
 
 public interface INodeIOValue 
 {
+	public static final Codec<INodeIOValue> CODEC	= NbtCompound.CODEC.xmap(INodeIOValue::createFromNbt, INodeIOValue::toNbt);
+	
 	public Type type();
 	
 	/** Retrieves the corresponding value in the appropriate whiteboard */
@@ -22,15 +25,16 @@ public interface INodeIOValue
 	
 	public String asString();
 	
-	public default NbtCompound writeToNbt(NbtCompound compound)
+	public default NbtCompound toNbt()
 	{
+		NbtCompound compound = new NbtCompound();
 		compound.putString("Type", type().asString());
-		compound.put("Data", write(new NbtCompound()));
+		compound.put("Data", write());
 		return compound;
 	}
 	
 	@Nullable
-	public static INodeIOValue readFromNbt(NbtCompound compound)
+	public static INodeIOValue createFromNbt(NbtCompound compound)
 	{
 		/** Only earlier versions save variables as whiteboard references */
 		if(compound.contains(WhiteboardRef.BOARD_KEY, NbtElement.STRING_TYPE))
@@ -53,7 +57,7 @@ public interface INodeIOValue
 		return null;
 	}
 	
-	public NbtCompound write(NbtCompound compound);
+	public NbtCompound write();
 	
 	public Text displayName();
 	
@@ -77,9 +81,9 @@ public interface INodeIOValue
 			return Whiteboard.get(reference, whiteboards);
 		}
 		
-		public NbtCompound write(NbtCompound compound)
+		public NbtCompound write()
 		{
-			return this.reference.writeToNbt(compound);
+			return this.reference.toNbt();
 		}
 		
 		public static WhiteboardValue fromNbt(NbtCompound compound)
@@ -105,9 +109,9 @@ public interface INodeIOValue
 		
 		public IWhiteboardObject<?> get(WhiteboardManager<?> whiteboards) { return value.copy(); }
 		
-		public NbtCompound write(NbtCompound compound)
+		public NbtCompound write()
 		{
-			return value.writeToNbt(compound);
+			return value.writeToNbt(new NbtCompound());
 		}
 		
 		public static StaticValue fromNbt(NbtCompound compound)
