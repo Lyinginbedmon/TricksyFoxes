@@ -97,13 +97,7 @@ public abstract class GetterHandlerUntyped implements INodeTickHandler<LeafNode>
 	{
 		if(pos.type() == TFObjType.REGION)
 			return pos.as(TFObjType.REGION).get();
-		
-		BlockPos point = null;
-		if(pos.size() == 0)
-			point = fallback.apply(tricksy);
 		else
-			point = pos.as(TFObjType.BLOCK).get();
-		
-		return point == null ? null : new RegionSphere(point, range.get());
+			return new RegionSphere(pos.isEmpty() ? fallback.apply(tricksy) : pos.as(TFObjType.BLOCK).get(), range.get());
 	}
 }

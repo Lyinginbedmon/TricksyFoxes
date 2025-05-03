@@ -93,7 +93,7 @@ public abstract class AbstractTricksyAnimal extends AnimalEntity implements ITri
 			this.behaviourTree = BehaviourTree.create(data.getCompound(TREE_KEY));
 			this.behaviourTree.syncWithForest(getWorld(), getUuid());
 			if(!getWorld().isClient())
-				this.getDataTracker().set(TREE_NBT, this.behaviourTree.storeTrees(new NbtCompound()));
+				getDataTracker().set(TREE_NBT, this.behaviourTree.storeTrees());
 		}
 		
 		setTreePose(data.getBoolean("IsSleeping") ? EntityPose.SLEEPING : EntityPose.STANDING);

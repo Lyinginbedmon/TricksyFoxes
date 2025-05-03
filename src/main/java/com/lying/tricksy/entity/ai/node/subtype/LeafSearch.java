@@ -43,7 +43,9 @@ public class LeafSearch extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> GET_ENTITIES;
 	public static NodeSubType<LeafNode> GET_INVENTORIES;
 	public static NodeSubType<LeafNode> GET_MINEABLE;
+	public static NodeSubType<LeafNode> GET_CROPS;	// TODO Search node to get all crop blocks within an area
 	public static NodeSubType<LeafNode> GET_REPLACEABLE;
+	public static NodeSubType<LeafNode> GET_BLOCKS;	// TODO Search node to get all positions within a region
 	public static NodeSubType<LeafNode> GET_MATCHES;
 	
 	public Identifier getRegistryName() { return Reference.ModInfo.prefix("leaf_search"); }

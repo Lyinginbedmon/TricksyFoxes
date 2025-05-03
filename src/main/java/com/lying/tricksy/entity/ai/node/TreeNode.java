@@ -149,6 +149,9 @@ public abstract class TreeNode<N extends TreeNode<?>>
 	@Nullable
 	public static TreeNode<?> create(NbtCompound data)
 	{
+		if(data.isEmpty())
+			return null;
+		
 		TreeNode<?> node = SOLO_CODEC.parse(NbtOps.INSTANCE, data).resultOrPartial(TricksyFoxes.LOGGER::error).orElse(null);
 		if(node != null && data.contains("Children"))
 			data.getList("Children", NbtCompound.COMPOUND_TYPE).stream().map(e -> (NbtCompound)e).map(TreeNode::create).forEach(child -> 
@@ -169,9 +172,12 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			children.forEach(child -> childList.add(child.write()));
 			nbt.put("Children", childList);
 		}
+		if(nbt.isEmpty())
+			TricksyFoxes.LOGGER.warn("Stored a TreeNode as a blank NBT compound, this shouldn't happen!");
 		return nbt;
 	}
 	
+	/** Stores any additional operating data for this node */
 	protected NbtCompound writeToNbt(NbtCompound data) { return data; }
 	
 	protected final Optional<NbtCompound> dataStorage()

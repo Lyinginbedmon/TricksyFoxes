@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.lying.tricksy.TricksyFoxes;
 import com.lying.tricksy.entity.ai.BehaviourTree;
 import com.lying.tricksy.reference.Reference;
 
@@ -32,11 +33,11 @@ public class BehaviourForest extends PersistentState
 	public NbtCompound writeNbt(NbtCompound nbt)
 	{
 		NbtList set = new NbtList();
-		trees.forEach((tricksy,power) -> 
+		trees.forEach((tricksy, tree) -> 
 		{
 			NbtCompound compound = new NbtCompound();
 			compound.putUuid("ID", tricksy);
-			compound.put("Tree", power);
+			compound.put("Tree", tree);
 			set.add(compound);
 		});
 		nbt.put("Data", set);
@@ -45,20 +46,22 @@ public class BehaviourForest extends PersistentState
 	
 	public static BehaviourForest createFromNbt(NbtCompound nbt)
 	{
+		TricksyFoxes.LOGGER.info(" # Loading Behaviour Forest #");
 		BehaviourForest forest = new BehaviourForest();
 		NbtList set = nbt.getList("Data", NbtElement.COMPOUND_TYPE);
 		for(int i=0; i<set.size(); i++)
 		{
 			NbtCompound compound = set.getCompound(i);
-			forest.trees.put(compound.getUuid("ID"), compound.getCompound("Tree"));
+			if(compound.contains("Tree", NbtCompound.COMPOUND_TYPE))
+				forest.trees.put(compound.getUuid("ID"), compound.getCompound("Tree"));
 		}
 		return forest;
 	}
 	
 	public void remove(UUID tricksyID)
 	{
-		trees.remove(tricksyID);
-		markDirty();
+		if(trees.remove(tricksyID) != null)
+			markDirty();
 	}
 	
 	public NbtCompound getTreeFor(UUID tricksyID)
@@ -66,11 +69,15 @@ public class BehaviourForest extends PersistentState
 		return trees.getOrDefault(tricksyID, new NbtCompound());
 	}
 	
-	public boolean hasTreeFor(UUID tricksyID) { return trees.containsKey(tricksyID); }
+	public boolean hasTreeFor(UUID tricksyID) { return !getTreeFor(tricksyID).isEmpty(); }
 	
 	public void setTreeFor(UUID tricksyID, BehaviourTree tree)
 	{
-		trees.put(tricksyID, tree.storeTrees(new NbtCompound()));
-		markDirty();
+		NbtCompound data = tree.storeTrees();
+		if(!data.isEmpty())
+		{
+			trees.put(tricksyID, tree.storeTrees());
+			markDirty();
+		}
 	}
 }

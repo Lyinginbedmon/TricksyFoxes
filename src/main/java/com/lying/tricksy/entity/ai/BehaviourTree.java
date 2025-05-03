@@ -146,7 +146,7 @@ public class BehaviourTree
 	
 	public NbtCompound storeInNbt()
 	{
-		NbtCompound data = storeTrees(new NbtCompound());
+		NbtCompound data = storeTrees();
 		storeCommand(data);
 		return data;
 	}
@@ -158,12 +158,14 @@ public class BehaviourTree
 		return data;
 	}
 	
-	public NbtCompound storeTrees(NbtCompound data)
+	public NbtCompound storeTrees()
 	{
-		data.put(TREE_KEY, this.treeRoot().write());
+		NbtCompound data = new NbtCompound();
+		if(root != null)
+			data.put(TREE_KEY, treeRoot().write());
 		
 		NbtList list = new NbtList();
-		this.commandNodes.forEach((type,tree) -> 
+		this.commandNodes.forEach((type, tree) -> 
 		{
 			NbtCompound nbt = new NbtCompound();
 			nbt.putString("Order", type.asString());
@@ -190,13 +192,14 @@ public class BehaviourTree
 	
 	public void setTrees(NbtCompound data)
 	{
-		TreeNode<?> root;
 		if(data.contains(TREE_KEY, NbtElement.COMPOUND_TYPE))
-			root = TreeNode.create(data.getCompound(TREE_KEY));
+			this.root = TreeNode.create(data.getCompound(TREE_KEY));
 		else	// Support for older data format, in which only the root node was stored
-			root = TreeNode.create(data);
+			this.root = TreeNode.create(data);
 		
-		this.root = (root == null || root.getType() != TFNodeTypes.CONTROL_FLOW) ? null : root;
+		if(root != null && root.getType() != TFNodeTypes.CONTROL_FLOW)
+			this.root = null;
+		
 		if(data.contains(EXECUTOR_KEY, NbtElement.LIST_TYPE))
 		{
 			NbtList list = data.getList(EXECUTOR_KEY, NbtElement.COMPOUND_TYPE);
