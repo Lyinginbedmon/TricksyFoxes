@@ -47,7 +47,12 @@ public class RegionSphere extends Region
 	
 	public BlockPos center() { return this.center; }
 	
-	public boolean containsPos(BlockPos pos) { return center.isWithinDistance(pos, radius); }
+	public boolean containsPos(BlockPos pos)
+	{
+		Vec3d c = new Vec3d(center.getX() + 0.5D, center.getY() + 0.5D, center.getZ() + 0.5D);
+		Vec3d p = new Vec3d(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
+		return p.distanceTo(c) < radius;
+	}
 	
 	public MutableText describeValue() { return Reference.ModInfo.translate("value", "region_sphere", center.toShortString(), radius).copy(); }
 	
@@ -71,6 +76,22 @@ public class RegionSphere extends Region
 		Box area = new Box(min.getX(), min.getY(), min.getZ(), max.getX() + 1D, max.getY() + 1D, max.getZ() + 1D);
 		Predicate<T> rangeFunc = (ent) -> ent.squaredDistanceTo(new Vec3d(center.getX() + 0.5D, center.getY() + 0.5D, center.getZ() + 0.5D)) < radius;
 		return world.getEntitiesByClass(type, area, rangeFunc.and(filter));
+	}
+	
+	public List<BlockPos> getBlocks()
+	{
+		List<BlockPos> list = Lists.newArrayList();
+		Vec3i min = center.add(-radius, -radius, -radius);
+		Vec3i max = center.add(radius, radius, radius);
+		for(int y = min.getY(); y <= max.getY(); y++)
+			for(int x = min.getX(); x <= max.getX(); x++)
+				for(int z = min.getZ(); z <= max.getZ(); z++)
+				{
+					BlockPos pos = new BlockPos(x, y, z);
+					if(containsPos(pos))
+						list.add(pos);
+				}
+		return list;
 	}
 	
 	public List<BlockPos> getBlocks(World world, BiPredicate<BlockPos, BlockState> filter)

@@ -5,6 +5,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.collect.Lists;
 import com.lying.tricksy.api.entity.ITricksyMob;
 import com.lying.tricksy.api.entity.ai.INodeIO;
@@ -22,6 +24,7 @@ import com.lying.tricksy.entity.ai.whiteboard.WhiteboardManager;
 import com.lying.tricksy.entity.ai.whiteboard.WhiteboardRef;
 import com.lying.tricksy.entity.ai.whiteboard.object.IWhiteboardObject;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObj;
+import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjBlock;
 import com.lying.tricksy.entity.ai.whiteboard.object.WhiteboardObjEntity;
 import com.lying.tricksy.init.TFObjType;
 import com.lying.tricksy.reference.Reference;
@@ -33,6 +36,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -43,7 +47,7 @@ public class LeafSearch extends NodeGroupLeaf
 	public static NodeSubType<LeafNode> GET_ENTITIES;
 	public static NodeSubType<LeafNode> GET_INVENTORIES;
 	public static NodeSubType<LeafNode> GET_MINEABLE;
-	public static NodeSubType<LeafNode> GET_CROPS;	// TODO Search node to get all crop blocks within an area
+	public static NodeSubType<LeafNode> GET_CROPS;
 	public static NodeSubType<LeafNode> GET_REPLACEABLE;
 	public static NodeSubType<LeafNode> GET_BLOCKS;	// TODO Search node to get all positions within a region
 	public static NodeSubType<LeafNode> GET_MATCHES;
@@ -135,7 +139,29 @@ public class LeafSearch extends NodeGroupLeaf
 		}, Reference.Values.TICKS_PER_SECOND));
 		set.add(GET_INVENTORIES = subtype(ISubtypeGroup.variant("get_inventories"), new BlockSearchHandler((world, pos, state) -> state.hasBlockEntity() && world.getBlockEntity(pos) instanceof Inventory), Reference.Values.TICKS_PER_SECOND));
 		set.add(GET_MINEABLE = subtype(ISubtypeGroup.variant("get_minables"), new BlockSearchHandler((world, pos, state) -> state.getHardness(world, pos) >= 0 && !state.getCollisionShape(world, pos).isEmpty()), Reference.Values.TICKS_PER_SECOND));
+		set.add(GET_CROPS = subtype(ISubtypeGroup.variant("get_crops"), new BlockSearchHandler((world, pos, state) -> state.isIn(BlockTags.CROPS)), Reference.Values.TICKS_PER_SECOND));
 		set.add(GET_REPLACEABLE = subtype(ISubtypeGroup.variant("get_replaceables"), new BlockSearchHandler((world, pos, state) -> state.isReplaceable()), Reference.Values.TICKS_PER_SECOND));
+		set.add(GET_BLOCKS = subtype(ISubtypeGroup.variant("get_blocks"), new GetterHandlerTyped<BlockPos>(TFObjType.BLOCK) 
+		{
+			public void addInputVariables(Map<WhiteboardRef, INodeIO> set)
+			{
+				set.put(CommonVariables.VAR_POS, GetterHandlerTyped.POS_OR_REGION);
+				set.put(CommonVariables.VAR_DIS, NodeInput.makeInput(NodeInput.ofType(TFObjType.INT, false), new WhiteboardObj.Int((int)INodeTickHandler.INTERACT_RANGE)));
+			}
+			
+			public <N extends PathAwareEntity & ITricksyMob<?>> @Nullable IWhiteboardObject<BlockPos> getTypedResult(N tricksy, WhiteboardManager<N> whiteboards, LeafNode parent)
+			{
+				IWhiteboardObject<?> searchPos = getOrDefault(CommonVariables.VAR_POS, parent, whiteboards);
+				IWhiteboardObject<Integer> searchRange = getOrDefault(CommonVariables.VAR_DIS, parent, whiteboards).as(TFObjType.INT);
+				Region searchArea = GetterHandlerTyped.getSearchArea(searchPos, searchRange, tricksy);
+				if(searchArea == null)
+					return null;
+				
+				WhiteboardObjBlock result = new WhiteboardObjBlock();
+				searchArea.getBlocks().forEach(p -> result.add(p));
+				return result;
+			}
+		}, Reference.Values.TICKS_PER_SECOND));
 		set.add(GET_MATCHES = subtype(ISubtypeGroup.variant("get_matches"), new MatchBlockSearchHandler(), Reference.Values.TICKS_PER_SECOND));
 		return set;
 	}

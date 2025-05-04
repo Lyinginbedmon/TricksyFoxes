@@ -22,6 +22,7 @@ import com.lying.tricksy.reference.Reference;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -149,6 +150,11 @@ public class NodeSubType<M extends TreeNode<?>>
 	public static MutableText cooldownDesc(Text descIn)
 	{
 		return Reference.ModInfo.translate("info", "node_cooldown", descIn).copy().styled(style -> style.withColor(Formatting.GRAY));
+	}
+	
+	public NbtCompound manageRAM(NbtCompound ram)
+	{
+		return tickFunc.clearRAMOnEnd() ? new NbtCompound() : ram;
 	}
 	
 	public static enum CooldownBehaviour

@@ -188,17 +188,21 @@ public class DecoratorMisc extends NodeGroupDecorator
 		{
 			public <T extends PathAwareEntity & ITricksyMob<?>> @NotNull Result onTick(T tricksy, WhiteboardManager<T> whiteboards, DecoratorNode parent, int tick)
 			{
-				if(parent.ticks > 0)
+				if(parent.nodeRAM.contains("Fired"))
 					return Result.FAILURE;
-				
-				Result result = parent.child().tick(tricksy, whiteboards);
-				if(result.isEnd())
+				else
 				{
-					parent.ticks = 1;
-					return result;
+					Result result = parent.child().tick(tricksy, whiteboards);
+					if(result.isEnd())
+					{
+						parent.nodeRAM.putBoolean("Fired", true);
+						return result;
+					}
+					return Result.RUNNING;
 				}
-				return Result.RUNNING;
 			}
+			
+			public boolean clearRAMOnEnd() { return false; }
 		}));
 		set.add(WAIT_FOR_COOLDOWN = subtype(ISubtypeGroup.variant("wait_for_cooldown"), new DecoratorHandler()
 		{

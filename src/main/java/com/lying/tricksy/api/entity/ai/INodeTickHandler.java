@@ -51,6 +51,9 @@ public interface INodeTickHandler<M extends TreeNode<?>>
 	/** Returns a set of action flags that are occupied by the action of this node */
 	public default EnumSet<ActionFlag> flagsUsed() { return EnumSet.noneOf(ActionFlag.class); }
 	
+	/** Returns true if all values in the parent node's RAM should be erased when it finishes running */
+	public default boolean clearRAMOnEnd() { return true; }
+	
 	/** Returns a map containing all necessary IOs of this behaviour and predicates defining their needs */
 	@NotNull
 	public default Map<WhiteboardRef, INodeIO> ioSet(){ return new HashMap<>(); }

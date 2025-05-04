@@ -532,7 +532,7 @@ public abstract class TreeNode<N extends TreeNode<?>>
 			if(cooldown > 0 && subType.shouldCooldown(ticksRunning, subType.getPhase(ticksRunning), endResult))
 				whiteboards.local().setNodeCooldown(subType, cooldown);
 			
-			this.nodeRAM = new NbtCompound();
+			this.nodeRAM = subType.manageRAM(nodeRAM);
 		}
 		catch(Exception e) { }
 	}

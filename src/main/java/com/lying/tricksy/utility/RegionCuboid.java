@@ -101,6 +101,16 @@ public class RegionCuboid extends Region
 		return world.getEntitiesByClass(type, asBox(), filter);
 	}
 	
+	public List<BlockPos> getBlocks()
+	{
+		List<BlockPos> list = Lists.newArrayList();
+		for(int y = min.getY(); y <= max.getY(); y++)
+			for(int x = min.getX(); x <= max.getX(); x++)
+				for(int z = min.getZ(); z <= max.getZ(); z++)
+					list.add(new BlockPos(x, y, z));
+		return list;
+	}
+	
 	public List<BlockPos> getBlocks(World world, BiPredicate<BlockPos, BlockState> filter)
 	{
 		List<BlockPos> matches = Lists.newArrayList();

@@ -29,6 +29,9 @@ public abstract class Region
 	
 	public abstract <T extends Entity> List<T> getEntitiesByClass(Class<T> type, World world, Predicate<T> filter);
 	
+	/** Returns a list of all positions within this region */
+	public abstract List<BlockPos> getBlocks();
+	
 	/** Returns a list of all positions within the area occupied by the given block */
 	public List<BlockPos> getBlocks(Block block, World world) { return getBlocks(world, (pos,state) -> state.getBlock() == block); }
 	
